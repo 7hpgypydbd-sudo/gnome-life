@@ -2,14 +2,14 @@
 
 A cosy virtual-pet game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; must run smoothly on a phone. (Earlier working title: "Fairy Garden".)
 
-_Last updated: 2026-10-24 (full rewrite as a clean handover; merges the repo copy and the project-folder copy)_
+_Last updated: 2026-10-24 (art-day folder added; earlier the same day: full rewrite as a clean handover)_
 
 ## Start here, next chat
 
 1. **Play it:** https://7hpgypydbd-sudo.github.io/gnome-life/ (GitHub Pages, redeploys on every push to `main`). Code: https://github.com/7hpgypydbd-sudo/gnome-life (public, Bryce's choice).
-2. **Masters:** the repo is the master for code and this file. Bryce's Mac working copy is `~/Downloads/gnome-life` (signed in to GitHub via `gh`); run `git pull` there to sync. Untracked working art (`cut/`, `preview/`, `iso1/`, `inbox/`) lives in `~/Downloads/fairy-garden/`. A cloud copy of this file is at `/mnt/project-files/fairy-garden/PLAN.md`; keep it equal to the repo copy.
+2. **Masters:** the repo is the master for code and this file. Bryce's Mac working copy is `~/Downloads/gnome-life` (signed in to GitHub via `gh`); run `git pull` there to sync. Untracked working art (`cut/`, `preview/`, `iso1/`) lives in `~/Downloads/fairy-garden/`. **Art day for Bryce lives in `~/Downloads/Gnome Art Day/`** (made 2026-10-24): `1 - Reference pictures` (plot-barren.jpg + pre-cropped him/her side/front/back), `2 - Put finished pictures here` (THE inbox; replaces the old `fairy-garden/inbox/`), `3 - Steps.txt` (all 13 prompts written out in plain words with the style paragraph). A cloud copy of this file is at `/mnt/project-files/fairy-garden/PLAN.md`; keep it equal to the repo copy.
 3. **Before any art, read `docs/STYLE-GUIDE.md`.** Before changing gameplay, read the "Gameplay loop v2" section below. Content changes should only touch `content.js`.
-4. **Immediate next step:** Bryce runs `docs/ART-BATCH-1.md` (13 prompts: 7 ground tiles, 6 young-couple walk sheets) in Gemini and saves the files to `~/Downloads/fairy-garden/inbox/`. Then a Sonnet chat cuts and packs them and wires them in (see "What's next"). Bryce is also meant to play the live game for a day or two and say what feels wrong.
+4. **Immediate next step:** Bryce follows `~/Downloads/Gnome Art Day/3 - Steps.txt` (the same 13 prompts as `docs/ART-BATCH-1.md`: 7 ground tiles, 6 young-couple walk sheets) in Gemini and saves the files to `~/Downloads/Gnome Art Day/2 - Put finished pictures here/`. Then a Sonnet chat cuts and packs them and wires them in (see "What's next"). Bryce is also meant to play the live game for a day or two and say what feels wrong.
 5. **Ask Bryce before assuming** gameplay, art style, creatures or goals. He likes tappable quiz-style decision cards, wants images shown in the chat, and is usage-conscious.
 
 ## Concept (decided)
@@ -37,7 +37,7 @@ Side mystery (placeholder): a magic staff one gnome finds. **Bryce writes this p
 - **Project default model** was switched to Fable 5.1 (most capable) on 2026-10-24; Bryce is usage-conscious, so use Sonnet for routine jobs.
 - **Repo is public** (Bryce's choice, for free GitHub Pages hosting). The coordinator flagged that anyone can then copy the art and code, which matters if Bryce sells the game; moving to a private repo plus Cloudflare Pages/Netlify is an easy later change if he wants it.
 - **If a Mac session is used for art again:** Chrome's download "Save" box blocked downloads (now disabled), Mac low power mode slows things (now off), and Gemini sometimes answers with text instead of an image or fails to paste references.
-- **Claude does NOT drive Chrome for art.** Claude writes numbered prompt batches from `STYLE-GUIDE.md` (saying which reference image to paste for each); Bryce pastes them into Gemini and saves downloads to `~/Downloads/fairy-garden/inbox/`; Claude then cuts, cleans, packs and places them.
+- **Claude does NOT drive Chrome for art.** Claude writes numbered prompt batches from `STYLE-GUIDE.md` (saying which reference image to paste for each); Bryce pastes them into Gemini and saves downloads to `~/Downloads/Gnome Art Day/2 - Put finished pictures here/` (for future batches: also write a plain Steps.txt into that folder, Bryce finds the markdown prompt files confusing); Claude then cuts, cleans, packs and places them.
 - **Models:** Sonnet for routine work (sprite processing, content tuning, small tweaks); Fable for design and tricky code. Suggest model switches to Bryce; never switch without his say-so.
 - **Gemini lesson:** long chats drift in style. Start a fresh chat with one small cropped reference of the exact pose/angle wanted. Gemini ignores "isometric three-quarter" for characters and gives side/front/back, which is fine (side is mirrored for left).
 - Close Mac Remote Control sessions when a thread finishes. Do not move files in the shared project folder that a thread has already linked. Suggest a new chat when a thread gets long or a phase finishes, after updating this file and memory.
@@ -79,7 +79,7 @@ Files: `index.html` (canvas scene, tile map, DOM sheets), `game.js` (state, rule
 - The staff mystery itself (Bryce writes it).
 
 ## What's next (prioritised)
-1. **Bryce:** play the live game on the iPhone for a day or two; report pinch/zoom, smoothness, timer feel, anything wrong. Run `ART-BATCH-1.md` in Gemini, save to `inbox/`.
+1. **Bryce:** play the live game on the iPhone for a day or two; report pinch/zoom, smoothness, timer feel, anything wrong. Follow `Gnome Art Day/3 - Steps.txt` in Gemini, save into `Gnome Art Day/2 - Put finished pictures here/`.
 2. **Sonnet chat:** cut and pack batch 1. Ground tiles replace the green-wash placeholder in `drawTile`; young walk strips replace the elderly pair via `tools/pack_walks.py` + `sprites/gnomes.json`. Check consistency against the approved refs; list any that need regenerating.
 3. **Tune from Bryce's notes:** timers, costs, content in `content.js`.
 4. **Next art batch (Claude writes prompts):** gnome action sheets (dig, water, carry, sit), painted resource icons, painted visitors, more props for the 32 tasks, variety so barren tiles are not identical.
