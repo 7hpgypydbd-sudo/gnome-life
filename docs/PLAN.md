@@ -161,3 +161,8 @@ Then leave; the garden keeps growing while you're away.
 - More journal visitors over time (ideas: mouse, frog, rabbit, robin, moth, a travelling gnome who visits on some days).
 - Set up the repo + GitHub Pages hosting, Home Screen icon, full-screen web-app settings.
 - Test on Bryce's iPhone for smoothness (shadows are the main cost if it stutters).
+
+## Hosting
+- Repo: https://github.com/7hpgypydbd-sudo/gnome-life (public, `main`; game at repo root, docs in `docs/`)
+- Live: https://7hpgypydbd-sudo.github.io/gnome-life/ (GitHub Pages from `main` root; redeploys on every push)
+- Local working copy: ~/Downloads/gnome-life (original working art `cut/`, `preview/`, `iso1/` stay untracked in ~/Downloads/fairy-garden)
