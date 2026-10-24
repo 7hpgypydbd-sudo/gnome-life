@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1c2418">
+<title>Gnome Life</title>
+<style>
+  :root { --paper:#f3e9d2; --paper2:#e6d9bd; --ink:#2b2418; --ink2:#6b5a44; --green:#5b6b2d; --red:#b14c37; --safe-b: env(safe-area-inset-bottom); }
+  html,body { margin:0; height:100%; background:#1c2418; overflow:hidden; -webkit-user-select:none; user-select:none; touch-action:none; font-family: Georgia, "Times New Roman", serif; -webkit-tap-highlight-color: transparent; }
+  canvas { display:block; width:100vw; height:100vh; }
+  #hud { position:fixed; left:0; right:0; top:0; padding: calc(env(safe-area-inset-top) + 10px) 14px 0; pointer-events:none; color:var(--paper); text-shadow:0 1px 2px rgba(0,0,0,.6); }
+  #hud h1 { margin:0; font-size:19px; font-weight:normal; letter-spacing:.5px; }
+  #hud p { margin:2px 0 0; font-size:12px; opacity:.85; }
+  #bubble { position:fixed; max-width:62vw; background:var(--paper); color:var(--ink); border-radius:14px; padding:8px 12px; font-size:14px; line-height:1.3; box-shadow:0 2px 8px rgba(0,0,0,.35); pointer-events:none; opacity:0; transition:opacity .25s; transform:translate(-50%,-100%); }
+  #bubble:after { content:""; position:absolute; left:50%; bottom:-8px; margin-left:-7px; border:7px solid transparent; border-top-color:var(--paper); border-bottom:0; }
+  #load { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; color:var(--paper); font-size:15px; background:#1c2418; z-index:9; }
+  /* bottom bar */
+  #bar { position:fixed; left:0; right:0; bottom:0; padding: 8px 10px calc(var(--safe-b) + 8px); display:flex; flex-direction:column; gap:7px; pointer-events:none; }
+  #inv { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; }
+  .chip { background:rgba(243,233,210,.92); color:var(--ink); border-radius:999px; padding:3px 9px 3px 6px; font-size:13px; display:flex; gap:4px; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,.3); transition:transform .15s; }
+  .chip.zero { opacity:.45; } .chip.pop { transform:scale(1.25); }
+  #btns { display:flex; gap:8px; justify-content:center; pointer-events:auto; }
+  .btn { background:var(--paper); color:var(--ink); border:0; border-radius:12px; padding:9px 14px; font:inherit; font-size:14px; box-shadow:0 2px 6px rgba(0,0,0,.35); position:relative; }
+  .btn .dot { position:absolute; top:-4px; right:-4px; width:12px; height:12px; border-radius:50%; background:var(--red); border:2px solid var(--paper); display:none; }
+  .btn.alert .dot { display:block; }
+  .btn.ghost { background:rgba(243,233,210,.25); color:var(--paper); }
+  /* sheet */
+  #shade { position:fixed; inset:0; background:rgba(10,14,8,.35); opacity:0; pointer-events:none; transition:opacity .2s; }
+  #shade.on { opacity:1; pointer-events:auto; }
+  #sheet { position:fixed; left:0; right:0; bottom:0; max-height:72vh; background:var(--paper); color:var(--ink); border-radius:18px 18px 0 0; padding:14px 16px calc(var(--safe-b) + 16px); box-shadow:0 -4px 18px rgba(0,0,0,.4); transform:translateY(105%); transition:transform .25s; overflow-y:auto; touch-action:pan-y; pointer-events:auto; }
+  #sheet.on { transform:none; }
+  #sheet h2 { margin:0 0 4px; font-size:18px; font-weight:normal; }
+  #sheet h2 small { font-size:12px; color:var(--ink2); margin-left:6px; }
+  #sheet p { margin:4px 0 8px; font-size:14px; line-height:1.35; color:var(--ink2); }
+  .row { display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid rgba(43,36,24,.12); }
+  .row:first-of-type { border-top:0; }
+  .row .t { flex:1; min-width:0; } .row .t b { font-weight:normal; font-size:15px; display:block; } .row .t span { font-size:12.5px; color:var(--ink2); }
+  .row .t span.bad { color:var(--red); }
+  .act { background:var(--green); color:var(--paper); border:0; border-radius:10px; padding:8px 12px; font:inherit; font-size:13.5px; white-space:nowrap; }
+  .act[disabled] { background:var(--paper2); color:var(--ink2); }
+  .act.quiet { background:var(--paper2); color:var(--ink); }
+  .cost { font-size:13px; } .cost i { font-style:normal; margin-right:6px; }
+  .prog { height:5px; background:var(--paper2); border-radius:3px; overflow:hidden; margin-top:5px; } .prog i { display:block; height:100%; background:var(--green); }
+  .meter { display:flex; gap:4px; margin:6px 0 10px; } .meter i { flex:1; height:8px; border-radius:4px; background:var(--paper2); } .meter i.on { background:#c9922e; box-shadow:0 0 6px #ffcf6a; }
+  .jrow { display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid rgba(43,36,24,.12); }
+  .jrow .sil { width:34px; height:34px; border-radius:50%; background:var(--paper2); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .jrow.unseen .sil { filter:grayscale(1); opacity:.5; }
+  .jrow .t b { font-weight:normal; display:block; font-size:15px; } .jrow .t span { font-size:12.5px; color:var(--ink2); }
+  .close { position:absolute; right:12px; top:10px; background:none; border:0; font:inherit; font-size:22px; color:var(--ink2); }
+  #toast { position:fixed; left:50%; top:calc(env(safe-area-inset-top) + 58px); transform:translateX(-50%); background:rgba(243,233,210,.95); color:var(--ink); border-radius:12px; padding:8px 14px; font-size:14px; opacity:0; transition:opacity .25s; pointer-events:none; max-width:80vw; text-align:center; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud"><h1>Gnome Life</h1><p id="sub"></p></div>
+<div id="bubble"></div>
+<div id="toast"></div>
+<div id="bar">
+  <div id="inv"></div>
+  <div id="btns">
+    <button class="btn" id="bTasks">Tasks<i class="dot"></i></button>
+    <button class="btn" id="bMagic">Magic<i class="dot"></i></button>
+    <button class="btn" id="bJournal">Journal<i class="dot"></i></button>
+  </div>
+</div>
+<div id="shade"></div>
+<div id="sheet"></div>
+<div id="load">waking the garden…</div>
+<script src="content.js"></script>
+<script src="game.js"></script>
+<script>
+(() => {
+const C = window.CONTENT, G = window.GL;
+const SPR = 0.5;
+const PLOT = { w:1225, h:728, top:[612,1], left:[3,346], right:[1221,347], bottom:[612,691] };
+const EX = [PLOT.right[0]-PLOT.top[0], PLOT.right[1]-PLOT.top[1]];   // one tile east
+const EY = [PLOT.left[0]-PLOT.top[0],  PLOT.left[1]-PLOT.top[1]];    // one tile south
+const ASSETS = {
+  plot:'sprites/plot-barren.webp',
+  shelter:'sprites/shelter.webp', campfire:'sprites/campfire.webp', firewood:'sprites/firewood.webp',
+  barrel:'sprites/barrel.webp', seedbed:'sprites/seedbed.webp', stonebench:'sprites/stonebench.webp',
+  tub:'sprites/tub.webp', lanternstump:'sprites/lanternstump.webp', wheelbarrow:'sprites/wheelbarrow.webp',
+  fence:'sprites/fence.webp', sapling:'sprites/sapling.webp',
+  'him-side':'sprites/him-side.png','him-front':'sprites/him-front.png','him-back':'sprites/him-back.png',
+  'her-side':'sprites/her-side.png','her-front':'sprites/her-front.png','her-back':'sprites/her-back.png',
+};
+const GNOMES = {"him": {"cell": [109, 242], "dirs": {"side": 10, "front": 6, "back": 6}}, "her": {"cell": [137, 242], "dirs": {"side": 10, "front": 6, "back": 6}}};
+
+// ---------- world helpers ----------
+function tileOrigin(k) { const [tx, ty] = k.split(',').map(Number); return [tx*EX[0] + ty*EY[0], tx*EX[1] + ty*EY[1]]; }
+function toWorld(gx, gy, tile = '0,0') {         // tile grid (0..1, 0..1) -> world pixel coords
+  const [ox, oy] = tileOrigin(tile), [tx, ty] = PLOT.top, [rx, ry] = PLOT.right, [lx, ly] = PLOT.left;
+  return [ox + tx + gx * (rx - tx) + gy * (lx - tx), oy + ty + gx * (ry - ty) + gy * (ly - ty)];
+}
+function fromWorld(wx, wy) {                       // world pixel -> { tile, gx, gy } (any tile, may be outside 0..1)
+  const [tx, ty] = PLOT.top, a = PLOT.right[0]-tx, b = PLOT.left[0]-tx, c = PLOT.right[1]-ty, d = PLOT.left[1]-ty;
+  const det = a*d - b*c, px = wx - tx, py = wy - ty;
+  const u = (px*d - b*py) / det, v = (a*py - c*px) / det;           // continuous tile coords
+  const txi = Math.floor(u), tyi = Math.floor(v);
+  return { tile: `${txi},${tyi}`, gx: u - txi, gy: v - tyi };
+}
+function depthOf(gx, gy, tile = '0,0') { const [tx, ty] = tile.split(',').map(Number); return gx + gy + tx + ty; }
+
+// ---------- scene content (home tile) ----------
+const PROPS = [
+  { name:'shelter',      gx:0.30, gy:0.22, s:1.0 },
+  { name:'firewood',     gx:0.14, gy:0.40, s:0.9 },
+  { name:'barrel',       gx:0.40, gy:0.42, s:0.9 },
+  { name:'campfire',     gx:0.52, gy:0.44, s:0.9 },
+  { name:'stonebench',   gx:0.66, gy:0.30, s:0.9 },
+  { name:'lanternstump', gx:0.78, gy:0.50, s:0.9 },
+  { name:'seedbed',      gx:0.60, gy:0.70, s:1.0, flat:true },
+  { name:'tub',          gx:0.44, gy:0.76, s:0.85 },
+  { name:'wheelbarrow',  gx:0.26, gy:0.62, s:0.9 },
+  { name:'fence',        gx:0.86, gy:0.78, s:0.9 },
+  { name:'sapling',      gx:0.72, gy:0.86, s:0.8 },
+];
+const SPOTS = {   // places the gnomes like to go (home tile)
+  door:[0.36,0.33], fire:[0.46,0.52], bench:[0.62,0.36], bed:[0.56,0.66], barrel:[0.46,0.44],
+  tub:[0.40,0.72], sprout:[0.50,0.52], barrow:[0.32,0.66], lantern:[0.72,0.56], fence:[0.80,0.72]
+};
+const WORKSPOT = { wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], fence:[0.80,0.74], sapling:[0.66,0.84], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
+
+// ---------- loading ----------
+const IM = {};
+let loaded = 0; const total = Object.keys(ASSETS).length;
+for (const [k, src] of Object.entries(ASSETS)) {
+  const im = new Image(); im.onload = im.onerror = () => { if (++loaded === total) start(); }; im.src = src; IM[k] = im;
+}
+
+// ---------- state ----------
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const bubble = document.getElementById('bubble'), toastEl = document.getElementById('toast');
+let W = 0, H = 0, DPR = 1;
+const cam = { x: PLOT.w/2, y: PLOT.h/2 - 40, z: 1 };
+let minZ = 0.4, maxZ = 4;
+const gnomes = [], particles = [], floaters = [];
+let visitor = null, nextVisitorAt = 0;
+let tod = null;
+const hash = location.hash.slice(1);
+for (const tok of hash.split(/[#&]/)) if (/^(day|night|dawn|dusk)$/.test(tok)) tod = tok;
+if (/reset/.test(hash)) { G.reset(); }
+window.addEventListener('hashchange', () => location.reload());
+
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = W * DPR; cv.height = H * DPR;
+  minZ = Math.max(0.2, Math.min(W / (PLOT.w + 80), H / (PLOT.h + 160)) * 0.95);
+  cam.z = Math.max(cam.z, minZ);
+}
+window.addEventListener('resize', resize); resize();
+
+// ---------- gnomes ----------
+class Gnome {
+  constructor(who, gx, gy) {
+    this.who = who; this.gx = gx; this.gy = gy; this.tx = gx; this.ty = gy;
+    this.cell = GNOMES[who].cell; this.n = GNOMES[who].dirs;
+    this.dir = 'front'; this.flip = false; this.walking = false; this.frame = 0; this.ft = 0;
+    this.wait = 1 + Math.random() * 2; this.speed = 0.055 + Math.random() * 0.01;
+    this.say = null; this.sayT = 0; this.job = null; this.bob = 0;
+  }
+  goto(x, y) { this.tx = x; this.ty = y; this.walking = true; }
+  pick() {
+    const job = G.running().find(r => r.def.who === this.who);
+    if (job) { const sp = WORKSPOT[job.def.spot] || SPOTS.fire; this.job = job.id; this.goto(sp[0] + (job.def.tile ? 0 : 0), sp[1]); return; }
+    this.job = null;
+    const keys = Object.keys(SPOTS); const [sx, sy] = SPOTS[keys[(Math.random() * keys.length) | 0]];
+    this.goto(sx + (Math.random() - 0.5) * 0.08, sy + (Math.random() - 0.5) * 0.08);
+  }
+  update(dt) {
+    if (this.sayT > 0) this.sayT -= dt;
+    if (!this.walking) {
+      this.wait -= dt;
+      if (this.job) { this.bob += dt * 6; const still = G.running().some(r => r.id === this.job); if (!still) { this.job = null; this.wait = 0.5; } else if (this.wait <= 0) this.wait = 1; return; }
+      if (this.wait <= 0) this.pick();
+      return;
+    }
+    const dx = this.tx - this.gx, dy = this.ty - this.gy, d = Math.hypot(dx, dy);
+    if (d < 0.004) { this.walking = false; this.wait = 2 + Math.random() * 5; this.frame = 0; this.dir = this.job ? 'front' : (Math.random() < 0.6 ? 'front' : this.dir); return; }
+    const step = Math.min(d, this.speed * dt);
+    this.gx += dx / d * step; this.gy += dy / d * step;
+    const [ax, ay] = toWorld(this.gx, this.gy), [bx, by] = toWorld(this.gx + dx / d * 0.01, this.gy + dy / d * 0.01);
+    const sx = bx - ax, sy = by - ay, deg = Math.atan2(sy, sx) * 180 / Math.PI;
+    if (deg > 50 && deg < 130) this.dir = 'front';
+    else if (deg < -50 && deg > -130) this.dir = 'back';
+    else { this.dir = 'side'; this.flip = sx < 0; }
+    this.ft += dt; const fps = 9;
+    if (this.ft > 1 / fps) { this.ft -= 1 / fps; this.frame = (this.frame + 1) % this.n[this.dir]; }
+  }
+  draw() {
+    const img = IM[`${this.who}-${this.dir}`]; const [cw, ch] = this.cell;
+    const f = this.walking ? this.frame : 0;
+    const [wx, wy] = toWorld(this.gx, this.gy);
+    const s = SPR * 0.92, bob = this.job && !this.walking ? Math.abs(Math.sin(this.bob)) * 3 : 0;
+    shadow(wx, wy, cw * s * 0.45, cw * s * 0.18);
+    ctx.save(); ctx.translate(wx, wy - bob);
+    if (this.dir === 'side' && this.flip) ctx.scale(-1, 1);
+    ctx.drawImage(img, f * cw, 0, cw, ch, -cw * s / 2, -ch * s, cw * s, ch * s);
+    ctx.restore();
+    this.screen = { x: wx, y: wy, w: cw * s, h: ch * s };
+  }
+}
+function shadow(x, y, rx, ry) {
+  ctx.save(); ctx.globalAlpha = 0.28; ctx.fillStyle = '#1a1408';
+  ctx.beginPath(); ctx.ellipse(x, y + 2, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+}
+
+// ---------- time of day ----------
+function dayPhase() {
+  let h;
+  if (tod === 'day') h = 13; else if (tod === 'night') h = 1; else if (tod === 'dawn') h = 6.3; else if (tod === 'dusk') h = 18.6;
+  else { const d = new Date(); h = d.getHours() + d.getMinutes() / 60; }
+  let light;
+  if (h >= 8 && h <= 17) light = 1; else if (h > 17 && h < 20) light = 1 - (h - 17) / 3; else if (h >= 5 && h < 8) light = (h - 5) / 3; else light = 0;
+  const warm = (h > 16.5 && h < 19.5) || (h > 5.5 && h < 8.5) ? 1 - Math.abs(((h > 12 ? 18 : 7) - h)) / 1.5 : 0;
+  return { h, light, warm: Math.max(0, Math.min(1, warm)) };
+}
+
+// ---------- particles ----------
+function spawnParticles(dt, ph) {
+  const fire = PROPS.find(p => p.name === 'campfire'); const [fx, fy] = toWorld(fire.gx, fire.gy);
+  if (Math.random() < dt * 6) particles.push({ k:'smoke', x: fx + (Math.random()-0.5)*6, y: fy - 60*SPR*1.8, vx:(Math.random()-0.5)*4, vy:-14-Math.random()*8, r:4+Math.random()*4, life:0, max:3.5+Math.random()*2 });
+  if (Math.random() < dt * 5) particles.push({ k:'spark', x: fx + (Math.random()-0.5)*10, y: fy - 50*SPR*1.4, vx:(Math.random()-0.5)*10, vy:-25-Math.random()*20, life:0, max:0.8+Math.random()*0.8 });
+  if (ph.light < 0.35 && particles.filter(p => p.k === 'fly').length < 18 && Math.random() < dt * 1.5) {
+    const [x, y] = toWorld(Math.random(), Math.random());
+    particles.push({ k:'fly', x, y: y - 20 - Math.random()*60, vx:0, vy:0, ph:Math.random()*6, life:0, max:12+Math.random()*10 });
+  }
+  if (ph.light > 0.5 && Math.random() < dt * 0.8) {
+    const [x, y] = toWorld(Math.random(), Math.random());
+    particles.push({ k:'mote', x, y: y - Math.random()*120, vx:6+Math.random()*6, vy:-2+Math.random()*4, life:0, max:8 });
+  }
+  // work puffs where a gnome is busy
+  for (const g of gnomes) if (g.job && !g.walking && Math.random() < dt * 2) { const [x, y] = toWorld(g.gx, g.gy); particles.push({ k:'puff', x: x + (Math.random()-0.5)*30, y: y - 10, vx:(Math.random()-0.5)*6, vy:-6, r:3, life:0, max:1.2 }); }
+}
+function updateParticles(dt) {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i]; p.life += dt;
+    if (p.life > p.max) { particles.splice(i, 1); continue; }
+    if (p.k === 'fly') { p.ph += dt; p.x += Math.sin(p.ph * 1.3) * 12 * dt; p.y += Math.cos(p.ph * 0.9) * 8 * dt; }
+    else { p.x += p.vx * dt; p.y += p.vy * dt; if (p.k === 'smoke' || p.k === 'puff') { p.vx += (Math.random()-0.5)*8*dt; p.r += 6*dt; } if (p.k === 'spark') p.vy += 10*dt; }
+  }
+  for (let i = floaters.length - 1; i >= 0; i--) { const f = floaters[i]; f.life += dt; f.y -= 28 * dt; if (f.life > 1.4) floaters.splice(i, 1); }
+}
+function drawParticles(ph) {
+  for (const p of particles) {
+    const t = p.life / p.max;
+    if (p.k === 'smoke' || p.k === 'puff') { ctx.globalAlpha = 0.18 * (1 - t); ctx.fillStyle = p.k === 'puff' ? '#c9b58f' : '#d9d2c4'; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); }
+    else if (p.k === 'spark') { ctx.globalAlpha = 0.9 * (1 - t); ctx.fillStyle = '#ffb347'; ctx.fillRect(p.x, p.y, 2, 2); }
+    else if (p.k === 'fly') { const a = (0.5 + 0.5 * Math.sin(p.ph * 4)) * Math.min(1, t * 4, (1 - t) * 4); ctx.globalAlpha = a; ctx.fillStyle = '#e8ff9a'; ctx.shadowColor = '#d8ff70'; ctx.shadowBlur = 8; ctx.beginPath(); ctx.arc(p.x, p.y, 1.8, 0, 7); ctx.fill(); ctx.shadowBlur = 0; }
+    else if (p.k === 'mote') { ctx.globalAlpha = 0.35 * Math.sin(Math.PI * t) * ph.light; ctx.fillStyle = '#fff6d0'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, 7); ctx.fill(); }
+  }
+  ctx.globalAlpha = 1;
+  for (const f of floaters) { ctx.globalAlpha = 1 - f.life / 1.4; ctx.font = '600 22px Georgia'; ctx.textAlign = 'center'; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(30,22,12,.6)'; ctx.strokeText(f.text, f.x, f.y); ctx.fillStyle = '#f3e9d2'; ctx.fillText(f.text, f.x, f.y); }
+  ctx.globalAlpha = 1;
+}
+function float(text, x, y) { floaters.push({ text, x, y: y - 40, life: 0 }); }
+
+// ---------- drawing ----------
+function glow(x, y, r, color, a) {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, color); g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = a; ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2); ctx.restore();
+}
+function diamondPath(tile) {
+  const [ox, oy] = tileOrigin(tile);
+  ctx.beginPath(); ctx.moveTo(ox + PLOT.top[0], oy + PLOT.top[1]); ctx.lineTo(ox + PLOT.right[0], oy + PLOT.right[1]); ctx.lineTo(ox + PLOT.bottom[0], oy + PLOT.bottom[1]); ctx.lineTo(ox + PLOT.left[0], oy + PLOT.left[1]); ctx.closePath();
+}
+const GREEN_ALPHA = { barren: 0, green: 0.16, meadow: 0.30, wood: 0.40 };
+function drawTile(k, tl, now) {
+  const [ox, oy] = tileOrigin(k);
+  ctx.drawImage(IM.plot, ox, oy);
+  // placeholder regrowth: a green wash over the bare slab until the painted tile set exists
+  let a = 0;
+  if (k === '0,0') a = GREEN_ALPHA[G.landStage().key];
+  else if (tl.state === 'green') a = 0.22;
+  else if (tl.state === 'regrowing') { const tk = G.s.tasks['regrow:' + k]; const p = tk ? 1 - Math.max(0, tk.endsAt - Date.now()) / (tk.endsAt - tk.startedAt) : 0; a = 0.05 + 0.15 * p + 0.03 * Math.sin(now / 500); }
+  if (a > 0) { ctx.save(); diamondPath(k); ctx.clip(); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = `rgba(120,150,70,${a * 1.6})`; ctx.fillRect(ox, oy, PLOT.w, PLOT.h); ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = `rgba(140,170,80,${a * 0.5})`; ctx.fillRect(ox, oy, PLOT.w, PLOT.h); ctx.restore(); }
+  if (tl.state === 'revealed') { ctx.save(); diamondPath(k); ctx.clip(); ctx.fillStyle = 'rgba(200,205,195,0.28)'; ctx.fillRect(ox, oy, PLOT.w, PLOT.h); ctx.restore(); }
+}
+function drawProp(p) {
+  const img = IM[p.name]; const [x, y] = toWorld(p.gx, p.gy); const s = SPR * p.s;
+  const w = img.width * s, h = img.height * s;
+  if (!p.flat) shadow(x, y, w * 0.4, w * 0.14);
+  ctx.drawImage(img, x - w / 2, y - h + (p.flat ? h / 2 : 0), w, h);
+  if (p.name === 'seedbed') drawCrop(x, y);
+}
+function drawCrop(x, y) {
+  const p = G.plot(); if (!p.stage) return;
+  const t = Date.now();
+  if (p.stage === 'planted') { ctx.fillStyle = '#4a3620'; ctx.beginPath(); ctx.ellipse(x, y - 6, 5, 3, 0, 0, 7); ctx.fill(); glow(x, y - 20, 26, 'rgba(120,170,255,1)', 0.18 + 0.08 * Math.sin(t / 300)); return; }
+  const total = Math.max(1, p.readyAt - (p.wateredAt || p.readyAt - 1)), prog = p.stage === 'ready' ? 1 : 1 - Math.max(0, p.readyAt - t) / total;
+  const img = IM.sapling, sc = SPR * (0.25 + 0.45 * prog), w = img.width * sc, h = img.height * sc;
+  ctx.drawImage(img, x - w / 2, y - h + 4, w, h);
+  if (p.stage === 'ready') glow(x, y - h * 0.5, 50, 'rgba(255,240,160,1)', 0.35 + 0.15 * Math.sin(t / 250));
+}
+const OFFER_COLORS = { twig:'#8a6a44', moss:'#6f8c3a', stone:'#9a958a', acorn:'#8a5a2b', seed:'#c9a86a', water:'#9fc6e0', light:'#fff0a8' };
+function drawOffer(o, now) {
+  const [x, y] = toWorld(o.gx, o.gy, o.tile); const b = Math.sin(now / 400 + o.gx * 9) * 2;
+  const k = Math.max(1, 0.7 / cam.z);            // keep offerings finger-sized when zoomed out
+  o.screen = { x, y, w: 46 * k, h: 46 * k };
+  shadow(x, y, 9 * k, 4 * k);
+  if (o.kind === 'light') { glow(x, y - 14 * k + b, 36 * k, 'rgba(255,240,170,1)', 0.6 + 0.2 * Math.sin(now / 200)); }
+  ctx.save(); ctx.translate(x, y - 14 * k + b); ctx.scale(k, k);
+  ctx.fillStyle = C.resources[o.kind].color || OFFER_COLORS[o.kind]; ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(0, 0, 12, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.font = '14px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(C.resources[o.kind].icon, 0, 1);
+  ctx.restore();
+}
+// placeholder visitors until painted ones exist: an ink-outlined body with a name tag
+const VIS_LOOK = { robin:['#9c5a3c', 10, 8], mouse:['#8f8070', 9, 6], hedgehog:['#6b5440', 16, 10], owl:['#8a7458', 12, 16], ladybird:['#b14c37', 6, 5], spirit:['#eaf6d2', 9, 12] };
+function drawVisitor(v, now) {
+  const [x, y] = toWorld(v.gx, v.gy); const [col, rx, ry] = v.def.look || VIS_LOOK[v.def.id]; const fly = v.def.id === 'spirit' || v.def.id === 'robin' && v.perch < 1 ? 30 : (v.def.fly || 0);
+  const yy = y - ry - fly + (fly ? Math.sin(now / 350) * 4 : 0);
+  if (!fly) shadow(x, y, rx, rx * 0.4);
+  if (v.def.id === 'spirit') glow(x, yy, 60, 'rgba(200,255,190,1)', 0.5);
+  ctx.save(); ctx.fillStyle = col; ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.ellipse(x, yy, rx, ry, 0, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#2a1510'; ctx.beginPath(); ctx.arc(x + rx * 0.5, yy - ry * 0.3, 1.5, 0, 7); ctx.fill();
+  ctx.restore();
+  v.screen = { x, y: y - fly, w: Math.max(40, rx * 3), h: ry * 2 + 20 };
+}
+
+// ---------- visitors ----------
+function spawnVisitor() {
+  const def = G.pickVisitor(); if (!def) return;
+  const edge = Math.random() < 0.5; const from = edge ? [Math.random() < 0.5 ? -0.05 : 1.05, Math.random()] : [Math.random(), Math.random() < 0.5 ? -0.05 : 1.05];
+  const to = [0.25 + Math.random() * 0.5, 0.25 + Math.random() * 0.5];
+  visitor = { def, gx: from[0], gy: from[1], tx: to[0], ty: to[1], phase: 'in', t: 0, stay: 18 + Math.random() * 15, perch: 0, speed: def.speed || (def.id === 'robin' ? 0.25 : def.id === 'owl' ? 0.3 : 0.06) };
+  if (def.id === 'owl') { const l = PROPS.find(p => p.name === 'lanternstump'); visitor.tx = l.gx - 0.02; visitor.ty = l.gy - 0.02; }
+}
+function updateVisitor(dt) {
+  if (!visitor) { if (performance.now() > nextVisitorAt) { spawnVisitor(); const [a, b] = C.visitorEvery; nextVisitorAt = performance.now() + (a + Math.random() * (b - a)) * 1000; } return; }
+  const v = visitor; v.t += dt;
+  const dx = v.tx - v.gx, dy = v.ty - v.gy, d = Math.hypot(dx, dy);
+  if (v.phase === 'in') { if (d < 0.01) { v.phase = 'stay'; v.t = 0; v.perch = 1; } else { const s = Math.min(d, v.speed * dt); v.gx += dx / d * s; v.gy += dy / d * s; } }
+  else if (v.phase === 'stay') { if (v.def.id === 'mouse' && Math.random() < dt * 0.4) { v.tx = Math.min(0.95, Math.max(0.05, v.gx + (Math.random() - 0.5) * 0.2)); v.ty = Math.min(0.95, Math.max(0.05, v.gy + (Math.random() - 0.5) * 0.2)); v.phase = 'in'; } if (v.t > v.stay) { v.phase = 'out'; v.tx = Math.random() < 0.5 ? -0.1 : 1.1; v.ty = Math.random(); v.perch = 0; } }
+  else { if (d < 0.02) visitor = null; else { const s = Math.min(d, v.speed * 1.5 * dt); v.gx += dx / d * s; v.gy += dy / d * s; } }
+}
+
+// ---------- main frame ----------
+let last = performance.now(), tickAcc = 0;
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  const ph = dayPhase();
+  tickAcc += dt; if (tickAcc > 0.5) { tickAcc = 0; G.tick(); }
+  for (const g of gnomes) g.update(dt);
+  updateVisitor(dt);
+  spawnParticles(dt, ph); updateParticles(dt);
+
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = `rgb(${Math.round(28 + 30*ph.light + 40*ph.warm)},${Math.round(36 + 34*ph.light + 10*ph.warm)},${Math.round(24 + 30*ph.light)})`;
+  ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(cam.z, cam.z); ctx.translate(-cam.x, -cam.y);
+  const mist = ctx.createRadialGradient(PLOT.w/2, PLOT.h/2, 100, PLOT.w/2, PLOT.h/2, 1400);
+  mist.addColorStop(0, `rgba(190,200,170,${0.25 * ph.light + 0.06})`); mist.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = mist; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000);
+
+  // ground tiles, far to near
+  const tiles = Object.entries(G.s.tiles).sort((a, b) => depthOf(0, 0, a[0]) - depthOf(0, 0, b[0]));
+  for (const [k, tl] of tiles) drawTile(k, tl, now);
+
+  // depth-sorted things
+  const items = [];
+  for (const p of PROPS) items.push({ d: depthOf(p.gx, p.gy) + (p.flat ? -0.25 : 0), draw: () => drawProp(p) });
+  for (const g of gnomes) items.push({ d: depthOf(g.gx, g.gy), draw: () => g.draw() });
+  for (const o of G.s.offers) items.push({ d: depthOf(o.gx, o.gy, o.tile) - 0.02, draw: () => drawOffer(o, now) });
+  if (visitor) items.push({ d: depthOf(visitor.gx, visitor.gy), draw: () => drawVisitor(visitor, now) });
+  items.sort((a, b) => a.d - b.d);
+  for (const it of items) it.draw();
+  drawParticles(ph);
+
+  const night = 1 - ph.light;
+  if (night > 0.02) {
+    ctx.save(); ctx.globalCompositeOperation = 'multiply';
+    ctx.fillStyle = `rgba(${Math.round(255 - 150*night)},${Math.round(255 - 120*night)},${Math.round(255 - 60*night)},1)`;
+    ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); ctx.restore();
+    const fire = PROPS.find(p => p.name === 'campfire'); const [fx, fy] = toWorld(fire.gx, fire.gy);
+    const flick = 0.75 + 0.25 * Math.sin(now / 90) * Math.sin(now / 230);
+    glow(fx, fy - 30, 150, 'rgba(255,150,60,1)', 0.55 * night * flick);
+    const lan = PROPS.find(p => p.name === 'lanternstump'); const [lx, ly] = toWorld(lan.gx, lan.gy);
+    glow(lx - 40, ly - 120, 110, 'rgba(255,205,110,1)', 0.5 * night * (0.9 + 0.1 * Math.sin(now / 400)));
+    const sh = PROPS.find(p => p.name === 'shelter'); const [sx, sy] = toWorld(sh.gx, sh.gy);
+    glow(sx - 20, sy - 60, 70, 'rgba(255,190,120,1)', 0.35 * night);
+    for (const o of G.s.offers) if (o.kind === 'light' && o.screen) glow(o.screen.x, o.screen.y - 14, 40, 'rgba(255,240,170,1)', 0.5);
+  }
+  if (ph.warm > 0) { ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = `rgba(255,170,90,${0.28 * ph.warm})`; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); ctx.restore(); }
+  ctx.restore();
+
+  const g = gnomes.find(g => g.sayT > 0);
+  if (g && g.screen) {
+    const sx = (g.screen.x - cam.x) * cam.z + W / 2, sy = (g.screen.y - g.screen.h - cam.y) * cam.z + H / 2;
+    bubble.style.left = sx + 'px'; bubble.style.top = (sy - 10) + 'px'; bubble.style.opacity = 1;
+  } else bubble.style.opacity = 0;
+  requestAnimationFrame(frame);
+}
+
+// ---------- input ----------
+const ptrs = new Map(); let pinch0 = null; let moved = 0;
+cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); moved = 0; if (ptrs.size === 2) { pinch0 = pinchInfo(); pinch0.wx = (pinch0.cx - W / 2) / cam.z + cam.x; pinch0.wy = (pinch0.cy - H / 2) / cam.z + cam.y; } });
+cv.addEventListener('pointermove', e => {
+  if (!ptrs.has(e.pointerId)) return;
+  const p = ptrs.get(e.pointerId);
+  if (ptrs.size === 1) { cam.x -= (e.clientX - p.x) / cam.z; cam.y -= (e.clientY - p.y) / cam.z; moved += Math.abs(e.clientX - p.x) + Math.abs(e.clientY - p.y); }
+  p.x = e.clientX; p.y = e.clientY;
+  if (ptrs.size === 2 && pinch0) {
+    const pi = pinchInfo(); if (pi.d < 10 || pinch0.d < 10) return;
+    cam.z = clampZ(pinch0.z * pi.d / pinch0.d);
+    cam.x = pinch0.wx - (pi.cx - W / 2) / cam.z; cam.y = pinch0.wy - (pi.cy - H / 2) / cam.z; moved = 99;
+  }
+  clampCam();
+});
+const up = e => { if (ptrs.size === 1 && moved < 8) tap(e.clientX, e.clientY); ptrs.delete(e.pointerId); pinch0 = null; if (ptrs.size === 1) moved = 99; };
+for (const g of ['gesturestart','gesturechange','gestureend']) document.addEventListener(g, e => e.preventDefault(), { passive: false });
+document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+function pinchInfo() { const [a, b] = [...ptrs.values()]; return { d: Math.hypot(a.x - b.x, a.y - b.y), cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, z: cam.z }; }
+function clampZ(z) { return Math.max(minZ, Math.min(maxZ, z)); }
+function clampCam() {
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  for (const k of Object.keys(G.s.tiles)) { const [ox, oy] = tileOrigin(k); x0 = Math.min(x0, ox); y0 = Math.min(y0, oy); x1 = Math.max(x1, ox + PLOT.w); y1 = Math.max(y1, oy + PLOT.h); }
+  cam.x = Math.max(x0 - 100, Math.min(x1 + 100, cam.x)); cam.y = Math.max(y0 - 150, Math.min(y1 + 100, cam.y));
+}
+cv.addEventListener('wheel', e => { e.preventDefault(); const wx = (e.clientX - W/2)/cam.z + cam.x, wy = (e.clientY - H/2)/cam.z + cam.y; cam.z = clampZ(cam.z * (e.deltaY < 0 ? 1.1 : 0.9)); cam.x = wx - (e.clientX - W/2)/cam.z; cam.y = wy - (e.clientY - H/2)/cam.z; clampCam(); }, { passive: false });
+function hit(s, wx, wy) { return s && wx > s.x - s.w / 2 && wx < s.x + s.w / 2 && wy > s.y - s.h && wy < s.y + 8; }
+function tap(cx, cy) {
+  const wx = (cx - W / 2) / cam.z + cam.x, wy = (cy - H / 2) / cam.z + cam.y;
+  // offerings first (small, on top)
+  for (const o of [...G.s.offers].reverse()) if (hit(o.screen, wx, wy)) { G.gather(o.id); float(`+1 ${C.resources[o.kind].name}`, o.screen.x, o.screen.y); return; }
+  if (visitor && hit(visitor.screen, wx, wy)) { const isNew = G.noteVisitor(visitor.def.id); toast(isNew ? `${visitor.def.name}: noted in the journal.` : `${visitor.def.name} again. Hello.`); float(isNew ? '✎ new entry' : '✎', visitor.screen.x, visitor.screen.y); btnAlert('bJournal', isNew); return; }
+  for (const g of [...gnomes].reverse()) if (hit(g.screen, wx, wy)) {
+    const lines = g.job ? C.lines.working[g.who] : C.lines[g.who]; g.say = lines[(Math.random() * lines.length) | 0]; g.sayT = 3.2; bubble.textContent = g.say;
+    if (!g.job) { g.walking = false; g.wait = 3.5; g.dir = 'front'; g.frame = 0; }
+    for (const o of gnomes) if (o !== g) o.sayT = 0; return;
+  }
+  // props on the home tile (seed bed, tub, task spots)
+  const f = fromWorld(wx, wy);
+  if (f.tile === '0,0') {
+    let best = null, bd = 1e9;
+    for (const p of PROPS) { const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s, h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2), (wy - y) / (h / 4)) < 1 : (wx > x - w / 2 && wx < x + w / 2 && wy > y - h && wy < y + 6); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
+    if (best) { if (best.name === 'seedbed') return openSeedbed(); const task = C.tasks.find(t => t.spot === best.name); if (task) return openTasks(task.id); }
+  } else if (G.s.tiles[f.tile] && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openTasks('regrow:' + f.tile);
+}
+
+// ---------- UI ----------
+const $ = id => document.getElementById(id);
+function toast(t) { toastEl.textContent = t; toastEl.style.opacity = 1; clearTimeout(toast.h); toast.h = setTimeout(() => toastEl.style.opacity = 0, 2200); }
+function btnAlert(id, on) { $(id).classList.toggle('alert', !!on); }
+function renderInv(popKind) {
+  const inv = $('inv'); inv.innerHTML = '';
+  for (const [k, r] of Object.entries(C.resources)) { const n = G.s.inv[k] || 0; const el = document.createElement('div'); el.className = 'chip' + (n ? '' : ' zero') + (k === popKind ? ' pop' : ''); el.innerHTML = `<span>${r.icon}</span><span>${n}</span>`; inv.appendChild(el); if (k === popKind) setTimeout(() => el.classList.remove('pop'), 160); }
+}
+function renderHud() {
+  const st = G.landStage(), ph = dayPhase();
+  $('sub').textContent = ph.light < 0.3 ? `${st.name}; the fire is lit, everything else sleeps` : st.sub;
+  btnAlert('bTasks', G.taskList().some(v => v.state === 'ready' && v.can) || G.plot().stage === 'ready' || (G.plot().stage === 'planted' && G.can({ water: 1 })));
+  btnAlert('bMagic', Object.keys(C.spells).some(id => G.canCast(id).ok));
+}
+const sheet = $('sheet'), shade = $('shade');
+let sheetKind = null;
+function openSheet(kind, html) { sheetKind = kind; sheet.innerHTML = `<button class="close" data-a="close">×</button>` + html; sheet.classList.add('on'); shade.classList.add('on'); }
+function closeSheet() { sheetKind = null; sheet.classList.remove('on'); shade.classList.remove('on'); }
+shade.addEventListener('click', closeSheet);
+sheet.addEventListener('click', e => {
+  const b = e.target.closest('[data-a]'); if (!b) return; const a = b.dataset.a, id = b.dataset.id;
+  if (a === 'close') return closeSheet();
+  if (a === 'plant') { G.plant(); } if (a === 'water') { G.water(); } if (a === 'harvest') { if (G.harvest()) { const sb = PROPS.find(p => p.name === 'seedbed'); const [x, y] = toWorld(sb.gx, sb.gy); float('+2 seed +1 moss', x, y); } }
+  if (a === 'start') { if (G.startTask(id)) { toast('Set to work.'); for (const g of gnomes) if (g.who === G.taskDef(id).who) { g.walking = false; g.wait = 0.1; } } }
+  if (a === 'cast') { if (G.cast(id)) toast(C.spells[id].name + '.'); }
+  if (a === 'reset') { if (confirm('Start the garden over? This wipes your save.')) G.reset(); return; }
+  refreshSheet();
+});
+function costHtml(cost) { return Object.entries(cost || {}).map(([k, n]) => `<i>${C.resources[k].icon}${n}</i>`).join(''); }
+function refreshSheet() { if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); renderInv(); renderHud(); }
+function openSeedbed() {
+  const p = G.plot(), c = C.crops.sprout; let body = '';
+  if (!p.stage) body = `<div class="row"><div class="t"><b>Plant a seed</b><span>Costs ${costHtml(c.plant)} · ready about ${Math.round(c.grow / 60)} hours after watering</span></div><button class="act" data-a="plant" ${G.can(c.plant) ? '' : 'disabled'}>Plant</button></div>` + (G.can(c.plant) ? '' : `<p>No seeds. The land offers one now and then; look for 🌱 on the ground.</p>`);
+  else if (p.stage === 'planted') body = `<div class="row"><div class="t"><b>It wants water</b><span>Costs 💧1 (dew gathered from the ground)</span></div><button class="act" data-a="water" ${G.can({ water: 1 }) ? '' : 'disabled'}>Water</button></div>`;
+  else if (p.stage === 'growing') { const tot = p.readyAt - p.wateredAt, pr = 1 - Math.max(0, p.readyAt - Date.now()) / tot; body = `<div class="row"><div class="t"><b>Growing</b><span>ready in ${G.timeLeft(p.readyAt)}</span><div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div></div>${G.magicInfo().spells.includes('coax') ? `<button class="act" data-a="cast" data-id="coax" ${G.canCast('coax').ok ? '' : 'disabled'}>Coax ✨2</button>` : ''}</div>`; }
+  else body = `<div class="row"><div class="t"><b>Ready to pick</b><span>Gives ${costHtml(c.harvest)} and a little more green</span></div><button class="act" data-a="harvest">Pick</button></div>`;
+  openSheet('seedbed', `<h2>The seed bed<small>${p.grown} grown so far</small></h2>${body}`);
+}
+function openTasks(focus = '') {
+  const list = G.taskList(); let html = `<h2>Help the gnomes<small>give materials; they do the work</small></h2>`;
+  if (!list.length) html += `<p>Nothing to do right now. The gnomes are resting.</p>`;
+  for (const v of list) {
+    const d = v.def, hi = d.id === focus ? ' style="background:rgba(91,107,45,.08);margin:0 -8px;padding:9px 8px;border-radius:8px"' : '';
+    let right = '', sub = '';
+    if (v.state === 'running') { const pr = 1 - Math.max(0, v.endsAt - Date.now()) / (v.endsAt - v.startedAt); sub = `${d.who === 'him' ? 'he is' : 'she is'} on it · done in ${G.timeLeft(v.endsAt)}<div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div>`; if (d.tile && G.magicInfo().spells.includes('wake')) right = `<button class="act" data-a="cast" data-id="wake" ${G.canCast('wake').ok ? '' : 'disabled'}>Wake ✨4</button>`; }
+    else if (v.state === 'done') sub = `done`;
+    else if (v.state === 'locked') sub = `<span class="bad">${v.why}</span>`;
+    else { sub = `<span class="cost">${costHtml(d.cost)}</span> · about ${Math.round(d.mins / 60 * G.taskSpeed() * 10) / 10}h` + (v.can ? '' : ` · <span class="bad">short ${v.missing.join(', ')}</span>`); right = `<button class="act" data-a="start" data-id="${d.id}" ${v.can ? '' : 'disabled'}>Start</button>`; }
+    html += `<div class="row"${hi}><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>${sub}</span></div>${right}</div>`;
+  }
+  openSheet('tasks:' + focus, html);
+}
+function openMagic() {
+  const m = G.magicInfo(); let html = `<h2>Their magic<small>${m.name}</small></h2><div class="meter">${C.magicLevels.map((_, i) => `<i class="${i < m.level ? 'on' : ''}"></i>`).join('')}</div><p>It grows a little with every day you visit. Day ${m.days}${m.nextDays ? `; it will grow again on day ${m.nextDays}` : ''}. Spells burn ✨ light, which the land offers at night.</p>`;
+  for (const [id, sp] of Object.entries(C.spells)) {
+    const known = m.spells.includes(id), c = G.canCast(id);
+    html += `<div class="row"><div class="t"><b>${sp.name} <span class="cost">${costHtml(sp.cost)}</span></b><span>${sp.blurb}</span>${known ? (c.ok ? '' : `<br><span class="bad">${c.why}</span>`) : `<br><span class="bad">not yet; comes with more days</span>`}</div>${known ? `<button class="act" data-a="cast" data-id="${id}" ${c.ok ? '' : 'disabled'}>Cast</button>` : ''}</div>`;
+  }
+  html += `<p style="margin-top:14px;font-size:12px">Save v${G.s.v} · ${new Date(G.s.created).toLocaleDateString()} · <a href="#" data-a="reset" style="color:var(--red)">start over</a></p>`;
+  openSheet('magic', html);
+}
+const SIL = { robin:'🐦', mouse:'🐭', hedgehog:'🦔', owl:'🦉', ladybird:'🐞', spirit:'✨' };
+function openJournal() {
+  const j = G.s.journal, seen = Object.keys(j).length; let html = `<h2>Field journal<small>${seen} of ${C.visitors.length} met</small></h2><p>Tap a visitor in the garden to note it down. Some only come once there is something green.</p>`;
+  for (const v of C.visitors) { const e = j[v.id]; html += `<div class="jrow ${e ? '' : 'unseen'}"><div class="sil">${v.icon || SIL[v.id]}</div><div class="t"><b>${e ? v.name : '?'}</b><span>${e ? `${v.note} First seen ${new Date(e.first).toLocaleDateString()}; met ${e.count}×.` : 'not met yet'}</span></div></div>`; }
+  const log = [...G.s.log].reverse().slice(0, 8);
+  if (log.length) html += `<h2 style="margin-top:14px">Lately</h2>` + log.map(l => `<p style="margin:2px 0">${l.text}</p>`).join('');
+  openSheet('journal', html);
+}
+function openAway(r) {
+  const mins = Math.round(r.gone / 60000); if (mins < 10 && !r.finished.length) return;
+  const gone = mins < 60 ? `${mins} minutes` : mins < 60 * 36 ? `${Math.round(mins / 60)} hours` : `${Math.round(mins / 1440)} days`;
+  let html = `<h2>While you were away<small>${gone}</small></h2>`;
+  if (r.event) html += `<p>${r.event}</p>`;
+  if (r.newDay) html += `<p>A new day. Their magic has grown a little: ${G.magicInfo().name}.</p>`;
+  if (r.offered) html += `<p>The land has left ${r.offered} thing${r.offered > 1 ? 's' : ''} for you to gather.</p>`;
+  for (const f of r.finished) html += `<p>✓ ${f}</p>`;
+  if (!r.offered && !r.finished.length && !r.newDay) html += `<p>Quiet. The fire kept going.</p>`;
+  openSheet('away', html + `<p style="margin-top:10px"><button class="act" data-a="close">Have a look</button></p>`);
+}
+$('bTasks').onclick = () => openTasks(); $('bMagic').onclick = openMagic; $('bJournal').onclick = openJournal;
+G.onChange((kind, data) => { renderInv(kind === 'inv' && typeof data === 'string' ? data : null); renderHud(); if (kind === 'task' && data && data.done) { toast('Finished: ' + G.taskDef(data.id).name.toLowerCase() + '.'); } if (kind === 'event') toast(data.text); if (kind === 'land') toast(`The home patch is now ${data.name}.`); });
+
+// ---------- start ----------
+function start() {
+  G.boot();
+  document.getElementById('load').remove();
+  gnomes.push(new Gnome('him', 0.46, 0.50), new Gnome('her', 0.40, 0.40));
+  gnomes[1].wait = 0.5;
+  cam.z = clampZ(Math.max(1.5, minZ * 2.4));
+  [cam.x, cam.y] = toWorld((gnomes[0].gx + gnomes[1].gx) / 2, (gnomes[0].gy + gnomes[1].gy) / 2); clampCam();
+  renderInv(); renderHud();
+  const [a, b] = C.visitorEvery; nextVisitorAt = performance.now() + (G.FAST ? 5 : 25 + Math.random() * 30) * 1000;
+  if (/vis=(\w+)/.test(hash)) { const id = RegExp.$1; const def = C.visitors.find(v => v.id === id); if (def) { spawnVisitor(); if (visitor) visitor.def = def; } }
+  requestAnimationFrame(frame);
+  if (G.away) openAway(G.away);
+}
+})();
+</script>
+</body>
+</html>
