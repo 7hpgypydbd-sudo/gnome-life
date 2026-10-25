@@ -23,7 +23,7 @@ Side mystery (placeholder): a magic staff one gnome finds. **Bryce writes this p
 - **Art style:** the look of "The Secret World of the Gnomes" book illustrations (Poortvliet): painterly, naturalistic, muted earthy palette, weathered faces, real clothes (red cap, blue tunic, brown trousers, clogs), tiny gnomes in a full-scale woodland. **Never clay or toy-like** (rejected as "for preschoolers").
 - **View:** isometric, fixed three-quarter painted world, FarmVille-style layout with the gnome-book look. Pinch-zoom and drag only, no orbit. Modular ground tiles join into a big map that spreads as land regrows. (The orbiting 3D diorama was judged "wonky"; gnomes looked like cut-outs.)
 - **Assets must be fully owned:** Nano Banana (Gemini) only. No Meshy/Tripo or other free tiers that keep ownership; Bryce may sell the game one day. Characters are 2D painted sprites with multi-frame walk cycles.
-- **Approved young gnome refs:** `ref-him-young-v1.jpg` and `ref-her-young-v1.jpg` (in `/mnt/project-files/fairy-garden/art/refs/` and `~/Downloads/fairy-garden/iso1/`). The elderly walk sheets currently in the game are placeholders to be replaced. Working names Ferdinand and Rosalind are NOT confirmed.
+- **Approved young gnome refs:** `ref-him-young-v1.jpg` and `ref-her-young-v1.jpg` (in `/mnt/project-files/fairy-garden/art/refs/` and `~/Downloads/fairy-garden/iso1/`). The elderly walk sheets currently in the game are placeholders to be replaced. Names confirmed 2026-10-25: Wendel and Hazel (the old working names Ferdinand and Rosalind are retired).
 - **Seasons and clock:** day/night follows the phone clock. Bryce lives in Australia, so seasons are southern hemisphere (Sep–Nov spring, Dec–Feb summer, Mar–May autumn, Jun–Aug winter).
 - **Timers:** gentle real-time waits, typically 2-6 h, never monetised, never frustrating. Always leave something to do now, something soon, something slow.
 - **Resources:** a few real items (acorns, moss, twigs, stones, seeds, dew) plus one magical resource (collected light) that fuels spells.
@@ -79,9 +79,10 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Finished map headline (Bryce's words):** a gnome village (homes, well, square, bridge, mill/workshop, orchard, pond) that stays cosy and embedded in nature, "not a gnome city, still plenty of nature and whimsy". Rule of thumb: more than half of every tile stays wild (ferns, toadstools, roots, water); buildings sit under or inside trees, roots and stumps rather than in rows.
 - **Ageing:** yes, slowly over many months: young now, middle-aged around the village stage, old in the long tail (three character art sets over time; the old placeholder walk sheets may become the final stage).
 - **The player is an unseen helper spirit:** you tap and things happen; the gnomes talk to "the kind spirit"; the magic is yours to lend them.
+- **Names: Wendel (him) and Hazel (her).** Confirmed 2026-10-25; replaces the working names Ferdinand and Rosalind everywhere (content.js lines still need updating).
 
 ## Open questions for Bryce (do not assume)
-- The couple's names and personalities.
+- The couple's personalities (names are now Wendel and Hazel).
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?
 - Should a visit have a natural end, or always leave something tiny to do?
 - How the home interior (cut-away) fits the isometric view.
