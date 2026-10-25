@@ -60,20 +60,20 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 **5.3 Do neighbours have jobs and personalities?** ☑ Both a trade with lines AND a little quest each. ★ Yes, each has a trade and a few lines / Background colour only / Full little quests each.
 **5.4 Do you control neighbours?** ☑ Mainly the couple; neighbours ask small favours too. ★ No, you help the couple; neighbours are their own folk / Yes, same as the couple.
 
-## Round 6 — Visitors, creatures and spirits (◐)
+## Round 6 — Visitors, creatures and spirits (☑)
 
 **6.1 Which animals?** ☑ Both: Australian plus a few classics. ★ Australian wildlife (fairy-wren, echidna, possum, frog) as now / European fairy-tale animals (hedgehog, robin, owl, fox) like the book / Both: Australian real animals plus a few fairy-tale ones.
 **6.2 Spirits and magical folk?** ☑ A few spirits. ★ A few: a spirit of the land, a will-o'-wisp, maybe a troll-like nuisance / None, keep it natural / Many.
 **6.3 Journal depth.** ☑ Portrait, a line of lore, first seen. ★ Name, picture, one line of lore, first seen date / Just a tick list / Full pages with facts.
-**6.4 Can creatures move in / be fed / befriended?** ★ Some can become regulars if you leave food / Visits only / Pets you can name.
+**6.4 Can creatures move in / be fed / befriended?** ☑ Some become regulars if fed. ★ Some can become regulars if you leave food / Visits only / Pets you can name.
 
-## Round 7 — Magic (☐)
+## Round 7 — Magic (◐)
 
 **7.1 What is magic for?** ★ Healing land faster and gentle weather / Also crafting and conjuring items / Mostly story and spectacle.
 **7.2 The magical resource ("light").** ★ Gather it at night from wisps and dew / Earned by good deeds / Both.
 **7.3 Does the staff (Bryce's mystery) tie into magic levels?** Yes / No, separate / Bryce decides later (default).
 
-## Round 8 — Progression, pacing and ending (☐)
+## Round 8 — Progression, pacing and ending (◐)
 
 **8.1 Time to full woodland on the home tile.** ★ about 1–2 weeks / a few days / a month.
 **8.2 Time to a finished village.** ★ 3–6 months of light daily play / 1 month / a year+.
