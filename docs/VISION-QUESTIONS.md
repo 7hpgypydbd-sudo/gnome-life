@@ -55,7 +55,7 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 
 ## Round 5 — The town (◐)
 
-**5.1 How does the town grow?** ★ Visiting gnomes stay if you build them a home / Homes appear as milestones / You invite named characters from the story.
+**5.1 How does the town grow?** ☑ Travellers stay if you house them. ★ Visiting gnomes stay if you build them a home / Homes appear as milestones / You invite named characters from the story.
 **5.2 How many gnome neighbours by the end?** ★ 6–10 / 2–4 / 20+.
 **5.3 Do neighbours have jobs and personalities?** ★ Yes, each has a trade and a few lines / Background colour only / Full little quests each.
 **5.4 Do you control neighbours?** ★ No, you help the couple; neighbours are their own folk / Yes, same as the couple.

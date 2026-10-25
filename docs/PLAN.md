@@ -89,6 +89,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Interior:** tap the house to open a painted cut-away room as its own scene (one picture per home stage); the evening routine (fire, pipe, knitting, bed) plays out there.
 - **Decorating:** a modest set of loose items you can place and drag around the home tile (bench, lantern, flower pots, washing line, fence bits). Not a full garden designer.
 - **First village buildings:** well, bakery oven, workshop, bridge over the stream (everyday village life). Others (mill, orchard, beehives, pond, meeting hall, inn, market stalls) can come later.
+- **Town growth:** travelling gnomes visit; build them a home (under a root, in a stump) and they stay. You choose who stays; the visitor journal and the town are linked.
 
 ## Open questions for Bryce (do not assume)
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?
