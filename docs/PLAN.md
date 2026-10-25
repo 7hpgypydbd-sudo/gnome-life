@@ -88,6 +88,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Home stages:** three big leaps: (1) shelter under a root with campfire (have), (2) snug house in a stump or under an oak, (3) house plus garden, well and workshop. Small add-ons are decorations on top.
 - **Interior:** tap the house to open a painted cut-away room as its own scene (one picture per home stage); the evening routine (fire, pipe, knitting, bed) plays out there.
 - **Decorating:** a modest set of loose items you can place and drag around the home tile (bench, lantern, flower pots, washing line, fence bits). Not a full garden designer.
+- **First village buildings:** well, bakery oven, workshop, bridge over the stream (everyday village life). Others (mill, orchard, beehives, pond, meeting hall, inn, market stalls) can come later.
 
 ## Open questions for Bryce (do not assume)
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?

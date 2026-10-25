@@ -46,14 +46,14 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 **3.4 Should a visit have a natural end?** ☑ Both. ★ Yes: a gentle "all done for now, the stew needs 3 hours" moment / No, always leave something tiny to do / Both: a clear "done" plus optional fiddling.
 **3.5 How many visits a day are we designing for?** ☑ 2-3 main visits plus optional quick peeks. ★ 2–3 (morning, after work, bedtime) / 1 / 4+.
 
-## Round 4 — Home and buildings (◐)
+## Round 4 — Home and buildings (☑)
 
 **4.1 Homestead stages.** ☑ Three big stages. ★ Three: shelter under a root → snug house in a stump/under an oak → house plus garden, well, workshop / Two / Five or more small steps.
 **4.2 Interior.** ☑ Tap the house to open a room picture. ★ Tap the house to open a painted cut-away room (separate picture, FarmVille-style) / Interior always visible as a cut-away in the isometric view / No interior.
 **4.3 Decorating.** ☑ A modest set you can place and move. ★ Place and move a modest set of items (bench, lantern, flower pots, washing line) / Everything placed automatically / Lots of freedom, full garden design.
-**4.4 Which buildings matter most for the town** (pick 3): well, bakery/oven, mill, workshop, bridge, chapel/meeting hall, inn for travellers, school, market stalls, lookout tower.
+**4.4 Which buildings matter most for the town** ☑ Well, bakery oven, workshop, bridge. (pick 3): well, bakery/oven, mill, workshop, bridge, chapel/meeting hall, inn for travellers, school, market stalls, lookout tower.
 
-## Round 5 — The town (☐)
+## Round 5 — The town (◐)
 
 **5.1 How does the town grow?** ★ Visiting gnomes stay if you build them a home / Homes appear as milestones / You invite named characters from the story.
 **5.2 How many gnome neighbours by the end?** ★ 6–10 / 2–4 / 20+.
