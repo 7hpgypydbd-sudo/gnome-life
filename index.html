@@ -350,6 +350,7 @@ function drawProp(p) {
   const img = IM[p.name]; const [x, y] = toWorld(p.gx, p.gy); const s = SPR * p.s;
   const w = img.width * s, h = img.height * s;
   if (!p.flat) shadow(x, y, w * 0.4, w * 0.14);
+  if (p.name !== 'lanternstump' && wantsTap(p)) ring(x, y + 2, Math.min(w * 0.45, 70), performance.now(), p.gx * 5);
   ctx.drawImage(img, x - w / 2, y - h + (p.flat ? h / 2 : 0), w, h);
   if (p.name === 'seedbed') drawCrop(x, y);
 }
@@ -362,14 +363,25 @@ function drawCrop(x, y) {
   ctx.drawImage(img, x - w / 2, y - h + 4, w, h);
   if (p.stage === 'ready') glow(x, y - h * 0.5, 50, 'rgba(255,240,160,1)', 0.35 + 0.15 * Math.sin(t / 250));
 }
+// a soft pulsing ring on the ground: "touch me"
+function ring(x, y, r, now, phase = 0) {
+  const p = 0.5 + 0.5 * Math.sin(now / 450 + phase);
+  ctx.save(); ctx.lineWidth = 3; ctx.strokeStyle = `rgba(255,236,150,${0.45 + 0.4 * p})`; ctx.shadowColor = 'rgba(255,220,120,.9)'; ctx.shadowBlur = 10;
+  ctx.beginPath(); ctx.ellipse(x, y, r * (1 + 0.12 * p), r * 0.45 * (1 + 0.12 * p), 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+}
+function wantsTap(p) {   // does this thing have something the player can do right now?
+  if (p.name === 'seedbed') { const s = G.plot().stage; return s === 'ready' || (!s && G.can(C.crops.sprout.plant)) || (s === 'planted' && G.can({ water: 1 })); }
+  return C.tasks.some(t => t.spot === p.name && !G.s.tasks[t.id] && G.taskView(t).state === 'ready' && G.can(t.cost));
+}
 function drawOffer(o, now) {
   const [x, y] = toWorld(o.gx, o.gy, o.tile); const b = Math.sin(now / 400 + o.gx * 9) * 2;
   const k = Math.max(1, 0.7 / cam.z);            // keep offerings finger-sized when zoomed out
   o.screen = { x, y, w: 46 * k, h: 46 * k };
   shadow(x, y, 9 * k, 4 * k);
+  ring(x, y, 26 * k, now, o.gx * 7);
   if (o.kind === 'light') { glow(x, y - 14 * k + b, 36 * k, 'rgba(255,240,170,1)', 0.6 + 0.2 * Math.sin(now / 200)); }
-  const img = IM['icon-' + o.kind], sz = 50 * k;
-  ctx.drawImage(img, x - sz / 2, y - 10 * k + b - sz * 0.8, sz, sz);
+  const img = IM['icon-' + o.kind], sz = 64 * k;
+  ctx.drawImage(img, x - sz / 2, y - 8 * k + b - sz * 0.8, sz, sz);
 }
 // placeholder visitors until painted ones exist: an ink-outlined body with a name tag
 const VIS_LOOK = { robin:['#9c5a3c', 10, 8], mouse:['#8f8070', 9, 6], hedgehog:['#6b5440', 16, 10], owl:['#8a7458', 12, 16], ladybird:['#b14c37', 6, 5], spirit:['#eaf6d2', 9, 12] };
@@ -596,13 +608,17 @@ function start() {
   document.getElementById('load').remove();
   gnomes.push(new Gnome('him', 0.46, 0.50), new Gnome('her', 0.40, 0.40));
   gnomes[1].wait = 0.5;
-  cam.z = clampZ(Math.max(1.5, minZ * 2.4));
-  [cam.x, cam.y] = toWorld((gnomes[0].gx + gnomes[1].gx) / 2, (gnomes[0].gy + gnomes[1].gy) / 2); clampCam();
+  cam.z = clampZ(G.s.flags.welcomed ? Math.max(1.5, minZ * 2.4) : 0.95);   // first visit: far enough out to see the whole yard
+  [cam.x, cam.y] = G.s.flags.welcomed ? toWorld((gnomes[0].gx + gnomes[1].gx) / 2, (gnomes[0].gy + gnomes[1].gy) / 2) : toWorld(0.5, 0.5); clampCam();
   renderInv(); renderHud();
   const [a, b] = C.visitorEvery; nextVisitorAt = performance.now() + (G.FAST ? 5 : 25 + Math.random() * 30) * 1000;
   if (/vis=(\w+)/.test(hash)) { const id = RegExp.$1; const def = C.visitors.find(v => v.id === id); if (def) { spawnVisitor(); if (visitor) visitor.def = def; } }
   requestAnimationFrame(frame);
   if (G.away) openAway(G.away);
+  if (!G.s.flags.welcomed) {
+    G.s.flags.welcomed = true; G.save();
+    openSheet('welcome', `<h2>Welcome to the garden</h2><p>Two small gnomes live here, and you are their unseen helper.</p><p>✨ Touch the glowing rings. Things lying on the ground go into your pack. Rings on the gnomes' belongings mean there is a job you can start.</p><p>Choose a job, give the materials, and the gnomes do the work while you go about your day. Come back whenever you like: the land leaves something new for you each time.</p><p style="margin-top:10px"><button class="act" data-a="close">Let's begin</button></p>`);
+  }
 }
 })();
 </script>
