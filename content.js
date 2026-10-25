@@ -38,21 +38,22 @@ window.CONTENT = {
 
   // Gnome tasks: you give the materials, a gnome does it over real time.
   // who: which gnome walks over and works; spot: where (prop name); green: regrowth points for the home tile.
+  // act: which painted action loop plays while working (dig, water, carry); if missing, the spot decides (wheelbarrow dig, seed bed and sapling water, otherwise carry).
   tasks: [
     // --- first days ---
-    { id:'ruts',    name:'Fill the wheel ruts',        who:'him', spot:'wheelbarrow', cost:{ stone:3, twig:2 }, mins:120, green:1, magic:2,
+    { id:'ruts',    name:'Fill the wheel ruts',        who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:3, twig:2 }, mins:120, green:1, magic:2,
       blurb:'The loggers left deep ruts. Stones and twigs will pack them down.' },
     { id:'roof',    name:'Moss for the shelter roof',  who:'her', spot:'shelter',     cost:{ moss:4 },           mins:180, green:1, magic:2,
       blurb:'The canvas leaks. A thick moss roof keeps the rain out and the warmth in.' },
     { id:'fence',   name:'Mend the fence',             who:'him', spot:'fence',       cost:{ twig:4 },           mins:120, green:1, magic:1,
       blurb:'Half the fence is down. Rabbits know it.' },
-    { id:'sapling', name:'Plant the sapling out',      who:'her', spot:'sapling',     cost:{ water:2, moss:2 },  mins:360, green:2, magic:3,
+    { id:'sapling', name:'Plant the sapling out',      who:'her', act:'water', spot:'sapling',     cost:{ water:2, moss:2 },  mins:360, green:2, magic:3,
       needs:['ruts'], blurb:'The potted oak is ready for real ground. It will outlive us all.' },
     { id:'bench',   name:'Set the bench by the fire',  who:'him', spot:'stonebench',  cost:{ stone:2 },          mins:60,  green:0, magic:1,
       blurb:'Somewhere to sit of an evening.' },
     { id:'woodpile', name:'Stack the firewood',        who:'him', spot:'fire',        cost:{ twig:3 },           mins:60,  green:0,
       blurb:'Dry wood off the ground, bark side up. Winter is a long way off, but it is coming.' },
-    { id:'doorstep', name:'Lay a flat-stone doorstep', who:'him', spot:'shelter',     cost:{ stone:3 },          mins:90,  green:1,
+    { id:'doorstep', name:'Lay a flat-stone doorstep', who:'him', act:'dig', spot:'shelter',     cost:{ stone:3 },          mins:90,  green:1,
       blurb:'So the mud stays outside. Mostly.' },
     { id:'rainbarrel', name:'Scrub the rain barrel',   who:'him', spot:'fire',        cost:{ twig:2, stone:1 },  mins:60,  green:0,
       blurb:'Every drop off the roof is a drop they do not have to carry from the creek.' },
@@ -60,27 +61,27 @@ window.CONTENT = {
       blurb:'Two tunics, one apron, a very small pair of socks. The sun can do the drying.' },
     { id:'lantern', name:'Mend the old lantern',       who:'him', spot:'fire',        cost:{ twig:1, stone:1, light:1 }, mins:90, green:0,
       blurb:'It needs a wisp of caught light, and a gnome who admits he is not good at wiring.' },
-    { id:'windowbox', name:'Hang a window box',        who:'her', spot:'shelter',     cost:{ twig:2, moss:2, seed:1 }, mins:90, green:1, needs:['roof'],
+    { id:'windowbox', name:'Hang a window box',        who:'her', act:'water', spot:'shelter',     cost:{ twig:2, moss:2, seed:1 }, mins:90, green:1, needs:['roof'],
       blurb:'A home is not a home until something is flowering by the window.' },
 
     // --- a glow (day 2 onward) ---
-    { id:'herbs',   name:'Plant a herb corner',        who:'her', spot:'seedbed',     cost:{ seed:2, water:2, moss:1 }, mins:180, green:1, minLevel:2,
+    { id:'herbs',   name:'Plant a herb corner',        who:'her', act:'water', spot:'seedbed',     cost:{ seed:2, water:2, moss:1 }, mins:180, green:1, minLevel:2,
       blurb:'Thyme, mint and the one parsley that will not die. Good for tea and for bees.' },
-    { id:'compost', name:'Start a compost heap',       who:'him', spot:'wheelbarrow', cost:{ twig:2, moss:3, water:1 }, mins:180, green:1, minLevel:2,
+    { id:'compost', name:'Start a compost heap',       who:'him', act:'dig', spot:'wheelbarrow', cost:{ twig:2, moss:3, water:1 }, mins:180, green:1, minLevel:2,
       blurb:'Nothing is waste if you wait. Leaves, peelings and patience.' },
-    { id:'birdbath', name:'Set a stone birdbath',      who:'him', spot:'stonebench',  cost:{ stone:4, water:2 }, mins:120, green:1, minLevel:2,
+    { id:'birdbath', name:'Set a stone birdbath',      who:'him', act:'water', spot:'stonebench',  cost:{ stone:4, water:2 }, mins:120, green:1, minLevel:2,
       blurb:'A hollow stone full of dew. Somebody small will want a wash.' },
-    { id:'wildflowers', name:'Scatter wildflower seed', who:'her', spot:'sapling',    cost:{ seed:3, water:1 }, mins:240, green:2, minLevel:2, needs:['ruts'],
+    { id:'wildflowers', name:'Scatter wildflower seed', who:'her', act:'water', spot:'sapling',    cost:{ seed:3, water:1 }, mins:240, green:2, minLevel:2, needs:['ruts'],
       blurb:'Not in rows. Wildflowers like to choose their own places.' },
-    { id:'beanpoles', name:'Raise the bean poles',     who:'him', spot:'seedbed',     cost:{ twig:5 },           mins:120, green:0, minLevel:2,
+    { id:'beanpoles', name:'Raise the bean poles',     who:'him', act:'dig', spot:'seedbed',     cost:{ twig:5 },           mins:120, green:0, minLevel:2,
       blurb:'A teepee of sticks for a vine that has not been planted yet. Optimism.' },
-    { id:'path',    name:'Lay a stepping-stone path',  who:'him', spot:'wheelbarrow', cost:{ stone:6 },          mins:240, green:1, minLevel:2, needs:['doorstep'],
+    { id:'path',    name:'Lay a stepping-stone path',  who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:6 },          mins:240, green:1, minLevel:2, needs:['doorstep'],
       blurb:'From the doorstep to the fire, so the grass can grow where the feet used to go.' },
-    { id:'berrybush', name:'Plant a berry bush',       who:'her', spot:'sapling',     cost:{ seed:2, water:2, moss:2 }, mins:300, green:2, minLevel:2, needs:['ruts'],
+    { id:'berrybush', name:'Plant a berry bush',       who:'her', act:'water', spot:'sapling',     cost:{ seed:2, water:2, moss:2 }, mins:300, green:2, minLevel:2, needs:['ruts'],
       blurb:'Berries for jam, and berries for the birds. Mostly the birds.' },
 
     // --- a steady light (day 3 onward) ---
-    { id:'pond',    name:'Dig a little dew pond',      who:'him', spot:'wheelbarrow', cost:{ stone:4, twig:2, water:3 }, mins:360, green:2, minLevel:3, needs:['compost'],
+    { id:'pond',    name:'Dig a little dew pond',      who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:4, twig:2, water:3 }, mins:360, green:2, minLevel:3, needs:['compost'],
       blurb:'Just big enough for a frog and a sky. Lined with clay and lots of stones.' },
     { id:'beehive', name:'Hang a hollow-log bee house', who:'him', spot:'fence',     cost:{ twig:4, moss:2, acorn:2 }, mins:240, green:1, minLevel:3, needs:['herbs'],
       blurb:'For the little native bees who live alone and sting almost never.' },
@@ -88,15 +89,15 @@ window.CONTENT = {
       blurb:'The hole must be the right size. Too big and the wrong sort of bird moves in.' },
     { id:'hedgehoghouse', name:'Build a leaf-pile shelter', who:'her', spot:'fence',  cost:{ twig:3, moss:3 },   mins:180, green:1, minLevel:3,
       blurb:'A heap of leaves and sticks in a quiet corner. Please do not tidy it.' },
-    { id:'toadstools', name:'Coax a ring of toadstools', who:'her', spot:'sapling',   cost:{ moss:4, water:2, light:2 }, mins:300, green:1, minLevel:3,
+    { id:'toadstools', name:'Coax a ring of toadstools', who:'her', act:'water', spot:'sapling',   cost:{ moss:4, water:2, light:2 }, mins:300, green:1, minLevel:3,
       blurb:'A little light, a lot of damp. The ring will be the best seat in the garden.' },
-    { id:'acornplant', name:'Plant acorns for a grove', who:'her', spot:'sapling',    cost:{ acorn:5, water:2 }, mins:360, green:2, minLevel:3, needs:['sapling'],
+    { id:'acornplant', name:'Plant acorns for a grove', who:'her', act:'dig', spot:'sapling',    cost:{ acorn:5, water:2 }, mins:360, green:2, minLevel:3, needs:['sapling'],
       blurb:'Most will be eaten or forgotten. That is how a forest begins.' },
 
     // --- a warm flame (day 5 onward) ---
     { id:'seedsave', name:'Keep a seed tin',           who:'her', spot:'shelter',     cost:{ seed:4, twig:2 },   mins:180, green:1, minLevel:4,
       blurb:'Labelled in her tiny handwriting. Next year starts with this year\'s best.' },
-    { id:'wildmeadow', name:'Sow the meadow strip',    who:'her', spot:'wheelbarrow', cost:{ seed:5, water:3 },  mins:360, green:3, minLevel:4, needs:['wildflowers'],
+    { id:'wildmeadow', name:'Sow the meadow strip',    who:'her', act:'water', spot:'wheelbarrow', cost:{ seed:5, water:3 },  mins:360, green:3, minLevel:4, needs:['wildflowers'],
       blurb:'A long ribbon of grasses and clover along the fence, left to grow wild.' },
     { id:'lanternpath', name:'Line the path with glow jars', who:'her', spot:'fence', cost:{ light:5, stone:2 }, mins:240, green:1, minLevel:4, needs:['path'],
       blurb:'Wisps in jars, so nobody trips on the way back from the creek.' },
@@ -106,7 +107,7 @@ window.CONTENT = {
       blurb:'From the lowest branch of the new oak. For the afternoons when nothing needs doing.' },
 
     // --- a bright fire (day 8 onward) ---
-    { id:'greatgrove', name:'Plant the grove',         who:'her', spot:'sapling',     cost:{ acorn:8, seed:4, water:4 }, mins:360, green:3, minLevel:5, needs:['acornplant'],
+    { id:'greatgrove', name:'Plant the grove',         who:'her', act:'dig', spot:'sapling',     cost:{ acorn:8, seed:4, water:4 }, mins:360, green:3, minLevel:5, needs:['acornplant'],
       blurb:'Oaks, wattles and one very hopeful fig. They will not see it finished. Someone will.' },
     { id:'sign',    name:'Carve a welcome sign',       who:'him', spot:'fence',       cost:{ twig:4, feather:2 }, mins:120, green:1, minLevel:5, needs:['leanto'],
       blurb:'"All Creatures Welcome. Please Wipe Paws." The second line took three tries.' },

@@ -2,7 +2,7 @@
 
 A cosy virtual-pet game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; must run smoothly on a phone. (Earlier working title: "Fairy Garden".)
 
-_Last updated: 2026-10-25 (vision pinned down in docs/VISION.md; art batch 1 cut and wired in)_
+_Last updated: 2026-10-25 (art batch 2 cut and wired in; awaiting Bryce's OK to go live)_
 
 ## Start here, next chat
 
@@ -10,7 +10,14 @@ _Last updated: 2026-10-25 (vision pinned down in docs/VISION.md; art batch 1 cut
 2. **Masters:** the repo is the master for code and this file. Bryce's Mac working copy is `~/Downloads/gnome-life` (signed in to GitHub via `gh`); run `git pull` there to sync. Untracked working art (`cut/`, `preview/`, `iso1/`) lives in `~/Downloads/fairy-garden/`. **Art day for Bryce lives in `~/Downloads/Gnome Art Day/`** (made 2026-10-24): `1 - Reference pictures` (plot-barren.jpg + pre-cropped him/her side/front/back), `2 - Put finished pictures here` (THE inbox; replaces the old `fairy-garden/inbox/`), `3 - Steps.txt` (all 13 prompts written out in plain words with the style paragraph). A cloud copy of this file is at `/mnt/project-files/fairy-garden/PLAN.md`; keep it equal to the repo copy.
 3. **Before any art, read `docs/STYLE-GUIDE.md`.** Before changing gameplay, read the "Gameplay loop v2" section below. Content changes should only touch `content.js`.
 4. **ART-BATCH-1 is DONE and wired in (2026-10-25):** 7 painted ground tiles (`sprites/tile-*.webp`, same 1225x728 diamond as `plot-barren.webp`) and the young couple's 8-frame walk strips (side/front/back for him and her). `drawTile` now swaps painted tiles per land stage (home: plot-barren -> tile-green -> tile-meadow -> tile-woodland; neighbours: tile-barren-plain -> fades to tile-green while regrowing). `tile-stream` and `tile-path` are loaded but not placed yet (for the map/town pass). Known nit: the woodland tile's painted sapling sits under the barrel/campfire props on the home tile. **Immediate next step:** the paused playability fix (pick-ups at start, bigger starting kit, glowing rings on tappables, welcome note), then Bryce plays for a day or two.
-5. **Ask Bryce before assuming** gameplay, art style, creatures or goals. He likes tappable quiz-style decision cards, wants images shown in the chat, and is usage-conscious.
+5. **ART-BATCH-2 is cut and wired in (2026-10-25, this branch):** source jpgs in `docs/art/batch2/`, cut with `tools/cut_tiles_icons.py` and `tools/pack_actions.py` (they read the scratch copies; paths at the top). What changed in the game:
+   - **Painted pick-up icons** (`sprites/icon-*.webp`, 160px square) replace the emoji on the ground, in the inventory chips and in task costs. The icon sheet was on dull pink, so it was keyed on that colour.
+   - **Three more barren tiles** (creek, fence, dead tree). Neighbour tiles now pick a fixed variant from plain/stumps/fence/deadtree/creek by their grid position (`barrenVariant`).
+   - **Action strips** `sprites/{him,her}-{dig,water,carry,eat,sit,sleep}.png`, listed under `acts` in `sprites/gnomes.json` (each with its own cell size; her carry has 6 frames, her sleep 2 because the last two frames lost the mattress). Jobs now play dig / water / carry at the work spot (`act` on a task in `content.js`, else by spot: wheelbarrow dig, seed bed and sapling water, otherwise carry; carrying paces to and fro). Wendel's painted pipe smoke was pink and is stripped; the game puffs soft smoke on the pipe frames instead.
+   - **Daily rhythm on the phone clock** (`routineFor`, `RHYTHM` spots in `index.html`): 7-8 and 18-19 eat by the fire, 19-22 sit (his pipe, her knitting), 22-6 sleep on mattresses in front of the shelter. Sleep beats jobs; meals and the sit yield to a running job. Test tokens: `#morning`, `#evening` (plus the old `#day #dusk #night #dawn`).
+   - **Map tiles not placed yet:** stream bends, spring, path bends (right = the "bend-bottom" source; left is its mirror), path fork and crossing are in `sprites/` as 1225x728 webp but NOT loaded (`tile-stream`/`tile-path` were unloaded too) until the map pass. The six bend/fork/spring tiles came out flatter than batch 1 (widest row at 279 instead of 346), so they were stretched 24% vertically to join; if that shows, repaint them later with the batch 1 tile pasted as reference. A mock map of them joined is in `/mnt/project-files/gnome-art-day/batch2/batch2-map-preview.jpg`.
+   - Not done here: the paused playability fix (item 4 above). Still next.
+6. **Ask Bryce before assuming** gameplay, art style, creatures or goals. He likes tappable quiz-style decision cards, wants images shown in the chat, and is usage-conscious.
 
 ## Concept (decided)
 Bryce's original brief (paraphrased): start with gnomes in a barren landscape, like the aftermath of logging or a bare highway verge; humans implied gone. Visit once or several times a day; resource/time limits like mobile games but used to delay gratification (not to take money), not too much. Rebuild the landscape, then the home, then expand to a town. Random events, surprises, magic. Themes of environmentalism and wholesomeness. Others might play one day. Main game is FarmVille-esque.
@@ -58,7 +65,7 @@ Files: `index.html` (canvas scene, tile map, DOM sheets), `game.js` (state, rule
 - **Pinch-zoom fix (DONE 2026-10-24):** pinch anchors the world point under the starting midpoint (no drift), zoom clamped min..4, Safari page-zoom gestures blocked, camera starts about 2.4x min zoom centred on the gnomes.
 - **Test tokens:** `#fast`, `#day #night #dawn #dusk`, `#vis=robin`, `#reset`. Console: `GL.s`, `GL.give({seed:5})`, `GL.reset()`.
 - **Checked** at 375x812 in a desktop browser (loop, tiles, lighting). Content pass 1 tested by script only. **Not yet checked on Bryce's real iPhone** (smoothness, pinch fix).
-- **Known placeholders/gaps:** emoji inventory icons; offerings and visitors are code-drawn blobs; every barren tile shows identical stumps; gnomes still use the old elderly walk sheets; no notifications; no sound.
+- **Known placeholders/gaps:** visitors are code-drawn blobs; no notifications; no sound; the shelter has no interior yet so the couple sleep in front of it; the night sky stays a plain tint.
 
 ### Art set: isometric (made on Mac, `~/Downloads/fairy-garden/iso1/`)
 - `plot-barren` (1376x768 diamond slab; cut to `sprites/plot-barren.webp` 1225x728; top-face corners top (612,1), left (3,346), right (1221,347), bottom (612,691)) and 11 homestead pieces (shelter, campfire, firewood, barrel, seedbed, stonebench, tub, lanternstump, wheelbarrow, fence, sapling), all in `sprites/`.
