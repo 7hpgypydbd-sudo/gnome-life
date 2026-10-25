@@ -216,6 +216,15 @@ window.CONTENT = {
     { id:'glowworm',  name:'Glow-worm',      hours:[20,24], weight:1, h:10, icon:'✨', speed:0.01, stage:'meadow', alsoHours:[0,4], note:'A single point of cool blue-green light under the fern. It seems to be waiting for someone.' },
     { id:'moth',      name:'Bogong moth',    hours:[20,24], weight:2, h:20, icon:'🦋', fly:24, speed:0.12, alsoHours:[0,4], note:'Drawn to the lantern. Told firmly to stay away from the flame. Mostly did.',
       trouble:{ text:'is fluttering against the shelter canvas, trying to get out of the night.', act:'Guide it to the lantern', thanks:'It settled by the lantern glass and stayed there, content, all evening.', task:'lantern' } },
+    // seasonal visitors (southern hemisphere seasons; seasons: only then)
+    { id:'silvereye', name:'Silvereye',      hours:[7,17],  weight:3, h:26, faces:'L', icon:'🐤', speed:0.2, eats:['berry'], seasons:['autumn','winter'],
+      note:'Turns up in a chattering little flock when the weather cools, every one of them wearing a neat white ring round the eye, like spectacles.' },
+    { id:'kingfisher', name:'Sacred kingfisher', hours:[6,16], weight:2, h:36, faces:'L', icon:'🐦', speed:0.18, seasons:['spring','summer'], stage:'green',
+      note:'Back from the north for the warm months, turquoise as the stream. Sits very still on the fence and waits for something to move.' },
+    { id:'beetle',    name:'Christmas beetle', hours:[18,23], weight:2, h:16, icon:'🪲', fly:20, speed:0.1, seasons:['summer'],
+      note:'A clumsy, shining gold-green beetle that blundered into the lantern light, apologised, and did it again.' },
+    { id:'cockatoo',  name:'Yellow-tailed black cockatoo', hours:[7,16], weight:1, h:60, faces:'L', icon:'🐦‍⬛', fly:36, speed:0.15, seasons:['winter'], stage:'meadow',
+      note:'A slow pair came over, wailing. Old gnomes say that means rain. It rained.' },
     { id:'wisp',      name:'Will-o\'-wisp', hours:[21,24], weight:1, h:30, icon:'💫', fly:40, speed:0.08, stage:'green', alsoHours:[0,4], spirit:true,
       note:'A small cold light that bobbed just out of reach and left a little brighter than it came.' },
   ],
@@ -383,6 +392,52 @@ window.CONTENT = {
         reward:{ light:4 } } },
   ],
 
+  // ---------- seasons (southern hemisphere, from the phone's date) ----------
+  // Code tints and drifting things in index.html (SEASON_LOOK); seasonal visitors (seasons on a visitor) and events (seasons on an event).
+  seasons: {
+    spring: { name:'Spring', arrive:'Spring has come to the valley. Wattle on the wind, blossom on the stream, and everything in a hurry to grow.' },
+    summer: { name:'Summer', arrive:'Summer. Long golden evenings, the cicadas tuning up, and Hazel insisting on hats.' },
+    autumn: { name:'Autumn', arrive:'Autumn. The light has gone soft and amber, the leaves are letting go, and Wendel has found his scarf.' },
+    winter: { name:'Winter', arrive:'Winter. Mist in the hollows, frost on the moss at dawn, and the fire never quite goes out.' },
+  },
+
+  // ---------- the festival: the soft ending (decided by Bryce 2026-10-25) ----------
+  // Once enough neighbours live here, they propose a Greening Festival for the healed valley, and quietly tell you (only you) it
+  // is really the wedding feast Wendel and Hazel never had. Festival jobs get the green ready; then, on the next evening, the
+  // night itself plays as story pages, the couple dance on the green, and an "end of the beginning" page closes the main story.
+  // The world keeps going after that, and the festival comes back on the same date every year.
+  // {who} = the neighbour who has lived here longest. alt = cost used if nobody in the village makes one of the goods in cost.
+  festival: {
+    name: 'The Greening Festival',
+    needFolk: 6,              // neighbours living here before the festival is proposed
+    hours: [17, 23],          // the festival evening (the couple dance on the green; the neighbours gather at the table)
+    jobs: [
+      { id:'fest:green', name:'Mow a green for the festival', short:'mowing the green', who:'her', act:'dig', cost:{ twig:2, stone:2 }, mins:240, green:1, claims:true, spot:'green',
+        blurb:'A soft, mown green on a healed patch with no home on it, with room for a long table and a little dancing.' },
+      { id:'fest:table', name:'Build the long table', short:'building the long table', who:'him', act:'carry', cost:{ plank:4, twig:4 }, alt:{ twig:10, stone:4 }, mins:360, green:1, needs:['fest:green'], spot:'table',
+        blurb:'One long table and two benches, long enough for the whole village and somebody\'s cousin.' },
+      { id:'fest:bunting', name:'Sew the bunting', short:'sewing bunting', who:'her', act:'carry', cost:{ yarn:3, feather:3 }, alt:{ moss:4, feather:4 }, mins:300, green:1, needs:['fest:green'], spot:'bunting',
+        blurb:'Little cloth flags on a string from pole to pole, every one a different colour. Hazel has opinions about the order.' },
+      { id:'fest:lanterns', name:'Hang lanterns round the green', short:'hanging lanterns', who:'him', act:'carry', cost:{ light:4, twig:4, stone:2 }, mins:300, green:1, needs:['fest:green'], spot:'lanterns',
+        blurb:'Paper lanterns on poles round the green, each with a wisp of light inside, so the dancing can go on after dark.' },
+      { id:'fest:arch', name:'Weave a flower arch', short:'weaving the arch', who:'her', act:'carry', cost:{ seed:4, moss:4, berry:2 }, mins:360, green:1, needs:['fest:green'], spot:'arch',
+        blurb:'An arch of willow woven with wattle and paper daisies, for the way onto the green. (You know what it is really for.)' },
+      { id:'fest:feast', name:'Help bake the festival feast', short:'baking the feast', who:'him', act:'carry', cost:{ bread:3, honey:2, berry:4 }, alt:{ seed:4, berry:6, water:2 }, mins:300, green:1, needs:['fest:table'], spot:'table',
+        blurb:'Loaves, honey cakes, berry tarts and one enormous pie. Wendel is in charge of tasting.' },
+    ],
+    idea: { title:'A festival?', text:'The neighbours came up the path together this morning, which has never happened before, and stood in a row outside the stump house looking pleased with themselves. "The valley is green again," said {who}. "Every patch of it. That deserves a festival." Wendel was delighted. Hazel was already making a list. A Greening Festival, then: a mown green, a long table, bunting, lanterns, a flower arch and a feast.' },
+    secret: { title:'A secret', text:'As the others went off arguing about bunting, {who} hung back and beckoned to you, the helper nobody quite sees. "They married on the road, those two," {who} whispered. "No feast. No flowers. No dancing. So this festival is going to be their wedding feast, and they are not to know until the night. Not a word." A pause. "And the flower arch is not for the gate."' },
+    ready: 'Everything is ready on the green. The festival is {when}, from five o\'clock.',
+    night: [
+      { key:'fest-night', title:'The Greening Festival', text:'The lanterns came on one by one as the sun went down, and the whole village walked to the green in its best clothes. Wendel had combed his beard twice. Hazel had a sprig of wattle behind her ear. The table was so full that the benches creaked, and someone had to hold the pie down.' },
+      { key:'fest-surprise', title:'The surprise', text:'Before anyone sat down, {who} climbed onto the bench and tapped a cup. "This is a festival for the valley," {who} said, "and it is also a wedding feast. Yours. A year late, and you are not getting out of it." Everyone turned to look at Wendel and Hazel, standing under the flower arch, which was suddenly, obviously, a wedding arch. Hazel put both hands over her mouth. Wendel said "Oh," and then nothing at all for quite a long time.' },
+      { key:'fest-dance', title:'The first dance', text:'They danced on the green, badly and happily, while the neighbours clapped the time and the wisps came down out of the dark to watch. "You never told me you could dance," said Hazel. "I can\'t," said Wendel. "I\'m just holding on to you." Over the stump house, low and warm, the first star came out.' },
+    ],
+    end: { key:'fest-end', title:'The end of the beginning', text:'When you first came, this was a logged clearing with ruts in it, two small gnomes and a wheelbarrow. Now it is a village. This is not the end: the seasons will keep turning, visitors will keep coming, and Wendel and Hazel will keep growing older together, slowly, the way the trees do. Come and visit whenever you like. They will be glad to see you.' },
+    reward: { light:5 },
+    yearly: { title:'Another year', text:'The bunting came out of the chest again this morning, a little faded, and the lanterns went back up round the green. "{years}," said Hazel. "Doesn\'t feel like it," said Wendel. "Feels like longer," said Hazel, and kissed him, to show she meant it nicely. Tonight there is a festival on the green.' },
+  },
+
   // Side mystery placeholder: a magic staff one of the gnomes finds. Bryce is writing this story himself;
   // nothing here is plot, only the shape: ordered beats with a trigger and a flag the engine can set.
   story: { beats: [ /* { id:'staff-found', when:{ landStage:'green' }, text:'...', sets:'staffFound' } */ ] },
@@ -426,6 +481,13 @@ window.CONTENT = {
       { id:'seedwind',  weight:2, text:'The wind carried in a handful of seeds from somewhere green.', give:{ seed:2 }, stage:'green' },
       { id:'moonlit',   weight:1, text:'The moon came out and the whole patch looked, for a minute, like it had always been a garden.', hours:[20,24], stage:'meadow', give:{ light:2 } },
       { id:'neighbours', weight:1, text:'Far off, a window lit up. Other gnomes are out there, somewhere.', hours:[18,24], stage:'meadow' },
+      { id:'firstfire', weight:2, text:'The first proper fire of autumn. Wendel claimed the warm side. Hazel claimed Wendel.', hours:[17,22], seasons:['autumn'] },
+      { id:'fog',       weight:2, text:'A thick winter fog. They found each other by following the smell of toast.', hours:[6,10], seasons:['winter'], give:{ water:2 } },
+      { id:'puddles',   weight:2, text:'Rain all night. Hazel put out every pot they own. Wendel stepped in three of them.', seasons:['winter'], give:{ water:3 } },
+      { id:'chicks',    weight:2, text:'Somewhere in the hedge, very small birds have started asking for breakfast all day long.', hours:[6,17], seasons:['spring'], stage:'green' },
+      { id:'blossom',   weight:2, text:'Blossom from somewhere upstream floated past on the stream like confetti.', seasons:['spring'], stage:'meadow', give:{ seed:1 } },
+      { id:'longeve',   weight:2, text:'A long, warm evening. They ate supper outside and stayed until the stars came.', hours:[18,21], seasons:['summer'] },
+      { id:'windfall',  weight:2, text:'A windy night shook the last berries down. Breakfast, sorted.', seasons:['autumn'], give:{ berry:2 } },
       { id:'wash',      weight:2, text:'Washing day. Two tunics, one apron, a very small pair of socks. Dry by noon.', hours:[8,12], task:'clothesline' },
     ],
   },

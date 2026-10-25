@@ -1,4 +1,4 @@
-"""Turn finished Batch 3, 4, 5 and 6 pictures (docs/ART-BATCH-3.md ... -6.md) into the game's art-slot files.
+"""Turn finished Batch 3 to 7 pictures (docs/ART-BATCH-3.md ... -7.md) into the game's art-slot files.
 usage: python3 tools/slot_in_art.py <folder with the finished .jpg/.png files> [--thresh 0.42]
 Looks for each file by its Batch 3 name (plot-ruts-filled.jpg, yard-bits.jpg, icons-buttons.jpg ...), keys out the magenta,
 crops, sizes it and writes sprites/<slot>.webp. Files that are missing are skipped. The game picks the new files up on its
@@ -24,7 +24,8 @@ SINGLE = {
     'house-hollowed': ('house-hollowed', 'shelter'), 'house-windows': ('house-windows', 'shelter'), 'house-finished': ('house-finished', 'shelter'),
     'bridge': ('bld-bridge', 400),   # batch 6
 }
-STORIES = ('mabel', 'tobias', 'fernsby', 'pebbleworth', 'clem', 'barnaby', 'nettle', 'juniper')   # batch 6: story-<id>.jpg, landscape paintings, no magenta
+STORIES = ('mabel', 'tobias', 'fernsby', 'pebbleworth', 'clem', 'barnaby', 'nettle', 'juniper',   # batch 6: story-<id>.jpg, landscape paintings, no magenta
+           'fest-idea', 'fest-secret', 'fest-night', 'fest-surprise', 'fest-dance', 'fest-end')                # batch 7: the festival pages
 ROOMS = ('room-shelter', 'room-stump')   # square room paintings: no magenta to key, just sized to 1000x1000
 SHEETS = {   # one row of separate pieces, left to right
     'yard-bits': (['yard-doorstep', 'yard-windowbox', 'yard-stones', 'yard-firewood'], [180, 90, 170, 220]),
@@ -48,6 +49,10 @@ SHEETS = {   # one row of separate pieces, left to right
     'buildings-3': (['bld-nettle', 'glow-jar', 'camp-tent'], [260, 60, 220]),
     'icons-village': (['icon-bread', 'icon-plank', 'icon-honey', 'icon-yarn'], [160] * 4),
     'finds': (['find-mabel', 'find-fernsby', 'find-clem', 'find-nettle', 'find-juniper'], [120] * 5),
+    # batch 7 (docs/ART-BATCH-7.md): the festival green's furniture, and the seasonal visitors (facing LEFT, like batch 5)
+    'festival-table': (['fest-table', 'fest-feast'], [600, 600]),
+    'festival-green': (['fest-bunting', 'fest-arch', 'fest-lantern'], [600, 240, 88]),
+    'visitors-seasonal': (['vis-silvereye', 'vis-kingfisher', 'vis-beetle', 'vis-cockatoo'], [300] * 4),
 }
 
 def find(folder, name):
