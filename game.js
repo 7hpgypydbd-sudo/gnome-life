@@ -95,6 +95,7 @@ const G = {
       tk.done = true; const d = this.taskDef(id);
       if (d.tile) { const tl = s.tiles[d.tile]; tl.state = 'green'; tl.green = 4; this.reveal(d.tile); this.note(`The land next door has greened.`); }
       else this.addGreen(d.green);
+      if (d.give) this.give(d.give);
       this.note(`${C.names[d.who]} finished: ${d.name.toLowerCase()}.`);
       this.emit('task', { id, done: true });
     }
