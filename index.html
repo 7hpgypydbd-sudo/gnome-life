@@ -231,7 +231,7 @@ for (const v of C.visitors) { ART_SLOTS['vis-' + v.id] = {}; ART_SLOTS['portrait
 // optional round portrait, home-<id> their home, bld-<id> their trade building, story-<id> the picture at the end of their story,
 // story-<id>-home when they move in, find-<id> the thing you look for in their story; plus the bridge, the traveller's tent, a glow jar, new icons.
 for (const f of C.folk) { for (const k of ['face-', 'story-']) ART_SLOTS[k + f.id] = {}; ART_SLOTS['story-' + f.id + '-home'] = {}; ART_SLOTS['folk-' + f.id] = {}; (f.members || []).forEach((_, i) => ART_SLOTS[`folk-${f.id}-${i + 2}`] = {});
-  ART_SLOTS['home-' + f.id] = { w: 190 }; ART_SLOTS['bld-' + f.id] = { w: 130 }; if (f.quest.steps.some(st => st.find)) ART_SLOTS['find-' + f.id] = { w: 44 }; }
+  ART_SLOTS['home-' + f.id] = { w: 250 }; ART_SLOTS['bld-' + f.id] = { w: 160 }; if (f.quest.steps.some(st => st.find)) ART_SLOTS['find-' + f.id] = { w: 44 }; }
 Object.assign(ART_SLOTS, { 'bld-bridge': { w: 200 }, 'camp-tent': { w: 110 }, 'glow-jar': { w: 30 }, 'icon-bread': {}, 'icon-plank': {}, 'icon-honey': {}, 'icon-yarn': {} });
 // the festival (docs/ART-BATCH-7.md): the green's furniture, and story-fest-* paintings for the festival pages
 Object.assign(ART_SLOTS, { 'fest-table': { w: 300 }, 'fest-feast': { w: 300 }, 'fest-bunting': { w: 300 }, 'fest-lantern': { w: 44 }, 'fest-arch': { w: 120 } });
