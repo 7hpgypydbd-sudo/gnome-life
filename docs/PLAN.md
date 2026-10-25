@@ -2,7 +2,7 @@
 
 A cosy virtual-pet game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; must run smoothly on a phone. (Earlier working title: "Fairy Garden".)
 
-_Last updated: 2026-10-25 (art batch 1 cut and wired in; art-day folder added the day before)_
+_Last updated: 2026-10-25 (vision pinned down in docs/VISION.md; art batch 1 cut and wired in)_
 
 ## Start here, next chat
 
@@ -23,7 +23,7 @@ Side mystery (placeholder): a magic staff one gnome finds. **Bryce writes this p
 - **Art style:** the look of "The Secret World of the Gnomes" book illustrations (Poortvliet): painterly, naturalistic, muted earthy palette, weathered faces, real clothes (red cap, blue tunic, brown trousers, clogs), tiny gnomes in a full-scale woodland. **Never clay or toy-like** (rejected as "for preschoolers").
 - **View:** isometric, fixed three-quarter painted world, FarmVille-style layout with the gnome-book look. Pinch-zoom and drag only, no orbit. Modular ground tiles join into a big map that spreads as land regrows. (The orbiting 3D diorama was judged "wonky"; gnomes looked like cut-outs.)
 - **Assets must be fully owned:** Nano Banana (Gemini) only. No Meshy/Tripo or other free tiers that keep ownership; Bryce may sell the game one day. Characters are 2D painted sprites with multi-frame walk cycles.
-- **Approved young gnome refs:** `ref-him-young-v1.jpg` and `ref-her-young-v1.jpg` (in `/mnt/project-files/fairy-garden/art/refs/` and `~/Downloads/fairy-garden/iso1/`). The elderly walk sheets currently in the game are placeholders to be replaced. Working names Ferdinand and Rosalind are NOT confirmed.
+- **Approved young gnome refs:** `ref-him-young-v1.jpg` and `ref-her-young-v1.jpg` (in `/mnt/project-files/fairy-garden/art/refs/` and `~/Downloads/fairy-garden/iso1/`). The elderly walk sheets currently in the game are placeholders to be replaced. Names confirmed 2026-10-25: Wendel and Hazel (the old working names Ferdinand and Rosalind are retired).
 - **Seasons and clock:** day/night follows the phone clock. Bryce lives in Australia, so seasons are southern hemisphere (Sep–Nov spring, Dec–Feb summer, Mar–May autumn, Jun–Aug winter).
 - **Timers:** gentle real-time waits, typically 2-6 h, never monetised, never frustrating. Always leave something to do now, something soon, something slow.
 - **Resources:** a few real items (acorns, moss, twigs, stones, seeds, dew) plus one magical resource (collected light) that fuels spells.
@@ -71,14 +71,47 @@ Files: `index.html` (canvas scene, tile map, DOM sheets), `game.js` (state, rule
 - **Magic:** weak at first so early play is hands-on; grows by real day, unlocking coaxing seedlings, calling rain, waking trees.
 - **Events:** random visitors (animals, spirits, a travelling gnome), weather, finds in soil, couple moments, seasonal touches; mostly good, odd mild fixable setback.
 
+## Vision decisions (2026-10-25, from the "Pin down the game's vision" thread)
+The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded here as Bryce gives them.
+- **World size:** Village, about 25 tiles (5x5). Big enough for a stream, a path, several neighbours' homes and a little square.
+- **Land spread:** ripples out from the home tile; each healed tile reveals its misty neighbours.
+- **Barren tiles:** a mix of human scars: bare plain, stumps (have), plus a dry creek bed, an old fence/rubbish and one more to paint.
+- **Finished map headline (Bryce's words):** a gnome village (homes, well, square, bridge, mill/workshop, orchard, pond) that stays cosy and embedded in nature, "not a gnome city, still plenty of nature and whimsy". Rule of thumb: more than half of every tile stays wild (ferns, toadstools, roots, water); buildings sit under or inside trees, roots and stumps rather than in rows.
+- **Ageing:** yes, slowly over many months: young now, middle-aged around the village stage, old in the long tail (three character art sets over time; the old placeholder walk sheets may become the final stage).
+- **The player is an unseen helper spirit:** you tap and things happen; the gnomes talk to "the kind spirit"; the magic is yours to lend them.
+- **Names: Wendel (him) and Hazel (her).** Confirmed 2026-10-25; replaces the working names Ferdinand and Rosalind everywhere (content.js lines still need updating).
+- **Personalities:** Wendel is the dreamer (tinkers, invents, gazes at stars, a little absent-minded); Hazel is practical (organises, gardens, keeps them fed, dry wit). Gentle comedy between them; both kind.
+- **Daily routine:** yes, a real rhythm on the phone clock: wake, breakfast by the fire, work, an evening sit (Wendel's pipe, Hazel's knitting), sleep. Visit at night and you find them asleep or by the fire. Needs poses: sleep, eat, sit, pipe, knit.
+- **Visit end:** both: a clear gentle "all done for now" moment (a line from Hazel or Wendel, the screen settles) plus idle fiddling (decorating, chatting, collecting dew) that stays open.
+- **Children:** maybe later; nothing built now, but story and save leave room for a child arriving around the village stage.
+- **Visit length and frequency (Bryce's words):** the main loop is 2-5 minute visits, 2-3 times a day (jobs roughly 3-8 h), but quick bored check-ins must always find a little something to do (a dew drop, a chat line, a pot to move, a small 10-20 min job).
+- **Home stages:** three big leaps: (1) shelter under a root with campfire (have), (2) snug house in a stump or under an oak, (3) house plus garden, well and workshop. Small add-ons are decorations on top.
+- **Interior:** tap the house to open a painted cut-away room as its own scene (one picture per home stage); the evening routine (fire, pipe, knitting, bed) plays out there.
+- **Decorating:** a modest set of loose items you can place and drag around the home tile (bench, lantern, flower pots, washing line, fence bits). Not a full garden designer.
+- **First village buildings:** well, bakery oven, workshop, bridge over the stream (everyday village life). Others (mill, orchard, beehives, pond, meeting hall, inn, market stalls) can come later.
+- **Town growth:** travelling gnomes visit; build them a home (under a root, in a stump) and they stay. You choose who stays; the visitor journal and the town are linked.
+- **Neighbour count:** 6-10 by the finished village (baker, carpenter, old sage, a few families), still mostly trees.
+- **Neighbour depth:** each has a trade and a handful of sayings AND a little quest of their own (a small story to help with). Writing budget: roughly 8-10 mini-quests over the game.
+- **Who you help:** mainly Wendel and Hazel; neighbours occasionally ask small favours (firewood for the baker, a rare flower for the sage). Never a whole-village manager.
+- **Animals:** mostly Australian wildlife (fairy-wren, echidna, possum, blue-tongue, kookaburra, frog) plus a few honorary classics from the books (hedgehog, owl, mouse).
+- **Magical folk:** a few, rare and special: a spirit of the land, will-o'-wisps at night, maybe one mischievous troll-ish nuisance. Not a fairy theme park.
+- **Journal:** each creature gets a small painted portrait, one warm line of lore, and the date first seen.
+- **Regulars:** some creatures become daily regulars if you leave out food (seed, berries) and may nest nearby. No named pets.
+- **Magic is for healing land and gentle weather only:** coax sprouts, call rain, wake a tree, clear mist. No crafting or conjuring; the staff mystery stays separate and special.
+- **Light (magical resource):** both gathered at night from wisps and dew AND earned by good deeds (finishing jobs, helping creatures), so day-only players are not punished.
+- **Pacing:** 3-6 months of light daily play to a finished village. Home tile green in 1-2 weeks, proper house around a month, village by about half a year; ageing spreads over a year or more.
+- **Ending:** a soft ending (a village festival marks the finish), then the world keeps living: seasons, visitors, events and ageing carry on gently.
+- **Voice:** warm, a little old-fashioned, lightly funny, like a storybook narrator ("Wendel has misplaced his pipe again. Hazel knows exactly where it is.").
+- **Reading:** a line or two in normal play; big milestones (new neighbour, home stage, festival, staff beats) open a small illustrated story page.
+- **Seasons:** colour tints and overlays in code (autumn tones, winter mist, spring blossom) plus seasonal visitors and events. No seasonal tile sets; maybe one or two painted seasonal props later.
+- **Nudges and sound:** neither for now (no notifications, no audio); revisit later.
+- **Full spec:** `docs/VISION.md` (written 2026-10-25 from these answers; includes the next art list).
+
 ## Open questions for Bryce (do not assume)
-- The couple's names and personalities.
-- Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?
-- Should a visit have a natural end, or always leave something tiny to do?
-- How the home interior (cut-away) fits the isometric view.
 - The staff mystery itself (Bryce writes it).
 
 ## What's next (prioritised)
+0. **Vision is pinned (2026-10-25):** read `docs/VISION.md`. Next art is Batch 2 there (action sheets, pick-up icons, 3 barren tiles, stream/path corners); Claude writes the prompts and a plain Steps.txt into the Gnome Art Day folder.
 1. **Bryce:** play the live game on the iPhone for a day or two; report pinch/zoom, smoothness, timer feel, anything wrong. (Art batch 1 done.)
 2. ~~Cut and pack batch 1~~ done 2026-10-25. `tools/pack_walks.py` now reads `cut/` made by `cut_cc.py` (Gemini gave each walk sheet a different layout, so frames were picked by hand in the SEL table). Source jpgs are in `docs/art/batch1/`.
 3. **Tune from Bryce's notes:** timers, costs, content in `content.js`.
