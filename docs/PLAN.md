@@ -95,6 +95,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Who you help:** mainly Wendel and Hazel; neighbours occasionally ask small favours (firewood for the baker, a rare flower for the sage). Never a whole-village manager.
 - **Animals:** mostly Australian wildlife (fairy-wren, echidna, possum, blue-tongue, kookaburra, frog) plus a few honorary classics from the books (hedgehog, owl, mouse).
 - **Magical folk:** a few, rare and special: a spirit of the land, will-o'-wisps at night, maybe one mischievous troll-ish nuisance. Not a fairy theme park.
+- **Journal:** each creature gets a small painted portrait, one warm line of lore, and the date first seen.
 
 ## Open questions for Bryce (do not assume)
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?
