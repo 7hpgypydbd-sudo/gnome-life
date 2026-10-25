@@ -34,7 +34,7 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 
 **2.1 Names.** Working names Ferdinand and Rosalind (not confirmed). Options: keep them / Bryce picks / Claude offers a shortlist of 5 pairs in the book's spirit.
 **2.2 Personalities.** Him: dreamer vs steady maker vs comic. Her: practical organiser vs gentle healer/gardener vs adventurous. Or Bryce's own words.
-**2.3 Do they age over the game?** ★ Yes, slowly over many months (young → middle → old, three art sets eventually) / No, stay young / Only in the far future, decide later.
+**2.3 Do they age over the game?** ☑ Yes, slowly over many months. ★ Yes, slowly over many months (young → middle → old, three art sets eventually) / No, stay young / Only in the far future, decide later.
 **2.4 Children one day?** Yes, a baby arrives as a milestone / ★ Maybe later, keep the door open / No.
 **2.5 Who do you play as?** ★ An unseen helper spirit (you tap and things happen; the gnomes talk to "you") / One of the couple / No one, you are just watching and nudging.
 

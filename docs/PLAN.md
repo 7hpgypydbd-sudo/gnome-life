@@ -77,6 +77,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Land spread:** ripples out from the home tile; each healed tile reveals its misty neighbours.
 - **Barren tiles:** a mix of human scars: bare plain, stumps (have), plus a dry creek bed, an old fence/rubbish and one more to paint.
 - **Finished map headline (Bryce's words):** a gnome village (homes, well, square, bridge, mill/workshop, orchard, pond) that stays cosy and embedded in nature, "not a gnome city, still plenty of nature and whimsy". Rule of thumb: more than half of every tile stays wild (ferns, toadstools, roots, water); buildings sit under or inside trees, roots and stumps rather than in rows.
+- **Ageing:** yes, slowly over many months: young now, middle-aged around the village stage, old in the long tail (three character art sets over time; the old placeholder walk sheets may become the final stage).
 
 ## Open questions for Bryce (do not assume)
 - The couple's names and personalities.
