@@ -123,7 +123,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 ## Roadmap after the seed-bed chain (agreed by Bryce 2026-10-25)
 Another thread is building step 0. Each later step is its own new chat. Models follow Bryce's cap: Sonnet for routine, Opus medium preferred, Opus high at most, no Fable.
 0. **(Building now, other thread)** Fill the ruts, then "Clear the ground", then "Dig a seed bed" makes the seed bed appear.
-1. **Soft glow fix** (Sonnet): pick-ups glow softly from behind instead of the ring under them. Tiny code job.
+1. **Soft glow fix: DONE and LIVE (2026-10-25, PR #9).** Pick-ups and ready job spots glow softly from behind (`halo()`); no rings. Job spots with no painted art yet show no glow (the Jobs badge is the signal).
 2. **Art batch 3, "after" pictures** (Sonnet writes prompts, Bryce runs Gemini, Sonnet cuts and wires): repainted home plot (ruts flat, then rubbish cleared), one "after" piece per early job (mossy roof, mended fence, woodpile, doorstep, washing line, window box), painted Pack/Jobs/Magic/Journal button icons. Bryce gets: every job visibly changes the picture with real art.
 3. **Map pass** (Opus medium): fix the tile joins, place the stream and path bends, spring and crossing so the neighbour tiles form a proper little map. Bryce gets: a joined-up world around the home.
 4. **Blend art into the ground** (Opus medium): soft contact shadows, shared colour and light, painted ground patches under objects. Bryce gets: objects that sit in the scene instead of looking pasted on.
