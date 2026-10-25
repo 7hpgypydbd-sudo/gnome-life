@@ -75,6 +75,7 @@ Files: `index.html` (canvas scene, tile map, DOM sheets), `game.js` (state, rule
 The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded here as Bryce gives them.
 - **World size:** Village, about 25 tiles (5x5). Big enough for a stream, a path, several neighbours' homes and a little square.
 - **Land spread:** ripples out from the home tile; each healed tile reveals its misty neighbours.
+- **Barren tiles:** a mix of human scars: bare plain, stumps (have), plus a dry creek bed, an old fence/rubbish and one more to paint.
 
 ## Open questions for Bryce (do not assume)
 - The couple's names and personalities.

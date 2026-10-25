@@ -20,7 +20,7 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 - Follows the stream and path, so the shape is a winding valley rather than a square.
 - You choose where to grow next by tapping any edge.
 
-**1.3 What does a brand new tile look like before you heal it?**
+**1.3 What does a brand new tile look like before you heal it?** ☑ A mix of scars
 - ★ Mix of barren kinds: bare plain, stumps, a dry creek bed, rubbish/old fence (some human scars).
 - Always stumps (logged clearing), simple and consistent.
 - Hidden in mist until healed, so no barren art needed beyond the two we have.
