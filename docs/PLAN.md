@@ -101,6 +101,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Light (magical resource):** both gathered at night from wisps and dew AND earned by good deeds (finishing jobs, helping creatures), so day-only players are not punished.
 - **Pacing:** 3-6 months of light daily play to a finished village. Home tile green in 1-2 weeks, proper house around a month, village by about half a year; ageing spreads over a year or more.
 - **Ending:** a soft ending (a village festival marks the finish), then the world keeps living: seasons, visitors, events and ageing carry on gently.
+- **Voice:** warm, a little old-fashioned, lightly funny, like a storybook narrator ("Wendel has misplaced his pipe again. Hazel knows exactly where it is.").
 
 ## Open questions for Bryce (do not assume)
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?

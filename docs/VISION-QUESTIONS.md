@@ -83,7 +83,7 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 
 ## Round 9 — Tone, words and comfort (◐)
 
-**9.1 Voice of the text.** ★ Warm, a little old-fashioned, light humour (book narrator) / Minimal text, mostly pictures / Chatty and modern.
+**9.1 Voice of the text.** ☑ Warm, old-fashioned, lightly funny. ★ Warm, a little old-fashioned, light humour (book narrator) / Minimal text, mostly pictures / Chatty and modern.
 **9.2 Amount of reading per visit.** ★ A line or two at a time / Short story paragraphs at milestones / Almost none.
 **9.3 Notifications.** ★ One gentle optional nudge when something is ready / None / Several.
 **9.4 Sound.** ★ Soft ambient birds/wind/fire, optional / None.
