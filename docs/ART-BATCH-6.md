@@ -1,5 +1,7 @@
 # Art batch 6 — neighbours and the village (written 2026-10-25)
 
+> **2026-10-25: the prompts below are replaced by `docs/ART-DAY-PLAN.md`** (one ordered list of 74 pictures in 7 art days, with the new mix-and-match ground kit and small details added). Paint from that list. This file stays for its wiring notes, which still apply.
+
 Roadmap step 7 in `PLAN.md`. The game already works without any of these: neighbours are Wendel's or Hazel's painted walk recoloured (new hat and coat colours, grey hair for the old ones), and homes, trade buildings, the bridge, the traveller's tent, the glow jars, the new icons (bread, plank, honey, yarn), the things you look for in a story, and the story pictures are all code-drawn stand-ins. These pictures replace them. Wiring: put the finished pictures (named as below) in one folder and run `python3 tools/slot_in_art.py <folder>`; it keys the magenta, cuts each sheet into its pieces (left to right) and writes the `sprites/` files. No code change. Same Mac workflow as before (Steps.txt + one text file per prompt in `~/Downloads/Gnome Art Day/`), set up when Bryce is ready to paint.
 
 **Order:** paint the three neighbour sheets first and show them to Bryce (they are the neighbours' reference sheets, as the vision asks). Once Bryce likes them, paste them as reference into the home and story chats.

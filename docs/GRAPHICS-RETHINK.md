@@ -46,7 +46,7 @@ The hard rule is that Bryce must own everything, because the game may be sold on
 
 - **Unchanged: 52 of 55.** Batches 4, 5, 6, 7 and 8 (home stages, rooms, creatures, nests, neighbours, buildings, festival, story paintings) are cut-out objects and paintings. They work exactly the same under the new ground. Bryce can paint them any time.
 - **Hold 3 from batch 3:** "plot-ruts-filled", "plot-cleared" and "stepping-stones" are whole-plot ground pictures. Under the new approach they become a swatch, a few stickers and three stone objects instead. Everything else in batch 3 (moss roof, fallen fence, planted oak, full barrel, lit lantern, washing line, stick pile, yard bits, icons) is fine.
-- **New small batch, "Ground 1", about 9 prompts, written after the test:** 4 to 6 flat swatches that the crops do not cover (water, meadow flowers, moss, pebbles), 2 sticker sheets. The "repainted stream and path bends" idea is dropped.
+- **Written 2026-10-25 as days 1-3 of `docs/ART-DAY-PLAN.md`** (bigger than first planned, because Bryce asked for a mix-and-match collection with little details and Easter eggs: 9 swatches, 8 sticker sheets, stumps and rocks before/after, leftovers, two sheets of hidden surprises). Original plan: **New small batch, "Ground 1", about 9 prompts, written after the test:** 4 to 6 flat swatches that the crops do not cover (water, meadow flowers, moss, pebbles), 2 sticker sheets. The "repainted stream and path bends" idea is dropped.
 
 ## Order of work
 

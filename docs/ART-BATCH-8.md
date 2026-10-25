@@ -1,5 +1,7 @@
 # Art batch 8 — glow-worm lights for the night (written 2026-10-25)
 
+> **2026-10-25: the prompts below are replaced by `docs/ART-DAY-PLAN.md`** (one ordered list of 74 pictures in 7 art days, with the new mix-and-match ground kit and small details added). Paint from that list. This file stays for its wiring notes, which still apply.
+
 Two small pictures. The game already draws code stand-ins (`drawWormLight` in `index.html`); these replace them with no code change (`ART_SLOTS`: `worm-lantern`, `worm-lamp`). Run `python3 tools/slot_in_art.py <folder>`. Each is ONE light: the game draws it at every hook or post spot. The soft green glow is code, so never paint glow, rays or a halo.
 
 | # | File | Replaces |

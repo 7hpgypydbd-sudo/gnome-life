@@ -1,5 +1,7 @@
 # Art batch 4 — home stage 2 (the stump house) and the rooms (written 2026-10-25)
 
+> **2026-10-25: the prompts below are replaced by `docs/ART-DAY-PLAN.md`** (one ordered list of 74 pictures in 7 art days, with the new mix-and-match ground kit and small details added). Paint from that list. This file stays for its wiring notes, which still apply.
+
 Roadmap step 5 in `PLAN.md`. The game already works with code-drawn stand-ins (`drawHouseStandIns` and `roomShelter` / `roomStump` in `index.html`); these five pictures replace them. Nothing else changes: run `python3 tools/slot_in_art.py <folder of finished pictures>` and the game picks them up (`ART_SLOTS`). Same workflow as batch 3 (Steps.txt + one text file per prompt in `~/Downloads/Gnome Art Day/`), written when Bryce is ready to paint.
 
 **House pictures (1-3)** repaint the live `shelter.jpg` (the shelter flattened onto magenta) step by step in ONE chat, so each matches the one before at the same size and angle. Each is the WHOLE stump, and each keeps the stone doorstep and the window box from batch 3. Glows are never painted; code adds the window glow and the chimney smoke.
