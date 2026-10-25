@@ -120,6 +120,18 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 ## Open questions for Bryce (do not assume)
 - The staff mystery itself (Bryce writes it).
 
+## Roadmap after the seed-bed chain (proposed 2026-10-25, waiting for Bryce's OK)
+Another thread is building step 0. Each later step is its own new chat. Models follow Bryce's cap: Sonnet for routine, Opus medium preferred, Opus high at most, no Fable.
+0. **(Building now, other thread)** Fill the ruts, then "Clear the ground", then "Dig a seed bed" makes the seed bed appear.
+1. **Soft glow fix** (Sonnet): pick-ups glow softly from behind instead of the ring under them. Tiny code job.
+2. **Art batch 3, "after" pictures** (Sonnet writes prompts, Bryce runs Gemini, Sonnet cuts and wires): repainted home plot (ruts flat, then rubbish cleared), one "after" piece per early job (mossy roof, mended fence, woodpile, doorstep, washing line, window box), painted Pack/Jobs/Magic/Journal button icons. Bryce gets: every job visibly changes the picture with real art.
+3. **Map pass** (Opus medium): fix the tile joins, place the stream and path bends, spring and crossing so the neighbour tiles form a proper little map. Bryce gets: a joined-up world around the home.
+4. **Blend art into the ground** (Opus medium): soft contact shadows, shared colour and light, painted ground patches under objects. Bryce gets: objects that sit in the scene instead of looking pasted on.
+5. **Home stage 2 and the cut-away room** (Sonnet for prompts; Opus medium for the code): the snug stump/oak house, tap-to-open room with the evening routine, a small decorating set (VISION batch 3). Bryce gets: the first big home leap.
+6. **Visitors and journal** (Sonnet for prompts and wiring; Opus medium for regulars and food): painted Australian animals plus hedgehog/owl/mouse, journal portraits, a few spirits (VISION batch 4).
+7. **Neighbours and village** (Opus high for the quest/neighbour design, then medium): travellers who stay if housed, trades, mini-quests, first buildings (VISION batch 5).
+Ongoing: Bryce's playtest notes get tuned in `content.js` (Sonnet); the staff mystery waits for Bryce to write it.
+
 ## What's next (prioritised)
 - **To-do from Bryce (2026-10-25):** the glowing ring under pick-ups should become a soft glow from behind the item itself (no ring). Small code change in `drawOffer`; do it in the next gameplay pass.
 - **Usage:** Bryce is chewing through usage. Use Opus at high effort at most, prefer medium, for a while (2026-10-25).
