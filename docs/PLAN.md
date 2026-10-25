@@ -2,14 +2,14 @@
 
 A cosy virtual-pet game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; must run smoothly on a phone. (Earlier working title: "Fairy Garden".)
 
-_Last updated: 2026-10-24 (art-day folder added; earlier the same day: full rewrite as a clean handover)_
+_Last updated: 2026-10-25 (art batch 1 cut and wired in; art-day folder added the day before)_
 
 ## Start here, next chat
 
 1. **Play it:** https://7hpgypydbd-sudo.github.io/gnome-life/ (GitHub Pages, redeploys on every push to `main`). Code: https://github.com/7hpgypydbd-sudo/gnome-life (public, Bryce's choice).
 2. **Masters:** the repo is the master for code and this file. Bryce's Mac working copy is `~/Downloads/gnome-life` (signed in to GitHub via `gh`); run `git pull` there to sync. Untracked working art (`cut/`, `preview/`, `iso1/`) lives in `~/Downloads/fairy-garden/`. **Art day for Bryce lives in `~/Downloads/Gnome Art Day/`** (made 2026-10-24): `1 - Reference pictures` (plot-barren.jpg + pre-cropped him/her side/front/back), `2 - Put finished pictures here` (THE inbox; replaces the old `fairy-garden/inbox/`), `3 - Steps.txt` (all 13 prompts written out in plain words with the style paragraph). A cloud copy of this file is at `/mnt/project-files/fairy-garden/PLAN.md`; keep it equal to the repo copy.
 3. **Before any art, read `docs/STYLE-GUIDE.md`.** Before changing gameplay, read the "Gameplay loop v2" section below. Content changes should only touch `content.js`.
-4. **Immediate next step:** Bryce follows `~/Downloads/Gnome Art Day/3 - Steps.txt` (the same 13 prompts as `docs/ART-BATCH-1.md`: 7 ground tiles, 6 young-couple walk sheets) in Gemini and saves the files to `~/Downloads/Gnome Art Day/2 - Put finished pictures here/`. Then a Sonnet chat cuts and packs them and wires them in (see "What's next"). Bryce is also meant to play the live game for a day or two and say what feels wrong.
+4. **ART-BATCH-1 is DONE and wired in (2026-10-25):** 7 painted ground tiles (`sprites/tile-*.webp`, same 1225x728 diamond as `plot-barren.webp`) and the young couple's 8-frame walk strips (side/front/back for him and her). `drawTile` now swaps painted tiles per land stage (home: plot-barren -> tile-green -> tile-meadow -> tile-woodland; neighbours: tile-barren-plain -> fades to tile-green while regrowing). `tile-stream` and `tile-path` are loaded but not placed yet (for the map/town pass). Known nit: the woodland tile's painted sapling sits under the barrel/campfire props on the home tile. **Immediate next step:** the paused playability fix (pick-ups at start, bigger starting kit, glowing rings on tappables, welcome note), then Bryce plays for a day or two.
 5. **Ask Bryce before assuming** gameplay, art style, creatures or goals. He likes tappable quiz-style decision cards, wants images shown in the chat, and is usage-conscious.
 
 ## Concept (decided)
@@ -79,8 +79,8 @@ Files: `index.html` (canvas scene, tile map, DOM sheets), `game.js` (state, rule
 - The staff mystery itself (Bryce writes it).
 
 ## What's next (prioritised)
-1. **Bryce:** play the live game on the iPhone for a day or two; report pinch/zoom, smoothness, timer feel, anything wrong. Follow `Gnome Art Day/3 - Steps.txt` in Gemini, save into `Gnome Art Day/2 - Put finished pictures here/`.
-2. **Sonnet chat:** cut and pack batch 1. Ground tiles replace the green-wash placeholder in `drawTile`; young walk strips replace the elderly pair via `tools/pack_walks.py` + `sprites/gnomes.json`. Check consistency against the approved refs; list any that need regenerating.
+1. **Bryce:** play the live game on the iPhone for a day or two; report pinch/zoom, smoothness, timer feel, anything wrong. (Art batch 1 done.)
+2. ~~Cut and pack batch 1~~ done 2026-10-25. `tools/pack_walks.py` now reads `cut/` made by `cut_cc.py` (Gemini gave each walk sheet a different layout, so frames were picked by hand in the SEL table). Source jpgs are in `docs/art/batch1/`.
 3. **Tune from Bryce's notes:** timers, costs, content in `content.js`.
 4. **Next art batch (Claude writes prompts):** gnome action sheets (dig, water, carry, sit), painted resource icons, painted visitors, more props for the 32 tasks, variety so barren tiles are not identical.
 5. **Engine/feature work (Fable for design):** modular map growth, homestead stages 2+ (proper home), more crops, decorating (place and move items), notifications/Home Screen icon and full-screen web-app settings, optional sound.
