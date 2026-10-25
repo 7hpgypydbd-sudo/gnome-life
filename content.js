@@ -409,7 +409,7 @@ window.CONTENT = {
   // {who} = the neighbour who has lived here longest. alt = cost used if nobody in the village makes one of the goods in cost.
   festival: {
     name: 'The Greening Festival',
-    needFolk: 6,              // neighbours living here before the festival is proposed
+    needFolk: 8,              // neighbours living here before the festival is proposed (all of them; Bryce 2026-10-25)
     hours: [17, 23],          // the festival evening (the couple dance on the green; the neighbours gather at the table)
     jobs: [
       { id:'fest:green', name:'Mow a green for the festival', short:'mowing the green', who:'her', act:'dig', cost:{ twig:2, stone:2 }, mins:240, green:1, claims:true, spot:'green',
