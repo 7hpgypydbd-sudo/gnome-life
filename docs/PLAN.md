@@ -160,7 +160,9 @@ Ongoing: Bryce's playtest notes get tuned in `content.js` (Sonnet); the staff my
 ## Night lights (2026-10-25)
 Night was too dark. Base night tint is now a lighter moonlit blue, and two jobs add light: "Hang glow-worm lanterns" (level 2) and "Set glow-worm street lamps" (level 3, after the lanterns). Code stand-ins plus art slots `worm-lantern` / `worm-lamp`; prompts in `docs/ART-BATCH-8.md`. Could extend later to lamps along the village path.
 
-## Later phase: smaller-piece ground art (idea agreed for AFTER the whole game works, 2026-10-25)
+## Smaller-piece ground art and a real light layer (DECIDED 2026-10-25, now the next phase)
+**Update 2026-10-25:** the whole game now runs with stand-ins, and Bryce asked for the graphics rethink. The full assessment, tool check (Gemini stays; no new service needed), night-lighting plan, and the effect on the 55 prompts (52 unchanged, 3 in batch 3 held) are in `docs/GRAPHICS-RETHINK.md`. **Next step: a before/after test on the home tile, no new paintings.** The notes below are the original idea and still apply.
+
 Bryce's idea: break the ground into smaller, simpler pieces, because the image generator is more reliable on small, simple pictures, and today's big tiles have details painted into the ground (stumps, fences, ruts) that look wrong and can't move. **Do not build this until the game itself is finished.**
 
 **How other games do it (plain words):**
