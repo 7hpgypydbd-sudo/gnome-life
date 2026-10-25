@@ -99,7 +99,7 @@ const G = {
 
   // ---- per-frame rules (cheap; call a few times a second) ----
   tick() {
-    const s = this.s, t = now();
+    const s = this.s, t = now(); if (!s) return;   // not loaded yet (the first frame can come before the save is read)
     // crop
     const p = s.plots.seedbed;
     if (p.stage === 'growing' && p.readyAt <= t) { p.stage = 'ready'; this.note('The sprout is ready to pick.'); this.emit('plot', p); }
