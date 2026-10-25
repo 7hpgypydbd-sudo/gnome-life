@@ -15,6 +15,11 @@ window.CONTENT = {
     light: { name:'light', icon:'✨' },
     berry:   { name:'berry',   icon:'🫐', color:'#6a4c8a' },
     feather: { name:'feather', icon:'🪶', color:'#cdbfa3' },
+    // made by neighbours (daily gifts once their trade building is up); emoji until painted icons exist (icon-<kind>)
+    bread: { name:'bread', icon:'🍞' },
+    plank: { name:'plank', icon:'🪵' },
+    honey: { name:'honey', icon:'🍯' },
+    yarn:  { name:'yarn',  icon:'🧶' },
   },
 
   // What the land offers while you are away. One every offerEvery minutes, at most offerCap lying about.
@@ -121,6 +126,16 @@ window.CONTENT = {
     { id:'swing',   name:'Hang a bark swing',          who:'him', spot:'sapling',     cost:{ twig:4, moss:1 },   mins:120, green:0, minLevel:4, needs:['acornplant'],
       blurb:'From the lowest branch of the new oak. For the afternoons when nothing needs doing.' },
 
+    // --- with the neighbours: jobs that use what they make (each waits for that neighbour's trade building) ---
+    { id:'workbench', name:'Fit Wendel a proper workbench', short:'fitting the workbench', who:'him', spot:'shelter', cost:{ plank:4, stone:2 }, mins:240, green:1, needs:['trade:tobias'],
+      blurb:'Real planks, a vice, and a drawer for the things he swears he will tidy away.' },
+    { id:'quilt', name:'Knit a winter quilt', short:'knitting the quilt', who:'her', act:'sit', spot:'shelter', cost:{ yarn:4, moss:2 }, mins:300, green:1, needs:['trade:nettle'],
+      blurb:'Square by square, of an evening. Wendel holds the wool and talks too much.' },
+    { id:'pantry', name:'Fill the pantry for winter', short:'filling the pantry', who:'her', spot:'shelter', cost:{ bread:3, honey:2, seed:3 }, mins:180, green:1, needs:['trade:mabel', 'trade:clem'],
+      blurb:'Jars, sacks and one very good cake tin. Let it snow. (It will not snow. But still.)' },
+    { id:'bridge', name:'Build a bridge at the stepping stones', short:'building the bridge', who:'him', act:'carry', cost:{ plank:4, stone:4, twig:4 }, mins:420, green:2, needs:['trade:tobias'], needsTile:'1,-1',
+      blurb:'Tobias draws it, Wendel builds it, and the far side of the stream can finally be reached with dry feet.' },
+
     // --- a bright fire (day 8 onward) ---
     { id:'greatgrove', name:'Plant the grove',         who:'her', act:'dig', spot:'sapling',     cost:{ acorn:8, seed:4, water:4 }, mins:360, green:3, minLevel:5, needs:['acornplant'],
       blurb:'Oaks, wattles and one very hopeful fig. They will not see it finished. Someone will.' },
@@ -209,6 +224,164 @@ window.CONTENT = {
   troubleChance: 0.2,   // how often a visitor that can be in trouble arrives in trouble
   deedsPerDay: 3,       // light earned by helping creatures, at most this much a day
   visitorEvery:[90, 200], // seconds between visitors during a visit
+
+  // ---------- neighbours and the village (decided by Bryce 2026-10-25) ----------
+  // One traveller at a time camps by the path. Build them a home and they stay; or wave them on and someone else comes.
+  // Each neighbour has a trade building (a job that changes the picture, then a small daily gift at their door), a few
+  // sayings, the odd small favour, and one short story quest that shows a moment in Wendel and Hazel's marriage.
+  village: {
+    firstAfter: 'house3',     // the first traveller turns up once the stump house is finished
+    gapDays: 4,               // days after one neighbour moves in before the next traveller comes
+    waveGapDays: 1,           // after waving a traveller on, someone else comes after about this long
+    favourEvery: 360,         // minutes between small favours (only one waiting at a time)
+    questAfterDays: 1,        // a neighbour's story begins about a day after their trade building is finished
+    // where homes go, nearest first: plain healed tiles (not the stream row or the path). A home needs one of these to be green.
+    lots: ['0,1', '-1,0', '-1,1', '2,0', '-2,0', '2,1', '-2,1', '0,2', '-1,2', '0,-2', '-1,-2', '2,-2', '-2,-2', '2,2', '-2,2'],
+    order: ['mabel', 'tobias', 'fernsby', 'pebbleworth', 'clem', 'barnaby', 'nettle', 'juniper'],   // who comes next (waved-on travellers go to the back)
+  },
+  // look: stand-in colouring of Wendel's (base him) or Hazel's (base her) painted walk: hat and coat hues (0-360), grey hair, size.
+  // members: extra gnomes who live in the same home (the family). home: stand-in kind (stump | root | log | hollow), door colour.
+  // Steps of a story quest: say (what is happening) plus one of: give (hand things over), job (a gnome works on it, in Jobs),
+  // find (something to spot on the land and tap; hours = only then), wait (minutes of real time). Then the story page.
+  folk: [
+    { id:'mabel', name:'Mabel Crumb', short:'Mabel', trade:'the baker', base:'her', look:{ hat:8, coat:205, s:1.04 }, home:'stump', door:'#b5532f', icon:'🍞',
+      intro:'A round little gnome with flour to her elbows came up the path today, pushing a barrow of warm loaves. "I go where an oven is needed," she said, "and you two, my dears, have no oven at all." She has put up a patched tent by the path, and the whole clearing smells of bread.',
+      build:{ cost:{ twig:6, stone:6, moss:4 }, mins:420, who:'him', blurb:'A snug stump home with a wide door, so a gnome with a tray of buns can get through it sideways.' },
+      movedIn:'Mabel stood in her new doorway and cried a little into her apron. "A home," she said, "and neighbours, and not a single oven in sight. We shall see about that." That evening there were buns on everyone\'s step.',
+      sayings:['Nothing a warm loaf cannot mend. Well, nearly nothing.', 'You two are too thin. Here.', 'Bread is just patience you can eat.', 'Hazel says he snores. I say, find me a husband who doesn\'t.', 'The trick with dough is the same as with gnomes: warmth, and leave it alone a while.'],
+      building:{ name:'Build Mabel\'s bread oven', short:'building the oven', who:'him', act:'carry', cost:{ stone:8, moss:3, water:2 }, mins:300,
+        blurb:'A round clay oven beside her door, with a stone floor and a little chimney. After this, there is bread.', gift:{ bread:1 }, giftText:'A warm loaf on Mabel\'s step, wrapped in a cloth.' },
+      favours:[ { ask:'The oven is hungry this morning. Could you spare 3 twigs?', cost:{ twig:3 }, thanks:'Bless you. The first bun out is yours.' },
+                { ask:'I\'m trying a seed loaf. Have you 2 seeds to spare?', cost:{ seed:2 }, thanks:'There. It will be lumpy and wonderful.' },
+                { ask:'A drop of honey would make this cake sing. Just 1?', cost:{ honey:1 }, thanks:'Oh, that\'s the stuff. Come by later.' } ],
+      quest:{ name:'The forgotten anniversary', steps:[
+        { say:'Mabel pulls you aside. "It is Wendel and Hazel\'s first anniversary this week. Hazel mentioned it, very lightly. Wendel has not mentioned it at all. I think the dear man has forgotten." A cake would help. She needs 3 seeds and 2 berries.', give:{ seed:3, berry:2 } },
+        { say:'"Now the hard part," says Mabel. "Hazel\'s mother wrote her a honey-seed cake recipe on the back of a letter, and it blew away on the road here. She has never said, but she misses it." Look for a scrap of paper caught somewhere on the land.', find:{ name:'a scrap of old letter', icon:'📜' } },
+        { say:'The recipe! Wendel goes pale, then pink, then very determined. He and Mabel bake it together in secret, late, by the oven.', job:{ name:'Bake the secret cake with Mabel', short:'baking in secret', who:'him', act:'carry', mins:180, cost:{ water:1 } } } ],
+        story:{ title:'The forgotten anniversary', text:'He had forgotten. He admitted it at once, standing in the doorway with the cake held out like a shield. Hazel looked at the cake, and at the familiar slanting handwriting propped beside it, and sat down rather suddenly. "That\'s Mum\'s," she said. They ate it on the step, all three of them, and Wendel was forgiven by the second slice.' },
+        reward:{ light:3, bread:2 } } },
+
+    { id:'tobias', name:'Tobias Burl', short:'Tobias', trade:'the carpenter', base:'him', look:{ hat:205, coat:28, s:1.1 }, home:'log', door:'#5a7a3a', icon:'🪚',
+      intro:'A broad, loud gnome with sawdust in his beard and a toolbox on his back strode into the clearing, looked at the stump house and said, "Who did those windows? Not bad. Not good, but not bad." He is camping by the path and has already mended the wheelbarrow without asking.',
+      build:{ cost:{ twig:8, stone:4, moss:4 }, mins:420, who:'him', blurb:'A hollow fallen log for a home, with a round door at one end. Tobias says he will do the fiddly bits himself.' },
+      movedIn:'Tobias moved into his log with one bag, one toolbox and a song so loud the robins left. By evening he had fitted a shelf, a second shelf, and a shelf for his spare shelves.',
+      sayings:['Measure twice. Then once more, because Wendel measured the first time.', 'Wood remembers the tree it was. Be nice to it.', 'A good joint needs no nails. A good friend neither.', 'Your Wendel\'s got clever hands. Wanders off in his head, mind.', 'Hand me that. No, the other that.'],
+      building:{ name:'Raise Tobias\'s workshop', short:'raising the workshop', who:'him', act:'carry', cost:{ twig:10, stone:4, moss:2 }, mins:360,
+        blurb:'An open-sided workshop with a plank roof, a sawhorse and a wall of hanging tools. After this, there are planks.', gift:{ plank:1 }, giftText:'A smooth spare plank leaning by Tobias\'s door.' },
+      favours:[ { ask:'Lost my pencil again. Have you a feather? I\'ll whittle a new one.', cost:{ feather:1 }, thanks:'Champion. Now where did I put the wood.' },
+                { ask:'My saw wants grease. A bit of moss and dew will do it: 2 moss, 1 dew.', cost:{ moss:2, water:1 }, thanks:'Hear that? Not a squeak.' },
+                { ask:'Working late. A loaf wouldn\'t go amiss. Just 1.', cost:{ bread:1 }, thanks:'Mabel\'s, is it? That woman is a wonder.' } ],
+      quest:{ name:'Too long in the workshop', steps:[
+        { say:'Wendel has spent four days running in Tobias\'s workshop, making "something important". Hazel has done every job alone, and tonight she said nothing at all at supper, which is worse than saying something. Tobias scratches his beard. "My fault. Let\'s finish the thing quick." He needs 3 planks.', give:{ plank:3 } },
+        { say:'The "something important" is a rocking chair, for Hazel\'s evenings. It just needs finishing.', job:{ name:'Finish the rocking chair', short:'finishing the chair', who:'him', act:'carry', mins:240, cost:{ moss:2 } } },
+        { say:'Tobias says the chair should sit one night in the workshop "to settle". Really, he is giving Wendel time to work out what to say.', wait:480 } ],
+        story:{ title:'The rocking chair', text:'He carried it home in the morning and set it down by the fire. "I should have told you where I was," he said. "I should have helped." Hazel ran her hand along the arm, which was very smooth, and slightly crooked. "You made the left one longer," she said. "I know," said Wendel. She sat in it, and rocked, and after a while she reached out and held his hand.' },
+        reward:{ light:3, plank:2 } } },
+
+    { id:'fernsby', name:'The Fernsbys', short:'the Fernsbys', trade:'a young family', base:'him', look:{ hat:120, coat:20, s:1.0 }, home:'root', door:'#c08a2a', icon:'👪',
+      members:[ { base:'her', look:{ hat:200, coat:340, s:0.98 } }, { base:'her', look:{ hat:50, coat:280, s:0.6 } }, { base:'him', look:{ hat:330, coat:150, s:0.58 } } ],
+      intro:'A whole family came up the path at once: Rowan Fernsby, his wife Ivy, and the twins Pip and Posy, who were already up a tree before anyone said hello. "We\'re water-finders," Ivy explained. "We find water, and the twins find trouble." They are camped by the path, in a tent that is mostly washing.',
+      build:{ cost:{ twig:8, stone:6, moss:6 }, mins:480, who:'her', blurb:'A roomy burrow under arching roots, with a round door and a little window for each twin.' },
+      movedIn:'The Fernsbys moved in under the roots, and that night the clearing was louder and happier than it had ever been. Hazel watched the twins chase fireflies and said nothing, and Wendel watched Hazel.',
+      sayings:['Have you seen the twins? No? Good, that means they\'re hiding properly.', 'There\'s water under here. There\'s water under everywhere, if you\'re patient.', 'Pip! Put the frog down!', 'You two make it look easy. Being married, I mean.', 'Posy says your garden is the best garden. Posy has seen two gardens.'],
+      building:{ name:'Dig the village well', short:'digging the well', who:'him', act:'dig', cost:{ stone:10, twig:4 }, mins:420,
+        blurb:'Rowan has found water. A ring of stones, a little roof and a bucket on a rope. After this, nobody carries dew in their hat.', gift:{ water:2, feather:1 }, giftText:'A bucket of well water by the roots, and a feather the twins found.', site:'well' },
+      favours:[ { ask:'The twins want a picnic. Could you spare 2 berries?', cost:{ berry:2 }, thanks:'They\'ve eaten them already. Thank you anyway!' },
+                { ask:'Posy has built a tiny house for a beetle. It needs 2 twigs for a roof.', cost:{ twig:2 }, thanks:'The beetle has moved in. Posy is unbearable about it.' },
+                { ask:'Rowan has worn through his socks again. A bit of yarn? Just 1.', cost:{ yarn:1 }, thanks:'Ivy says she\'ll darn them. Ivy says that every time.' } ],
+      quest:{ name:'Hide and seek', steps:[
+        { say:'Ivy and Rowan need an afternoon to dig, and Hazel offers to mind the twins. "How hard can it be?" says Wendel. The twins vanish almost at once. Look for Pip somewhere on the land.', find:{ name:'Pip, hiding', icon:'🧒' } },
+        { say:'One found. Posy is better at hiding. Look again; she likes high places.', find:{ name:'Posy, up a stump', icon:'👧' } },
+        { say:'Both twins found, both muddy, both starving. A picnic on the grass will settle everyone: 2 bread and 2 berries.', give:{ bread:2, berry:2 } } ],
+        story:{ title:'Someday', text:'The twins fell asleep in the grass with jam on their faces. Wendel lay back and looked at the clouds. "Exhausting," he said. "Completely exhausting." Hazel was quiet for a moment. "Someday?" she said. Wendel turned his head and looked at her for a long time. "Someday," he said, and he was smiling.' },
+        reward:{ light:3, berry:3 } } },
+
+    { id:'pebbleworth', name:'Bert and Mags Pebbleworth', short:'the Pebbleworths', trade:'the orchard keepers', base:'him', look:{ hat:250, coat:100, grey:true, s:0.95 }, home:'hollow', door:'#4a6a3a', icon:'🍎',
+      members:[ { base:'her', look:{ hat:330, coat:260, grey:true, s:0.92 } } ],
+      intro:'An old couple came slowly up the path today, arm in arm, pulling a little cart of fruit-tree cuttings wrapped in wet moss. "Fifty-one years married," said Mags, before anyone asked. "Fifty-two," said Bert. "Fifty-one," said Mags, and he winked at Wendel. They have put up a tent by the path and are sharing an apple on the step.',
+      build:{ cost:{ twig:6, stone:6, moss:6 }, mins:420, who:'her', blurb:'A cosy home in a hollow tree, with two chairs by one window. They do not need much; they need each other.' },
+      movedIn:'Bert carried Mags over the threshold of the hollow tree, very slowly, and they both laughed so much they had to sit down. Hazel watched from the path with her hand on her heart. "That will be us," said Wendel. "You will drop me," said Hazel.',
+      sayings:['Fifty-one years, and he still brings me the first apple.', 'The secret? Say sorry first, even when you\'re right. Especially then.', 'An orchard is a promise to people you will never meet.', 'Your Wendel looks at the stars the way Bert used to look at me. Still does, the old fool.', 'Don\'t tell Mags, but I let her win at cards.'],
+      building:{ name:'Plant the Pebbleworths\' orchard', short:'planting the orchard', who:'her', act:'dig', cost:{ seed:3, water:4, moss:3 }, mins:360,
+        blurb:'A little ring of young fruit trees from their cuttings, staked and mulched. After this, there is fruit.', gift:{ berry:2 }, giftText:'A basket of windfall fruit by the Pebbleworths\' door.' },
+      favours:[ { ask:'Bert\'s knees are complaining. Could you spare 2 moss for a cushion?', cost:{ moss:2 }, thanks:'He says thank you. He says it from the cushion.' },
+                { ask:'The young trees are thirsty. 3 dew, dear?', cost:{ water:3 }, thanks:'Listen to them drink.' },
+                { ask:'Mags wants a loaf, and Bert wants to be the one who brings it. Just 1?', cost:{ bread:1 }, thanks:'Bert is very pleased with himself.' } ],
+      quest:{ name:'A star for Hazel', steps:[
+        { say:'Bert tells Wendel that, as a young gnome, he named a star for Mags and has shown it to her every anniversary since. Wendel has gone very thoughtful. He wants to do the same for Hazel, and Bert says they will need to chart the sky properly, with good quills: 3 feathers.', give:{ feather:3 } },
+        { say:'They must sit up through the night to find the right star: one that rises over the stump house.', job:{ name:'Sit up for the stars with Bert', short:'watching the stars', who:'him', act:'sit', mins:240, cost:{ light:1 } } },
+        { say:'They have found it. Bert copies the chart out neatly, by daylight, with Mags correcting his spelling.', wait:360 } ],
+        story:{ title:'Hazel\'s Lamp', text:'Wendel took her up the rise after supper and pointed. "That one. Low, warm, over our roof. It\'s on Bert\'s chart now, and it says Hazel\'s Lamp." Hazel looked at it for a long while. "You know it was always there," she said. "I know," said Wendel. "But now it\'s yours." A little way off, on their bench, Bert and Mags very carefully looked the other way, holding hands.' },
+        reward:{ light:4 } } },
+
+    { id:'clem', name:'Clementine Bramblewick', short:'Clem', trade:'the beekeeper', base:'her', look:{ hat:45, coat:45, s:0.98 }, home:'root', door:'#d4a020', icon:'🐝',
+      intro:'A freckled gnome in a wide straw hat came up the path humming, with a woven skep on her back and a little cloud of bees around her like a veil. "They don\'t sting," she said. "Well. They don\'t sting me." She has camped well away from the path, which everyone appreciates.',
+      build:{ cost:{ twig:6, stone:4, moss:6, seed:2 }, mins:420, who:'her', blurb:'A cosy root home with a flower-covered roof, so the bees have something to do on the way in.' },
+      movedIn:'Clem moved in under the roots and planted flowers on her roof the very same day. By the next morning there were bees in the herb corner, bees on the berry bush, and one bee, briefly, in Wendel\'s beard.',
+      sayings:['Hum to them. They like to know you\'re coming.', 'A hive is a family that agrees about everything. Imagine.', 'Your herb corner is the talk of the hive.', 'Honey is just summer, saved for later.', 'Wendel tried to talk to my bees. They found him confusing.'],
+      building:{ name:'Set out Clem\'s bee skeps', short:'setting out the skeps', who:'her', act:'carry', cost:{ twig:6, moss:4, seed:3 }, mins:300,
+        blurb:'Three woven straw skeps on a low bench in the sun. After this, there is honey.', gift:{ honey:1 }, giftText:'A little pot of honey on Clem\'s step, with a bee still checking it.' },
+      favours:[ { ask:'My bees want more flowers. Could you spare 3 seeds to sow?', cost:{ seed:3 }, thanks:'They\'ll thank you in honey. Eventually.' },
+                { ask:'A skep has a hole. 2 twigs and some moss will patch it: 2 twigs, 1 moss.', cost:{ twig:2, moss:1 }, thanks:'Snug again. Listen to them settle.' },
+                { ask:'A dish of dew for the bees on a hot day? 2 dew.', cost:{ water:2 }, thanks:'Look at them drinking. Tiny, tidy tongues.' } ],
+      quest:{ name:'The runaway swarm', steps:[
+        { say:'Hazel was helping Clem with the hives when the newest swarm took off in a huff. Hazel was stung on the hand, and Wendel has been fussing over it ever since, which Hazel says is worse than the sting. First, find where the swarm has gone.', find:{ name:'the runaway swarm', icon:'🐝' } },
+        { say:'The swarm is hanging in a lump on a branch, sulking. Clem needs a fresh skep to coax them into: 4 twigs and 3 moss.', give:{ twig:4, moss:3 } },
+        { say:'Hazel insists on carrying the skep herself, bandaged hand and all, and Wendel insists on carrying Hazel\'s basket, and Clem insists they both stop talking.', job:{ name:'Coax the swarm home', short:'coaxing the swarm', who:'her', act:'carry', mins:180, cost:{ water:1 } } } ],
+        story:{ title:'The first honey', text:'When the first comb came out of the new skep, Clem gave it to Hazel. Hazel gave the first spoonful to Wendel, who had spent three days asking about her hand. "It was one sting," she said. "I know," he said. "I didn\'t like it." She laughed at him, and kissed him, and he tasted of honey.' },
+        reward:{ light:3, honey:2 } } },
+
+    { id:'barnaby', name:'Barnaby Thorne', short:'Barnaby', trade:'the miller', base:'him', look:{ hat:35, coat:100, s:1.0 }, home:'stump', door:'#7a5a9a', icon:'🌾',
+      intro:'A tall, quiet gnome with flour in his eyebrows came up the path carrying a millstone on his back, which should not have been possible. "Heard you had a stream," he said, and that was all he said for an hour. He is camped by the path, and Wendel has already asked him forty questions about gears.',
+      build:{ cost:{ twig:8, stone:8, moss:4 }, mins:480, who:'him', blurb:'A tall stump home with a crooked chimney. Barnaby ducks to get in; he does not seem to mind.' },
+      movedIn:'Barnaby moved into his stump and slept for most of a day. When he woke, he and Wendel sat on the doorstep and drew mill wheels in the dirt with sticks until it was dark, and Hazel brought them both soup.',
+      sayings:['Mm.', 'Water does the work. A miller just listens.', 'Wendel\'s a good lad. Asks a lot.', 'Hazel makes a fine soup. Don\'t tell Mabel I said so.', 'A full sack for winter is the best sound there is.'],
+      building:{ name:'Build Barnaby\'s little water mill', short:'building the mill', who:'him', act:'carry', cost:{ twig:8, stone:8, water:3 }, mins:420,
+        blurb:'A little mill house with a turning water wheel. After this, sacks of seed for sowing.', gift:{ seed:2 }, giftText:'A little sack of seed by Barnaby\'s door.' },
+      favours:[ { ask:'Mm. Wheel\'s squeaking. 2 moss?', cost:{ moss:2 }, thanks:'Mm. Better.' },
+                { ask:'Need a plank for the sluice. Just 1.', cost:{ plank:1 }, thanks:'That\'ll hold.' },
+                { ask:'Stones for the mill race. 3, if you have them.', cost:{ stone:3 }, thanks:'Good stones. Thank you.' } ],
+      quest:{ name:'Winter stores', steps:[
+        { say:'The nights are drawing in, and Hazel has started counting the pantry jars twice a day. Wendel has noticed, and is worried that she is worried. Barnaby says, "Mm. Mill\'s stuck. Fix it, and there\'ll be plenty." The wheel is jammed with river stones.', job:{ name:'Free the jammed mill wheel', short:'freeing the wheel', who:'him', act:'dig', mins:240, cost:{ twig:2 } } },
+        { say:'The wheel turns again, but the mill race needs shoring up before the winter rains: 4 stones and 2 twigs.', give:{ stone:4, twig:2 } },
+        { say:'Barnaby mills through the night, slow and steady, and Wendel stays to help carry the sacks.', wait:420 } ],
+        story:{ title:'A full pantry', text:'They brought the sacks home on the wheelbarrow, Wendel pushing and Barnaby, for once, talking. Hazel stood in the doorway and counted them, and then stopped counting. "You knew I was worried," she said. "You count the jars in your sleep," said Wendel. She threw a handful of flour at him. He threw one back. Barnaby, very quietly, went home.' },
+        reward:{ light:3, seed:4 } } },
+
+    { id:'nettle', name:'Nettle Thimble', short:'Nettle', trade:'the weaver', base:'her', look:{ hat:300, coat:180, grey:true, s:0.95 }, home:'log', door:'#3a6a7a', icon:'🧶',
+      intro:'A thin, sharp-eyed gnome with a loom strapped to her back came up the path, looked Hazel up and down, and said, "Who darned that apron? Dreadful." Hazel has not quite forgiven her. She is camped by the path, weaving something blue, and pretending not to care what anyone thinks.',
+      build:{ cost:{ twig:8, moss:6, stone:4 }, mins:420, who:'her', blurb:'A neat log home with a big window, for light to weave by. Nettle has sent back the first plan.' },
+      movedIn:'Nettle moved into her log and hung a curtain so fine that Hazel, despite everything, went over to look at it. They talked about stitches for an hour. Neither of them will admit it.',
+      sayings:['Hmph.', 'A loose thread is a loose thread. Fix it now, not later.', 'Hazel has good hands. Bad needles, but good hands.', 'I was never married. I was very busy. It was a choice.', 'Wool remembers the sheep. Be kind to it.'],
+      building:{ name:'Build Nettle\'s loom shed', short:'building the loom shed', who:'her', act:'carry', cost:{ twig:8, moss:4, stone:2 }, mins:300,
+        blurb:'A little open shed with her loom and coloured cloth hung to dry. After this, there is yarn.', gift:{ yarn:1 }, giftText:'A ball of yarn on Nettle\'s step, with a note: "Use it properly."' },
+      favours:[ { ask:'I need berries for dye. 3. Not squashed ones.', cost:{ berry:3 }, thanks:'Acceptable. Thank you.' },
+                { ask:'Moss for a green dye. 3, and fresh.', cost:{ moss:3 }, thanks:'Hmph. Good moss. Thank you.' },
+                { ask:'Honey for my throat. 1. I am not unwell. I am simply asking.', cost:{ honey:1 }, thanks:'...Thank you.' } ],
+      quest:{ name:'The wedding blanket', steps:[
+        { say:'Nettle has found out, by being very nosy, that Wendel and Hazel married in a hurry on the road, with no feast and no gifts. "No wedding blanket," she says. "Disgraceful." She wants to weave them one, and needs dye: 3 berries and 3 moss.', give:{ berry:3, moss:3 } },
+        { say:'"The blue," says Nettle. "Hazel wore blue. I need the little blue flower that grows by water." Look for it somewhere on the land.', find:{ name:'a blue water-flower', icon:'💠' } },
+        { say:'Nettle weaves for a day and a night. Hazel is not allowed near the shed, and is going quietly mad.', wait:600 } ],
+        story:{ title:'The wedding blanket', text:'Nettle brought it over folded, and pushed it into Hazel\'s arms as if it were nothing. It was blue and green and gold, and in one corner, very small, were two gnomes under one tree. Hazel opened her mouth and Nettle said, "Don\'t." So Hazel hugged her instead, and Nettle, after a long, stiff moment, hugged her back.' },
+        reward:{ light:3, yarn:2 } } },
+
+    { id:'juniper', name:'Juniper Wick', short:'Juniper', trade:'the lamplighter', base:'her', look:{ hat:270, coat:220, s:0.88 }, home:'hollow', door:'#2a5a8a', icon:'🏮',
+      intro:'A young gnome, hardly more than a girl, came up the path at dusk with a pole over her shoulder hung with glass jars of caught light. She looked very tired, and very far from home. "I light the way," she said, "for anyone who needs it." She has made a small camp by the path, ringed with glowing jars.',
+      build:{ cost:{ twig:6, stone:6, moss:6, light:2 }, mins:420, who:'her', blurb:'A little home in a hollow tree, with a round window at the top for a lamp that never goes out.' },
+      movedIn:'Juniper moved into the hollow tree and set her brightest jar in the top window. "So I can find my way home," she said. Hazel took her a blanket and a bowl of soup and stayed until she fell asleep.',
+      sayings:['Every dark night has a few wisps in it. You only have to look.', 'I used to be scared of the dark. Now I just bring a jar.', 'Your window glows the warmest in the whole valley.', 'Hazel says I can come to supper any time. Is that true? Really?', 'Wendel showed me a star called Hazel\'s Lamp. I think it\'s the nicest name there is.'],
+      building:{ name:'Hang glow jars along the path', short:'hanging the glow jars', who:'her', act:'carry', cost:{ twig:6, stone:4, light:4 }, mins:300,
+        blurb:'Posts with jars of caught light all along the village path, so nobody walks home in the dark. After this, Juniper brings in wisps.', gift:{ light:1 }, giftText:'A wisp of light in a jar on Juniper\'s step.', site:'path' },
+      favours:[ { ask:'A jar has cracked. 2 stones to make a new holder?', cost:{ stone:2 }, thanks:'There. All lit again.' },
+                { ask:'Could you spare 2 dew? The wisps like a damp jar.', cost:{ water:2 }, thanks:'Look how bright it is now!' },
+                { ask:'Can I have a loaf? I forgot to eat again. 1 bread.', cost:{ bread:1 }, thanks:'Thank you. Don\'t tell Hazel I forgot.' } ],
+      quest:{ name:'The lamp in the window', steps:[
+        { say:'Juniper has been very quiet. Hazel thinks she is homesick. Wendel thinks she is lonely. They argue about which, which is the closest thing to a quarrel they have had in weeks. Either way, her favourite wisp has gone dim. Bring her 3 dew to freshen its jar.', give:{ water:3 } },
+        { say:'The wisp still will not shine. "It wants a friend," Juniper says. Look for a stray wisp out on the land after dark.', find:{ name:'a stray wisp', icon:'✨', hours:[19, 6] } },
+        { say:'Hazel and Wendel invite Juniper to supper, and Hazel cooks far too much.', job:{ name:'Cook a supper for Juniper', short:'cooking supper', who:'her', act:'carry', at:'home', mins:120, cost:{ berry:2, seed:1 } } } ],
+        story:{ title:'The lamp in the window', text:'After supper, Juniper said, "Do you know why I stopped here? I came over the hill at night, and I saw your window. It was the only light for miles, and someone was laughing behind it." Hazel looked at Wendel. They had both been right, it turned out. She had been homesick and lonely, both. "Well," said Hazel, "now it\'s your window too."' },
+        reward:{ light:4 } } },
+  ],
 
   // Side mystery placeholder: a magic staff one of the gnomes finds. Bryce is writing this story himself;
   // nothing here is plot, only the shape: ordered beats with a trigger and a flag the engine can set.

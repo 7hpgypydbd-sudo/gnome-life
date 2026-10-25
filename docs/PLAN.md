@@ -2,7 +2,7 @@
 
 A cosy virtual-pet game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; must run smoothly on a phone. (Earlier working title: "Fairy Garden".)
 
-_Last updated: 2026-10-25 (visitors, feeding dish, regulars and the journal built)_
+_Last updated: 2026-10-25 (neighbours and the village built)_
 
 ## Start here, next chat
 
@@ -101,7 +101,8 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Decorating:** a modest set of loose items you can place and drag around the home tile (bench, lantern, flower pots, washing line, fence bits). Not a full garden designer.
 - **First village buildings:** well, bakery oven, workshop, bridge over the stream (everyday village life). Others (mill, orchard, beehives, pond, meeting hall, inn, market stalls) can come later.
 - **Town growth:** travelling gnomes visit; build them a home (under a root, in a stump) and they stay. You choose who stays; the visitor journal and the town are linked.
-- **Neighbour count:** 6-10 by the finished village (baker, carpenter, old sage, a few families), still mostly trees.
+- **Neighbour count:** 6-10 by the finished village, still mostly trees. **No sage** (Bryce, 2026-10-25); the cast is in roadmap item 7.
+- **Main story (Bryce, 2026-10-25):** a cosy game with no real stakes; the storyline is Wendel and Hazel's love over their marriage, with gentle tribulations from visitors and neighbours. The staff story is 100% optional, late game, started by a mysteriously found object; may never happen; Bryce writes it.
 - **Neighbour depth:** each has a trade and a handful of sayings AND a little quest of their own (a small story to help with). Writing budget: roughly 8-10 mini-quests over the game.
 - **Who you help:** mainly Wendel and Hazel; neighbours occasionally ask small favours (firewood for the baker, a rare flower for the sage). Never a whole-village manager.
 - **Animals:** mostly Australian wildlife (fairy-wren, echidna, possum, blue-tongue, kookaburra, frog) plus a few honorary classics from the books (hedgehog, owl, mouse).
@@ -137,7 +138,14 @@ Another thread is building step 0. Each later step is its own new chat. Models f
    - **Art slots:** `vis-<id>`, `portrait-<id>` (optional), `nest-nest/burrow/leafpile/stones`, `feeding-dish`. Prompts: `docs/ART-BATCH-5.md` (6 pictures); `tools/slot_in_art.py` cuts them.
    - Test tokens: `#vis=<id>` brings that visitor now; add `&trouble` to make it arrive in trouble. Console: `GL.view()`.
    - Not built: the troll-ish nuisance (later, with the village), seasonal visitors, painted portraits.
-7. **Neighbours and village** (Opus high for the quest/neighbour design, then medium): travellers who stay if housed, trades, mini-quests, first buildings (VISION batch 5).
+7. **BUILT 2026-10-25 (thread "Build neighbours and the village"): neighbours and the village.** Bryce chose (cards): **one traveller at a time camps by the path**; build them a home and they stay, or wave them on (they go to the back of the queue, someone new comes in about a day). Each neighbour gives **a new job (their trade building) plus a small daily gift**. Quests: **one short story each plus the odd small favour**. **The baker comes first.** **No sage.** What's in:
+   - **Cast** (`CONTENT.folk`, order in `CONTENT.village.order`): Mabel Crumb the baker (oven, bread), Tobias Burl the carpenter (workshop, planks; then the bridge), the Fernsbys (Rowan, Ivy, twins Pip and Posy; the well, dew), Bert and Mags Pebbleworth, an old married couple (orchard, berries), Clem the beekeeper (skeps, honey), Barnaby the miller (water mill, seed), Nettle the weaver (loom shed, yarn), Juniper the lamplighter (glow jars along the path, light). New resources: bread, plank, honey, yarn (emoji icons until painted).
+   - **Flow:** the first traveller arrives once the stump house is finished (`village.firstAfter: 'house3'`), the next `gapDays: 4` after each move-in. A story page greets them; tap their tent or them for their page. "Build X a home" (Jobs, or their page) needs a healed plain tile: homes go on the nearest green lot in `village.lots` (not the stream row or the path), and Wendel or Hazel walks over to build it. Moving in shows a story page; then their trade building job; once it is up, a gift waits at their door every morning (a pick-up). A day later their story begins (paper "!" over them): 3 steps of give / job / find (something glowing to spot on the land) / wait, ending in a story page and a reward. Favours: every 6 h at most one small ask from a neighbour (only for things you can get), +their gift +1 light (shares the 3-a-day good-deed cap). Every story is a moment in Wendel and Hazel's marriage (forgotten anniversary, too long in the workshop, "someday", Hazel's Lamp star, the first honey, winter stores, the wedding blanket, the lamp in the window).
+   - **Village jobs:** bridge at the stepping stones (needs Tobias's workshop and the crossing tile green); **the far side of the stream (rows above it) only reveals after the bridge**. Home jobs that use neighbours' goods: workbench (planks), winter quilt (yarn), fill the pantry (bread + honey). Village jobs stay hidden until that neighbour lives here.
+   - **Code:** rules in `game.js` (`villageTick`, `freeLot`, `questNext`, `doFavour`, `waveOn`; save gains `village`, old saves migrate); drawing and pages in `index.html` (`LOT`, `CAMP`, `BRIDGE`, `Folk` figures, `drawFolkHome`, `drawBuilding`, `drawBridge`, `drawCamp`, `drawJars`, `openFolk`, `openTraveller`, `openStory`; neighbours are listed at the top of the Journal). Stand-in neighbours are Wendel's/Hazel's painted walk recoloured (`tintStrip`).
+   - **Art slots and prompts:** `docs/ART-BATCH-6.md` (13 sheets + 8 story paintings): `folk-<id>` (+`-2`.. for households), `home-<id>`, `bld-<id>`, `bld-bridge`, `camp-tent`, `glow-jar`, `icon-bread/plank/honey/yarn`, `find-<id>`, `story-<id>`. `tools/slot_in_art.py` handles them.
+   - **Test:** `#village` lets a traveller arrive before the house is finished (careful: on a real save it really arrives). Console: `GL.s.village`.
+   - Not built: neighbours' own keepsakes in the picture (the rocking chair, the blanket), a picture for each "moved in" page, neighbours walking frames, the troll-ish nuisance, the festival.
 Ongoing: Bryce's playtest notes get tuned in `content.js` (Sonnet); the staff mystery waits for Bryce to write it.
 
 ## Later phase: smaller-piece ground art (idea agreed for AFTER the whole game works, 2026-10-25)
@@ -160,6 +168,7 @@ Fallback if code blending looks too smudgy: the dual-grid edge pieces (5-6 per p
 **Rough order when the time comes** (Opus medium for the code, Sonnet for prompts): one test swatch + blend on the home tile with a before/after preview for Bryce; then the swatch set + sticker sheets as one art batch; then curves for path and stream; then convert painted-in details to objects; retire the old big tiles.
 
 ## What's next (prioritised)
+- **Next after the village:** Bryce plays; then the festival (soft ending) and seasons, or the decorating set. Ask Bryce.
 - **Clear-the-land chain (built 2026-10-25, PR on branch `claude/project-thread-k0v9ff`):** new jobs "Clear the ground" (Hazel, costs nothing, gives 3 twigs + 2 stones) and "Dig a seed bed" (Hazel, after ruts + clear). The seed bed is hidden until it is dug (older saves with a crop keep theirs). The bench and woodpile only appear once their jobs are done (stones / loose sticks lie there before). Every early job now changes the picture with a code-drawn stand-in (`BEFORE`, `AFTER`, `EXTRAS`, `drawGroundChanges` in index.html): raked patch + stick pile, moss roof, doorstep stones, window box, second fence run, oak planted out of its pot, water in the barrel, washing line, lit lantern (night glow only once mended). **Art to paint later to replace them:** raked clearing patch, gathered stick pile, moss-roofed shelter, flat-stone doorstep, window box, mended fence run, oak planted in the ground, full rain barrel, washing line, lit lantern, loose bench stones, loose firewood.
 - **To-do from Bryce (2026-10-25):** the glowing ring under pick-ups should become a soft glow from behind the item itself (no ring). Small code change in `drawOffer`; do it in the next gameplay pass.
 - **Usage:** Bryce is chewing through usage. Use Opus at high effort at most, prefer medium, for a while (2026-10-25).

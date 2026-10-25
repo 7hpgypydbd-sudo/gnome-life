@@ -60,6 +60,7 @@
   .por img { width:100%; height:100%; object-fit:cover; } .por.pad img { object-fit:contain; padding:6px; box-sizing:border-box; } .por span { font-size:34px; }
   .por.big { width:140px; height:140px; margin:4px auto 8px; border-width:3px; } .por.big span { font-size:76px; } .por.big.pad img { padding:12px; }
   .jpage { text-align:center; } .jpage h2 { padding:0 !important; } .jpage .lore { font-size:17px; font-style:italic; color:var(--ink); margin:6px 8px 12px; } .jpage .meta { font-size:14px; margin:4px 0; }
+  .jpage img.story { width:100%; max-width:420px; border-radius:14px; display:block; margin:4px auto 8px; }
   .jrow { display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid rgba(43,36,24,.12); }
   .jrow .sil { width:40px; height:40px; border-radius:50%; background:var(--paper2); display:flex; align-items:center; justify-content:center; font-size:22px; flex:none; }
   .jrow.unseen .sil { filter:grayscale(1); opacity:.5; }
@@ -213,12 +214,18 @@ const ART_SLOTS = {
 // visitors and the journal (docs/ART-BATCH-5.md): vis-<id> is the creature in the garden (side view; faces in CONTENT says which way),
 // portrait-<id> is its round journal picture (optional: the journal falls back to vis-<id>, then to the stand-in icon)
 for (const v of C.visitors) { ART_SLOTS['vis-' + v.id] = {}; ART_SLOTS['portrait-' + v.id] = {}; }
+// neighbours and the village (docs/ART-BATCH-6.md): folk-<id> a standing neighbour (folk-<id>-2.. for the rest of a household), face-<id> an
+// optional round portrait, home-<id> their home, bld-<id> their trade building, story-<id> the picture at the end of their story,
+// story-<id>-home when they move in, find-<id> the thing you look for in their story; plus the bridge, the traveller's tent, a glow jar, new icons.
+for (const f of C.folk) { for (const k of ['face-', 'story-']) ART_SLOTS[k + f.id] = {}; ART_SLOTS['story-' + f.id + '-home'] = {}; ART_SLOTS['folk-' + f.id] = {}; (f.members || []).forEach((_, i) => ART_SLOTS[`folk-${f.id}-${i + 2}`] = {});
+  ART_SLOTS['home-' + f.id] = { w: 190 }; ART_SLOTS['bld-' + f.id] = { w: 130 }; if (f.quest.steps.some(st => st.find)) ART_SLOTS['find-' + f.id] = { w: 44 }; }
+Object.assign(ART_SLOTS, { 'bld-bridge': { w: 200 }, 'camp-tent': { w: 110 }, 'glow-jar': { w: 30 }, 'icon-bread': {}, 'icon-plank': {}, 'icon-honey': {}, 'icon-yarn': {} });
 Object.assign(ART_SLOTS, { 'feeding-dish': { w: 58 }, 'nest-nest': { w: 40 }, 'nest-burrow': { w: 54 }, 'nest-leafpile': { w: 70 }, 'nest-stones': { w: 60 } });
 const ART = {};   // name -> loaded Image, only for slots whose file exists
 function art(k) { return ART[k] || null; }
 function loadArtSlots() {   // after the game starts, so missing files never slow the first picture
   for (const k of Object.keys(ART_SLOTS)) {
-    const im = new Image(); im.onload = () => { ART[k] = /^(btn|plot|room|vis|portrait)-/.test(k) ? im : settle(im, k === 'stepping-stones'); if (k.startsWith('btn-')) paintButton(k); }; im.src = `sprites/${k}.webp`;
+    const im = new Image(); im.onload = () => { ART[k] = /^(btn|plot|room|vis|portrait|folk|face|story|icon|find)-/.test(k) ? im : settle(im, k === 'stepping-stones'); if (k.startsWith('btn-')) paintButton(k); }; im.src = `sprites/${k}.webp`;
   }
 }
 function slotSize(k, img, w) {   // world-pixel width and height for a slot picture (w: width of the prop it replaces)
@@ -290,7 +297,7 @@ class Gnome {
     }
     this.routine = null;
     if (job) {
-      const sp = WORKSPOT[job.def.spot] || SPOTS.fire; this.job = job.id;
+      const sp = jobSpot(job) || WORKSPOT[job.def.spot] || SPOTS.fire; this.job = job.id;
       this.plan = job.def.act || SPOT_ACT[job.def.spot] || (job.def.tile ? 'dig' : 'carry');
       this.pace = this.plan === 'carry' ? [[sp[0], sp[1]], [sp[0] - 0.12, sp[1] + 0.06]] : null;
       this.goto(sp[0], sp[1]); this.faceTowards(sp[0], sp[1], null); return;
@@ -444,6 +451,7 @@ function drawParticles(ph) {
 }
 function float(text, x, y) { floaters.push({ text, x, y: y - 40, life: 0 }); }
 // a little paper tag over a gnome who is on a job: name, the job, a progress bar and time left. Drawn in screen space so it stays readable at any zoom.
+const lcName = (t) => t[0].toLowerCase() + t.slice(1);
 function shortName(d) { return (d.short || d.name).replace(/^(Fill|Mend|Plant|Set|Stack|Lay|Scrub|String up|Hang|Start|Scatter|Raise|Dig|Nail up|Build|Coax|Keep|Sow|Line|Carve)\s+(the\s+|a\s+|an\s+)?/i, ''); }
 function rrect(x, y, w, h, r) { r = Math.min(r, h / 2, w / 2); ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 function drawBusyTag(g, now) {
@@ -744,8 +752,9 @@ function drawOffer(o, now) {
   shadow(x, y, 9 * k, 4 * k);
   halo(x, y - 18 * k + b, 26 * k, now, o.gx * 7);
   if (o.kind === 'light') { glow(x, y - 14 * k + b, 36 * k, 'rgba(255,240,170,1)', 0.6 + 0.2 * Math.sin(now / 200)); }
-  const img = IM['icon-' + o.kind], sz = 64 * k;
-  ctx.drawImage(img, x - sz / 2, y - 8 * k + b - sz * 0.8, sz, sz);
+  const img = IM['icon-' + o.kind] || art('icon-' + o.kind), sz = 64 * k;
+  if (img) ctx.drawImage(img, x - sz / 2, y - 8 * k + b - sz * 0.8, sz, sz);
+  else { ctx.save(); ctx.font = `${Math.round(36 * k)}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(C.resources[o.kind].icon, x, y - 4 * k + b); ctx.restore(); }
 }
 // ---------- the feeding dish and nests ----------
 const FEEDER = { gx: 0.74, gy: 0.64 };
@@ -842,6 +851,282 @@ function ate(v) {   // the visitor finished at the dish
   else float('♥', x, y - 20);
 }
 
+// ---------- neighbours and the village ----------
+// Where things sit on a neighbour's lot (tile grid 0..1). A traveller camps beside the path on the tile east of home.
+const LOT = { home:[0.36, 0.30], build:[0.30, 0.66], spots:[[0.46, 0.42], [0.60, 0.36], [0.40, 0.54], [0.64, 0.50]] };   // clear of the painted stumps and boulder on tile-green
+const CAMP = { tile:'1,0', gx:0.78, gy:0.62 };
+const BRIDGE = { tile:'1,-1', gx:0.50, gy:0.50 };
+const JARS = [[0.34, 0.18], [0.34, 0.62]];   // glow-jar posts on each path tile (beside the path, which runs down the middle)
+const glob = (tile, gx, gy) => { const [tx, ty] = tile.split(',').map(Number); return [tx + gx, ty + gy]; };   // a tile's local spot -> home-tile grid
+// Stand-in neighbours: Wendel's or Hazel's painted walk, recoloured (hat, coat, grey hair) until each neighbour is painted (art slot folk-<id>).
+const TINT = {};
+function hsl(r, g, b) { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2; if (mx === mn) return [0, 0, l];
+  const d = mx - mn, s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn); let h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [h * 60, s, l]; }
+function rgb(h, s, l) { h /= 360; if (!s) return [l * 255, l * 255, l * 255]; const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+  const f = t => { t = (t + 1) % 1; return 255 * (t < 1 / 6 ? p + (q - p) * 6 * t : t < 0.5 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p); }; return [f(h + 1 / 3), f(h), f(h - 1 / 3)]; }
+function tintStrip(img, base, look) {
+  const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+  const d = x.getImageData(0, 0, c.width, c.height), p = d.data, w = c.width, hh = c.height;
+  for (let i = 0; i < p.length; i += 4) {
+    if (p[i + 3] < 8) continue;
+    const y = ((i >> 2) / w | 0) / hh; let [h, s, l] = hsl(p[i], p[i + 1], p[i + 2]), ch = false;
+    if (base === 'him') {
+      if (y < 0.36 && (h >= 340 || h <= 32) && s > 0.3 && l < 0.78) { h = look.hat; ch = true; }
+      else if (h >= 180 && h <= 255 && s > 0.1) { h = look.coat; ch = true; }
+      else if (look.grey && y > 0.3 && y < 0.68 && h >= 6 && h <= 45 && s > 0.18 && l < 0.56) { s *= 0.1; l = 0.6 + l * 0.6; ch = true; }
+    } else {
+      if (h >= 42 && h <= 115 && s > 0.12) { h = y < 0.3 ? look.hat : look.coat; ch = true; }
+      else if (look.grey && y > 0.1 && y < 0.6 && (h <= 32 || h >= 350) && s > 0.32 && l < 0.5) { s *= 0.1; l = 0.6 + l * 0.6; ch = true; }
+    }
+    if (ch) { const [r, g, b] = rgb(h, s, l); p[i] = r; p[i + 1] = g; p[i + 2] = b; }
+  }
+  x.putImageData(d, 0, 0); return c;
+}
+function tinted(key, base, look) {   // { side, front, back } recoloured strips, made once
+  if (!TINT[key]) { TINT[key] = {}; for (const dir of ['side', 'front', 'back']) TINT[key][dir] = tintStrip(IM[`${base}-${dir}`], base, look); }
+  return TINT[key];
+}
+function folkMembers(f) { return [{ base: f.base, look: f.look }].concat(f.members || []); }
+const PORTRAIT = {};
+function folkPortrait(f) {   // a round journal picture: painted face-<id> or folk-<id>, else the recoloured stand-in's head and shoulders
+  if (art('face-' + f.id)) return `sprites/face-${f.id}.webp`;
+  if (art('folk-' + f.id)) return `sprites/folk-${f.id}.webp`;
+  if (!PORTRAIT[f.id]) {
+    const ms = folkMembers(f).slice(0, 2), c = document.createElement('canvas'); c.width = 240; c.height = 240; const x = c.getContext('2d');
+    ms.forEach((m, i) => { const st = tinted(f.id + i, m.base, m.look).front, [cw] = GNOMES[m.base].cell, off = ms.length > 1 ? (i ? 54 : -54) : 0;
+      x.drawImage(st, 0, 0, cw, 150, 120 - cw * 0.85 + off, 18, cw * 1.7, 255); });
+    PORTRAIT[f.id] = c.toDataURL();
+  }
+  return PORTRAIT[f.id];
+}
+
+// One neighbour on the land: wanders near their door by day, indoors at night. The traveller stands by the camp.
+class Folk {
+  constructor(f, i, home) {
+    const m = folkMembers(f)[i]; this.f = f; this.i = i; this.base = m.base; this.look = m.look; this.key = f.id + i;
+    this.home = home; [this.gx, this.gy] = this.spot(i); this.tx = this.gx; this.ty = this.gy;
+    this.walking = false; this.wait = 1 + Math.random() * 4; this.dir = 'front'; this.flip = Math.random() < 0.5; this.frame = 0; this.ft = 0; this.speed = 0.045;
+  }
+  spot(i) { const t = this.home; if (t.camp) return glob(CAMP.tile, CAMP.gx - 0.10 + 0.07 * i, CAMP.gy + 0.10 - 0.03 * i); const [sx, sy] = LOT.spots[i % LOT.spots.length]; return glob(t.tile, sx, sy); }
+  outside() { const h = dayPhase().h; return this.home.camp ? h >= 6 && h < 21 : h >= 7 && h < 20; }
+  update(dt) {
+    if (!this.walking) {
+      this.wait -= dt; if (this.wait > 0) return;
+      this.wait = 3 + Math.random() * 6;
+      if (this.home.camp || Math.random() < 0.35) { this.dir = Math.random() < 0.7 ? 'front' : 'side'; this.flip = Math.random() < 0.5; return; }
+      const [sx, sy] = this.home.tile ? glob(this.home.tile, ...LOT.spots[(Math.random() * LOT.spots.length) | 0]) : [this.gx, this.gy];
+      this.tx = sx + (Math.random() - 0.5) * 0.06; this.ty = sy + (Math.random() - 0.5) * 0.06; this.walking = true; return;
+    }
+    const dx = this.tx - this.gx, dy = this.ty - this.gy, d = Math.hypot(dx, dy);
+    if (d < 0.004) { this.walking = false; this.frame = 0; this.dir = 'front'; return; }
+    const st = Math.min(d, this.speed * dt); this.gx += dx / d * st; this.gy += dy / d * st;
+    const [ax, ay] = toWorld(this.gx, this.gy), [bx, by] = toWorld(this.gx + dx / d * 0.01, this.gy + dy / d * 0.01), deg = Math.atan2(by - ay, bx - ax) * 180 / Math.PI;
+    this.dir = deg > 50 && deg < 130 ? 'front' : deg < -50 && deg > -130 ? 'back' : 'side'; if (this.dir === 'side') this.flip = bx < ax;
+    this.ft += dt; if (this.ft > 1 / 9) { this.ft -= 1 / 9; this.frame = (this.frame + 1) % 8; }
+  }
+  draw(now) {
+    if (!this.outside()) { this.screen = null; return; }
+    const [x, y] = toWorld(this.gx, this.gy), sc = this.look.s || 1, painted = art(this.i ? `folk-${this.f.id}-${this.i + 1}` : 'folk-' + this.f.id);
+    if (painted) {   // a painted standing figure (no walk yet): a gentle bob while walking, mirrored to face the way it goes
+      const h = 112 * sc, w = h * painted.width / painted.height, bob = this.walking ? Math.abs(Math.sin(now / 120)) * 3 : 0;
+      shadow(x, y, w * 0.4, w * 0.15); ctx.save(); ctx.translate(x, y - bob); if (this.flip) ctx.scale(-1, 1); ctx.drawImage(painted, -w / 2, -h, w, h); ctx.restore();
+      this.screen = { x, y, w, h }; return;
+    }
+    const st = tinted(this.key, this.base, this.look)[this.dir], [cw, ch] = GNOMES[this.base].cell, s = SPR * 0.92 * sc, f = this.walking ? this.frame : 0;
+    shadow(x, y, cw * s * 0.45, cw * s * 0.18);
+    ctx.save(); ctx.translate(x, y); if (this.dir === 'side' && this.flip) ctx.scale(-1, 1);
+    ctx.drawImage(st, f * cw, 0, cw, ch, -cw * s / 2, -ch * s, cw * s, ch * s); ctx.restore();
+    this.screen = { x, y, w: cw * s, h: ch * s };
+  }
+}
+const folkOnLand = [];   // Folk figures for the traveller and every neighbour, rebuilt when the village changes
+let villageKey = '';
+function syncFolk() {
+  const v = G.s.village, key = JSON.stringify([v.traveller && v.traveller.id, Object.entries(v.folk).map(([k, f]) => k + f.tile)]);
+  if (key === villageKey) return; villageKey = key; folkOnLand.length = 0;
+  if (v.traveller) { const f = G.folkDef(v.traveller.id); folkMembers(f).forEach((_, i) => folkOnLand.push(new Folk(f, i, { camp: true, ox: 0, oy: 0 }))); }
+  for (const [fid, fs] of Object.entries(v.folk)) { const f = G.folkDef(fid); folkMembers(f).forEach((_, i) => folkOnLand.push(new Folk(f, i, { tile: fs.tile }))); }
+}
+function folkNeedsYou(fid) {   // a paper "!" over a neighbour: a favour to do, or a new part of their story to read
+  const v = G.s.village, fs = v.folk[fid];
+  if (v.favour && v.favour.folk === fid) return true;
+  return !!(fs && typeof fs.q === 'number' && fs.q >= 0 && fs.seen !== fs.q);
+}
+function bang(x, y, now) {   // the little paper "!" bubble (also used for creatures in trouble)
+  const by = y - Math.sin(now / 300) * 2;
+  ctx.save(); ctx.fillStyle = '#f3e9d2'; ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, by, 11, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#b14c37'; ctx.font = 'bold 15px Georgia, serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', x, by + 1); ctx.restore();
+}
+
+// -- stand-in homes (art slot home-<id>): code-drawn until painted. Bottom-centre at (x, y); about 1.5 gnomes tall.
+function door(x, y, w, h, col) {   // a round-topped door with a knob
+  ctx.fillStyle = col; ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.moveTo(x - w / 2, y); ctx.lineTo(x - w / 2, y - h + w / 2); ctx.arc(x, y - h + w / 2, w / 2, Math.PI, 0); ctx.lineTo(x + w / 2, y); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.moveTo(x, y - h + 2); ctx.lineTo(x, y); ctx.stroke();
+  blob(x + w * 0.28, y - h * 0.45, 1.8, 1.8, '#e0c060');
+}
+function win(x, y, r, night) { blob(x, y, r + 2, r + 2, '#3a2a1a'); blob(x, y, r, r, night > 0.3 ? `rgba(255,${200 - 20 * night},110,${0.6 + 0.4 * night})` : '#9fb8c0'); ctx.strokeStyle = '#3a2a1a'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x - r, y); ctx.lineTo(x + r, y); ctx.moveTo(x, y - r); ctx.lineTo(x, y + r); ctx.stroke(); }
+const HOME_WIN = { stump:[36, -66], root:[0, -40], log:[46, -50], hollow:[2, -120] };   // where each stand-in home's window glows at night
+function drawFolkHome(f, x, y, a, now) {
+  const night = 1 - dayPhase().light;
+  if (drawSlot('home-' + f.id, x, y, a)) return;
+  ctx.save(); ctx.globalAlpha *= a; groundPatch(x, y, 110, 36); shadow(x, y, 100, 30); ctx.translate(x, y); ctx.scale(1.3, 1.3); ctx.translate(-x, -y);
+  const dc = f.door;
+  if (f.home === 'stump') {   // a fat cut stump with bark, rings on top, a door and a window
+    const w = 70, h = 110;
+    ctx.fillStyle = '#6a4a30'; ctx.beginPath(); ctx.moveTo(x - w, y - 6); ctx.bezierCurveTo(x - w - 14, y - 2, x - w - 10, y + 6, x - w - 22, y + 4); ctx.lineTo(x - w + 6, y - h); ctx.lineTo(x + w - 6, y - h); ctx.lineTo(x + w + 20, y + 4); ctx.bezierCurveTo(x + w + 6, y + 6, x + w + 10, y - 2, x + w, y - 6); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(30,18,10,0.45)'; ctx.lineWidth = 2; for (let i = 0; i < 9; i++) { const bx = x - w + 10 + i * (2 * w - 20) / 8; ctx.beginPath(); ctx.moveTo(bx + rnd(i) * 6, y - h + 6); ctx.lineTo(bx - 3 + rnd(i + 9) * 6, y - 4); ctx.stroke(); }
+    blob(x, y - h, w - 6, 18, '#b89468'); for (let i = 1; i < 5; i++) { ctx.strokeStyle = 'rgba(110,80,50,0.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x, y - h, (w - 6) * i / 5, 18 * i / 5, 0, 0, 7); ctx.stroke(); }
+    blob(x - 30, y - h + 2, 26, 8, 'rgba(110,140,60,0.85)'); blob(x + 24, y - h - 4, 18, 6, 'rgba(120,150,70,0.8)');
+    door(x - 6, y - 4, 30, 50, dc); win(x + 36, y - 66, 9, night);
+    if (f.id === 'mabel' || f.id === 'barnaby') { ctx.fillStyle = '#8a8478'; ctx.fillRect(x + 30, y - h - 30, 16, 32); blob(x + 38, y - h - 30, 9, 4, '#6d675d'); }
+  } else if (f.home === 'root') {   // an earth mound under arching roots, a round door in front
+    blob(x, y - 26, 92, 46, '#7a5a3a'); blob(x, y - 40, 80, 40, '#8a6a46'); blob(x - 10, y - 66, 60, 18, 'rgba(100,140,60,0.9)'); blob(x + 30, y - 58, 30, 12, 'rgba(120,160,70,0.8)');
+    ctx.strokeStyle = '#4a3220'; ctx.lineCap = 'round'; for (const [x0, y0, cx, cy, x1, y1, lw] of [[-90, -4, -70, -110, 10, -86, 10], [86, -4, 70, -100, -20, -92, 9], [-60, -2, -40, -60, 20, -70, 6]]) { ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(x + x0, y + y0); ctx.quadraticCurveTo(x + cx, y + cy, x + x1, y + y1); ctx.stroke(); }
+    door(x, y - 8, 32, 46, dc); win(x - 44, y - 38, 8, night); win(x + 44, y - 36, 8, night);
+    if (f.id === 'clem') for (let i = 0; i < 12; i++) blob(x - 50 + rnd(i) * 100, y - 70 + rnd(i + 5) * 22, 3, 3, ['#e8d040', '#d86aa0', '#f0f0f0', '#a070d0'][i % 4]);
+  } else if (f.home === 'log') {   // a hollow fallen log lying across, the door in its round end
+    ctx.fillStyle = '#6e4e32'; ctx.beginPath(); ctx.moveTo(x - 30, y - 96); ctx.lineTo(x + 96, y - 70); ctx.lineTo(x + 96, y - 6); ctx.lineTo(x - 30, y + 4); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(30,18,10,0.4)'; ctx.lineWidth = 2; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(x - 20 + i * 4, y - 80 + i * 16); ctx.lineTo(x + 90, y - 60 + i * 12); ctx.stroke(); }
+    blob(x - 30, y - 46, 34, 50, '#b89468'); blob(x - 30, y - 46, 28, 44, '#a48058'); door(x - 30, y - 6, 30, 52, dc);
+    win(x + 46, y - 50, 8, night); blob(x + 30, y - 84, 40, 9, 'rgba(110,140,60,0.85)'); ctx.fillStyle = '#8a8478'; ctx.fillRect(x + 64, y - 104, 12, 28);
+  } else {   // a hollow standing tree trunk, tall, with a high round window
+    ctx.fillStyle = '#5e4430'; ctx.beginPath(); ctx.moveTo(x - 56, y + 2); ctx.quadraticCurveTo(x - 40, y - 60, x - 38, y - 170); ctx.lineTo(x + 38, y - 176); ctx.quadraticCurveTo(x + 40, y - 60, x + 58, y + 2); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(30,18,10,0.45)'; ctx.lineWidth = 2; for (let i = 0; i < 7; i++) { ctx.beginPath(); ctx.moveTo(x - 34 + i * 11, y - 168); ctx.quadraticCurveTo(x - 36 + i * 12, y - 80, x - 44 + i * 14, y - 2); ctx.stroke(); }
+    blob(x, y - 174, 40, 12, '#3a2a1c'); for (let i = 0; i < 7; i++) blob(x - 40 + rnd(i + 3) * 80, y - 184 - rnd(i) * 26, 22, 16, ['#5e7a34', '#6e8a3c', '#4e6a2c'][i % 3]);
+    door(x, y - 2, 30, 54, dc); win(x + 2, y - 120, 10, night);
+  }
+  ctx.restore();
+}
+// -- trade buildings (art slot bld-<id>): code stand-ins, bottom-centre at (x, y)
+function drawBuilding(fid, x, y, a, now) {
+  const night = 1 - dayPhase().light;
+  if (!drawSlot('bld-' + fid, x, y, a)) {
+    ctx.save(); ctx.globalAlpha *= a; shadow(x, y, 46, 14);
+    if (fid === 'mabel') {   // a clay dome oven on a stone plinth, the mouth glowing
+      blob(x, y - 8, 46, 14, '#8f897e'); blob(x, y - 32, 42, 34, '#b8744a'); blob(x - 10, y - 46, 22, 14, 'rgba(255,220,180,0.25)');
+      blob(x + 6, y - 22, 14, 11, '#2a1a10'); blob(x + 6, y - 20, 10, 7, `rgba(255,${150 + 40 * Math.sin(now / 200)},60,0.85)`); ctx.fillStyle = '#8a8478'; ctx.fillRect(x - 24, y - 76, 10, 20);
+      if (Math.random() < 0.04) particles.push({ k: 'smoke', x: x - 19, y: y - 78, vx: (Math.random() - 0.5) * 3, vy: -9, r: 2.5, life: 0, max: 2.4 });
+    } else if (fid === 'tobias') {   // an open-sided workshop: four posts, a plank roof, a sawhorse
+      ctx.strokeStyle = '#5a3c24'; ctx.lineWidth = 5; for (const [px, py] of [[-50, 0], [40, 4], [-30, -14], [58, -10]]) { ctx.beginPath(); ctx.moveTo(x + px, y + py); ctx.lineTo(x + px, y + py - 66); ctx.stroke(); }
+      ctx.fillStyle = '#9a7a52'; ctx.beginPath(); ctx.moveTo(x - 62, y - 66); ctx.lineTo(x + 6, y - 96); ctx.lineTo(x + 72, y - 72); ctx.lineTo(x + 4, y - 50); ctx.closePath(); ctx.fill(); ctx.strokeStyle = 'rgba(40,24,12,0.5)'; ctx.lineWidth = 1.5; for (let i = 1; i < 6; i++) { ctx.beginPath(); ctx.moveTo(x - 62 + i * 11, y - 66 - i * 5); ctx.lineTo(x + 4 + i * 11, y - 50 - i * 4); ctx.stroke(); }
+      ctx.fillStyle = '#c8a070'; ctx.fillRect(x - 20, y - 22, 40, 6); stick(x - 16, y - 16, 18, 1.9); stick(x + 16, y - 16, 18, 1.2); for (let i = 0; i < 4; i++) stick(x - 40 + i * 8, y - 60, 14, 1.57, '#9a9a9a');
+    } else if (fid === 'fernsby') {   // a stone well with a little roof and a bucket
+      blob(x, y - 10, 34, 12, '#6d675d'); ctx.fillStyle = '#8f897e'; ctx.fillRect(x - 34, y - 34, 68, 24); blob(x, y - 34, 34, 11, '#a39d92'); blob(x, y - 34, 26, 7, '#1a2a30');
+      ctx.strokeStyle = '#5a3c24'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x - 28, y - 30); ctx.lineTo(x - 28, y - 84); ctx.moveTo(x + 28, y - 30); ctx.lineTo(x + 28, y - 84); ctx.stroke();
+      ctx.fillStyle = '#7a5a3a'; ctx.beginPath(); ctx.moveTo(x - 44, y - 78); ctx.lineTo(x, y - 104); ctx.lineTo(x + 44, y - 78); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#3a2a1a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, y - 84); ctx.lineTo(x, y - 56); ctx.stroke(); ctx.fillStyle = '#7a5030'; ctx.fillRect(x - 6, y - 58, 12, 10);
+    } else if (fid === 'pebbleworth') {   // a little ring of young fruit trees, staked
+      for (const [dx, dy, s] of [[-40, -6, 1], [10, -18, 0.9], [44, 2, 1.05], [-6, 12, 0.95]]) {
+        shadow(x + dx, y + dy, 18, 6); stick(x + dx, y + dy, 46 * s, -1.57, '#5a3c24'); stick(x + dx + 6, y + dy, 30, -1.4, '#c8a070');
+        for (let i = 0; i < 6; i++) blob(x + dx - 14 + rnd(i + dx) * 28, y + dy - 46 * s - rnd(i + dy) * 22, 12, 9, ['#5e7a34', '#6e8a3c', '#7a9a44'][i % 3]);
+        blob(x + dx - 6, y + dy - 44 * s, 3, 3, '#c83a2a'); blob(x + dx + 7, y + dy - 52 * s, 3, 3, '#d8a020');
+      }
+    } else if (fid === 'clem') {   // three straw skeps on a low bench, bees about
+      ctx.fillStyle = '#7a5a3a'; ctx.fillRect(x - 54, y - 14, 108, 7);
+      for (const dx of [-34, 0, 34]) { blob(x + dx, y - 30, 16, 20, '#c8a04a'); ctx.strokeStyle = 'rgba(110,80,30,0.6)'; ctx.lineWidth = 1.2; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.ellipse(x + dx, y - 44 + i * 8, 10 + i * 2, 3, 0, 0, Math.PI); ctx.stroke(); } blob(x + dx, y - 17, 3, 2.5, '#2a1a10'); }
+      if (dayPhase().light > 0.5) for (let i = 0; i < 6; i++) blob(x - 50 + ((now / 30 + i * 37) % 100), y - 50 - 14 * Math.sin(now / 300 + i), 1.6, 1.6, '#2a2010');
+    } else if (fid === 'barnaby') {   // a little mill house with a turning water wheel
+      ctx.fillStyle = '#9a8a6a'; ctx.fillRect(x - 20, y - 64, 54, 60); ctx.fillStyle = '#6a4a30'; ctx.beginPath(); ctx.moveTo(x - 28, y - 62); ctx.lineTo(x + 7, y - 92); ctx.lineTo(x + 42, y - 62); ctx.closePath(); ctx.fill();
+      door(x + 10, y - 4, 16, 28, '#7a5a9a'); const r = 30, cx = x - 30, cy = y - 32, an = now / 1400;
+      ctx.strokeStyle = '#5a3c24'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke(); ctx.lineWidth = 3;
+      for (let i = 0; i < 8; i++) { const t = an + i * Math.PI / 4; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(t) * (r + 6), cy + Math.sin(t) * (r + 6)); ctx.stroke(); }
+      blob(cx, cy, 5, 5, '#3a2a1a'); blob(cx, y - 2, 40, 7, 'rgba(120,170,200,0.7)');
+    } else if (fid === 'nettle') {   // a small loom shed with coloured cloth hung to dry
+      ctx.fillStyle = '#7a5a3a'; ctx.beginPath(); ctx.moveTo(x - 50, y - 62); ctx.lineTo(x - 4, y - 86); ctx.lineTo(x + 50, y - 64); ctx.lineTo(x + 50, y - 58); ctx.lineTo(x - 50, y - 56); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#5a3c24'; ctx.lineWidth = 4; for (const px of [-44, 44]) { ctx.beginPath(); ctx.moveTo(x + px, y); ctx.lineTo(x + px, y - 60); ctx.stroke(); }
+      [['#3a6a9a', -36], ['#c8a040', -12], ['#8a3a4a', 12], ['#5a8a4a', 34]].forEach(([c, dx]) => { ctx.fillStyle = c; ctx.fillRect(x + dx - 9, y - 56, 18, 30 + Math.sin(now / 600 + dx) * 2); });
+      ctx.fillStyle = '#9a7a52'; ctx.fillRect(x - 26, y - 22, 52, 5); ctx.fillRect(x - 24, y - 22, 4, 22); ctx.fillRect(x + 20, y - 22, 4, 22);
+    }
+    ctx.restore();
+  }
+}
+function drawBridge(x, y, a) {   // over the stepping stones: a low arched plank bridge with rails, running along the path
+  if (drawSlot('bld-bridge', x, y, a)) return;
+  ctx.save(); ctx.globalAlpha *= a; shadow(x, y + 4, 90, 24);
+  const L = 170, u = [Math.cos(-0.52), Math.sin(-0.52)], n = [Math.cos(0.52) * 22, Math.sin(0.52) * 22], N = 12;
+  const P = (t, side, up = 0) => [x + u[0] * L / 2 * t + n[0] * side, y + u[1] * L / 2 * t + n[1] * side - 22 * (1 - t * t) - up];
+  ctx.fillStyle = '#7a5a3a'; ctx.beginPath();
+  for (let i = 0; i <= N; i++) { const [px, py] = P(-1 + 2 * i / N, -1); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+  for (let i = N; i >= 0; i--) { const [px, py] = P(-1 + 2 * i / N, 1); ctx.lineTo(px, py + 6); }
+  ctx.closePath(); ctx.fill();
+  for (let i = 0; i <= N; i++) { const t = -1 + 2 * i / N, [ax, ay] = P(t, -1), [bx, by] = P(t, 1); ctx.strokeStyle = i % 2 ? '#a88458' : '#9a7a52'; ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke(); }
+  ctx.strokeStyle = 'rgba(40,24,12,0.55)'; ctx.lineWidth = 1; for (let i = 0; i <= N; i++) { const t = -1 + 2 * (i + 0.5) / N, [ax, ay] = P(t, -1), [bx, by] = P(t, 1); ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke(); }
+  ctx.strokeStyle = '#5a3c24'; ctx.lineCap = 'round';
+  for (const side of [-1, 1]) {
+    ctx.lineWidth = 3.5; for (const t of [-0.9, -0.3, 0.3, 0.9]) { const [ax, ay] = P(t, side), [bx, by] = P(t, side, 22); ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke(); }
+    ctx.lineWidth = 3; ctx.beginPath(); for (let i = 0; i <= N; i++) { const t = -0.9 + 1.8 * i / N, [px, py] = P(t, side, 22); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); } ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawCamp(x, y, f, now) {   // the traveller's camp: a patched tent and a small fire (art slot camp-tent)
+  const night = 1 - dayPhase().light;
+  if (!drawSlot('camp-tent', x, y)) {
+    shadow(x, y, 50, 14); ctx.save();
+    ctx.fillStyle = '#c8b48a'; ctx.beginPath(); ctx.moveTo(x - 58, y); ctx.lineTo(x, y - 86); ctx.lineTo(x + 58, y); ctx.closePath(); ctx.fill(); ctx.fillStyle = 'rgba(80,60,30,0.18)'; ctx.beginPath(); ctx.moveTo(x, y - 86); ctx.lineTo(x + 58, y); ctx.lineTo(x + 20, y); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = f.door; ctx.globalAlpha = 0.55; ctx.fillRect(x + 6, y - 30, 16, 12); ctx.fillRect(x - 26, y - 16, 14, 10); ctx.globalAlpha = 1;
+    ctx.fillStyle = night > 0.3 ? `rgba(255,190,110,${0.5 + 0.4 * night})` : '#3a2a1a'; ctx.beginPath(); ctx.moveTo(x - 16, y); ctx.lineTo(x, y - 56); ctx.lineTo(x + 16, y); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#5a3c24'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y - 86); ctx.lineTo(x, y - 96); ctx.stroke(); ctx.restore();
+  }
+  const fx = x + 56, fy = y + 18; blob(fx, fy, 12, 4, '#3a2a1a'); stick(fx - 8, fy - 2, 16, -0.3); stick(fx + 8, fy - 2, 16, -2.8);
+  const fl = 0.75 + 0.25 * Math.sin(now / 90); blob(fx, fy - 6 * fl, 5, 7 * fl, 'rgba(255,170,60,0.9)'); blob(fx, fy - 5, 3, 4, 'rgba(255,230,140,0.9)');
+}
+function drawJars(now) {   // Juniper's glow jars along the village path (art slot glow-jar)
+  if (taskProg('trade:juniper') <= 0) return;
+  const a = taskProg('trade:juniper');
+  for (const k of ['1,-2', '1,0', '1,1', '1,2']) {
+    if (!G.s.tiles[k]) continue;
+    for (const [gx, gy] of JARS) {
+      const [x, y] = toWorld(...glob(k, gx, gy)); ctx.save(); ctx.globalAlpha = a;
+      if (!drawSlot('glow-jar', x, y)) { stick(x, y, 46, -1.57, '#5a3c24'); stick(x, y - 44, 12, 0, '#5a3c24'); blob(x + 10, y - 36, 6, 8, 'rgba(220,240,230,0.6)'); blob(x + 10, y - 36, 3.5, 4.5, 'rgba(255,240,170,0.95)'); }
+      ctx.restore();
+    }
+  }
+}
+// everything of the village that sits on the land, as depth-sorted items for the frame
+function villageItems(items, now) {
+  syncFolk();
+  const v = G.s.village;
+  if (v.traveller) { const f = G.folkDef(v.traveller.id), [gx, gy] = glob(CAMP.tile, CAMP.gx, CAMP.gy); items.push({ d: depthOf(gx, gy) - 0.06, draw: () => { const [x, y] = toWorld(gx, gy); CAMP.screen = { x, y, w: 100, h: 70 }; drawCamp(x, y, f, now); } }); }
+  for (const tk of Object.entries(G.s.tasks)) {   // homes going up (fade in as the job runs) and standing
+    const [id, t] = tk; if (!id.startsWith('home:') || !t.tile) continue;
+    const f = G.folkDef(id.slice(5)), [gx, gy] = glob(t.tile, ...LOT.home), a = taskProg(id);
+    items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); if (a < 1) { stone(x - 50, y + 4, 9); stone(x - 34, y + 10, 8); stick(x + 40, y + 6, 40, -0.2); } drawFolkHome(f, x, y, Math.max(0.12, a), now); f.screenHome = { x, y, w: 190, h: 190 }; } });
+  }
+  for (const fid of Object.keys(v.folk)) {
+    const fs = v.folk[fid], a = taskProg('trade:' + fid), f = G.folkDef(fid); if (a <= 0 || f.building.site === 'path') continue;
+    const [gx, gy] = glob(fs.tile, ...LOT.build);
+    items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); drawBuilding(fid, x, y, a, now); } });
+  }
+  const ba = taskProg('bridge'); if (ba > 0) { const [gx, gy] = glob(BRIDGE.tile, BRIDGE.gx, BRIDGE.gy); items.push({ d: depthOf(gx, gy) - 0.3, draw: () => { const [x, y] = toWorld(gx, gy); drawBridge(x, y, ba); } }); }
+  for (const p of folkOnLand) items.push({ d: depthOf(p.gx, p.gy), draw: () => { p.draw(now); if (p.screen && p.i === 0 && (folkNeedsYou(p.f.id) || (p.home.camp && !G.s.tasks['home:' + p.f.id]))) bang(p.screen.x, p.screen.y - p.screen.h - 14, now); } });
+  for (const fd of v.finds) items.push({ d: depthOf(...glob(fd.tile, fd.gx, fd.gy)), draw: () => drawFind(fd, now) });
+}
+function drawFind(fd, now) {   // something to spot for a neighbour's story: softly glowing, finger-sized
+  const st = G.questStep(fd.folk), it = st && st.find; if (!it) return;
+  const [x, y] = toWorld(...glob(fd.tile, fd.gx, fd.gy)), k = Math.max(1, 0.7 / cam.z), b = Math.sin(now / 400) * 2;
+  fd.screen = { x, y, w: 50 * k, h: 50 * k }; shadow(x, y, 10 * k, 4 * k); halo(x, y - 18 * k + b, 30 * k, now, 2);
+  if (!drawSlot('find-' + fd.folk, x, y + b, 1, { w: 44 * k })) { ctx.save(); ctx.font = `${Math.round(34 * k)}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(it.icon, x, y + b); ctx.restore(); }
+}
+function villageGlows(night, now) {   // after the night tint: lit windows, the camp fire, the oven, the glow jars
+  const v = G.s.village, fl = 0.8 + 0.2 * Math.sin(now / 90) * Math.sin(now / 230);
+  for (const [fid, fs] of Object.entries(v.folk)) {
+    const [x, y] = toWorld(...glob(fs.tile, ...LOT.home)), [wx, wy] = HOME_WIN[G.folkDef(fid).home]; glow(x + wx * 1.3, y + wy * 1.3, 60, 'rgba(255,190,110,1)', 0.45 * night);
+    if (fid === 'mabel' && taskProg('trade:mabel') >= 1) { const [bx, by] = toWorld(...glob(fs.tile, ...LOT.build)); glow(bx + 6, by - 22, 44, 'rgba(255,150,60,1)', 0.55 * night * fl); }
+  }
+  if (v.traveller) { const [x, y] = toWorld(...glob(CAMP.tile, CAMP.gx, CAMP.gy)); glow(x, y - 20, 50, 'rgba(255,190,110,1)', 0.3 * night); glow(x + 56, y + 10, 70, 'rgba(255,150,60,1)', 0.5 * night * fl); }
+  if (taskProg('trade:juniper') >= 1) for (const k of ['1,-2', '1,0', '1,1', '1,2']) if (G.s.tiles[k]) for (const [gx, gy] of JARS) { const [x, y] = toWorld(...glob(k, gx, gy)); glow(x + 10, y - 36, 50, 'rgba(255,235,160,1)', 0.55 * night); }
+}
+// where a gnome works on a village job (home-tile grid), or null for jobs at home
+function jobSpot(job) {
+  const d = job.def; if (!d.folk && job.id !== 'bridge') return null;
+  if (job.id === 'bridge') { const [gx, gy] = glob(BRIDGE.tile, BRIDGE.gx, BRIDGE.gy); return [gx + 0.1, gy + 0.14]; }
+  if (d.at === 'home') return null;
+  const tk = G.s.tasks[job.id], fs = G.folkState(d.folk), tile = d.home ? tk && tk.tile : fs && fs.tile; if (!tile) return null;
+  if (d.folk === 'juniper' && job.id.startsWith('trade:')) return glob('1,0', 0.30, 0.40);
+  return glob(tile, ...(d.home ? [LOT.home[0] + 0.16, LOT.home[1] + 0.2] : [LOT.build[0] - 0.12, LOT.build[1] + 0.06]));
+}
+
 // ---------- main frame ----------
 let last = performance.now(), tickAcc = 0;
 function frame(now) {
@@ -850,6 +1135,7 @@ function frame(now) {
   tickAcc += dt; if (tickAcc > 0.5) { tickAcc = 0; G.tick(); }
   for (const g of gnomes) g.update(dt);
   updateVisitor(dt);
+  for (const p of folkOnLand) p.update(dt);
   spawnParticles(dt, ph); updateParticles(dt);
 
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -864,6 +1150,7 @@ function frame(now) {
   const tiles = Object.entries(G.s.tiles).sort((a, b) => depthOf(0, 0, a[0]) - depthOf(0, 0, b[0]));
   for (const [k, tl] of tiles) drawTile(k, tl, now);
   drawGroundChanges(now);
+  drawJars(now);
 
   // depth-sorted things
   const items = [];
@@ -874,6 +1161,7 @@ function frame(now) {
   if (visitor) items.push({ d: depthOf(visitor.gx, visitor.gy), draw: () => drawVisitor(visitor, now) });
   const fa = taskProg('feeder'); if (fa > 0) items.push({ d: depthOf(FEEDER.gx, FEEDER.gy), draw: () => { const [x, y] = toWorld(FEEDER.gx, FEEDER.gy); drawFeeder(x, y, fa, now); } });
   for (const id in NESTS) if (G.hasNest(id)) items.push({ d: depthOf(NESTS[id][0], NESTS[id][1]) - 0.05, draw: () => { const [x, y] = toWorld(NESTS[id][0], NESTS[id][1]); drawNest(id, x, y, now); } });
+  villageItems(items, now);
   items.sort((a, b) => a.d - b.d);
   for (const it of items) it.draw();
   drawParticles(ph);
@@ -891,6 +1179,7 @@ function frame(now) {
     const sh = PROPS.find(p => p.name === 'shelter'); const [sx, sy] = toWorld(sh.gx, sh.gy);
     glow(sx - 20, sy - 60, 70, 'rgba(255,190,120,1)', 0.35 * night);
     if (taskProg('house2') >= 1) for (const [wx, wy] of houseWindows()) glow(wx, wy, 34, 'rgba(255,200,110,1)', 0.6 * night * (gnomes.some(g => g.inside) ? 1 : 0.5));
+    villageGlows(night, now);
     for (const o of G.s.offers) if (o.kind === 'light' && o.screen) glow(o.screen.x, o.screen.y - 14, 40, 'rgba(255,240,170,1)', 0.5);
   }
   if (ph.warm > 0) { ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = `rgba(255,170,90,${0.28 * ph.warm})`; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); ctx.restore(); }
@@ -967,6 +1256,10 @@ function tap(cx, cy) {
   ripples.push({ x: cx, y: cy, t: 0 });
   // offerings first (small, on top)
   for (const o of [...G.s.offers].reverse()) if (hit(o.screen, wx, wy)) { G.gather(o.id); float(`+1 ${C.resources[o.kind].name}`, o.screen.x, o.screen.y); return; }
+  for (const fd of G.s.village.finds) if (hit(fd.screen, wx, wy)) { const st = G.questStep(fd.folk), f = G.folkDef(fd.folk); G.found(fd.id); float('✓ found', fd.screen.x, fd.screen.y); toast(`You found ${st.find.name}.`); return openFolk(f.id); }
+  for (const p of [...folkOnLand].reverse()) if (hit(p.screen, wx, wy)) return G.folkState(p.f.id) ? openFolk(p.f.id) : openTraveller();
+  if (G.s.village.traveller && hit(CAMP.screen, wx, wy)) return openTraveller();
+  for (const [fid, fs] of Object.entries(G.s.village.folk)) { const f = G.folkDef(fid); if (f.screenHome && hit(f.screenHome, wx, wy)) return openFolk(fid); }
   if (visitor && hit(visitor.screen, wx, wy)) {
     if (visitor.trouble) return openHelp();
     const id = visitor.def.id, isNew = G.noteVisitor(id); float(isNew ? '✎ new entry' : '✎', visitor.screen.x, visitor.screen.y); btnAlert('bJournal', isNew);
@@ -1063,7 +1356,7 @@ function drawRoom(now) {
 }
 function doing(g) {   // where a gnome is when not indoors, in words
   const r = G.running().find(r => r.def.who === g.who), rt = routineFor(dayPhase().h), n = C.names[g.who];
-  if (r) return `${n} is busy: ${shortName(r.def).toLowerCase()}`;
+  if (r) return `${n} is busy: ${lcName(shortName(r.def))}`;
   if (rt === 'eat') return `${n} is out by the campfire, having a bite`;
   if (rt === 'sit') return `${n} is out by the campfire`;
   return `${n} is pottering about outside`;
@@ -1105,7 +1398,7 @@ function renderInv(popKind) {   // the pack lives behind its button now; the bad
 function renderHud() {
   const st = G.landStage(), ph = dayPhase();
   $('sub').textContent = ph.light < 0.3 ? `${st.name}; the fire is lit, everything else sleeps` : st.sub;
-  const busy = G.running().map(r => `${C.names[r.def.who]} is busy: ${shortName(r.def).toLowerCase()} (${G.timeLeft(r.endsAt)} to go)`);
+  const busy = G.running().map(r => `${C.names[r.def.who]} is busy: ${lcName(shortName(r.def))} (${G.timeLeft(r.endsAt)} to go)`);
   $('busy').textContent = busy.join(' · ');
   const canStart = G.taskList().filter(v => v.state === 'ready' && v.can).length + (G.plot().stage === 'ready' || (G.plot().stage === 'planted' && G.can({ water: 1 })) ? 1 : 0);
   $('bTasks').querySelector('.dot').textContent = canStart; btnAlert('bTasks', canStart > 0);
@@ -1126,14 +1419,20 @@ sheet.addEventListener('click', e => {
   if (a === 'cast') { if (G.cast(id)) toast(C.spells[id].name + '.'); }
   if (a === 'food') { if (G.putFood(id)) { toast(id === 'seed' ? 'Seed in the dish.' : 'Berries in the dish.'); closeSheet(); return; } }
   if (a === 'help') return doHelp();
+  if (a === 'folk') return openFolk(id);
+  if (a === 'traveller') return openTraveller();
+  if (a === 'story') return openStory(id, 'quest');
+  if (a === 'wave') { if (b.dataset.sure) { if (G.waveOn()) { toast('They waved goodbye. Someone else will come along.'); return closeSheet(); } } else { b.dataset.sure = 1; b.textContent = 'Yes, wave them on'; return; } }
+  if (a === 'qgive') { if (G.questGive(id)) toast('Given, with thanks.'); }
+  if (a === 'favour') { const g = G.doFavour(); if (g) toast(`Thank you! ${Object.entries(g).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(', ')}`); }
   if (a === 'entry') return openEntry(id);
   if (a === 'journal') return openJournal();
   if (a === 'reset') { if (confirm('Start the garden over? This wipes your save.')) G.reset(); return; }
   refreshSheet();
 });
-function iconHtml(k) { return `<img class="ico" src="sprites/icon-${k}.webp" alt="${C.resources[k].name}">`; }
+function iconHtml(k) { return ASSETS['icon-' + k] || art('icon-' + k) ? `<img class="ico" src="sprites/icon-${k}.webp" alt="${C.resources[k].name}">` : `<span class="ico" style="display:inline-block;text-align:center;font-size:18px">${C.resources[k].icon}</span>`; }
 function costHtml(cost) { return Object.entries(cost || {}).map(([k, n]) => `<i>${iconHtml(k)}${n}</i>`).join(''); }
-function refreshSheet() { if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); renderInv(); renderHud(); }
+function refreshSheet() { if (sheetKind && sheetKind.startsWith('folk:')) openFolk(sheetKind.slice(5)); else if (sheetKind === 'traveller') G.s.village.traveller ? openTraveller() : closeSheet(); else if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); renderInv(); renderHud(); }
 function openSeedbed() {
   const p = G.plot(), c = C.crops.sprout; let body = '';
   if (!p.stage) body = `<div class="row"><div class="t"><b>Plant a seed</b><span>Costs ${costHtml(c.plant)} · ready about ${Math.round(c.grow / 60)} hours after watering</span></div><button class="act" data-a="plant" ${G.can(c.plant) ? '' : 'disabled'}>Plant</button></div>` + (G.can(c.plant) ? '' : `<p>No seeds. The land offers one now and then; look for a seed on the ground.</p>`);
@@ -1190,7 +1489,7 @@ function journalFoot(v) {   // what you know about a creature's feeding, nest an
 }
 function openJournal() {
   const seen = C.visitors.filter(v => G.met(v.id)).length, regs = C.visitors.filter(v => G.isRegular(v.id)).length;
-  let html = `<h2>Field journal<small>${seen} of ${C.visitors.length} met${regs ? ` · ${regs} regular${regs > 1 ? 's' : ''}` : ''}</small></h2><p>Tap a visitor in the garden to note it down; a soft glow means someone new. Tap a page to read it.</p><div class="jgrid">`;
+  let html = `<h2>Field journal<small>${seen} of ${C.visitors.length} met${regs ? ` · ${regs} regular${regs > 1 ? 's' : ''}` : ''}</small></h2><p>Tap a visitor in the garden to note it down; a soft glow means someone new. Tap a page to read it.</p>${neighboursHtml()}<div class="jgrid">`;
   for (const v of C.visitors) { const m = G.met(v.id); html += `<button class="jcard${m ? '' : ' unseen'}" data-a="${m ? 'entry' : ''}" data-id="${v.id}">${portraitHtml(v)}<b>${m ? v.name : '?'}</b>${G.hasNest(v.id) ? '<i>lives here</i>' : G.isRegular(v.id) ? '<i>regular</i>' : ''}</button>`; }
   html += `</div>`;
   const log = [...G.s.log].reverse().slice(0, 8);
@@ -1228,12 +1527,66 @@ function doHelp() {
   openSheet('help', `<div class="jpage">${portraitHtml(v.def, true)}<h2>Thank you</h2><p class="lore">${v.trouble.thanks}</p><p class="meta">${light ? 'A good deed: +1 light.' : 'A good deed. (No more light from good deeds today, but it was still the right thing.)'}</p></div><p style="text-align:center"><button class="act" data-a="close">You're welcome</button></p>`);
   v.trouble = null; v.stay = v.t + 8;
 }
+// ---------- neighbours: their page, the traveller's page, story pages ----------
+function folkPor(f, big) { return `<div class="por${big ? ' big' : ''}"><img src="${folkPortrait(f)}" alt=""></div>`; }
+const pick = a => a[(Math.random() * a.length) | 0];
+function openTraveller() {
+  const tr = G.s.village.traveller; if (!tr) return;
+  const f = G.folkDef(tr.id), v = G.taskView(G.taskDef('home:' + f.id)), d = v.def;
+  let html = `<div class="jpage">${folkPor(f, true)}<h2>${f.name}</h2><p class="meta">${f.trade}, camped by the path</p><p class="lore">${f.intro}</p></div><h3>Will they stay?</h3>`;
+  if (v.state === 'running') html += `<div class="row"><div class="t"><b>${d.name}</b><span><span class="who">${C.names[d.who]}</span> is on it · ${G.timeLeft(v.endsAt)} to go</span></div></div>`;
+  else {
+    html += `<div class="row"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>` + (v.locked ? `<span class="bad">${v.why}</span>` : `<span class="who">${C.names[d.who]}</span> needs <span class="cost">${costHtml(d.cost)}</span> · ${hours(d.mins)}` + (v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`)) + `</span></div><button class="act" data-a="start" data-id="${d.id}" ${v.state === 'ready' && v.can ? '' : 'disabled'}>Build</button></div>`;
+    html += `<p style="margin-top:12px">Not the right neighbour? <button class="act quiet" data-a="wave">Wave them on</button><br><small>They will go on along the road, and someone else will come by in a day or so.</small></p>`;
+  }
+  openSheet('traveller', html);
+}
+function folkStory(fid) {   // the story part of a neighbour's page, in words, with whatever button it needs
+  const f = G.folkDef(fid), fs = G.folkState(fid), st = G.questStep(fid);
+  if (fs.q === 'done') return `<h3>${f.quest.name}</h3><p>A story you helped finish. <button class="act quiet" data-a="story" data-id="${fid}">Read it again</button></p>`;
+  if (!st) return taskProg('trade:' + fid) >= 1 ? `<p><small>${f.short[0].toUpperCase() + f.short.slice(1)} will have a story for you before long.</small></p>` : '';
+  let btn = '';
+  if (st.give) btn = `<span class="cost">${costHtml(st.give)}</span><br>` + (G.can(st.give) ? `<button class="act" data-a="qgive" data-id="${fid}">Give</button>` : `<span class="bad">You are short ${G.missing(st.give).join(', ')}.</span>`);
+  else if (st.job) { const v = G.taskView(G.taskDef(`quest:${fid}:${fs.q}`)); btn = v.state === 'running' ? `<span><span class="who">${C.names[st.job.who]}</span> is on it · ${G.timeLeft(v.endsAt)} to go</span>` : `<span class="who">${C.names[st.job.who]}</span> needs <span class="cost">${costHtml(st.job.cost)}</span> · ${hours(st.job.mins)}<br>` + (v.can ? `<button class="act" data-a="start" data-id="${v.def.id}">${st.job.name}</button>` : `<span class="bad">You are short ${v.missing.join(', ')}.</span>`); }
+  else if (st.find) btn = `<span>Look for <b>${st.find.name}</b> on the land${st.find.hours ? ' (after dark)' : ''}. It will glow softly.</span>`;
+  else if (st.wait) btn = `<span>Come back in ${G.timeLeft(fs.waitUntil)}.</span>`;
+  return `<h3>${f.quest.name} · part ${fs.q + 1} of ${f.quest.steps.length}</h3><p class="lore" style="text-align:left;margin:4px 0 8px">${st.say}</p><p>${btn}</p>`;
+}
+function openFolk(fid) {
+  const f = G.folkDef(fid), fs = G.folkState(fid); if (!fs) return openTraveller();
+  if (typeof fs.q === 'number' && fs.q >= 0) fs.seen = fs.q;   // you've read the latest part of their story
+  let html = `<div class="jpage">${folkPor(f, true)}<h2>${f.name}</h2><p class="meta">${f.trade}${f.members ? '' : ''} · neighbours since ${new Date(fs.since).toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}</p><p class="lore">"${pick(f.sayings)}"</p></div>`;
+  const fv = G.s.village.favour;
+  if (fv && fv.folk === fid) { const ask = f.favours[fv.i]; html += `<h3>A small favour</h3><div class="row"><div class="t"><b>"${ask.ask}"</b><span class="cost">${costHtml(ask.cost)}</span>${G.can(ask.cost) ? '' : `<br><span class="bad">You are short ${G.missing(ask.cost).join(', ')}.</span>`}</div><button class="act" data-a="favour" ${G.can(ask.cost) ? '' : 'disabled'}>Help</button></div>`; }
+  const tv = G.taskView(G.taskDef('trade:' + fid)), b = tv.def;
+  if (tv.state !== 'done') html += `<h3>${b.name}</h3><div class="row"><div class="t"><span>${b.blurb}</span><br><span>` + (tv.state === 'running' ? `<span class="who">${C.names[b.who]}</span> is on it · ${G.timeLeft(tv.endsAt)} to go` : `<span class="who">${C.names[b.who]}</span> needs <span class="cost">${costHtml(b.cost)}</span> · ${hours(b.mins)}` + (tv.can ? '' : `<br><span class="bad">You are short ${tv.missing.join(', ')}.</span>`)) + `</span></div>${tv.state === 'ready' ? `<button class="act" data-a="start" data-id="${b.id}" ${tv.can ? '' : 'disabled'}>Start</button>` : ''}</div>`;
+  else html += `<p><small>${b.giftText.replace(/\.$/, '')}: every day.</small></p>`;
+  html += folkStory(fid);
+  openSheet('folk:' + fid, html);
+}
+function storyPic(key, f) {   // a painted story picture (art slot story-<key>), else the neighbour's portrait as a stand-in
+  return art('story-' + key) ? `<img class="story" src="sprites/story-${key}.webp" alt="">` : folkPor(f, true);
+}
+function openStory(fid, kind) {
+  const f = G.folkDef(fid);
+  if (kind === 'moved') openSheet('story', `<div class="jpage">${storyPic(fid + '-home', f)}<h2>${f.name} moved in</h2><p class="lore">${f.movedIn}</p><p class="meta">Next job: ${f.building.name}.</p></div><p style="text-align:center"><button class="act" data-a="folk" data-id="${fid}">Say hello</button></p>`);
+  else if (kind === 'arrived') openSheet('story', `<div class="jpage">${folkPor(f, true)}<h2>A traveller on the path</h2><p class="lore">${f.intro}</p></div><p style="text-align:center"><button class="act" data-a="traveller">Go and see</button> <button class="act quiet" data-a="close">Later</button></p>`);
+  else { const r = f.quest.reward; openSheet('story', `<div class="jpage">${storyPic(fid, f)}<h2>${f.quest.story.title}</h2><p class="lore" style="text-align:left">${f.quest.story.text}</p><p class="meta">The end of ${f.short}'s story. ${r ? 'A gift for you: ' + costHtml(r) : ''}</p></div><p style="text-align:center"><button class="act" data-a="close">Close the book</button></p>`); }
+}
+function neighboursHtml() {   // the journal's neighbours section
+  const v = G.s.village, ids = Object.keys(v.folk); if (!ids.length && !v.traveller) return '';
+  let html = `<h3>Neighbours</h3><div class="jgrid">`;
+  for (const fid of ids) { const f = G.folkDef(fid); html += `<button class="jcard" data-a="folk" data-id="${fid}"><div class="por"><img src="${folkPortrait(f)}" alt=""></div><b>${f.short[0].toUpperCase() + f.short.slice(1)}</b><i>${folkNeedsYou(fid) ? 'has news' : f.trade}</i></button>`; }
+  if (v.traveller) { const f = G.folkDef(v.traveller.id); html += `<button class="jcard" data-a="traveller"><div class="por"><img src="${folkPortrait(f)}" alt=""></div><b>${f.short[0].toUpperCase() + f.short.slice(1)}</b><i>camped by the path</i></button>`; }
+  return html + `</div><h3>Creatures</h3>`;
+}
 function openAway(r) {
-  const mins = Math.round(r.gone / 60000); if (mins < 10 && !r.finished.length && !r.ate) return;
+  const mins = Math.round(r.gone / 60000); if (mins < 10 && !r.finished.length && !r.ate) return r.traveller ? openStory(r.traveller, 'arrived') : undefined;
   const gone = mins < 60 ? `${mins} minutes` : mins < 60 * 36 ? `${Math.round(mins / 60)} hours` : `${Math.round(mins / 1440)} days`;
   let html = `<h2>While you were away<small>${gone}</small></h2>`;
   if (r.event) html += `<p>${r.event}</p>`;
   if (r.ate) html += `<p>The ${r.ate.toLowerCase()} came by and emptied the feeding dish.</p>`;
+  if (r.traveller) { const f = G.folkDef(r.traveller); html += `<p>A traveller has camped by the path: <b>${f.name}</b>, ${f.trade}. Tap their tent to meet them.</p>`; }
   if (r.newDay) html += `<p>A new day. Their magic has grown a little: ${G.magicInfo().name}.</p>`;
   if (r.offered) html += `<p>The land has left ${r.offered} thing${r.offered > 1 ? 's' : ''} for you to gather.</p>`;
   for (const f of r.finished) html += `<p>✓ ${f}</p>`;
@@ -1241,7 +1594,11 @@ function openAway(r) {
   openSheet('away', html + `<p style="margin-top:10px"><button class="act" data-a="close">Have a look</button></p>`);
 }
 $('bPack').onclick = openPack; $('bTasks').onclick = () => openTasks(); $('bMagic').onclick = openMagic; $('bJournal').onclick = openJournal;
-G.onChange((kind, data) => { renderInv(kind === 'inv' && typeof data === 'string' ? data : null); renderHud(); if (kind === 'task' && data && data.done) { toast('Finished: ' + G.taskDef(data.id).name.toLowerCase() + '.'); } if (kind === 'event') toast(data.text); if (kind === 'land') toast(`The home patch is now ${data.name}.`); });
+G.onChange((kind, data) => { renderInv(kind === 'inv' && typeof data === 'string' ? data : null); renderHud(); if (kind === 'task' && data && data.done) { toast('Finished: ' + lcName(G.taskDef(data.id).name) + '.'); } if (kind === 'event') toast(data.text); if (kind === 'land') toast(`The home patch is now ${data.name}.`);
+  if (kind === 'traveller' && data) { btnAlert('bJournal', true); if (!sheetKind) openStory(data, 'arrived'); else toast('A traveller has camped by the path.'); }
+  if (kind === 'story') { btnAlert('bJournal', true); openStory(data.folk, data.kind); }
+  if (kind === 'quest') btnAlert('bJournal', true);
+  if (kind === 'favour') { const f = G.folkDef(data); toast(`${f.short[0].toUpperCase() + f.short.slice(1)} could use a small favour.`); } });
 
 // ---------- start ----------
 function start() {
@@ -1256,7 +1613,7 @@ function start() {
   renderInv(); renderHud();
   const [a, b] = C.visitorEvery; nextVisitorAt = performance.now() + (G.FAST ? 5 : 25 + Math.random() * 30) * 1000;
   if (/vis=(\w+)/.test(hash)) { const def = C.visitors.find(v => v.id === RegExp.$1); if (def) spawnVisitor(def); }
-  G.view = () => ({ visitor, cam, W, H });   // for test scripts
+  G.view = () => ({ visitor, cam, W, H }); G.toWorld = toWorld;   // for test scripts
   requestAnimationFrame(frame);
   loadArtSlots();
   if (G.away) openAway(G.away);

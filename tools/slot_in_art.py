@@ -1,4 +1,4 @@
-"""Turn finished Batch 3, 4 and 5 pictures (docs/ART-BATCH-3.md, -4.md, -5.md) into the game's art-slot files.
+"""Turn finished Batch 3, 4, 5 and 6 pictures (docs/ART-BATCH-3.md ... -6.md) into the game's art-slot files.
 usage: python3 tools/slot_in_art.py <folder with the finished .jpg/.png files> [--thresh 0.42]
 Looks for each file by its Batch 3 name (plot-ruts-filled.jpg, yard-bits.jpg, icons-buttons.jpg ...), keys out the magenta,
 crops, sizes it and writes sprites/<slot>.webp. Files that are missing are skipped. The game picks the new files up on its
@@ -22,7 +22,9 @@ SINGLE = {
     'feeding-dish': ('feeding-dish', 200),   # batch 5
     # batch 4: home stage 2, each the whole stump at the shelter's width
     'house-hollowed': ('house-hollowed', 'shelter'), 'house-windows': ('house-windows', 'shelter'), 'house-finished': ('house-finished', 'shelter'),
+    'bridge': ('bld-bridge', 400),   # batch 6
 }
+STORIES = ('mabel', 'tobias', 'fernsby', 'pebbleworth', 'clem', 'barnaby', 'nettle', 'juniper')   # batch 6: story-<id>.jpg, landscape paintings, no magenta
 ROOMS = ('room-shelter', 'room-stump')   # square room paintings: no magenta to key, just sized to 1000x1000
 SHEETS = {   # one row of separate pieces, left to right
     'yard-bits': (['yard-doorstep', 'yard-windowbox', 'yard-stones', 'yard-firewood'], [180, 90, 170, 220]),
@@ -33,6 +35,19 @@ SHEETS = {   # one row of separate pieces, left to right
     'visitors-small':  (['vis-snail', 'vis-frog', 'vis-glowworm', 'vis-nativebee'], [240] * 4),
     'visitors-flying': (['vis-butterfly', 'vis-dragonfly', 'vis-moth', 'vis-wisp'], [240] * 4),
     'nests':           (['nest-nest', 'nest-burrow', 'nest-leafpile', 'nest-stones'], [160, 200, 240, 200]),
+    # batch 6 (docs/ART-BATCH-6.md): neighbours (standing, facing the viewer), their homes, trade buildings, the camp, icons and story finds
+    'folk-1': (['folk-mabel', 'folk-tobias', 'folk-pebbleworth', 'folk-pebbleworth-2'], [300] * 4),
+    'folk-2': (['folk-fernsby', 'folk-fernsby-2', 'folk-fernsby-3', 'folk-fernsby-4'], [300] * 4),
+    'folk-3': (['folk-clem', 'folk-barnaby', 'folk-nettle', 'folk-juniper'], [300] * 4),
+    'homes-1': (['home-mabel', 'home-tobias'], [380] * 2),
+    'homes-2': (['home-fernsby', 'home-pebbleworth'], [380] * 2),
+    'homes-3': (['home-clem', 'home-barnaby'], [380] * 2),
+    'homes-4': (['home-nettle', 'home-juniper'], [380] * 2),
+    'buildings-1': (['bld-mabel', 'bld-tobias', 'bld-fernsby'], [260] * 3),
+    'buildings-2': (['bld-pebbleworth', 'bld-clem', 'bld-barnaby'], [260] * 3),
+    'buildings-3': (['bld-nettle', 'glow-jar', 'camp-tent'], [260, 60, 220]),
+    'icons-village': (['icon-bread', 'icon-plank', 'icon-honey', 'icon-yarn'], [160] * 4),
+    'finds': (['find-mabel', 'find-fernsby', 'find-clem', 'find-nettle', 'find-juniper'], [120] * 5),
 }
 
 def find(folder, name):
@@ -60,6 +75,11 @@ def main():
     for name in ROOMS:
         p = find(folder, name)
         if p: im = Image.open(p).convert('RGB'); side = min(im.size); save(np.array(im.crop(((im.width - side) // 2, (im.height - side) // 2, (im.width + side) // 2, (im.height + side) // 2))), name, size=(1000, 1000))
+    for fid in STORIES:   # story pictures: landscape, cropped to 4:3
+        p = find(folder, 'story-' + fid)
+        if not p: continue
+        im = Image.open(p).convert('RGB'); w = min(im.width, im.height * 4 // 3); h = w * 3 // 4
+        save(np.array(im.crop(((im.width - w) // 2, (im.height - h) // 2, (im.width + w) // 2, (im.height + h) // 2))), 'story-' + fid, size=(1200, 900))
     for name, (slot, w) in SINGLE.items():
         p = find(folder, name)
         if not p: continue
