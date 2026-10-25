@@ -26,7 +26,10 @@ function fresh() {
     plots: { seedbed: { crop: null, stage: null, readyAt: 0, grown: 0 } },
     tasks: {},                               // id -> { startedAt, endsAt, done }
     offers: [],                              // things lying on the land: { id, kind, tile, gx, gy }
-    journal: {},                             // visitorId -> { first, count }
+    journal: {},                             // visitorId -> { first, count, fed: [dayKeys], helped }
+    arrived: {},                             // visitorId -> dayKey it last turned up (regulars come once a day)
+    feeder: { food: null, at: 0 },           // the feeding dish: what is in it (seed / berry), or null
+    deeds: { day: '', n: 0 },                // light earned by helping creatures today
     log: [],                                 // recent happenings, newest last
     spellsUsed: {},                          // spell -> dayKey last cast
     flags: {},
@@ -78,6 +81,7 @@ const G = {
     // timers that finished while away are reported (they resolve lazily in tick)
     for (const [id, tk] of Object.entries(s.tasks)) if (!tk.done && tk.endsAt <= t) report.finished.push(this.taskDef(id).name);
     const p = s.plots.seedbed; if (p.stage === 'growing' && p.readyAt <= t) report.finished.push('the sprout is ready');
+    if (gone >= 60 * MIN) { const ate = this.awayEater(); if (ate) report.ate = ate; }
     this.tick();
     if (gone >= 2 * 60 * MIN) { const ev = this.rollEvent(t, true); if (ev) report.event = ev.text; }
     return report;
@@ -228,17 +232,65 @@ const G = {
     this.s.spellsUsed[id] = dayKey(t); this.emit('spell', id); this.tick(); return true;
   },
 
-  // ---- journal ----
+  // ---- journal, visitors and the feeding dish ----
+  visitorDef(id) { return C.visitors.find(v => v.id === id); },
   pickVisitor(t = now()) {
-    const h = new Date(t).getHours(), stage = this.landStage().key, order = C.landStages.map(s => s.key);
-    const pool = C.visitors.filter(v => ((h >= v.hours[0] && h < v.hours[1]) || (v.alsoHours && h >= v.alsoHours[0] && h < v.alsoHours[1])) && (!v.stage || order.indexOf(stage) >= order.indexOf(v.stage)) && (!v.task || (this.s.tasks[v.task] && this.s.tasks[v.task].done)));
-    if (!pool.length) return null; let r = Math.random() * pool.reduce((a, v) => a + v.weight, 0);
-    for (const v of pool) { r -= v.weight; if (r <= 0) return v; } return pool[0];
+    const s = this.s, h = new Date(t).getHours(), stage = this.landStage().key, order = C.landStages.map(x => x.key), dk = dayKey(t), food = s.feeder.food;
+    const pool = C.visitors.filter(v => ((h >= v.hours[0] && h < v.hours[1]) || (v.alsoHours && h >= v.alsoHours[0] && h < v.alsoHours[1])) && (!v.stage || order.indexOf(stage) >= order.indexOf(v.stage)) && (!v.task || (s.tasks[v.task] && s.tasks[v.task].done)));
+    if (!pool.length) return null;
+    // a regular that has not been by today comes first; food in the dish draws the creatures that eat it
+    const due = pool.filter(v => this.isRegular(v.id) && s.arrived[v.id] !== dk);
+    if (due.length) return due[(Math.random() * due.length) | 0];
+    const w = v => v.weight * (food && (v.eats || []).includes(food) ? 3 : 1);
+    let r = Math.random() * pool.reduce((a, v) => a + w(v), 0);
+    for (const v of pool) { r -= w(v); if (r <= 0) return v; } return pool[0];
   },
+  arrive(id) { this.s.arrived[id] = dayKey(now()); this.dirty = true; },
+  entry(id) { const j = this.s.journal; const e = j[id] || (j[id] = { first: now(), count: 0 }); e.fed = e.fed || []; e.helped = e.helped || 0; return e; },
   noteVisitor(id) {
-    const j = this.s.journal, isNew = !j[id]; j[id] = j[id] || { first: now(), count: 0 }; j[id].count++;
-    if (isNew) this.note(`New in the journal: ${C.visitors.find(v => v.id === id).name.toLowerCase()}.`);
+    const isNew = !this.met(id), e = this.entry(id); if (isNew) e.first = now(); e.count++;
+    if (isNew) this.note(`New in the journal: ${this.visitorDef(id).name.toLowerCase()}.`);
     this.emit('journal', { id, isNew }); return isNew;
+  },
+  met(id) { const e = this.s.journal[id]; return !!(e && e.count); },   // noted in the journal (an entry can exist from feeding before you tap it)
+  fedDays(id) { const e = this.s.journal[id]; return e && e.fed ? e.fed.length : 0; },
+  isRegular(id) { return this.fedDays(id) >= C.feeding.regularAfter; },
+  hasNest(id) { const d = this.visitorDef(id); return !!(d && d.nest) && this.fedDays(id) >= C.feeding.nestAfter; },
+  dishBuilt() { const t = this.s.tasks.feeder; return !!(t && t.done); },
+  putFood(kind) {
+    const f = this.s.feeder; if (!this.dishBuilt() || f.food || !this.can({ [kind]: 1 })) return false;
+    this.pay({ [kind]: 1 }); f.food = kind; f.at = now();
+    this.note(`${kind === 'seed' ? 'Seed' : 'Berries'} in the feeding dish. Now, who will come?`); this.emit('feeder', f); return true;
+  },
+  wantsFood(id) { const d = this.visitorDef(id), f = this.s.feeder.food; return !!(f && d && (d.eats || []).includes(f)); },
+  feed(id) {   // a visitor empties the dish; returns what changed: 'regular' or 'nest' when it crosses a line, else true
+    if (!this.wantsFood(id)) return false;
+    const d = this.visitorDef(id), food = this.s.feeder.food, who = this.met(id) ? `The ${d.name.toLowerCase()}` : 'A visitor you have not met yet'; this.s.feeder.food = null;
+    const e = this.entry(id), dk = dayKey(now()); let out = true;
+    if (!e.fed.includes(dk)) {
+      e.fed.push(dk);
+      if (e.fed.length === C.feeding.regularAfter) { out = 'regular'; this.note(`The ${d.name.toLowerCase()} is a regular now. It will come by every day.`); }
+      else if (d.nest && e.fed.length === C.feeding.nestAfter) { out = 'nest'; this.note(`The ${d.name.toLowerCase()} has made itself a home nearby.`); }
+    }
+    if (out === true) this.note(`${who} ate the ${food === 'seed' ? 'seed' : 'berries'} in the dish.`);
+    this.emit('fed', { id, out }); return out;
+  },
+  awayEater() {   // while you were away: a creature you have met, that eats what is in the dish, came and emptied it
+    const f = this.s.feeder.food; if (!f) return null;
+    const pool = C.visitors.filter(v => this.met(v.id) && (v.eats || []).includes(f)); if (!pool.length) return null;
+    const v = pool[(Math.random() * pool.length) | 0]; this.feed(v.id); return v.name;
+  },
+  troubleFor(id) {   // does this visitor arrive with a little trouble to fix? (only after it is in the journal, so the first meeting stays simple)
+    const d = this.visitorDef(id), tr = d && d.trouble; if (!tr || !this.met(id)) return null;
+    if (tr.task && !(this.s.tasks[tr.task] && this.s.tasks[tr.task].done)) return null;
+    return Math.random() < C.troubleChance ? tr : null;
+  },
+  help(id) {   // a good deed: one light, while today's allowance lasts
+    const d = this.visitorDef(id), e = this.entry(id), dk = dayKey(now()), dd = this.s.deeds;
+    if (dd.day !== dk) { dd.day = dk; dd.n = 0; }
+    e.helped++; const light = dd.n < C.deedsPerDay ? 1 : 0; dd.n += light;
+    if (light) this.give({ light: 1 });
+    this.note(`You helped the ${d.name.toLowerCase()}. ${d.trouble.thanks}`); this.emit('helped', { id, light }); return light;
   },
 
   // ---- story hook (placeholder; content lives in CONTENT.story once written) ----

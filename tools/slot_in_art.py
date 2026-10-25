@@ -1,4 +1,4 @@
-"""Turn finished Batch 3 and 4 pictures (docs/ART-BATCH-3.md, docs/ART-BATCH-4.md) into the game's art-slot files.
+"""Turn finished Batch 3, 4 and 5 pictures (docs/ART-BATCH-3.md, -4.md, -5.md) into the game's art-slot files.
 usage: python3 tools/slot_in_art.py <folder with the finished .jpg/.png files> [--thresh 0.42]
 Looks for each file by its Batch 3 name (plot-ruts-filled.jpg, yard-bits.jpg, icons-buttons.jpg ...), keys out the magenta,
 crops, sizes it and writes sprites/<slot>.webp. Files that are missing are skipped. The game picks the new files up on its
@@ -19,6 +19,7 @@ SINGLE = {
     'barrel-full': ('barrel-full', 'barrel'), 'lantern-lit': ('lantern-lit', 'lanternstump'),
     'oak-planted': ('oak-planted', 220), 'washing-line': ('washing-line', 400), 'stick-pile': ('stick-pile', 240),
     'stepping-stones': ('stepping-stones', 520),
+    'feeding-dish': ('feeding-dish', 200),   # batch 5
     # batch 4: home stage 2, each the whole stump at the shelter's width
     'house-hollowed': ('house-hollowed', 'shelter'), 'house-windows': ('house-windows', 'shelter'), 'house-finished': ('house-finished', 'shelter'),
 }
@@ -26,6 +27,12 @@ ROOMS = ('room-shelter', 'room-stump')   # square room paintings: no magenta to 
 SHEETS = {   # one row of separate pieces, left to right
     'yard-bits': (['yard-doorstep', 'yard-windowbox', 'yard-stones', 'yard-firewood'], [180, 90, 170, 220]),
     'icons-buttons': (['btn-pack', 'btn-jobs', 'btn-magic', 'btn-journal'], [160, 160, 160, 160]),
+    # batch 5 (docs/ART-BATCH-5.md): visitors, four to a sheet, each facing LEFT; the game sizes them by height (h in content.js)
+    'visitors-birds':  (['vis-wren', 'vis-rosella', 'vis-kookaburra', 'vis-frogmouth'], [300] * 4),
+    'visitors-ground': (['vis-echidna', 'vis-bluetongue', 'vis-bandicoot', 'vis-possum'], [300] * 4),
+    'visitors-small':  (['vis-snail', 'vis-frog', 'vis-glowworm', 'vis-nativebee'], [240] * 4),
+    'visitors-flying': (['vis-butterfly', 'vis-dragonfly', 'vis-moth', 'vis-wisp'], [240] * 4),
+    'nests':           (['nest-nest', 'nest-burrow', 'nest-leafpile', 'nest-stones'], [160, 200, 240, 200]),
 }
 
 def find(folder, name):
