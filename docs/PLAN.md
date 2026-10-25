@@ -71,6 +71,10 @@ Files: `index.html` (canvas scene, tile map, DOM sheets), `game.js` (state, rule
 - **Magic:** weak at first so early play is hands-on; grows by real day, unlocking coaxing seedlings, calling rain, waking trees.
 - **Events:** random visitors (animals, spirits, a travelling gnome), weather, finds in soil, couple moments, seasonal touches; mostly good, odd mild fixable setback.
 
+## Vision decisions (2026-10-25, from the "Pin down the game's vision" thread)
+The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded here as Bryce gives them.
+- (none yet)
+
 ## Open questions for Bryce (do not assume)
 - The couple's names and personalities.
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?
