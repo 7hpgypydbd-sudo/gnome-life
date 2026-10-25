@@ -8,7 +8,9 @@ import sys, os
 import numpy as np
 from PIL import Image
 sys.path.insert(0, os.path.dirname(__file__))
-from cut_blobs import key_magenta, runs
+from cut_blobs import key_magenta
+from pieces import pieces
+from defringe_tiles import defringe
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 SPR = os.path.join(ROOT, 'sprites')
@@ -23,11 +25,12 @@ SINGLE = {
     # batch 4: home stage 2, each the whole stump at the shelter's width
     'house-hollowed': ('house-hollowed', 'shelter'), 'house-windows': ('house-windows', 'shelter'), 'house-finished': ('house-finished', 'shelter'),
     'bridge': ('bld-bridge', 400),   # batch 6
+    'worm-lantern': ('worm-lantern', 120), 'worm-lamp': ('worm-lamp', 140),   # batch 8
 }
 STORIES = ('mabel', 'tobias', 'fernsby', 'pebbleworth', 'clem', 'barnaby', 'nettle', 'juniper',   # batch 6: story-<id>.jpg, landscape paintings, no magenta
            'fest-idea', 'fest-secret', 'fest-night', 'fest-surprise', 'fest-dance', 'fest-end')                # batch 7: the festival pages
 ROOMS = ('room-shelter', 'room-stump')   # square room paintings: no magenta to key, just sized to 1000x1000
-SHEETS = {   # one row of separate pieces, left to right
+SHEETS = {   # separate pieces in reading order (tools/pieces.py splits them even when outlines overlap)
     'yard-bits': (['yard-doorstep', 'yard-windowbox', 'yard-stones', 'yard-firewood'], [180, 90, 170, 220]),
     'icons-buttons': (['btn-pack', 'btn-jobs', 'btn-magic', 'btn-journal'], [160, 160, 160, 160]),
     # batch 5 (docs/ART-BATCH-5.md): visitors, four to a sheet, each facing LEFT; the game sizes them by height (h in content.js)
@@ -52,6 +55,8 @@ SHEETS = {   # one row of separate pieces, left to right
     # batch 7 (docs/ART-BATCH-7.md): the festival green's furniture, and the seasonal visitors (facing LEFT, like batch 5)
     'festival-table': (['fest-table', 'fest-feast'], [600, 600]),
     'festival-green': (['fest-bunting', 'fest-arch', 'fest-lantern'], [600, 240, 88]),
+    # art days (docs/ART-DAY-PLAN.md): two more lamps
+    'lights-more': (['lamp-toadstool', 'lamp-fireflies'], [160, 300]),
     'visitors-seasonal': (['vis-silvereye', 'vis-kingfisher', 'vis-beetle', 'vis-cockatoo'], [300] * 4),
 }
 
@@ -64,11 +69,31 @@ def crop(rgba):
     ys, xs = np.where(rgba[..., 3] > 16)
     return rgba[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
 
+HALO = {'bld-pebbleworth'}                          # a faint pale-pink halo was painted round the orchard: key it out harder
+UNPINK = {'glow-jar', 'worm-lantern', 'home-fernsby'}   # glass and edges that soaked up the magenta: take the pink cast out
+
+def fix(rgba, slot):
+    a = rgba.astype(np.float32); r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    if slot in HALO:
+        mag = (np.minimum(r, b) - g) / 255
+        a[..., 3] *= np.clip((0.06 - mag) / 0.06, 0, 1)
+        cream = np.clip((np.minimum(r, g) - 160) / 25, 0, 1) * np.clip((48 - (np.maximum(r, g) - b)) / 20, 0, 1)   # pale paper behind the trees
+        top = np.arange(a.shape[0])[:, None] < a.shape[0] * 0.8   # not the soil and fallen fruit at the bottom
+        a[..., 3] *= np.where(top, 1 - cream, 1)
+    if slot in UNPINK:
+        m = (r > g + 4) & (b > g - 3)
+        a[..., 2] = np.where(m, np.minimum(b, g * 0.85), b); a[..., 0] = np.where(m, np.minimum(r, g * 1.15 + 12), r)
+    return a.clip(0, 255).astype(np.uint8)
+
+DEFRINGE = ('house-', 'shelter-', 'home-', 'bld-', 'fence-', 'stick-', 'oak-', 'washing-', 'yard-', 'nest-', 'feeding-', 'barrel-', 'camp-')   # wood and moss with a pink rim
+
 def save(rgba, slot, width=None, size=None):
+    if slot in HALO | UNPINK: rgba = crop(fix(rgba, slot))
     im = Image.fromarray(rgba)
     if size: im = im.resize(size, Image.LANCZOS)
     elif width: im = im.resize((int(width), round(im.height * width / im.width)), Image.LANCZOS)
     im.save(os.path.join(SPR, slot + '.webp'), quality=88)
+    if slot.startswith(DEFRINGE): defringe(os.path.join(SPR, slot + '.webp'))
     print(f'  {slot}.webp  {im.width}x{im.height}')
 
 def main():
@@ -93,11 +118,9 @@ def main():
     for name, (slots, widths) in SHEETS.items():
         p = find(folder, name)
         if not p: continue
-        rgba = key_magenta(Image.open(p), thresh)
-        cols = runs((rgba[..., 3] > 128).sum(axis=0) > 2, 12, 30)
-        cols = sorted(sorted(cols, key=lambda c: c[1] - c[0])[-len(slots):])   # the widest pieces, back in left-to-right order
-        if len(cols) < len(slots): print(f'  {name}: found {len(cols)} pieces, expected {len(slots)}; skipped'); continue
-        for (x0, x1), slot, w in zip(cols, slots, widths): save(crop(rgba[:, x0:x1]), slot, width=w)
+        got = pieces(key_magenta(Image.open(p), thresh), len(slots))
+        if not got: print(f'  {name}: no pieces found; skipped'); continue
+        for piece, slot, w in zip(got, slots, widths): save(piece, slot, width=w)
     print('Done. Missing pictures were skipped; the game keeps its stand-ins for those.')
 
 main()

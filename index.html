@@ -214,8 +214,8 @@ const ART_SLOTS = {
   'yard-firewood':    { w: 84 },              // loose sticks where the woodpile will be
   'stepping-stones':  { w: 210 },             // "Lay a stepping-stone path"
   // night lights (docs/ART-BATCH-8.md): glow-worm lanterns and street lamps (the glow itself stays code)
-  'worm-lantern':     { w: 34 },              // "Hang glow-worm lanterns": one small hanging lantern, drawn at each hook
-  'worm-lamp':        { w: 44 },              // "Set glow-worm street lamps": one lamp post, drawn at each spot
+  'worm-lantern':     { w: 24 },              // "Hang glow-worm lanterns": one small hanging lantern, drawn at each hook
+  'worm-lamp':        { h: 96 },                // "Set glow-worm street lamps": one lamp post, drawn at each spot
   // home stage 2 (docs/ART-BATCH-4.md): the shelter stump turning into a house, one picture per job, each the WHOLE stump
   'house-hollowed':   { w:'like:shelter' },   // "Hollow out the old stump"
   'house-windows':    { w:'like:shelter' },   // "Fit a plank wall and windows"
@@ -236,7 +236,7 @@ Object.assign(ART_SLOTS, { 'bld-bridge': { w: 200 }, 'camp-tent': { w: 110 }, 'g
 // the festival (docs/ART-BATCH-7.md): the green's furniture, and story-fest-* paintings for the festival pages
 Object.assign(ART_SLOTS, { 'fest-table': { w: 300 }, 'fest-feast': { w: 300 }, 'fest-bunting': { w: 300 }, 'fest-lantern': { w: 44 }, 'fest-arch': { w: 120 } });
 for (const k of ['fest-idea', 'fest-secret', 'fest-night', 'fest-surprise', 'fest-dance', 'fest-end']) ART_SLOTS['story-' + k] = {};
-Object.assign(ART_SLOTS, { 'feeding-dish': { w: 58 }, 'nest-nest': { w: 40 }, 'nest-burrow': { w: 54 }, 'nest-leafpile': { w: 70 }, 'nest-stones': { w: 60 } });
+Object.assign(ART_SLOTS, { 'feeding-dish': { w: 44 }, 'nest-nest': { w: 40 }, 'nest-burrow': { w: 54 }, 'nest-leafpile': { w: 70 }, 'nest-stones': { w: 60 } });
 const ART = {};   // name -> loaded Image, only for slots whose file exists
 function art(k) { return ART[k] || null; }
 function loadArtSlots() {   // after the game starts, so missing files never slow the first picture
@@ -1035,7 +1035,7 @@ function drawOffer(o, now) {
   halo(x, y - 18 * k + b, 26 * k, now, o.gx * 7);
   if (o.kind === 'light') { glow(x, y - 14 * k + b, 36 * k, 'rgba(255,240,170,1)', 0.6 + 0.2 * Math.sin(now / 200)); }
   const img = IM['icon-' + o.kind] || art('icon-' + o.kind), sz = 64 * k;
-  if (img) ctx.drawImage(img, x - sz / 2, y - 8 * k + b - sz * 0.8, sz, sz);
+  if (img) { const f = sz / Math.max(img.width, img.height), w = img.width * f, h = img.height * f; ctx.drawImage(img, x - w / 2, y - 8 * k + b - sz * 0.2 - h * 0.6, w, h); }   // keep the painted icon's own shape
   else { ctx.save(); ctx.font = `${Math.round(36 * k)}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(C.resources[o.kind].icon, x, y - 4 * k + b); ctx.restore(); }
 }
 // ---------- the feeding dish and nests ----------
@@ -1707,9 +1707,9 @@ const $ = id => document.getElementById(id);
 // One square picture per home stage (art slots room-shelter, room-stump; 1000x1000 room pixels). Until they are painted, code draws a
 // stand-in. The gnomes are drawn on top at these spots, so a painting only has to leave room for them: [x, y (feet), face left?]
 const ROOMS = {
-  1: { slot:'room-shelter', title:'Under the old root', light:[470, 690, 330], sleep:{ him:[740, 818], her:[810, 850] } },
-  2: { slot:'room-stump', title:'The stump house', light:[225, 760, 520], sleep:{ him:[690, 830], her:[745, 868] },
-       sit:{ him:[440, 905, true], her:[620, 935, true] } },
+  1: { slot:'room-shelter', title:'Under the old root', light:[493, 560, 330], sleep:{ him:[680, 790], her:[790, 812] } },
+  2: { slot:'room-stump', title:'The stump house', light:[230, 690, 520], sleep:{ him:[700, 760], her:[790, 785] },
+       sit:{ him:[300, 815, true], her:[430, 840, true] } },
 };
 const RS = 1.6;   // gnome size in the room
 const rc = document.getElementById('rc'), rx = rc.getContext('2d');
