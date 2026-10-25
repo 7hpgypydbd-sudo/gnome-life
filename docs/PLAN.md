@@ -104,6 +104,8 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Voice:** warm, a little old-fashioned, lightly funny, like a storybook narrator ("Wendel has misplaced his pipe again. Hazel knows exactly where it is.").
 - **Reading:** a line or two in normal play; big milestones (new neighbour, home stage, festival, staff beats) open a small illustrated story page.
 - **Seasons:** colour tints and overlays in code (autumn tones, winter mist, spring blossom) plus seasonal visitors and events. No seasonal tile sets; maybe one or two painted seasonal props later.
+- **Nudges and sound:** neither for now (no notifications, no audio); revisit later.
+- **Full spec:** `docs/VISION.md` (written 2026-10-25 from these answers; includes the next art list).
 
 ## Open questions for Bryce (do not assume)
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?

@@ -81,12 +81,12 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 **8.4 Seasonal content.** ☑ Colour tint plus special visitors; no seasonal tile sets. ★ Yes, seasons change the art tint and bring special visitors and events / Light touch / Full seasonal art sets.
 **8.5 Replay / new game plus?** Later.
 
-## Round 9 — Tone, words and comfort (◐)
+## Round 9 — Tone, words and comfort (☑)
 
 **9.1 Voice of the text.** ☑ Warm, old-fashioned, lightly funny. ★ Warm, a little old-fashioned, light humour (book narrator) / Minimal text, mostly pictures / Chatty and modern.
 **9.2 Amount of reading per visit.** ☑ Short story pages at milestones, a line or two otherwise. ★ A line or two at a time / Short story paragraphs at milestones / Almost none.
-**9.3 Notifications.** ★ One gentle optional nudge when something is ready / None / Several.
-**9.4 Sound.** ★ Soft ambient birds/wind/fire, optional / None.
+**9.3 Notifications.** ☑ None for now. ★ One gentle optional nudge when something is ready / None / Several.
+**9.4 Sound.** ☑ None for now. ★ Soft ambient birds/wind/fire, optional / None.
 
 ## Round 10 — Art list (derived, confirm) (☐)
 
