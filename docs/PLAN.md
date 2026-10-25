@@ -85,6 +85,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Visit end:** both: a clear gentle "all done for now" moment (a line from Hazel or Wendel, the screen settles) plus idle fiddling (decorating, chatting, collecting dew) that stays open.
 - **Children:** maybe later; nothing built now, but story and save leave room for a child arriving around the village stage.
 - **Visit length and frequency (Bryce's words):** the main loop is 2-5 minute visits, 2-3 times a day (jobs roughly 3-8 h), but quick bored check-ins must always find a little something to do (a dew drop, a chat line, a pot to move, a small 10-20 min job).
+- **Home stages:** three big leaps: (1) shelter under a root with campfire (have), (2) snug house in a stump or under an oak, (3) house plus garden, well and workshop. Small add-ons are decorations on top.
 
 ## Open questions for Bryce (do not assume)
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?
