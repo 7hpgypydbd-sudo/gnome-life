@@ -9,7 +9,7 @@
 <title>Gnome Life</title>
 <style>
   :root { --paper:#f3e9d2; --paper2:#e6d9bd; --ink:#2b2418; --ink2:#6b5a44; --green:#5b6b2d; --red:#b14c37; --safe-b: env(safe-area-inset-bottom); }
-  html,body { margin:0; height:100%; background:#1c2418; overflow:hidden; -webkit-user-select:none; user-select:none; touch-action:none; font-family: Georgia, "Times New Roman", serif; -webkit-tap-highlight-color: transparent; }
+  html,body { margin:0; height:100%; background:#1c2418; overflow:hidden; overscroll-behavior:none; -webkit-user-select:none; user-select:none; touch-action:none; font-family: Georgia, "Times New Roman", serif; -webkit-tap-highlight-color: transparent; }
   canvas { display:block; width:100vw; height:100vh; }
   #hud { position:fixed; left:0; right:0; top:0; padding: calc(env(safe-area-inset-top) + 10px) 14px 0; pointer-events:none; color:var(--paper); text-shadow:0 1px 2px rgba(0,0,0,.6); }
   #hud h1 { margin:0; font-size:22px; font-weight:bold; letter-spacing:.5px; }
@@ -33,7 +33,7 @@
   /* sheet */
   #shade { position:fixed; inset:0; background:rgba(10,14,8,.35); opacity:0; pointer-events:none; transition:opacity .2s; }
   #shade.on { opacity:1; pointer-events:auto; }
-  #sheet { position:fixed; left:0; right:0; bottom:0; max-height:76vh; background:var(--paper); color:var(--ink); border-radius:20px 20px 0 0; padding:16px 18px calc(var(--safe-b) + 18px); box-shadow:0 -4px 18px rgba(0,0,0,.4); transform:translateY(105%); transition:transform .25s; overflow-y:auto; touch-action:pan-y; pointer-events:auto; }
+  #sheet { position:fixed; left:0; right:0; bottom:0; max-height:76vh; background:var(--paper); color:var(--ink); border-radius:20px 20px 0 0; padding:16px 18px calc(var(--safe-b) + 18px); box-shadow:0 -4px 18px rgba(0,0,0,.4); transform:translateY(105%); transition:transform .25s; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y; pointer-events:auto; }
   #sheet.on { transform:none; }
   #sheet h2 { margin:0 0 6px; font-size:23px; font-weight:bold; padding-right:40px; }
   #sheet h2 small { font-size:14px; color:var(--ink2); margin-left:8px; font-weight:normal; }
@@ -100,8 +100,8 @@
 <div id="sheet"></div>
 <div id="room"><div class="box"><button class="close" id="rClose">×</button><h2 id="rTitle"></h2><canvas id="rc" width="1000" height="1000"></canvas><p id="rCap"></p><div class="row2" id="rBtns"></div></div></div>
 <div id="load">waking the garden…</div>
-<script src="content.js"></script>
-<script src="game.js"></script>
+<script src="content.js?v=27"></script>
+<script src="game.js?v=27"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -1657,6 +1657,12 @@ const up = e => {
 };
 for (const g of ['gesturestart','gesturechange','gestureend']) document.addEventListener(g, e => e.preventDefault(), { passive: false });
 document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+// iPhone Safari can still nudge the whole page (scrolling a sheet past its end, or the toolbar sliding away); the page then
+// draws in one place but takes taps in another. Keep the page pinned at the top so taps always land where the finger is.
+const pin = () => { if (window.scrollX || window.scrollY || document.documentElement.scrollTop || document.body.scrollTop) { window.scrollTo(0, 0); document.documentElement.scrollTop = document.body.scrollTop = 0; } };
+window.addEventListener('scroll', pin, { passive: true });
+if (window.visualViewport) { visualViewport.addEventListener('scroll', pin); visualViewport.addEventListener('resize', () => { pin(); resize(); }); }
+document.addEventListener('touchend', () => setTimeout(pin, 50), { passive: true });
 cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
 function pinchInfo() { const [a, b] = [...ptrs.values()]; return { d: Math.hypot(a.x - b.x, a.y - b.y), cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, z: cam.z }; }
 function mapMinZ() {   // far enough out to see every tile that has appeared so far (once the map has grown past the home tile)
