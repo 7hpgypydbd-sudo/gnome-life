@@ -130,12 +130,16 @@ const ASSETS = {
 };
 // The blended ground and the night light layer (on since 2026-10-25; #oldground shows the old big tiles to compare). See docs/GRAPHICS-RETHINK.md.
 const NEWGROUND = !/oldground/.test(location.hash);
-const GSWATCH = ['dirt', 'drygrass', 'grass', 'meadow', 'moss'], GSTRIP = ['water', 'creekbed', 'path'];
-const GSTICK = { dry: ['tuft-dry-1', 'tuft-dry-2', 'tuft-dry-3', 'pebbles-1', 'pebbles-2'], grass: ['clover', 'daisy', 'tuft-big', 'clover'], meadow: ['daisy', 'buttercup', 'clover', 'tuft-big'], moss: ['leaf', 'leaf', 'mushrooms', 'fern'], bank: ['reeds', 'rock-moss', 'rock-moss'], big: ['boulder', 'tuft-big'] };
+// the painted ground kit (art days 1-2, cut by tools/make_kit.py): nine swatches, and sheets of twelve stickers (<sheet>-01..12)
+const GSWATCH = ['dirt', 'drygrass', 'grass', 'meadow', 'moss', 'path', 'pebbles', 'water'];
+const kit = (sheet, ...ns) => ns.map(n => `${sheet}-${String(n).padStart(2, '0')}`);
+const GSTICK = { dry: kit('bare', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), grass: kit('grass', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),
+  meadow: [...kit('flowers', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), ...kit('grass', 1, 2, 3, 4)], moss: kit('woodland', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),
+  bank: kit('water', 1, 2, 3, 5, 6, 7, 8, 9, 10, 12), inwater: kit('water', 4, 4, 11), path: kit('path', 7, 8, 9, 10, 11), steps: kit('path', 1, 2, 3, 4, 5, 6),
+  spring: kit('seasons', 1, 2, 3), summer: kit('seasons', 4, 5, 6), autumn: kit('seasons', 7, 8, 9), winter: kit('seasons', 10, 11, 12), big: ['st-boulder', 'st-tuft-big'] };
 if (NEWGROUND) {
   for (const n of GSWATCH) ASSETS['g-' + n] = `sprites/ground/${n}.webp`;
-  for (const n of GSTRIP) ASSETS['g-strip-' + n] = `sprites/ground/strip-${n}.webp`;
-  for (const n of new Set(Object.values(GSTICK).flat())) ASSETS['g-st-' + n] = `sprites/ground/st-${n}.webp`;
+  for (const n of new Set(Object.values(GSTICK).flat())) ASSETS['g-st-' + n] = `sprites/ground/${n}.webp`;
 }
 const GNOMES = {"him":{"cell":[108,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[144,242]},"water":{"n":4,"cell":[129,245]},"carry":{"n":4,"cell":[140,260]},"eat":{"n":4,"cell":[118,241]},"sit":{"n":4,"cell":[127,208]},"sleep":{"n":4,"cell":[264,85]}}},"her":{"cell":[122,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[159,242]},"water":{"n":4,"cell":[148,241]},"carry":{"n":6,"cell":[105,244]},"eat":{"n":4,"cell":[102,244]},"sit":{"n":4,"cell":[119,208]},"sleep":{"n":2,"cell":[264,73]}}}};
 
@@ -593,7 +597,6 @@ const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a)
 function groundPrep() {
   const grab = (img, sx, sy) => { const w = Math.max(1, Math.round(img.width * sx)), h = Math.max(1, Math.round(img.height * sy)); const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); x.drawImage(img, 0, 0, w, h); return { w, h, d: x.getImageData(0, 0, w, h).data }; };
   for (const n of GSWATCH) GR.px[n] = grab(IM['g-' + n], GS, GS);
-  for (const n of GSTRIP) GR.px[n] = grab(IM['g-strip-' + n], GS, 1);   // along is scaled to the bake; across is sampled by fraction
   GR.px.plot = grab(IM.plot, GS, GS);
   // tileable fractal noise, 256 x 256, fixed seed so the ground never changes between visits
   const N = 256, out = new Float32Array(N * N); let seed = 7, amp = 1, tot = 0;
@@ -651,7 +654,6 @@ function* bakeGroundTile(k) {   // a generator: yields every few rows so the wor
     const s = S[n], i1 = sw(n, X, Y), i2 = sw(n, X * 0.81 + s.w * 0.37 + 97, Y * 0.81 + s.h * 0.61 + 53), m = sstep(0.38, 0.62, nb);   // the second copy is a little bigger, so the two never line up again
     out[0] = s.d[i1] + (s.d[i2] - s.d[i1]) * m; out[1] = s.d[i1 + 1] + (s.d[i2 + 1] - s.d[i1 + 1]) * m; out[2] = s.d[i1 + 2] + (s.d[i2 + 2] - s.d[i1 + 2]) * m;
   }
-  function strip(n, along, t, out) { const s = S[n], xi = ((Math.floor(along) % s.w) + s.w) % s.w, yi = Math.min(s.h - 1, Math.max(0, Math.round((t * 0.5 + 0.5) * (s.h - 1)))), i = 4 * (yi * s.w + xi); out[0] = s.d[i]; out[1] = s.d[i + 1]; out[2] = s.d[i + 2]; }
   for (let j = 0; j < H; j++) { if (j % 16 === 0) yield; for (let i = 0; i < W; i++) {
     const wx = ox + i / GS, wy = oy + j / GS, qx = wx - px0, qy = wy - py0;
     const u = (qx * d - b * qy) / det, v = (a * qy - c * qx) / det;
@@ -683,18 +685,18 @@ function* bakeGroundTile(k) {   // a generator: yields every few rows so the wor
     // the path: a worn band, ragged at the edges
     if (pth > 0.02) {
       const du = (u - pathU(v)) * LEX, hw = 30 + 4 * Math.sin(v * 5) + 10 * (nD - 0.5), e = sstep(hw + 3, hw - 5, Math.abs(du)) * sstep(0, 0.6, pth);
-      if (e > 0) { strip('path', v * LEY * GS, du / (hw + 4), tmp); for (let q = 0; q < 3; q++) col[q] += (tmp[q] - col[q]) * e; zone[j * W + i] = 2; }
+      if (e > 0) { swatch('path', X, Y, nB, tmp); for (let q = 0; q < 3; q++) col[q] += (tmp[q] - col[q]) * e; zone[j * W + i] = 2; }
     }
     // the stream: dry creek bed until the tile heals, then water. Wet earth darkens the banks.
     {
       const dv = (v - streamV(u)) * LEY, hw = streamHW(u) + 8 * (nA - 0.5);
       const dd = u >= STREAM_U0 ? Math.abs(dv) : Math.hypot((u - STREAM_U0) * LEX, dv);
       if (dd < hw + 18) {
-        const e = sstep(hw + 2, hw - 5, dd), along = (u - STREAM_U0) * LEX * GS, t = dv / hw;
+        const e = sstep(hw + 2, hw - 5, dd), t = dv / hw;
         if (wet > 0 && dd > hw - 4) { const k2 = 0.25 * wet * sstep(hw + 18, hw, dd); for (let q = 0; q < 3; q++) col[q] *= 1 - k2; }
         if (e > 0) {
-          strip('creekbed', along, t * 0.9, tmp);
-          if (wet > 0) { const wt = [0, 0, 0]; strip('water', along, t * 0.8, wt); const deep = (1 - 0.14 * (1 - t * t)) * (1 - 0.3 * sstep(hw - 7, hw - 2, dd)); for (let q = 0; q < 3; q++) tmp[q] += (wt[q] * deep - tmp[q]) * sstep(0, 0.7, wet); }   // a little deeper in the middle, an inky rim at the edge
+          swatch('pebbles', X, Y, nC, tmp);
+          if (wet > 0) { const wt = [0, 0, 0]; swatch('water', X, Y, nA, wt); const deep = (1 - 0.14 * (1 - t * t)) * (1 - 0.3 * sstep(hw - 7, hw - 2, dd)); for (let q = 0; q < 3; q++) tmp[q] += (wt[q] * deep - tmp[q]) * sstep(0, 0.7, wet); }   // a little deeper in the middle, an inky rim at the edge
           for (let q = 0; q < 3; q++) col[q] += (tmp[q] - col[q]) * e; if (e > 0.5) zone[j * W + i] = 1;
         }
       }
@@ -724,14 +726,15 @@ function* bakeGroundTile(k) {   // a generator: yields every few rows so the wor
     x2.drawImage(im, (wx - ox) * GS - w / 2, (wy - oy) * GS - h / 2, w, h);
   };
   const kindSet = self.kind === 1 ? 'meadow' : self.kind === 2 ? 'moss' : 'grass';
-  for (let n = 0; n < 16; n++) {
+  for (let n = 0; n < 20; n++) {
     const gx = 0.1 + 0.8 * rn(n), gy = 0.1 + 0.8 * rn(n + 50); const [wx, wy] = toWorld(gx, gy, k);
     const i = Math.round((wx - ox) * GS), j = Math.round((wy - oy) * GS); if (i < 0 || j < 0 || i >= W || j >= H) continue;
     const z = zone[j * W + i], cv = cov[j * W + i] / 255;
     if (homeBare && Math.max(Math.abs(gx - 0.5), Math.abs(gy - 0.5)) < 0.42) continue;   // keep the painted home patch as it is
     let set = null;
-    if (z === 1) continue; else if (z === 2) set = ['pebbles-1', 'pebbles-2'];
+    if (z === 1) continue; else if (z === 2) set = GSTICK.path;
     else if (cv < 0.15) set = GSTICK.dry; else if (cv > 0.85) set = GSTICK[kindSet];
+    if (set && n % 6 === 5 && z !== 2) set = GSTICK[season()];   // a few touches of the season: blossom, dry grass, fallen leaves, frost
     if (set) put(set[Math.floor(rn(n + 100) * set.length)], gx, gy, 0.85 + 0.3 * rn(n + 150));
   }
   if (self.g > 0.5 && k !== '0,0' && !self.path && !self.wet) for (let n = 0; n < 2; n++) {   // a boulder or a big tuft on grown-over land
@@ -743,18 +746,22 @@ function* bakeGroundTile(k) {   // a generator: yields every few rows so the wor
     const u = tx + 0.12 + 0.76 * rn(n + 200); if (u < STREAM_U0 + 0.1) continue;
     const side = rn(n + 210) < 0.5 ? -1 : 1, v = streamV(u) + side * (streamHW(u) + 10) / LEY;
     if (v - ty < 0.1 || v - ty > 0.9) continue;
-    put(GSTICK.bank[Math.floor(rn(n + 220) * 2)], u - tx, v - ty, 0.7 + 0.2 * rn(n + 230));
+    put(GSTICK.bank[Math.floor(rn(n + 220) * GSTICK.bank.length)], u - tx, v - ty, 0.8 + 0.3 * rn(n + 230));
   }
-  if (k === '1,-1' && self.path > 0.5 && IM['icon-stone'].width) for (const f of [-0.62, -0.05, 0.55]) {   // stepping stones across the water
-    const [wx, wy] = toWorld(0.5 + 0.02 * f, 0.5 + f * streamHW(1.5) / LEY, k), s = 46 * GS;
-    x2.drawImage(IM['icon-stone'], (wx - ox) * GS - s / 2, (wy - oy) * GS - s * 0.6, s, s * 0.8);
+  if (self.wet > 0.5) for (let n = 0; n < 3; n++) {   // a lily pad or a floating leaf on the water
+    const u = tx + 0.15 + 0.7 * rn(n + 260); if (u < STREAM_U0 + 0.3 || Math.abs(u - 1.5) < 0.2) continue;
+    const v = streamV(u) + (rn(n + 270) - 0.5) * streamHW(u) * 0.8 / LEY;
+    if (v - ty < 0.1 || v - ty > 0.9 || rn(n + 280) < 0.4) continue;
+    put(GSTICK.inwater[Math.floor(rn(n + 290) * GSTICK.inwater.length)], u - tx, v - ty, 0.7 + 0.2 * rn(n + 295));
   }
+  if (k === '1,-1' && self.path > 0.5) [-0.62, -0.05, 0.55].forEach((f, i) =>   // stepping stones across the water
+    put(GSTICK.steps[i * 2], 0.5 + 0.02 * f, 0.5 + f * streamHW(1.5) / LEY, 0.55));
   GR.tiles[k] = cv2;
 }
 function groundSig(k) {   // everything a tile's picture depends on (itself and its eight neighbours)
   const [tx, ty] = k.split(',').map(Number), out = [];
   for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const m = groundMat(`${tx + dx},${ty + dy}`); out.push(m ? [m.g, m.kind, m.wet, m.path, m.wash].join() : '-'); }
-  return out.join('|');
+  return out.join('|') + '|' + season();   // the seasonal stickers change with the season
 }
 function groundUpdate() {   // called every frame: notice changed tiles now and then, and bake a little
   if (!GR.ready) groundPrep();
