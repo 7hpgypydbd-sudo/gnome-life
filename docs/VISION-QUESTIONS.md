@@ -62,7 +62,7 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 
 ## Round 6 — Visitors, creatures and spirits (◐)
 
-**6.1 Which animals?** ★ Australian wildlife (fairy-wren, echidna, possum, frog) as now / European fairy-tale animals (hedgehog, robin, owl, fox) like the book / Both: Australian real animals plus a few fairy-tale ones.
+**6.1 Which animals?** ☑ Both: Australian plus a few classics. ★ Australian wildlife (fairy-wren, echidna, possum, frog) as now / European fairy-tale animals (hedgehog, robin, owl, fox) like the book / Both: Australian real animals plus a few fairy-tale ones.
 **6.2 Spirits and magical folk?** ★ A few: a spirit of the land, a will-o'-wisp, maybe a troll-like nuisance / None, keep it natural / Many.
 **6.3 Journal depth.** ★ Name, picture, one line of lore, first seen date / Just a tick list / Full pages with facts.
 **6.4 Can creatures move in / be fed / befriended?** ★ Some can become regulars if you leave food / Visits only / Pets you can name.
