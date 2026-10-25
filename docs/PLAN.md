@@ -102,6 +102,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Pacing:** 3-6 months of light daily play to a finished village. Home tile green in 1-2 weeks, proper house around a month, village by about half a year; ageing spreads over a year or more.
 - **Ending:** a soft ending (a village festival marks the finish), then the world keeps living: seasons, visitors, events and ageing carry on gently.
 - **Voice:** warm, a little old-fashioned, lightly funny, like a storybook narrator ("Wendel has misplaced his pipe again. Hazel knows exactly where it is.").
+- **Reading:** a line or two in normal play; big milestones (new neighbour, home stage, festival, staff beats) open a small illustrated story page.
 
 ## Open questions for Bryce (do not assume)
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?
