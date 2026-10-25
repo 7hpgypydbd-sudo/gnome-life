@@ -149,6 +149,9 @@ Another thread is building step 0. Each later step is its own new chat. Models f
    - Not built: neighbours' own keepsakes in the picture (the rocking chair, the blanket), a picture for each "moved in" page, neighbours walking frames, the troll-ish nuisance, the festival.
 Ongoing: Bryce's playtest notes get tuned in `content.js` (Sonnet); the staff mystery waits for Bryce to write it.
 
+## Night lights (2026-10-25)
+Night was too dark. Base night tint is now a lighter moonlit blue, and two jobs add light: "Hang glow-worm lanterns" (level 2) and "Set glow-worm street lamps" (level 3, after the lanterns). Code stand-ins plus art slots `worm-lantern` / `worm-lamp`; prompts in `docs/ART-BATCH-8.md`. Could extend later to lamps along the village path.
+
 ## Later phase: smaller-piece ground art (idea agreed for AFTER the whole game works, 2026-10-25)
 Bryce's idea: break the ground into smaller, simpler pieces, because the image generator is more reliable on small, simple pictures, and today's big tiles have details painted into the ground (stumps, fences, ruts) that look wrong and can't move. **Do not build this until the game itself is finished.**
 
