@@ -5,6 +5,8 @@ const C = window.CONTENT;
 const FAST = /fast/.test(location.hash);          // #fast: minutes become tenths of a second (3h -> 18s)
 const MIN = FAST ? 100 : 60000;                   // ms per content "minute"
 const now = () => Date.now();
+const DAY = () => 1440 * MIN;
+const lc = (t) => t[0].toLowerCase() + t.slice(1);   // "Build Mabel a home" -> "build Mabel a home" (keeps names capitalised)                    // a real day (a tenth-second-minute day under #fast)
 const dayKey = (t) => { const d = new Date(t); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; };
 
 // ---------- storage adapter (swap this for a server later) ----------
@@ -35,6 +37,7 @@ function fresh() {
     flags: {},
     events: { lastAt: t, seen: {} },        // gentle random happenings (CONTENT.events)
     story: { chapter: 0, flags: {}, found: [] },   // hook for the side mystery (the staff); Bryce writes the plot
+    village: { traveller: null, nextAt: 0, queue: C.village.order.slice(), folk: {}, favour: null, favourAt: t, finds: [] },
   };
 }
 
@@ -82,7 +85,9 @@ const G = {
     for (const [id, tk] of Object.entries(s.tasks)) if (!tk.done && tk.endsAt <= t) report.finished.push(this.taskDef(id).name);
     const p = s.plots.seedbed; if (p.stage === 'growing' && p.readyAt <= t) report.finished.push('the sprout is ready');
     if (gone >= 60 * MIN) { const ate = this.awayEater(); if (ate) report.ate = ate; }
+    const had = s.village.traveller && s.village.traveller.id;
     this.tick();
+    if (s.village.traveller && s.village.traveller.id !== had) report.traveller = s.village.traveller.id;
     if (gone >= 2 * 60 * MIN) { const ev = this.rollEvent(t, true); if (ev) report.event = ev.text; }
     return report;
   },
@@ -99,10 +104,13 @@ const G = {
       tk.done = true; const d = this.taskDef(id);
       if (d.tile) { const tl = s.tiles[d.tile]; tl.state = 'green'; tl.green = 4; this.reveal(d.tile); this.note(`The land next door has greened.`); }
       else this.addGreen(d.green);
+      if (d.folk) this.villageDone(id, d, tk);
+      if (id === 'bridge') { for (const k of ['1,-1', '0,-1', '2,-1', '-1,-1']) if (s.tiles[k] && s.tiles[k].state === 'green') this.reveal(k); this.note('The bridge is up. The far side of the stream is reachable at last.'); }
       if (d.give) this.give(d.give);
-      this.note(`${C.names[d.who]} finished: ${d.name.toLowerCase()}.`);
+      this.note(`${C.names[d.who]} finished: ${lc(d.name)}.`);
       this.emit('task', { id, done: true });
     }
+    this.villageTick(t);
     const E = C.events; if (E && t - s.events.lastAt >= E.every * MIN) this.rollEvent(t);
     // offerings trickle in during a visit too
     if (t - s.lastOfferAt >= C.offerEvery * MIN) { s.lastOfferAt = t; if (s.offers.length < C.offerCap) { this.spawnOffer(t); this.emit('offer'); } }
@@ -139,7 +147,7 @@ const G = {
   },
   gather(id) {
     const s = this.s, i = s.offers.findIndex(o => o.id === id); if (i < 0) return null;
-    const [o] = s.offers.splice(i, 1); s.inv[o.kind] = (s.inv[o.kind] || 0) + 1;
+    const [o] = s.offers.splice(i, 1); s.inv[o.kind] = (s.inv[o.kind] || 0) + (o.n || 1);
     this.emit('inv', o.kind); return o;
   },
 
@@ -171,28 +179,40 @@ const G = {
   // ---- tasks ----
   taskDef(id) {
     if (id.startsWith('regrow:')) { const tile = id.slice(7); return Object.assign({ id, tile }, C.regrow, { name: `${C.regrow.name} (${this.tileName(tile)})` }); }
+    const [kind, fid, step] = id.split(':'), f = this.folkDef(fid);
+    if (f && kind === 'home') return Object.assign({ id, folk: fid, name: `Build ${f.short} a home`, short: 'building a home', green: 2, home: true, act: 'carry' }, f.build);
+    if (f && kind === 'trade') return Object.assign({ id, folk: fid, green: 1 }, f.building);
+    if (f && kind === 'quest') { const st = f.quest.steps[+step]; return Object.assign({ id, folk: fid, green: 1, blurb: st.say, quest: true }, st.job); }
     return C.tasks.find(t => t.id === id);
   },
   taskList() {   // everything the player could start or is waiting on, in a sensible order
     const s = this.s, out = [];
     for (const d of C.tasks) out.push(this.taskView(d));
     for (const [k, tl] of Object.entries(s.tiles)) if (tl.state === 'revealed' || tl.state === 'regrowing') out.push(this.taskView(this.taskDef('regrow:' + k)));
+    const v = s.village;
+    if (v.traveller) out.push(this.taskView(this.taskDef('home:' + v.traveller.id)));
+    for (const [fid, fs] of Object.entries(v.folk)) {
+      out.push(this.taskView(this.taskDef('trade:' + fid)));
+      const st = this.questStep(fid); if (st && st.job) out.push(this.taskView(this.taskDef(`quest:${fid}:${fs.q}`)));
+    }
     return out.filter(v => v.show).sort((a, b) => (a.rank - b.rank));
   },
   taskView(d) {
     const s = this.s, tk = s.tasks[d.id], t = now();
-    const locked = (d.needs || []).some(n => !(s.tasks[n] && s.tasks[n].done)) || (d.minLevel && this.magicLevel() < d.minLevel);
+    const gate = tk ? '' : this.gateWhy(d);
+    const locked = (d.needs || []).some(n => !(s.tasks[n] && s.tasks[n].done)) || (d.minLevel && this.magicLevel() < d.minLevel) || !!gate;
     const state = tk ? (tk.done ? 'done' : (tk.endsAt <= t ? 'done' : 'running')) : (locked ? 'locked' : 'ready');
     return { def: d, state, locked, endsAt: tk ? tk.endsAt : 0, startedAt: tk ? tk.startedAt : 0, can: this.can(d.cost), missing: this.missing(d.cost),
-             show: state !== 'done' || (t - (tk.endsAt || 0)) < 60 * MIN, rank: { running: 0, ready: 1, locked: 2, done: 3 }[state],
-             why: locked ? (d.minLevel && this.magicLevel() < d.minLevel ? `needs magic level ${d.minLevel}` : `after: ${(d.needs || []).map(n => this.taskDef(n).name.toLowerCase()).join(', ')}`) : '' };
+             show: (state !== 'done' || (t - (tk.endsAt || 0)) < 60 * MIN) && !(d.needs || []).some(n => n.startsWith('trade:') && !this.folkState(n.slice(6))),   // village jobs stay hidden until that neighbour lives here rank: { running: 0, ready: 1, locked: 2, done: 3 }[state],
+             why: gate ? gate : locked ? (d.minLevel && this.magicLevel() < d.minLevel ? `needs magic level ${d.minLevel}` : `after: ${(d.needs || []).map(n => lc(this.taskDef(n).name)).join(', ')}`) : '' };
   },
   startTask(id) {
     const d = this.taskDef(id), v = this.taskView(d); if (v.state !== 'ready' || !v.can) return false;
     this.pay(d.cost); const t = now();
     this.s.tasks[id] = { startedAt: t, endsAt: t + this.dur(d.mins), done: false };
+    if (d.home) this.s.tasks[id].tile = this.freeLot();
     if (d.tile) this.s.tiles[d.tile].state = 'regrowing';
-    this.note(`${C.names[d.who]} set to work: ${d.name.toLowerCase()}.`); this.emit('task', { id }); return true;
+    this.note(`${C.names[d.who]} set to work: ${lc(d.name)}.`); this.emit('task', { id }); return true;
   },
   running() { return Object.entries(this.s.tasks).filter(([, tk]) => !tk.done).map(([id, tk]) => Object.assign({ id }, tk, { def: this.taskDef(id) })); },
 
@@ -208,6 +228,7 @@ const G = {
     const [x, y] = k.split(',').map(Number); let n = 0;
     for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
       const kk = `${x + dx},${y + dy}`; if (this.s.tiles[kk] || n >= 2 || Math.abs(x + dx) > 2 || Math.abs(y + dy) > 2) continue;
+      if (y + dy < -1 && !this.done('bridge')) continue;   // the far side of the stream waits for the bridge
       this.s.tiles[kk] = { state: 'revealed', green: 0 }; n++;
     }
     if (n) this.note('The mist has drawn back from more bare ground.');
@@ -291,6 +312,112 @@ const G = {
     e.helped++; const light = dd.n < C.deedsPerDay ? 1 : 0; dd.n += light;
     if (light) this.give({ light: 1 });
     this.note(`You helped the ${d.name.toLowerCase()}. ${d.trouble.thanks}`); this.emit('helped', { id, light }); return light;
+  },
+
+  // ---- neighbours and the village ----
+  // One traveller at a time camps by the path (village.traveller). A "Build X a home" job settles them on the nearest healed
+  // lot; then their trade building job, a daily gift at their door, the odd favour, and one short story quest.
+  folkDef(id) { return (C.folk || []).find(f => f.id === id); },
+  folkState(id) { return this.s.village.folk[id] || null; },
+  settled() { return Object.keys(this.s.village.folk); },
+  done(id) { const t = this.s.tasks[id]; return !!(t && t.done); },
+  freeLot() {   // the nearest healed plain tile that has no home on it yet (one being built counts as taken)
+    const s = this.s, taken = new Set(Object.values(s.village.folk).map(f => f.tile));
+    for (const tk of Object.values(s.tasks)) if (tk.tile && !tk.done) taken.add(tk.tile);
+    return C.village.lots.find(k => s.tiles[k] && s.tiles[k].state === 'green' && !taken.has(k)) || null;
+  },
+  gateWhy(d) {   // extra reasons a job cannot start yet, in words ('' = fine)
+    if (d.home && !this.freeLot()) return 'needs a healed patch next door for their home';
+    if (d.needsTile && !(this.s.tiles[d.needsTile] && this.s.tiles[d.needsTile].state === 'green')) return 'after the stepping-stone patch of the stream heals';
+    return '';
+  },
+  villageTick(t) {
+    const s = this.s, v = s.village, V = C.village, dk = dayKey(t), h = new Date(t).getHours();
+    // a traveller arrives once the house is finished, when it is time, and someone is still on the road
+    if (!v.traveller && v.queue.length && t >= v.nextAt && (this.done(V.firstAfter) || /village/.test(location.hash))) {
+      v.traveller = { id: v.queue.shift(), at: t };
+      const f = this.folkDef(v.traveller.id); this.note(`A traveller has camped by the path: ${f.name}, ${f.trade}.`); this.emit('traveller', v.traveller.id);
+    }
+    for (const [fid, fs] of Object.entries(v.folk)) {
+      const f = this.folkDef(fid), traded = this.done('trade:' + fid);
+      // a small daily gift at their door, once their trade building is up (one a day; no backlog)
+      if (traded && fs.giftDay !== dk && h >= 6) { fs.giftDay = dk; this.dropGift(fid); }
+      // their story begins a while after the trade building is finished
+      if (traded && fs.q === -1 && t >= s.tasks['trade:' + fid].endsAt + V.questAfterDays * DAY()) { fs.q = 0; this.enterStep(fid); this.emit('quest', fid); }
+      const st = this.questStep(fid);
+      if (st && st.wait && fs.waitUntil && t >= fs.waitUntil) this.questNext(fid);
+      if (st && st.find && !v.finds.some(x => x.folk === fid) && this.inHours(st.find.hours, h)) this.spawnFind(fid);
+    }
+    // the odd small favour (one at a time; it lapses at the end of the day)
+    if (v.favour && v.favour.day !== dk) v.favour = null;
+    if (!v.favour && t >= v.favourAt) {
+      v.favourAt = t + V.favourEvery * MIN;
+      const known = this.knownKinds(), pool = [];
+      for (const fid of this.settled()) this.folkDef(fid).favours.forEach((fv, i) => { if (Object.keys(fv.cost).every(k => known.has(k))) pool.push({ folk: fid, i }); });
+      if (pool.length) { v.favour = Object.assign(pool[(Math.random() * pool.length) | 0], { day: dk }); this.emit('favour', v.favour.folk); }
+    }
+  },
+  inHours(hrs, h) { if (!hrs) return true; const [a, b] = hrs; return a < b ? h >= a && h < b : h >= a || h < b; },
+  knownKinds() {   // things the player can come by: the land's offerings, plus whatever settled neighbours make
+    const k = new Set(C.offers.map(o => o.kind));
+    for (const fid of this.settled()) if (this.done('trade:' + fid)) Object.keys(this.folkDef(fid).building.gift).forEach(x => k.add(x));
+    return k;
+  },
+  door(fid) { const fs = this.folkState(fid); return { tile: fs.tile, gx: 0.40, gy: 0.40 }; },   // in front of their home (index.html LOT.home)
+  dropGift(fid) {
+    const s = this.s, f = this.folkDef(fid), d = this.door(fid); let i = 0;
+    for (const [kind, n] of Object.entries(f.building.gift)) { s.offers.push({ id: Math.random().toString(36).slice(2, 8), kind, n, tile: d.tile, gx: d.gx + 0.06 * i, gy: d.gy + 0.05 + 0.04 * i, at: now(), gift: fid }); i++; }
+    this.note(f.building.giftText);
+  },
+  waveOn() {   // send the traveller on their way (they may come back much later); someone else comes soon
+    const v = this.s.village, tr = v.traveller; if (!tr || this.s.tasks['home:' + tr.id]) return false;
+    v.queue.push(tr.id); v.traveller = null; v.nextAt = now() + C.village.waveGapDays * DAY();
+    this.note(`${this.folkDef(tr.id).name} packed up and went on along the road, waving.`); this.emit('traveller', null); return true;
+  },
+  villageDone(id, d, tk) {   // a village job just finished
+    const v = this.s.village, fid = d.folk, f = this.folkDef(fid);
+    if (d.home) {
+      v.folk[fid] = { tile: tk.tile, since: now(), giftDay: '', q: -1, waitUntil: 0 };
+      if (v.traveller && v.traveller.id === fid) v.traveller = null;
+      v.nextAt = now() + C.village.gapDays * DAY();
+      this.note(`${f.name} has moved in.`); this.emit('story', { folk: fid, kind: 'moved' });
+    } else if (id.startsWith('trade:')) { this.note(`${f.short[0].toUpperCase() + f.short.slice(1)}: ${lc(d.name)} is done.`); }
+    else if (d.quest) this.questNext(fid);
+  },
+  questStep(fid) { const fs = this.folkState(fid); return fs && fs.q >= 0 ? this.folkDef(fid).quest.steps[fs.q] || null : null; },
+  enterStep(fid) {
+    const fs = this.folkState(fid), st = this.questStep(fid); if (!st) return;
+    if (st.wait) fs.waitUntil = now() + this.dur(st.wait);
+  },
+  questNext(fid) {
+    const fs = this.folkState(fid), f = this.folkDef(fid); fs.q++; fs.waitUntil = 0;
+    if (fs.q >= f.quest.steps.length) {
+      fs.q = 'done'; this.give(f.quest.reward); this.note(`A story finished: ${f.quest.name}.`); this.emit('story', { folk: fid, kind: 'quest' }); return;
+    }
+    this.enterStep(fid); this.emit('quest', fid);
+  },
+  questGive(fid) {
+    const st = this.questStep(fid); if (!st || !st.give || !this.can(st.give)) return false;
+    this.pay(st.give); this.questNext(fid); return true;
+  },
+  spawnFind(fid) {   // something to spot on the land: on a healed tile, not too near the middle of things
+    const s = this.s, greens = Object.keys(s.tiles).filter(k => s.tiles[k].state === 'green' || k === '0,0');
+    const tile = greens[(Math.random() * greens.length) | 0];
+    s.village.finds.push({ id: Math.random().toString(36).slice(2, 8), folk: fid, tile, gx: 0.2 + Math.random() * 0.6, gy: 0.6 + Math.random() * 0.3 });
+    this.dirty = true;
+  },
+  found(id) {
+    const v = this.s.village, i = v.finds.findIndex(x => x.id === id); if (i < 0) return null;
+    const [x] = v.finds.splice(i, 1); this.questNext(x.folk); return x;
+  },
+  doFavour() {
+    const v = this.s.village, fv = v.favour; if (!fv) return false;
+    const f = this.folkDef(fv.folk), ask = f.favours[fv.i]; if (!this.can(ask.cost)) return false;
+    this.pay(ask.cost); v.favour = null;
+    const dd = this.s.deeds, dk = dayKey(now()); if (dd.day !== dk) { dd.day = dk; dd.n = 0; }
+    const light = dd.n < C.deedsPerDay ? 1 : 0; dd.n += light;
+    const gift = Object.assign({}, this.done('trade:' + fv.folk) ? f.building.gift : {}); if (light) gift.light = (gift.light || 0) + 1;
+    this.give(gift); this.note(`You did ${f.short} a favour. ${ask.thanks}`); this.emit('helped', { folk: fv.folk, light }); return gift;
   },
 
   // ---- story hook (placeholder; content lives in CONTENT.story once written) ----

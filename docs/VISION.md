@@ -2,6 +2,9 @@
 
 Everything here was chosen by Bryce in the "Pin down the game's vision" thread (question set and answers: `VISION-QUESTIONS.md`). Earlier decisions (art style, isometric view, gentle timers, southern seasons, owned art only) still stand; see `PLAN.md`. The staff mystery is Bryce's to write and is not described here.
 
+## The story (Bryce, 2026-10-25)
+A cosy game with no real stakes. The main storyline is **a sweet story of Wendel and Hazel's love over their marriage**, with small tribulations brought by visitors and neighbours (a forgotten anniversary, too long in the workshop, a worry about winter), always mended warmly. Each neighbour's little story shows one such moment. The **magic staff story is 100% optional**, late game, started by an object found in mysterious circumstances; it may never happen, and Bryce writes it.
+
 ## The game in a paragraph
 You are an unseen helper spirit. A young newlywed gnome couple, **Wendel** (the dreamer: tinkers, invents, gazes at stars, loses his pipe) and **Hazel** (the practical one: organises, gardens, keeps them fed, dry wit), arrive in a logged, human-scarred clearing. Over three to six months of real time you help them heal the land tile by tile, turn a root-shelter into a snug home, and welcome wandering gnomes who stay when you build them a house. The result is a cosy village tucked into nature, never a city. A festival marks the soft ending, and then the world keeps living: seasons turn, visitors come, the couple slowly grows old.
 
@@ -32,7 +35,7 @@ You are an unseen helper spirit. A young newlywed gnome couple, **Wendel** (the 
 
 ## Village
 - **Growth:** travelling gnomes visit; build them a home and they stay. You choose who stays.
-- **Size:** 6-10 neighbours by the end (baker, carpenter, old sage, a few families).
+- **Size:** 6-10 neighbours by the end. Cast (built 2026-10-25): Mabel the baker, Tobias the carpenter, the Fernsby family, Bert and Mags Pebbleworth (an old married couple with an orchard), Clem the beekeeper, Barnaby the miller, Nettle the weaver, Juniper the lamplighter. **No sage** (Bryce, 2026-10-25).
 - **Depth:** each has a trade, a handful of sayings, and a little quest of their own. Roughly 8-10 mini-quests over the game.
 - **Your role:** you mainly help Wendel and Hazel; neighbours occasionally ask small favours. Never a whole-village manager.
 - **First buildings:** well, bakery oven, workshop, bridge. Later candidates: mill, orchard, beehives, pond, meeting hall, inn, market stalls.
@@ -75,7 +78,7 @@ Each batch is about 10-15 Gemini prompts, written by Claude from `STYLE-GUIDE.md
 12. Spirits: spirit of the land, will-o'-wisp, troll-ish nuisance.
 
 **Batch 5 — village**
-13. Traveller gnomes: 6-10 neighbours, each a stand plus side walk (baker, carpenter, old sage, two families, tinker...). Fresh reference sheets first, approved by Bryce.
+13. Traveller gnomes: the 8 neighbours above (prompts in `ART-BATCH-6.md`). Fresh reference sheets first, approved by Bryce.
 14. Neighbour homes under roots and in stumps (3-4 variants) and the first four buildings: well, bakery oven, workshop, bridge.
 15. Festival props: bunting, long table, lanterns.
 
