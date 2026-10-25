@@ -1,5 +1,7 @@
 # Art batch 3 — the "after" pictures, the repainted plot and the button icons (written 2026-10-25)
 
+> **2026-10-25: the prompts below are replaced by `docs/ART-DAY-PLAN.md`** (one ordered list of 74 pictures in 7 art days, with the new mix-and-match ground kit and small details added). Paint from that list. This file stays for its wiring notes, which still apply.
+
 Roadmap step 2 in `PLAN.md`. Written from the "art to paint later" list the clear-the-land build left in `PLAN.md`, in the same format as `ART-BATCH-2.md`. Bryce runs it in Gemini (Nano Banana) from the Mac folder `~/Downloads/Gnome Art Day/`: `3 - Steps.txt` has these steps in plain words, `4 - Prompts to copy/` has one text file per prompt (open, Cmd+A, Cmd+C), and finished pictures go into `2 - Put finished pictures here/`. Batch 2's output moved to `0 - Batch 2 (done)/`.
 
 **The idea of this batch:** every early job already changes the picture with a code-drawn stand-in (`BEFORE`, `AFTER`, `EXTRAS`, `drawGroundChanges` and `drawRutsFilled` in `index.html`). These pictures replace the stand-ins with real paint. Most prompts therefore say "repaint the pasted picture exactly, the ONLY change is..." with the current sprite pasted as the reference, so the new piece drops straight on top of the old one at the same size and angle. The references are the live sprites flattened onto magenta (`shelter.jpg`, `fence.jpg`, `sapling.jpg`, `barrel.jpg`, `lanternstump.jpg`, and `props-ref.jpg` = firewood + bench + barrel for scale), plus `plot-barren.jpg` from batch 1.

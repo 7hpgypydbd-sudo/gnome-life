@@ -1,5 +1,7 @@
 # Art batch 5 — visitors, nests and the feeding dish (written 2026-10-25)
 
+> **2026-10-25: the prompts below are replaced by `docs/ART-DAY-PLAN.md`** (one ordered list of 74 pictures in 7 art days, with the new mix-and-match ground kit and small details added). Paint from that list. This file stays for its wiring notes, which still apply.
+
 Roadmap step 6 in `PLAN.md`. The game already works without these: six creatures (robin, field mouse, hedgehog, tawny owl, ladybird, wood spirit) use the old painted pictures from art set 1, and the rest show a stand-in icon in the garden and in the journal. Nests, burrows and the feeding dish are drawn by code. These six pictures replace the stand-ins. Wiring: put the finished pictures (named as below) in one folder and run `python3 tools/slot_in_art.py <folder>`; it keys the magenta, cuts each sheet into its four pieces (left to right), and writes `sprites/vis-<id>.webp`, `sprites/nest-<kind>.webp` and `sprites/feeding-dish.webp`. No code change. Same Mac workflow as batches 3 and 4 (Steps.txt + one text file per prompt in `~/Downloads/Gnome Art Day/`), set up when Bryce is ready to paint.
 
 **Reference for every visitor sheet:** paste `docs/art/visitors.jpg` (the old hedgehog / robin / mouse / owl sheet) so the new animals match the six already in the game.

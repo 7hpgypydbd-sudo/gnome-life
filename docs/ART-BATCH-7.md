@@ -1,5 +1,7 @@
 # Art batch 7 — the festival and the seasonal visitors (written 2026-10-25)
 
+> **2026-10-25: the prompts below are replaced by `docs/ART-DAY-PLAN.md`** (one ordered list of 74 pictures in 7 art days, with the new mix-and-match ground kit and small details added). Paint from that list. This file stays for its wiring notes, which still apply.
+
 The game already works without any of these. The festival green's table, feast, bunting, lanterns and flower arch are code-drawn stand-ins; the festival story pages show a little picture of Wendel and Hazel (or the oldest neighbour) instead of a painting; the four seasonal visitors are emoji. These pictures replace them. Wiring: put the finished pictures (named as below) in one folder and run `python3 tools/slot_in_art.py <folder>`; it keys the magenta, cuts each sheet into its pieces (left to right) and writes the `sprites/` files. No code change. Same Mac workflow as before (Steps.txt + one text file per prompt in `~/Downloads/Gnome Art Day/`), set up when Bryce is ready to paint.
 
 **Best painted after batch 6**, so the neighbours in the story pictures can be copied from their approved sheets.

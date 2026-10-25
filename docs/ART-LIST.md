@@ -1,5 +1,7 @@
 # Gnome Life — every picture still to paint (written 2026-10-25)
 
+> **Updated 2026-10-25: paint from `docs/ART-DAY-PLAN.md`.** It reworks everything below into one ordered list of **74 pictures in 7 art days**: a new mix-and-match ground kit first (9 plain ground swatches, 8 sticker sheets, stumps and rocks before and after healing, old human leftovers, two sheets of tiny hidden surprises, two more lamps), then the 52 pictures still wanted from batches 3 to 8, with small details and Easter eggs added. Three batch 3 ground pictures are dropped (ruts filled, cleared plot, stepping-stone strip): the kit replaces them. The tables below are kept as the record of what each old batch was.
+
 The whole game now works from start to festival with stand-ins (code drawings or emoji). This is the full list of pictures that would replace them. Each batch has its own file with the exact Gemini prompts (`docs/ART-BATCH-3.md` to `-8.md`). One "picture" here is one Gemini prompt; many are a sheet of 3 or 4 pieces that a tool cuts apart. Nothing needs code to drop in except where it says so.
 
 **Already painted and in the game:** the ground tiles, Wendel and Hazel (young) walking and doing their jobs, the pick-up icons, the first props (shelter, campfire, barrel, bench...), and six creatures (robin, mouse, hedgehog, owl, ladybird, wood spirit).
@@ -31,7 +33,5 @@ These are things the vision mentions that the game does not need yet. Most also 
 | The troll-ish nuisance and the spirit of the land | 1 to 2 | yes |
 | Neighbours walking (instead of gliding), and a picture for each "moved in" page | about 4 sheets + 8 | small |
 | Round journal portraits for the creatures (optional; the journal uses their garden pictures) | about 6 sheets | no |
-| Later phase: plain ground swatches and "sticker" sheets for the smaller-piece ground (see `PLAN.md`) | about 8 swatches + 3 sticker sheets | yes |
-| Repainted stream and path bends that line up | about 6 | no |
 
 **No art needed for the seasons:** spring blossom, summer gold, autumn leaves and winter mist are all done by the game with colour and drifting pieces. The vision allowed one or two painted seasonal props later; nothing needs them now.
