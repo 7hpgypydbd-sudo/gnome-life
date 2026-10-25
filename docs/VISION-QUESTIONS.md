@@ -53,14 +53,14 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 **4.3 Decorating.** ☑ A modest set you can place and move. ★ Place and move a modest set of items (bench, lantern, flower pots, washing line) / Everything placed automatically / Lots of freedom, full garden design.
 **4.4 Which buildings matter most for the town** ☑ Well, bakery oven, workshop, bridge. (pick 3): well, bakery/oven, mill, workshop, bridge, chapel/meeting hall, inn for travellers, school, market stalls, lookout tower.
 
-## Round 5 — The town (◐)
+## Round 5 — The town (☑)
 
 **5.1 How does the town grow?** ☑ Travellers stay if you house them. ★ Visiting gnomes stay if you build them a home / Homes appear as milestones / You invite named characters from the story.
 **5.2 How many gnome neighbours by the end?** ☑ 6-10. ★ 6–10 / 2–4 / 20+.
 **5.3 Do neighbours have jobs and personalities?** ☑ Both a trade with lines AND a little quest each. ★ Yes, each has a trade and a few lines / Background colour only / Full little quests each.
-**5.4 Do you control neighbours?** ★ No, you help the couple; neighbours are their own folk / Yes, same as the couple.
+**5.4 Do you control neighbours?** ☑ Mainly the couple; neighbours ask small favours too. ★ No, you help the couple; neighbours are their own folk / Yes, same as the couple.
 
-## Round 6 — Visitors, creatures and spirits (☐)
+## Round 6 — Visitors, creatures and spirits (◐)
 
 **6.1 Which animals?** ★ Australian wildlife (fairy-wren, echidna, possum, frog) as now / European fairy-tale animals (hedgehog, robin, owl, fox) like the book / Both: Australian real animals plus a few fairy-tale ones.
 **6.2 Spirits and magical folk?** ★ A few: a spirit of the land, a will-o'-wisp, maybe a troll-like nuisance / None, keep it natural / Many.
