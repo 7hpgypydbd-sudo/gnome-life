@@ -91,6 +91,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **First village buildings:** well, bakery oven, workshop, bridge over the stream (everyday village life). Others (mill, orchard, beehives, pond, meeting hall, inn, market stalls) can come later.
 - **Town growth:** travelling gnomes visit; build them a home (under a root, in a stump) and they stay. You choose who stays; the visitor journal and the town are linked.
 - **Neighbour count:** 6-10 by the finished village (baker, carpenter, old sage, a few families), still mostly trees.
+- **Neighbour depth:** each has a trade and a handful of sayings AND a little quest of their own (a small story to help with). Writing budget: roughly 8-10 mini-quests over the game.
 
 ## Open questions for Bryce (do not assume)
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?
