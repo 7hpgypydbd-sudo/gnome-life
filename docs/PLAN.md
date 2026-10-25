@@ -83,6 +83,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Personalities:** Wendel is the dreamer (tinkers, invents, gazes at stars, a little absent-minded); Hazel is practical (organises, gardens, keeps them fed, dry wit). Gentle comedy between them; both kind.
 - **Daily routine:** yes, a real rhythm on the phone clock: wake, breakfast by the fire, work, an evening sit (Wendel's pipe, Hazel's knitting), sleep. Visit at night and you find them asleep or by the fire. Needs poses: sleep, eat, sit, pipe, knit.
 - **Visit end:** both: a clear gentle "all done for now" moment (a line from Hazel or Wendel, the screen settles) plus idle fiddling (decorating, chatting, collecting dew) that stays open.
+- **Children:** maybe later; nothing built now, but story and save leave room for a child arriving around the village stage.
 
 ## Open questions for Bryce (do not assume)
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?
