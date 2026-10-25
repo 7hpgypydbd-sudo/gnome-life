@@ -50,7 +50,7 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 
 **4.1 Homestead stages.** ☑ Three big stages. ★ Three: shelter under a root → snug house in a stump/under an oak → house plus garden, well, workshop / Two / Five or more small steps.
 **4.2 Interior.** ☑ Tap the house to open a room picture. ★ Tap the house to open a painted cut-away room (separate picture, FarmVille-style) / Interior always visible as a cut-away in the isometric view / No interior.
-**4.3 Decorating.** ★ Place and move a modest set of items (bench, lantern, flower pots, washing line) / Everything placed automatically / Lots of freedom, full garden design.
+**4.3 Decorating.** ☑ A modest set you can place and move. ★ Place and move a modest set of items (bench, lantern, flower pots, washing line) / Everything placed automatically / Lots of freedom, full garden design.
 **4.4 Which buildings matter most for the town** (pick 3): well, bakery/oven, mill, workshop, bridge, chapel/meeting hall, inn for travellers, school, market stalls, lookout tower.
 
 ## Round 5 — The town (☐)

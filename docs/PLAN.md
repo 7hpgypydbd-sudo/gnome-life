@@ -87,6 +87,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Visit length and frequency (Bryce's words):** the main loop is 2-5 minute visits, 2-3 times a day (jobs roughly 3-8 h), but quick bored check-ins must always find a little something to do (a dew drop, a chat line, a pot to move, a small 10-20 min job).
 - **Home stages:** three big leaps: (1) shelter under a root with campfire (have), (2) snug house in a stump or under an oak, (3) house plus garden, well and workshop. Small add-ons are decorations on top.
 - **Interior:** tap the house to open a painted cut-away room as its own scene (one picture per home stage); the evening routine (fire, pipe, knitting, bed) plays out there.
+- **Decorating:** a modest set of loose items you can place and drag around the home tile (bench, lantern, flower pots, washing line, fence bits). Not a full garden designer.
 
 ## Open questions for Bryce (do not assume)
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?
