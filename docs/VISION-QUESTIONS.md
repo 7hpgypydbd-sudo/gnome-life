@@ -15,7 +15,7 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 - ★ Village: about 25 tiles (5×5). Enough room for a stream, a path, a few neighbours' homes and a little square.
 - Sprawling: 49 or more (7×7+), keeps growing for months.
 
-**1.2 How does the land spread?**
+**1.2 How does the land spread?** ☑ Ripples out from home
 - ★ Ripples out from the home tile; each newly green tile shows its misty neighbours and lets you coax them.
 - Follows the stream and path, so the shape is a winding valley rather than a square.
 - You choose where to grow next by tapping any edge.
