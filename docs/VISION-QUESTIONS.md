@@ -43,7 +43,7 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 **3.1 Daily routine shown on screen?** ☑ Yes, a real rhythm. ★ Yes, a visible rhythm (wake, breakfast by the fire, work, evening pipe/knitting, sleep) following the real clock / Loose, they just wander and work / Not needed.
 **3.2 What you do in a typical visit** (rank): collect pick-ups, give materials for a task, plant/water/harvest, tap gnomes for a chat line, note a visitor, cast a spell, decorate/move things.
 **3.3 Visit length target.** ★ 2–5 minutes / under 1 minute / up to 15 minutes.
-**3.4 Should a visit have a natural end?** ★ Yes: a gentle "all done for now, the stew needs 3 hours" moment / No, always leave something tiny to do / Both: a clear "done" plus optional fiddling.
+**3.4 Should a visit have a natural end?** ☑ Both. ★ Yes: a gentle "all done for now, the stew needs 3 hours" moment / No, always leave something tiny to do / Both: a clear "done" plus optional fiddling.
 **3.5 How many visits a day are we designing for?** ★ 2–3 (morning, after work, bedtime) / 1 / 4+.
 
 ## Round 4 — Home and buildings (☐)

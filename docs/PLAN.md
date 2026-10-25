@@ -82,10 +82,10 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Names: Wendel (him) and Hazel (her).** Confirmed 2026-10-25; replaces the working names Ferdinand and Rosalind everywhere (content.js lines still need updating).
 - **Personalities:** Wendel is the dreamer (tinkers, invents, gazes at stars, a little absent-minded); Hazel is practical (organises, gardens, keeps them fed, dry wit). Gentle comedy between them; both kind.
 - **Daily routine:** yes, a real rhythm on the phone clock: wake, breakfast by the fire, work, an evening sit (Wendel's pipe, Hazel's knitting), sleep. Visit at night and you find them asleep or by the fire. Needs poses: sleep, eat, sit, pipe, knit.
+- **Visit end:** both: a clear gentle "all done for now" moment (a line from Hazel or Wendel, the screen settles) plus idle fiddling (decorating, chatting, collecting dew) that stays open.
 
 ## Open questions for Bryce (do not assume)
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?
-- Should a visit have a natural end, or always leave something tiny to do?
 - How the home interior (cut-away) fits the isometric view.
 - The staff mystery itself (Bryce writes it).
 
