@@ -17,7 +17,7 @@ window.CONTENT = {
   },
 
   // What the land offers while you are away. One every offerEvery minutes, at most offerCap lying about.
-  offerEvery: 35, offerCap: 6,
+  offerEvery: 20, offerCap: 8,
   offers: [ // weight by time of day: day / night
     { kind:'twig',  day:5, night:2 },
     { kind:'moss',  day:4, night:2 },

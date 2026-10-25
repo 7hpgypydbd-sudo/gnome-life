@@ -21,7 +21,7 @@ function fresh() {
   return {
     v: 1, created: t, lastSeen: t, lastOfferAt: t,
     days: [dayKey(t)],                       // distinct calendar days visited (drives magic)
-    inv: { twig: 2, moss: 1, stone: 1, acorn: 0, seed: 1, water: 1, light: 0 },
+    inv: { twig: 6, moss: 4, stone: 4, acorn: 1, seed: 2, water: 2, light: 0 },   // enough to start a few jobs straight away
     tiles: { '0,0': { state: 'home', green: 0 } },   // "tx,ty" -> { state: home|revealed|regrowing|green, green, task }
     plots: { seedbed: { crop: null, stage: null, readyAt: 0, grown: 0 } },
     tasks: {},                               // id -> { startedAt, endsAt, done }
@@ -46,11 +46,19 @@ const G = {
   taskSpeed() { return 1 - 0.08 * (this.magicLevel() - 1); },   // each magic level trims task time 8%
 
   boot() {
-    this.s = Store.load() || fresh();
+    this.s = Store.load();
+    if (!this.s) { this.s = fresh(); this.startingGifts(); }
     for (const [k, v] of Object.entries(fresh())) if (!(k in this.s)) this.s[k] = v;   // older saves gain new fields
     this.away = this.catchUp();
     this.save();
     return this.s;
+  },
+
+  // a brand-new garden already has a few things lying about, so the first visit has something to do
+  startingGifts() {
+    const spots = [[0.50, 0.60], [0.34, 0.54], [0.68, 0.54], [0.50, 0.22], [0.16, 0.26], [0.34, 0.88]];
+    ['twig', 'stone', 'moss', 'water', 'seed', 'twig'].forEach((kind, i) =>
+      this.s.offers.push({ id: Math.random().toString(36).slice(2, 8), kind, tile: '0,0', gx: spots[i][0], gy: spots[i][1], at: now() }));
   },
 
   // ---- time passing while away ----
