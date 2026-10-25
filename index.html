@@ -12,59 +12,70 @@
   html,body { margin:0; height:100%; background:#1c2418; overflow:hidden; -webkit-user-select:none; user-select:none; touch-action:none; font-family: Georgia, "Times New Roman", serif; -webkit-tap-highlight-color: transparent; }
   canvas { display:block; width:100vw; height:100vh; }
   #hud { position:fixed; left:0; right:0; top:0; padding: calc(env(safe-area-inset-top) + 10px) 14px 0; pointer-events:none; color:var(--paper); text-shadow:0 1px 2px rgba(0,0,0,.6); }
-  #hud h1 { margin:0; font-size:19px; font-weight:normal; letter-spacing:.5px; }
-  #hud p { margin:2px 0 0; font-size:12px; opacity:.85; }
-  #bubble { position:fixed; max-width:62vw; background:var(--paper); color:var(--ink); border-radius:14px; padding:8px 12px; font-size:14px; line-height:1.3; box-shadow:0 2px 8px rgba(0,0,0,.35); pointer-events:none; opacity:0; transition:opacity .25s; transform:translate(-50%,-100%); }
+  #hud h1 { margin:0; font-size:22px; font-weight:bold; letter-spacing:.5px; }
+  #hud p { margin:3px 0 0; font-size:15px; opacity:.92; line-height:1.3; }
+  #hud p.busy { font-size:14px; opacity:.85; }
+  #bubble { position:fixed; max-width:66vw; background:var(--paper); color:var(--ink); border-radius:14px; padding:10px 14px; font-size:16px; line-height:1.3; box-shadow:0 2px 8px rgba(0,0,0,.35); pointer-events:none; opacity:0; transition:opacity .25s; transform:translate(-50%,-100%); }
   #bubble:after { content:""; position:absolute; left:50%; bottom:-8px; margin-left:-7px; border:7px solid transparent; border-top-color:var(--paper); border-bottom:0; }
   #load { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; color:var(--paper); font-size:15px; background:#1c2418; z-index:9; }
   /* bottom bar */
-  #bar { position:fixed; left:0; right:0; bottom:0; padding: 8px 10px calc(var(--safe-b) + 8px); display:flex; flex-direction:column; gap:7px; pointer-events:none; }
-  #inv { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; }
-  .chip { background:rgba(243,233,210,.92); color:var(--ink); border-radius:999px; padding:3px 9px 3px 6px; font-size:13px; display:flex; gap:4px; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,.3); transition:transform .15s; }
-  .chip.zero { opacity:.45; } .chip.pop { transform:scale(1.25); }
-  .ico { width:20px; height:20px; vertical-align:middle; margin-right:2px; }
+  #bar { position:fixed; left:0; right:0; bottom:0; padding: 8px 10px calc(var(--safe-b) + 10px); display:flex; flex-direction:column; gap:7px; pointer-events:none; }
+  .ico { width:22px; height:22px; vertical-align:middle; margin-right:3px; }
   #btns { display:flex; gap:8px; justify-content:center; pointer-events:auto; }
-  .btn { background:var(--paper); color:var(--ink); border:0; border-radius:12px; padding:9px 14px; font:inherit; font-size:14px; box-shadow:0 2px 6px rgba(0,0,0,.35); position:relative; }
-  .btn .dot { position:absolute; top:-4px; right:-4px; width:12px; height:12px; border-radius:50%; background:var(--red); border:2px solid var(--paper); display:none; }
+  .btn { flex:1; max-width:110px; min-height:60px; background:var(--paper); color:var(--ink); border:0; border-radius:16px; padding:7px 4px 6px; font:inherit; font-size:14px; font-weight:bold; letter-spacing:.2px; box-shadow:0 3px 8px rgba(0,0,0,.4), inset 0 -3px 0 rgba(43,36,24,.12); position:relative; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .btn:active { transform:translateY(2px); box-shadow:0 1px 4px rgba(0,0,0,.4); }
+  .btn .ic { font-size:26px; line-height:1; }
+  .btn .dot { position:absolute; top:-5px; right:-5px; min-width:14px; height:18px; padding:0 4px; border-radius:9px; background:var(--red); color:var(--paper); border:2px solid var(--paper); display:none; font-size:12px; line-height:18px; text-align:center; }
   .btn.alert .dot { display:block; }
-  .btn.ghost { background:rgba(243,233,210,.25); color:var(--paper); }
+  #bPack .dot { background:var(--green); }
+  .btn.pop { transform:scale(1.07); }
   /* sheet */
   #shade { position:fixed; inset:0; background:rgba(10,14,8,.35); opacity:0; pointer-events:none; transition:opacity .2s; }
   #shade.on { opacity:1; pointer-events:auto; }
-  #sheet { position:fixed; left:0; right:0; bottom:0; max-height:72vh; background:var(--paper); color:var(--ink); border-radius:18px 18px 0 0; padding:14px 16px calc(var(--safe-b) + 16px); box-shadow:0 -4px 18px rgba(0,0,0,.4); transform:translateY(105%); transition:transform .25s; overflow-y:auto; touch-action:pan-y; pointer-events:auto; }
+  #sheet { position:fixed; left:0; right:0; bottom:0; max-height:76vh; background:var(--paper); color:var(--ink); border-radius:20px 20px 0 0; padding:16px 18px calc(var(--safe-b) + 18px); box-shadow:0 -4px 18px rgba(0,0,0,.4); transform:translateY(105%); transition:transform .25s; overflow-y:auto; touch-action:pan-y; pointer-events:auto; }
   #sheet.on { transform:none; }
-  #sheet h2 { margin:0 0 4px; font-size:18px; font-weight:normal; }
-  #sheet h2 small { font-size:12px; color:var(--ink2); margin-left:6px; }
-  #sheet p { margin:4px 0 8px; font-size:14px; line-height:1.35; color:var(--ink2); }
-  .row { display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid rgba(43,36,24,.12); }
-  .row:first-of-type { border-top:0; }
-  .row .t { flex:1; min-width:0; } .row .t b { font-weight:normal; font-size:15px; display:block; } .row .t span { font-size:12.5px; color:var(--ink2); }
+  #sheet h2 { margin:0 0 6px; font-size:23px; font-weight:bold; padding-right:40px; }
+  #sheet h2 small { font-size:14px; color:var(--ink2); margin-left:8px; font-weight:normal; }
+  #sheet h3 { margin:16px 0 2px; font-size:14px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; color:var(--ink2); }
+  #sheet h3:first-of-type { margin-top:6px; }
+  #sheet p { margin:6px 0 10px; font-size:16px; line-height:1.4; color:var(--ink2); }
+  .row { display:flex; align-items:center; gap:12px; padding:11px 0; border-top:1px solid rgba(43,36,24,.12); }
+  .row.hi { background:rgba(91,107,45,.1); margin:0 -10px; padding:11px 10px; border-radius:10px; border-top:0; }
+  .row .t { flex:1; min-width:0; } .row .t b { font-weight:bold; font-size:17px; display:block; line-height:1.25; } .row .t span { font-size:14.5px; color:var(--ink2); line-height:1.35; }
   .row .t span.bad { color:var(--red); }
-  .act { background:var(--green); color:var(--paper); border:0; border-radius:10px; padding:8px 12px; font:inherit; font-size:13.5px; white-space:nowrap; }
-  .act[disabled] { background:var(--paper2); color:var(--ink2); }
+  .row .t .who { display:inline-block; background:rgba(91,107,45,.14); color:var(--green); font-weight:bold; font-size:13px; border-radius:6px; padding:1px 6px; margin-right:4px; }
+  .act { background:var(--green); color:var(--paper); border:0; border-radius:12px; padding:12px 16px; min-height:46px; font:inherit; font-size:16px; font-weight:bold; white-space:nowrap; box-shadow:inset 0 -3px 0 rgba(0,0,0,.18); }
+  .act:active { transform:translateY(1px); }
+  .act[disabled] { background:var(--paper2); color:var(--ink2); box-shadow:none; }
   .act.quiet { background:var(--paper2); color:var(--ink); }
-  .cost { font-size:13px; } .cost i { font-style:normal; margin-right:6px; }
-  .prog { height:5px; background:var(--paper2); border-radius:3px; overflow:hidden; margin-top:5px; } .prog i { display:block; height:100%; background:var(--green); }
-  .meter { display:flex; gap:4px; margin:6px 0 10px; } .meter i { flex:1; height:8px; border-radius:4px; background:var(--paper2); } .meter i.on { background:#c9922e; box-shadow:0 0 6px #ffcf6a; }
-  .jrow { display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid rgba(43,36,24,.12); }
-  .jrow .sil { width:34px; height:34px; border-radius:50%; background:var(--paper2); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .cost { font-size:14px; } .cost i { font-style:normal; margin-right:7px; white-space:nowrap; }
+  .prog { height:7px; background:var(--paper2); border-radius:4px; overflow:hidden; margin-top:6px; } .prog i { display:block; height:100%; background:var(--green); }
+  .meter { display:flex; gap:4px; margin:6px 0 10px; } .meter i { flex:1; height:10px; border-radius:5px; background:var(--paper2); } .meter i.on { background:#c9922e; box-shadow:0 0 6px #ffcf6a; }
+  .jrow { display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid rgba(43,36,24,.12); }
+  .jrow .sil { width:40px; height:40px; border-radius:50%; background:var(--paper2); display:flex; align-items:center; justify-content:center; font-size:22px; flex:none; }
   .jrow.unseen .sil { filter:grayscale(1); opacity:.5; }
-  .jrow .t b { font-weight:normal; display:block; font-size:15px; } .jrow .t span { font-size:12.5px; color:var(--ink2); }
-  .close { position:absolute; right:12px; top:10px; background:none; border:0; font:inherit; font-size:22px; color:var(--ink2); }
-  #toast { position:fixed; left:50%; top:calc(env(safe-area-inset-top) + 58px); transform:translateX(-50%); background:rgba(243,233,210,.95); color:var(--ink); border-radius:12px; padding:8px 14px; font-size:14px; opacity:0; transition:opacity .25s; pointer-events:none; max-width:80vw; text-align:center; }
+  .jrow .t b { font-weight:bold; display:block; font-size:17px; } .jrow .t span { font-size:14.5px; color:var(--ink2); }
+  .close { position:absolute; right:8px; top:6px; width:44px; height:44px; background:none; border:0; font:inherit; font-size:30px; line-height:44px; color:var(--ink2); }
+  #toast { position:fixed; left:50%; top:calc(env(safe-area-inset-top) + 68px); transform:translateX(-50%); background:rgba(243,233,210,.96); color:var(--ink); border-radius:14px; padding:10px 16px; font-size:16px; opacity:0; transition:opacity .25s; pointer-events:none; max-width:84vw; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.3); }
+  /* the pack sheet */
+  .pack { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:6px; }
+  .pack div { background:rgba(43,36,24,.06); border-radius:12px; padding:8px 6px; text-align:center; font-size:14px; color:var(--ink2); }
+  .pack div.zero { opacity:.45; }
+  .pack img { width:40px; height:40px; display:block; margin:0 auto 2px; }
+  .pack b { display:block; font-size:19px; color:var(--ink); }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><h1>Gnome Life</h1><p id="sub"></p></div>
+<div id="hud"><h1>Gnome Life</h1><p id="sub"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
-  <div id="inv"></div>
   <div id="btns">
-    <button class="btn" id="bTasks">Tasks<i class="dot"></i></button>
-    <button class="btn" id="bMagic">Magic<i class="dot"></i></button>
-    <button class="btn" id="bJournal">Journal<i class="dot"></i></button>
+    <button class="btn" id="bPack"><span class="ic">🧺</span>Pack<i class="dot"></i></button>
+    <button class="btn" id="bTasks"><span class="ic">🔨</span>Jobs<i class="dot"></i></button>
+    <button class="btn" id="bMagic"><span class="ic">✨</span>Magic<i class="dot"></i></button>
+    <button class="btn" id="bJournal"><span class="ic">📖</span>Journal<i class="dot"></i></button>
   </div>
 </div>
 <div id="shade"></div>
@@ -321,6 +332,26 @@ function drawParticles(ph) {
   ctx.globalAlpha = 1;
 }
 function float(text, x, y) { floaters.push({ text, x, y: y - 40, life: 0 }); }
+// a little paper tag over a gnome who is on a job: name, the job, a progress bar and time left. Drawn in screen space so it stays readable at any zoom.
+function shortName(d) { return (d.short || d.name).replace(/^(Fill|Mend|Plant|Set|Stack|Lay|Scrub|String up|Hang|Start|Scatter|Raise|Dig|Nail up|Build|Coax|Keep|Sow|Line|Carve)\s+(the\s+|a\s+|an\s+)?/i, ''); }
+function rrect(x, y, w, h, r) { r = Math.min(r, h / 2, w / 2); ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function drawBusyTag(g, now) {
+  const r = G.running().find(r => r.id === g.job); if (!r) return;
+  const sx = (g.screen.x - cam.x) * cam.z + W / 2, sy = (g.screen.y - g.screen.h - cam.y) * cam.z + H / 2 - 14 + Math.sin(now / 600) * 2;
+  const label = `${C.names[g.who]} · ${shortName(r.def)}`, left = G.timeLeft(r.endsAt);
+  ctx.save(); ctx.font = 'bold 13px Georgia'; const tw = ctx.measureText(label).width; ctx.font = '12px Georgia'; const lw = ctx.measureText(left).width;
+  const w = Math.max(tw, lw + 60) + 22, h = 44, x = Math.round(Math.max(6, Math.min(W - w - 6, sx - w / 2))), y = Math.round(Math.max(90, sy - h));   // kept on screen even when the gnome has wandered off the edge
+  ctx.globalAlpha = 0.95; ctx.fillStyle = '#f3e9d2'; ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+  rrect(x, y, w, h, 10); ctx.fill();
+  if (sx > x + 10 && sx < x + w - 10) { ctx.beginPath(); ctx.moveTo(sx - 6, y + h); ctx.lineTo(sx + 6, y + h); ctx.lineTo(sx, y + h + 7); ctx.closePath(); ctx.fill(); }
+  ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+  ctx.fillStyle = '#2b2418'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.font = 'bold 13px Georgia'; ctx.fillText('🔨 ' + label, x + 10, y + 17);
+  const p = 1 - Math.max(0, r.endsAt - Date.now()) / (r.endsAt - r.startedAt), bx = x + 10, by = y + 26, bw = w - 20 - lw - 8;
+  ctx.fillStyle = '#e6d9bd'; rrect(bx, by, bw, 7, 4); ctx.fill();
+  ctx.fillStyle = '#5b6b2d'; rrect(bx, by, Math.max(4, bw * p), 7, 4); ctx.fill();
+  ctx.fillStyle = '#6b5a44'; ctx.font = '12px Georgia'; ctx.textAlign = 'right'; ctx.fillText(left, x + w - 10, y + 34);
+  ctx.restore();
+}
 
 // ---------- drawing ----------
 function glow(x, y, r, color, a) {
@@ -337,7 +368,7 @@ const BARREN = ['tile-barren-plain', 'tile-barren-stumps', 'tile-barren-fence', 
 function barrenVariant(k) { const [tx, ty] = k.split(',').map(Number); return BARREN[Math.abs(tx * 7 + ty * 13 + tx * ty * 3) % BARREN.length]; }   // fixed per tile, so it never flickers
 function drawTile(k, tl, now) {
   const [ox, oy] = tileOrigin(k);
-  if (k === '0,0') { ctx.drawImage(IM[HOME_TILE[G.landStage().key] || 'plot'], ox, oy); return; }
+  if (k === '0,0') { const key = HOME_TILE[G.landStage().key] || 'plot'; ctx.drawImage(IM[key], ox, oy); if (key === 'plot') drawRutsFilled(ox, oy, now); return; }
   if (tl.state === 'green') { ctx.drawImage(IM['tile-green'], ox, oy); return; }
   ctx.drawImage(IM[barrenVariant(k)], ox, oy);
   if (tl.state === 'regrowing') {   // the green tile fades in over the bare one as the task runs
@@ -345,6 +376,39 @@ function drawTile(k, tl, now) {
     ctx.save(); ctx.globalAlpha = Math.min(1, Math.max(0, 0.08 + 0.9 * p + 0.04 * Math.sin(now / 500))); ctx.drawImage(IM['tile-green'], ox, oy); ctx.restore();
   }
   if (tl.state === 'revealed') { ctx.save(); diamondPath(k); ctx.clip(); ctx.fillStyle = 'rgba(200,205,195,0.28)'; ctx.fillRect(ox, oy, PLOT.w, PLOT.h); ctx.restore(); }
+}
+// Code-drawn stand-in for "Fill the wheel ruts": packed earth creeps along the two painted ruts as Wendel works, and stays
+// once the job is done. (A repainted plot can replace this later; see docs/PLAN.md.)
+const RUTS = [[[200, 450], [1000, 180]], [[330, 520], [1060, 260]]];   // plot pixel coords, start (barrow end) -> finish
+function rutProgress() {
+  const tk = G.s.tasks.ruts; if (!tk) return 0;
+  return tk.done || tk.endsAt <= Date.now() ? 1 : 1 - Math.max(0, tk.endsAt - Date.now()) / (tk.endsAt - tk.startedAt);
+}
+function drawRutsFilled(ox, oy, now) {
+  const p = rutProgress(); if (p <= 0) return;
+  ctx.save(); diamondPath('0,0'); ctx.clip();
+  for (const [[x0, y0], [x1, y1]] of RUTS) {
+    const ex = x0 + (x1 - x0) * p, ey = y0 + (y1 - y0) * p;
+    // the fill: a soft band of fresh packed earth with a feathered edge
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(200,172,126,0.9)'; ctx.shadowBlur = 18;
+    ctx.strokeStyle = 'rgba(200,172,126,0.9)'; ctx.lineWidth = 42;
+    ctx.beginPath(); ctx.moveTo(ox + x0, oy + y0); ctx.lineTo(ox + ex, oy + ey); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(214,186,138,0.55)'; ctx.lineWidth = 24;
+    ctx.beginPath(); ctx.moveTo(ox + x0, oy + y0); ctx.lineTo(ox + ex, oy + ey); ctx.stroke();
+    // packed stones and twigs along the fill (fixed pattern, so it never flickers)
+    const len = Math.hypot(x1 - x0, y1 - y0), n = Math.floor(len / 28 * p), ux = (x1 - x0) / len, uy = (y1 - y0) / len;
+    for (let i = 0; i < n; i++) {
+      const s = 14 + i * 28, j = Math.sin(i * 12.9898) * 43758.5453, r = j - Math.floor(j), off = (r - 0.5) * 24;
+      const x = ox + x0 + ux * s - uy * off, y = oy + y0 + uy * s + ux * off;
+      ctx.fillStyle = r < 0.35 ? 'rgba(150,140,125,0.85)' : r < 0.6 ? 'rgba(170,155,135,0.8)' : 'rgba(120,96,66,0.55)';
+      ctx.beginPath(); if (r < 0.6) ctx.ellipse(x, y, 4 + r * 4, 2.5 + r * 2, 0, 0, 7); else ctx.ellipse(x, y, 7, 1.6, Math.atan2(uy, ux) + (r - 0.8), 0, 7); ctx.fill();
+    }
+    // a dusty glow at the working end while the job runs
+    if (p < 1) glow(ox + ex, oy + ey, 40, 'rgba(230,205,160,1)', 0.25 + 0.1 * Math.sin(now / 300));
+  }
+  ctx.restore();
 }
 function drawProp(p) {
   const img = IM[p.name]; const [x, y] = toWorld(p.gx, p.gy); const s = SPR * p.s;
@@ -463,6 +527,14 @@ function frame(now) {
   if (ph.warm > 0) { ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = `rgba(255,170,90,${0.28 * ph.warm})`; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); ctx.restore(); }
   ctx.restore();
 
+  // screen-space overlays: "busy" tags over working gnomes, and tap ripples
+  for (const g of gnomes) if (g.job && g.screen) drawBusyTag(g, now);
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    const r = ripples[i]; r.t += dt; const k = r.t / 0.45; if (k >= 1) { ripples.splice(i, 1); continue; }
+    ctx.save(); ctx.globalAlpha = 0.9 * (1 - k); ctx.lineWidth = 3; ctx.strokeStyle = '#fff1b8'; ctx.shadowColor = '#ffd870'; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.arc(r.x, r.y, 10 + 34 * k, 0, 7); ctx.stroke(); ctx.restore();
+  }
+
   const g = gnomes.find(g => g.sayT > 0);
   if (g && g.screen) {
     const sx = (g.screen.x - cam.x) * cam.z + W / 2, sy = (g.screen.y - g.screen.h - cam.y) * cam.z + H / 2;
@@ -472,21 +544,35 @@ function frame(now) {
 }
 
 // ---------- input ----------
-const ptrs = new Map(); let pinch0 = null; let moved = 0;
-cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); moved = 0; if (ptrs.size === 2) { pinch0 = pinchInfo(); pinch0.wx = (pinch0.cx - W / 2) / cam.z + cam.x; pinch0.wy = (pinch0.cy - H / 2) / cam.z + cam.y; } });
+// A touch counts as a tap unless the finger travels more than TAP_SLOP from where it landed (fingertips wobble a lot;
+// the old 8px total-path rule threw away most real taps on the phone). Dragging only begins once past the slop, so a
+// tap never nudges the camera.
+const TAP_SLOP = 16, TAP_MS = 700;
+const ptrs = new Map(); let pinch0 = null; let gesture = null;   // gesture: { x0, y0, t0, dragging, tapOK }
+cv.addEventListener('pointerdown', e => {
+  cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (ptrs.size === 1) gesture = { x0: e.clientX, y0: e.clientY, t0: performance.now(), dragging: false, tapOK: true };
+  else { gesture && (gesture.tapOK = false); if (ptrs.size === 2) { pinch0 = pinchInfo(); pinch0.wx = (pinch0.cx - W / 2) / cam.z + cam.x; pinch0.wy = (pinch0.cy - H / 2) / cam.z + cam.y; } }
+});
 cv.addEventListener('pointermove', e => {
   if (!ptrs.has(e.pointerId)) return;
   const p = ptrs.get(e.pointerId);
-  if (ptrs.size === 1) { cam.x -= (e.clientX - p.x) / cam.z; cam.y -= (e.clientY - p.y) / cam.z; moved += Math.abs(e.clientX - p.x) + Math.abs(e.clientY - p.y); }
+  if (ptrs.size === 1 && gesture) {
+    if (!gesture.dragging && Math.hypot(e.clientX - gesture.x0, e.clientY - gesture.y0) > TAP_SLOP) { gesture.dragging = true; gesture.tapOK = false; p.x = e.clientX; p.y = e.clientY; }
+    if (gesture.dragging) { cam.x -= (e.clientX - p.x) / cam.z; cam.y -= (e.clientY - p.y) / cam.z; }
+  }
   p.x = e.clientX; p.y = e.clientY;
   if (ptrs.size === 2 && pinch0) {
     const pi = pinchInfo(); if (pi.d < 10 || pinch0.d < 10) return;
     cam.z = clampZ(pinch0.z * pi.d / pinch0.d);
-    cam.x = pinch0.wx - (pi.cx - W / 2) / cam.z; cam.y = pinch0.wy - (pi.cy - H / 2) / cam.z; moved = 99;
+    cam.x = pinch0.wx - (pi.cx - W / 2) / cam.z; cam.y = pinch0.wy - (pi.cy - H / 2) / cam.z;
   }
   clampCam();
 });
-const up = e => { if (ptrs.size === 1 && moved < 8) tap(e.clientX, e.clientY); ptrs.delete(e.pointerId); pinch0 = null; if (ptrs.size === 1) moved = 99; };
+const up = e => {
+  if (ptrs.size === 1 && gesture && gesture.tapOK && e.type === 'pointerup' && performance.now() - gesture.t0 < TAP_MS) tap(e.clientX, e.clientY);
+  ptrs.delete(e.pointerId); pinch0 = null; if (ptrs.size === 0) gesture = null; else if (gesture) gesture.tapOK = false;
+};
 for (const g of ['gesturestart','gesturechange','gestureend']) document.addEventListener(g, e => e.preventDefault(), { passive: false });
 document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
@@ -498,9 +584,12 @@ function clampCam() {
   cam.x = Math.max(x0 - 100, Math.min(x1 + 100, cam.x)); cam.y = Math.max(y0 - 150, Math.min(y1 + 100, cam.y));
 }
 cv.addEventListener('wheel', e => { e.preventDefault(); const wx = (e.clientX - W/2)/cam.z + cam.x, wy = (e.clientY - H/2)/cam.z + cam.y; cam.z = clampZ(cam.z * (e.deltaY < 0 ? 1.1 : 0.9)); cam.x = wx - (e.clientX - W/2)/cam.z; cam.y = wy - (e.clientY - H/2)/cam.z; clampCam(); }, { passive: false });
-function hit(s, wx, wy) { return s && wx > s.x - s.w / 2 && wx < s.x + s.w / 2 && wy > s.y - s.h && wy < s.y + 8; }
+// hit boxes are never smaller than a fingertip (about 48 screen pixels), however far out you are zoomed
+function hit(s, wx, wy) { if (!s) return false; const m = 48 / cam.z, w = Math.max(s.w, m), h = Math.max(s.h, m), pad = 10 / cam.z; return wx > s.x - w / 2 - pad && wx < s.x + w / 2 + pad && wy > s.y - h - pad && wy < s.y + 8 + pad; }
+const ripples = [];   // a little ring where you touched, so every tap is seen to land
 function tap(cx, cy) {
   const wx = (cx - W / 2) / cam.z + cam.x, wy = (cy - H / 2) / cam.z + cam.y;
+  ripples.push({ x: cx, y: cy, t: 0 });
   // offerings first (small, on top)
   for (const o of [...G.s.offers].reverse()) if (hit(o.screen, wx, wy)) { G.gather(o.id); float(`+1 ${C.resources[o.kind].name}`, o.screen.x, o.screen.y); return; }
   if (visitor && hit(visitor.screen, wx, wy)) { const isNew = G.noteVisitor(visitor.def.id); toast(isNew ? `${visitor.def.name}: noted in the journal.` : `${visitor.def.name} again. Hello.`); float(isNew ? '✎ new entry' : '✎', visitor.screen.x, visitor.screen.y); btnAlert('bJournal', isNew); return; }
@@ -513,7 +602,8 @@ function tap(cx, cy) {
   const f = fromWorld(wx, wy);
   if (f.tile === '0,0') {
     let best = null, bd = 1e9;
-    for (const p of PROPS) { const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s, h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2), (wy - y) / (h / 4)) < 1 : (wx > x - w / 2 && wx < x + w / 2 && wy > y - h && wy < y + 6); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
+    const pad = 14 / cam.z;   // a generous margin around each prop
+    for (const p of PROPS) { const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s, h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 4 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
     if (best) { if (best.name === 'seedbed') return openSeedbed(); const task = C.tasks.find(t => t.spot === best.name); if (task) return openTasks(task.id); }
   } else if (G.s.tiles[f.tile] && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openTasks('regrow:' + f.tile);
 }
@@ -522,16 +612,21 @@ function tap(cx, cy) {
 const $ = id => document.getElementById(id);
 function toast(t) { toastEl.textContent = t; toastEl.style.opacity = 1; clearTimeout(toast.h); toast.h = setTimeout(() => toastEl.style.opacity = 0, 2200); }
 function btnAlert(id, on) { $(id).classList.toggle('alert', !!on); }
-function renderInv(popKind) {
-  const inv = $('inv'); inv.innerHTML = '';
-  for (const [k, r] of Object.entries(C.resources)) { const n = G.s.inv[k] || 0; const el = document.createElement('div'); el.className = 'chip' + (n ? '' : ' zero') + (k === popKind ? ' pop' : ''); el.innerHTML = `${iconHtml(k)}<span>${n}</span>`; inv.appendChild(el); if (k === popKind) setTimeout(() => el.classList.remove('pop'), 160); }
+function renderInv(popKind) {   // the pack lives behind its button now; the badge shows how many things are in it
+  const total = Object.values(G.s.inv).reduce((a, n) => a + (n || 0), 0), b = $('bPack');
+  b.querySelector('.dot').textContent = total; b.classList.toggle('alert', total > 0);
+  if (popKind) { b.classList.add('pop'); setTimeout(() => b.classList.remove('pop'), 160); }
 }
 function renderHud() {
   const st = G.landStage(), ph = dayPhase();
   $('sub').textContent = ph.light < 0.3 ? `${st.name}; the fire is lit, everything else sleeps` : st.sub;
-  btnAlert('bTasks', G.taskList().some(v => v.state === 'ready' && v.can) || G.plot().stage === 'ready' || (G.plot().stage === 'planted' && G.can({ water: 1 })));
-  btnAlert('bMagic', Object.keys(C.spells).some(id => G.canCast(id).ok));
+  const busy = G.running().map(r => `${C.names[r.def.who]} is busy: ${shortName(r.def).toLowerCase()} (${G.timeLeft(r.endsAt)} to go)`);
+  $('busy').textContent = busy.join(' · ');
+  const canStart = G.taskList().filter(v => v.state === 'ready' && v.can).length + (G.plot().stage === 'ready' || (G.plot().stage === 'planted' && G.can({ water: 1 })) ? 1 : 0);
+  $('bTasks').querySelector('.dot').textContent = canStart; btnAlert('bTasks', canStart > 0);
+  $('bMagic').querySelector('.dot').textContent = '!'; btnAlert('bMagic', Object.keys(C.spells).some(id => G.canCast(id).ok));
 }
+setInterval(renderHud, 5000);   // keep the "to go" times fresh
 const sheet = $('sheet'), shade = $('shade');
 let sheetKind = null;
 function openSheet(kind, html) { sheetKind = kind; sheet.innerHTML = `<button class="close" data-a="close">×</button>` + html; sheet.classList.add('on'); shade.classList.add('on'); }
@@ -548,26 +643,37 @@ sheet.addEventListener('click', e => {
 });
 function iconHtml(k) { return `<img class="ico" src="sprites/icon-${k}.webp" alt="${C.resources[k].name}">`; }
 function costHtml(cost) { return Object.entries(cost || {}).map(([k, n]) => `<i>${iconHtml(k)}${n}</i>`).join(''); }
-function refreshSheet() { if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); renderInv(); renderHud(); }
+function refreshSheet() { if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); renderInv(); renderHud(); }
 function openSeedbed() {
   const p = G.plot(), c = C.crops.sprout; let body = '';
-  if (!p.stage) body = `<div class="row"><div class="t"><b>Plant a seed</b><span>Costs ${costHtml(c.plant)} · ready about ${Math.round(c.grow / 60)} hours after watering</span></div><button class="act" data-a="plant" ${G.can(c.plant) ? '' : 'disabled'}>Plant</button></div>` + (G.can(c.plant) ? '' : `<p>No seeds. The land offers one now and then; look for 🌱 on the ground.</p>`);
-  else if (p.stage === 'planted') body = `<div class="row"><div class="t"><b>It wants water</b><span>Costs 💧1 (dew gathered from the ground)</span></div><button class="act" data-a="water" ${G.can({ water: 1 }) ? '' : 'disabled'}>Water</button></div>`;
+  if (!p.stage) body = `<div class="row"><div class="t"><b>Plant a seed</b><span>Costs ${costHtml(c.plant)} · ready about ${Math.round(c.grow / 60)} hours after watering</span></div><button class="act" data-a="plant" ${G.can(c.plant) ? '' : 'disabled'}>Plant</button></div>` + (G.can(c.plant) ? '' : `<p>No seeds. The land offers one now and then; look for a seed on the ground.</p>`);
+  else if (p.stage === 'planted') body = `<div class="row"><div class="t"><b>It wants water</b><span>Costs ${costHtml({ water: 1 })} dew, gathered from the ground</span></div><button class="act" data-a="water" ${G.can({ water: 1 }) ? '' : 'disabled'}>Water</button></div>`;
   else if (p.stage === 'growing') { const tot = p.readyAt - p.wateredAt, pr = 1 - Math.max(0, p.readyAt - Date.now()) / tot; body = `<div class="row"><div class="t"><b>Growing</b><span>ready in ${G.timeLeft(p.readyAt)}</span><div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div></div>${G.magicInfo().spells.includes('coax') ? `<button class="act" data-a="cast" data-id="coax" ${G.canCast('coax').ok ? '' : 'disabled'}>Coax ✨2</button>` : ''}</div>`; }
   else body = `<div class="row"><div class="t"><b>Ready to pick</b><span>Gives ${costHtml(c.harvest)} and a little more green</span></div><button class="act" data-a="harvest">Pick</button></div>`;
   openSheet('seedbed', `<h2>The seed bed<small>${p.grown} grown so far</small></h2>${body}`);
 }
+function hours(mins) { const h = mins / 60 * G.taskSpeed(); return h < 1 ? `${Math.round(h * 60)} minutes` : h < 1.75 ? 'about an hour' : `about ${Math.round(h)} hours`; }
+function openPack() {
+  let html = `<h2>Your pack<small>things gathered from the land</small></h2><p>Tap the glowing rings on the ground to pick things up. Jobs use them.</p><div class="pack">`;
+  for (const [k, r] of Object.entries(C.resources)) { const n = G.s.inv[k] || 0; html += `<div class="${n ? '' : 'zero'}">${iconHtml(k)}<b>${n}</b>${r.name}</div>`; }
+  openSheet('pack', html + `</div>`);
+}
 function openTasks(focus = '') {
-  const list = G.taskList(); let html = `<h2>Help the gnomes<small>give materials; they do the work</small></h2>`;
+  const list = G.taskList(); let html = `<h2>Jobs<small>give the materials; they do the work</small></h2>`;
   if (!list.length) html += `<p>Nothing to do right now. The gnomes are resting.</p>`;
-  for (const v of list) {
-    const d = v.def, hi = d.id === focus ? ' style="background:rgba(91,107,45,.08);margin:0 -8px;padding:9px 8px;border-radius:8px"' : '';
-    let right = '', sub = '';
-    if (v.state === 'running') { const pr = 1 - Math.max(0, v.endsAt - Date.now()) / (v.endsAt - v.startedAt); sub = `${d.who === 'him' ? 'he is' : 'she is'} on it · done in ${G.timeLeft(v.endsAt)}<div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div>`; if (d.tile && G.magicInfo().spells.includes('wake')) right = `<button class="act" data-a="cast" data-id="wake" ${G.canCast('wake').ok ? '' : 'disabled'}>Wake ✨4</button>`; }
-    else if (v.state === 'done') sub = `done`;
-    else if (v.state === 'locked') sub = `<span class="bad">${v.why}</span>`;
-    else { sub = `<span class="cost">${costHtml(d.cost)}</span> · about ${Math.round(d.mins / 60 * G.taskSpeed() * 10) / 10}h` + (v.can ? '' : ` · <span class="bad">short ${v.missing.join(', ')}</span>`); right = `<button class="act" data-a="start" data-id="${d.id}" ${v.can ? '' : 'disabled'}>Start</button>`; }
-    html += `<div class="row"${hi}><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>${sub}</span></div>${right}</div>`;
+  const groups = [['running', 'Happening now'], ['ready', 'You can start'], ['locked', 'Not yet'], ['done', 'Just finished']];
+  for (const [state, title] of groups) {
+    const rows = list.filter(v => v.state === state); if (!rows.length) continue;
+    html += `<h3>${title}</h3>`;
+    for (const v of rows) {
+      const d = v.def, who = `<span class="who">${C.names[d.who]}</span>`;
+      let right = '', sub = '';
+      if (state === 'running') { const pr = 1 - Math.max(0, v.endsAt - Date.now()) / (v.endsAt - v.startedAt); sub = `${who} is on it · ${G.timeLeft(v.endsAt)} to go<div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div>`; if (d.tile && G.magicInfo().spells.includes('wake')) right = `<button class="act" data-a="cast" data-id="wake" ${G.canCast('wake').ok ? '' : 'disabled'}>Wake ✨4</button>`; }
+      else if (state === 'done') sub = `${who} finished this.`;
+      else if (state === 'locked') sub = `${who} · <span class="bad">${v.why}</span>`;
+      else { sub = `${who} needs <span class="cost">${costHtml(d.cost)}</span> · ${hours(d.mins)}` + (v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`); right = `<button class="act" data-a="start" data-id="${d.id}" ${v.can ? '' : 'disabled'}>Start</button>`; }
+      html += `<div class="row${d.id === focus ? ' hi' : ''}"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>${sub}</span></div>${right}</div>`;
+    }
   }
   openSheet('tasks:' + focus, html);
 }
@@ -599,7 +705,7 @@ function openAway(r) {
   if (!r.offered && !r.finished.length && !r.newDay) html += `<p>Quiet. The fire kept going.</p>`;
   openSheet('away', html + `<p style="margin-top:10px"><button class="act" data-a="close">Have a look</button></p>`);
 }
-$('bTasks').onclick = () => openTasks(); $('bMagic').onclick = openMagic; $('bJournal').onclick = openJournal;
+$('bPack').onclick = openPack; $('bTasks').onclick = () => openTasks(); $('bMagic').onclick = openMagic; $('bJournal').onclick = openJournal;
 G.onChange((kind, data) => { renderInv(kind === 'inv' && typeof data === 'string' ? data : null); renderHud(); if (kind === 'task' && data && data.done) { toast('Finished: ' + G.taskDef(data.id).name.toLowerCase() + '.'); } if (kind === 'event') toast(data.text); if (kind === 'land') toast(`The home patch is now ${data.name}.`); });
 
 // ---------- start ----------
@@ -617,7 +723,7 @@ function start() {
   if (G.away) openAway(G.away);
   if (!G.s.flags.welcomed) {
     G.s.flags.welcomed = true; G.save();
-    openSheet('welcome', `<h2>Welcome to the garden</h2><p>Two small gnomes live here, and you are their unseen helper.</p><p>✨ Touch the glowing rings. Things lying on the ground go into your pack. Rings on the gnomes' belongings mean there is a job you can start.</p><p>Choose a job, give the materials, and the gnomes do the work while you go about your day. Come back whenever you like: the land leaves something new for you each time.</p><p style="margin-top:10px"><button class="act" data-a="close">Let's begin</button></p>`);
+    openSheet('welcome', `<h2>Welcome to the garden</h2><p>Wendel and Hazel, two small gnomes, have just arrived in this logged clearing. You are their unseen helper spirit.</p><h3>How it works</h3><p>✨ <b>Touch the glowing rings.</b> Things lying on the ground go into your pack (🧺 Pack).</p><p>🔨 <b>Rings on their belongings mean a job you can start.</b> Give the materials and a gnome gets to work while you go about your day.</p><p>Come back whenever you like: the land leaves something new for you each time.</p><p style="margin-top:12px"><button class="act" data-a="close">Let's begin</button></p>`);
   }
 }
 })();

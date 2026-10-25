@@ -2,6 +2,7 @@
 // Durations are in minutes of real time (see game.js: #fast divides them).
 window.CONTENT = {
   version: 1,
+  names: { him:'Wendel', her:'Hazel' },   // the couple (decided 2026-10-25)
 
   // Real items + one magical resource (light). Emoji are placeholders for painted icons.
   resources: {

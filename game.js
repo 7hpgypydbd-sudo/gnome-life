@@ -95,7 +95,7 @@ const G = {
       tk.done = true; const d = this.taskDef(id);
       if (d.tile) { const tl = s.tiles[d.tile]; tl.state = 'green'; tl.green = 4; this.reveal(d.tile); this.note(`The land next door has greened.`); }
       else this.addGreen(d.green);
-      this.note(`${d.who === 'him' ? 'He' : 'She'} finished: ${d.name.toLowerCase()}.`);
+      this.note(`${C.names[d.who]} finished: ${d.name.toLowerCase()}.`);
       this.emit('task', { id, done: true });
     }
     const E = C.events; if (E && t - s.events.lastAt >= E.every * MIN) this.rollEvent(t);
@@ -187,7 +187,7 @@ const G = {
     this.pay(d.cost); const t = now();
     this.s.tasks[id] = { startedAt: t, endsAt: t + this.dur(d.mins), done: false };
     if (d.tile) this.s.tiles[d.tile].state = 'regrowing';
-    this.note(`${d.who === 'him' ? 'He' : 'She'} set to work: ${d.name.toLowerCase()}.`); this.emit('task', { id }); return true;
+    this.note(`${C.names[d.who]} set to work: ${d.name.toLowerCase()}.`); this.emit('task', { id }); return true;
   },
   running() { return Object.entries(this.s.tasks).filter(([, tk]) => !tk.done).map(([id, tk]) => Object.assign({ id }, tk, { def: this.taskDef(id) })); },
 
