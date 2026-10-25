@@ -420,7 +420,7 @@ function drawProp(p) {
   const w = img.width * s, h = img.height * s, a = propAlpha(p), now = performance.now();
   if (a < 1 && BEFORE[p.name]) BEFORE[p.name](x, y, 1 - a);
   const tap = p.name === 'seedbed' && a < 1 ? clearingWantsTap() : p.name !== 'lanternstump' && wantsTap(p);
-  if (tap) { if (a < 1) halo(x, y - 6, 24, now, p.gx * 5); else halo(x, y - h * 0.4, Math.min(Math.max(w, h) * 0.3, 40), now, p.gx * 5); }
+  if (tap) { if (a >= 1) halo(x, y - h * 0.4, Math.min(Math.max(w, h) * 0.3, 40), now, p.gx * 5); }
   if (a <= 0) return;
   ctx.save(); ctx.globalAlpha = a;
   if (!p.flat) shadow(x, y, w * 0.4, w * 0.14);
