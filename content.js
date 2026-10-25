@@ -121,6 +121,11 @@ window.CONTENT = {
       blurb:'A long ribbon of grasses and clover along the fence, left to grow wild.' },
     { id:'lanternpath', name:'Line the path with glow jars', who:'her', spot:'fence', cost:{ light:5, stone:2 }, mins:240, green:1, minLevel:4, needs:['path'],
       blurb:'Wisps in jars, so nobody trips on the way back from the creek.' },
+    // --- night lights: glow-worm lanterns and street lamps ---
+    { id:'wormlantern', name:'Hang glow-worm lanterns', short:'hanging the lanterns', who:'her', act:'carry', spot:'shelter', cost:{ twig:2, moss:2, light:1 }, mins:120, green:0, minLevel:2,
+      blurb:'Little glass jars with a few sleepy glow-worms and a scrap of moss. Hung by the door, they light the way home.' },
+    { id:'wormlamp', name:'Set glow-worm street lamps', short:'setting the lamps', who:'him', act:'carry', spot:'fence', cost:{ twig:4, stone:2, light:2 }, mins:240, green:1, minLevel:3, needs:['wormlantern'],
+      blurb:'Four little lamp posts along the yard, each with a jar of worms. Wendel named them all and will not say what the names are.' },
     { id:'leanto',  name:'Raise a spare-room lean-to', who:'him', spot:'shelter',     cost:{ twig:8, moss:6, stone:4 }, mins:360, green:2, minLevel:4, needs:['windowbox'],
       blurb:'In case friends come to stay. Or family. Mostly family.' },
     { id:'swing',   name:'Hang a bark swing',          who:'him', spot:'sapling',     cost:{ twig:4, moss:1 },   mins:120, green:0, minLevel:4, needs:['acornplant'],
