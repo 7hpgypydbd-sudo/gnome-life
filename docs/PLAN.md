@@ -80,9 +80,9 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Ageing:** yes, slowly over many months: young now, middle-aged around the village stage, old in the long tail (three character art sets over time; the old placeholder walk sheets may become the final stage).
 - **The player is an unseen helper spirit:** you tap and things happen; the gnomes talk to "the kind spirit"; the magic is yours to lend them.
 - **Names: Wendel (him) and Hazel (her).** Confirmed 2026-10-25; replaces the working names Ferdinand and Rosalind everywhere (content.js lines still need updating).
+- **Personalities:** Wendel is the dreamer (tinkers, invents, gazes at stars, a little absent-minded); Hazel is practical (organises, gardens, keeps them fed, dry wit). Gentle comedy between them; both kind.
 
 ## Open questions for Bryce (do not assume)
-- The couple's personalities (names are now Wendel and Hazel).
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?
 - Should a visit have a natural end, or always leave something tiny to do?
 - How the home interior (cut-away) fits the isometric view.
