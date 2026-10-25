@@ -191,7 +191,7 @@ const ART = {};   // name -> loaded Image, only for slots whose file exists
 function art(k) { return ART[k] || null; }
 function loadArtSlots() {   // after the game starts, so missing files never slow the first picture
   for (const k of Object.keys(ART_SLOTS)) {
-    const im = new Image(); im.onload = () => { ART[k] = im; if (k.startsWith('btn-')) paintButton(k); }; im.src = `sprites/${k}.webp`;
+    const im = new Image(); im.onload = () => { ART[k] = k.startsWith('btn-') || k.startsWith('plot-') ? im : settle(im, k === 'stepping-stones'); if (k.startsWith('btn-')) paintButton(k); }; im.src = `sprites/${k}.webp`;
   }
 }
 function slotSize(k, img, w) {   // world-pixel width and height for a slot picture (w: width of the prop it replaces)
@@ -323,9 +323,27 @@ class Gnome {
     this.screen = { x: wx, y: wy, w: cw * s, h: ch * s };
   }
 }
-function shadow(x, y, rx, ry) {
-  ctx.save(); ctx.globalAlpha = 0.28; ctx.fillStyle = '#1a1408';
-  ctx.beginPath(); ctx.ellipse(x, y + 2, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+function shadow(x, y, rx, ry) {   // soft contact shadow: darkest right under the thing, fading out, nudged away from the light (upper left)
+  ctx.save(); ctx.translate(x + rx * 0.1, y + 2); ctx.scale(rx * 1.25, ry * 1.25);
+  const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+  g.addColorStop(0, 'rgba(30,20,8,0.42)'); g.addColorStop(0.45, 'rgba(30,20,8,0.26)'); g.addColorStop(1, 'rgba(30,20,8,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+}
+function groundPatch(x, y, rx, ry) {   // a faint patch of darker, trodden earth under a standing thing, so it sits in the ground
+  ctx.save(); ctx.translate(x, y); ctx.scale(rx, ry);
+  const g = ctx.createRadialGradient(0, 0, 0.2, 0, 0, 1);
+  g.addColorStop(0, 'rgba(70,50,28,0.2)'); g.addColorStop(1, 'rgba(70,50,28,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+}
+// Bake each standing prop once so it belongs to the ground: a touch of the ground's warm earth over everything, and a soft
+// darkening towards the base where it meets the soil (painted art came on white/magenta, lit as if floating).
+function settle(img, flat) {
+  if (!img || !img.width) return img;
+  const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const x = c.getContext('2d');
+  x.drawImage(img, 0, 0); x.globalCompositeOperation = 'source-atop';
+  x.fillStyle = 'rgba(150,118,72,0.08)'; x.fillRect(0, 0, c.width, c.height);
+  if (!flat) { const g = x.createLinearGradient(0, c.height, 0, c.height * 0.8); g.addColorStop(0, 'rgba(45,30,16,0.45)'); g.addColorStop(1, 'rgba(45,30,16,0)'); x.fillStyle = g; x.fillRect(0, 0, c.width, c.height); }
+  return c;
 }
 
 // ---------- time of day ----------
@@ -489,7 +507,7 @@ function drawProp(p) {
   if (tap) { if (a >= 1) halo(x, y - h * 0.4, Math.min(Math.max(w, h) * 0.3, 40), now, p.gx * 5); }
   if (a <= 0) return;
   ctx.save(); ctx.globalAlpha = a;
-  if (!p.flat) shadow(x, y, w * 0.4, w * 0.14);
+  if (!p.flat) { groundPatch(x, y, w * 0.7, w * 0.26); shadow(x, y, w * 0.4, w * 0.14); }
   const sw = SWAP_ART[p.name], sp = sw && art(sw[0]) ? taskProg(sw[1]) : 0;   // painted "after" picture crossfades in as its job runs
   if (p.name === 'sapling' && taskProg('sapling') >= 1) { if (!drawSlot('oak-planted', x, y)) drawPlantedOak(x, y, s); }
   else if (p.name === 'fence' && art('fence-fallen')) { const f = taskProg('fence'); drawSlot('fence-fallen', x, y, 1 - f, { w }); ctx.globalAlpha = a * f; ctx.drawImage(img, x - w / 2, y - h, w, h); }
@@ -896,6 +914,7 @@ G.onChange((kind, data) => { renderInv(kind === 'inv' && typeof data === 'string
 // ---------- start ----------
 function start() {
   G.boot();
+  for (const p of PROPS) IM[p.name] = settle(IM[p.name], p.flat);
   document.getElementById('load').remove();
   gnomes.push(new Gnome('him', 0.46, 0.50), new Gnome('her', 0.40, 0.40));
   gnomes[1].wait = 0.5;
