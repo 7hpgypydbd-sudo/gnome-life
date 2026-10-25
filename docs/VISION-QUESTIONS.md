@@ -69,7 +69,7 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 
 ## Round 7 — Magic (◐)
 
-**7.1 What is magic for?** ★ Healing land faster and gentle weather / Also crafting and conjuring items / Mostly story and spectacle.
+**7.1 What is magic for?** ☑ Healing land and gentle weather. ★ Healing land faster and gentle weather / Also crafting and conjuring items / Mostly story and spectacle.
 **7.2 The magical resource ("light").** ★ Gather it at night from wisps and dew / Earned by good deeds / Both.
 **7.3 Does the staff (Bryce's mystery) tie into magic levels?** Yes / No, separate / Bryce decides later (default).
 
