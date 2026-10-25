@@ -420,7 +420,7 @@ function drawProp(p) {
   const w = img.width * s, h = img.height * s, a = propAlpha(p), now = performance.now();
   if (a < 1 && BEFORE[p.name]) BEFORE[p.name](x, y, 1 - a);
   const tap = p.name === 'seedbed' && a < 1 ? clearingWantsTap() : p.name !== 'lanternstump' && wantsTap(p);
-  if (tap) ring(x, y + 2, Math.min(w * 0.45, 70), now, p.gx * 5);
+  if (tap) { if (a >= 1) halo(x, y - h * 0.4, Math.min(Math.max(w, h) * 0.3, 40), now, p.gx * 5); }
   if (a <= 0) return;
   ctx.save(); ctx.globalAlpha = a;
   if (!p.flat) shadow(x, y, w * 0.4, w * 0.14);
@@ -518,11 +518,10 @@ function drawCrop(x, y) {
   ctx.drawImage(img, x - w / 2, y - h + 4, w, h);
   if (p.stage === 'ready') glow(x, y - h * 0.5, 50, 'rgba(255,240,160,1)', 0.35 + 0.15 * Math.sin(t / 250));
 }
-// a soft pulsing ring on the ground: "touch me"
-function ring(x, y, r, now, phase = 0) {
-  const p = 0.5 + 0.5 * Math.sin(now / 450 + phase);
-  ctx.save(); ctx.lineWidth = 3; ctx.strokeStyle = `rgba(255,236,150,${0.45 + 0.4 * p})`; ctx.shadowColor = 'rgba(255,220,120,.9)'; ctx.shadowBlur = 10;
-  ctx.beginPath(); ctx.ellipse(x, y, r * (1 + 0.12 * p), r * 0.45 * (1 + 0.12 * p), 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+// a soft warm glow from behind: "touch me" (drawn before the thing itself, so it peeks out around the edges)
+function halo(x, y, r, now, phase = 0) {
+  const p = 0.5 + 0.5 * Math.sin(now / 700 + phase);
+  glow(x, y, r, 'rgba(255,226,140,1)', 0.4 + 0.25 * p);
 }
 function wantsTap(p) {   // does this thing have something the player can do right now?
   if (p.name === 'seedbed') { const s = G.plot().stage; return s === 'ready' || (!s && G.can(C.crops.sprout.plant)) || (s === 'planted' && G.can({ water: 1 })); }
@@ -533,7 +532,7 @@ function drawOffer(o, now) {
   const k = Math.max(1, 0.7 / cam.z);            // keep offerings finger-sized when zoomed out
   o.screen = { x, y, w: 46 * k, h: 46 * k };
   shadow(x, y, 9 * k, 4 * k);
-  ring(x, y, 26 * k, now, o.gx * 7);
+  halo(x, y - 18 * k + b, 26 * k, now, o.gx * 7);
   if (o.kind === 'light') { glow(x, y - 14 * k + b, 36 * k, 'rgba(255,240,170,1)', 0.6 + 0.2 * Math.sin(now / 200)); }
   const img = IM['icon-' + o.kind], sz = 64 * k;
   ctx.drawImage(img, x - sz / 2, y - 8 * k + b - sz * 0.8, sz, sz);
@@ -747,7 +746,7 @@ function openSeedbed() {
 }
 function hours(mins) { const h = mins / 60 * G.taskSpeed(); return h < 1 ? `${Math.round(h * 60)} minutes` : h < 1.75 ? 'about an hour' : `about ${Math.round(h)} hours`; }
 function openPack() {
-  let html = `<h2>Your pack<small>things gathered from the land</small></h2><p>Tap the glowing rings on the ground to pick things up. Jobs use them.</p><div class="pack">`;
+  let html = `<h2>Your pack<small>things gathered from the land</small></h2><p>Tap the softly glowing things on the ground to pick things up. Jobs use them.</p><div class="pack">`;
   for (const [k, r] of Object.entries(C.resources)) { const n = G.s.inv[k] || 0; html += `<div class="${n ? '' : 'zero'}">${iconHtml(k)}<b>${n}</b>${r.name}</div>`; }
   openSheet('pack', html + `</div>`);
 }
@@ -816,7 +815,7 @@ function start() {
   if (G.away) openAway(G.away);
   if (!G.s.flags.welcomed) {
     G.s.flags.welcomed = true; G.save();
-    openSheet('welcome', `<h2>Welcome to the garden</h2><p>Wendel and Hazel, two small gnomes, have just arrived in this logged clearing. You are their unseen helper spirit.</p><h3>How it works</h3><p>✨ <b>Touch the glowing rings.</b> Things lying on the ground go into your pack (🧺 Pack).</p><p>🔨 <b>Rings on their belongings mean a job you can start.</b> Give the materials and a gnome gets to work while you go about your day.</p><p>Come back whenever you like: the land leaves something new for you each time.</p><p style="margin-top:12px"><button class="act" data-a="close">Let's begin</button></p>`);
+    openSheet('welcome', `<h2>Welcome to the garden</h2><p>Wendel and Hazel, two small gnomes, have just arrived in this logged clearing. You are their unseen helper spirit.</p><h3>How it works</h3><p>✨ <b>Touch the softly glowing things.</b> Things lying on the ground go into your pack (🧺 Pack).</p><p>🔨 <b>A soft glow behind their belongings means a job you can start.</b> Give the materials and a gnome gets to work while you go about your day.</p><p>Come back whenever you like: the land leaves something new for you each time.</p><p style="margin-top:12px"><button class="act" data-a="close">Let's begin</button></p>`);
   }
 }
 })();
