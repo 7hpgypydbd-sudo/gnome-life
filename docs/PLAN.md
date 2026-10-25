@@ -2,7 +2,7 @@
 
 A cosy virtual-pet game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; must run smoothly on a phone. (Earlier working title: "Fairy Garden".)
 
-_Last updated: 2026-10-25 (art batch 1 cut and wired in; art-day folder added the day before)_
+_Last updated: 2026-10-25 (vision pinned down in docs/VISION.md; art batch 1 cut and wired in)_
 
 ## Start here, next chat
 
@@ -108,10 +108,10 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Full spec:** `docs/VISION.md` (written 2026-10-25 from these answers; includes the next art list).
 
 ## Open questions for Bryce (do not assume)
-- Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?
 - The staff mystery itself (Bryce writes it).
 
 ## What's next (prioritised)
+0. **Vision is pinned (2026-10-25):** read `docs/VISION.md`. Next art is Batch 2 there (action sheets, pick-up icons, 3 barren tiles, stream/path corners); Claude writes the prompts and a plain Steps.txt into the Gnome Art Day folder.
 1. **Bryce:** play the live game on the iPhone for a day or two; report pinch/zoom, smoothness, timer feel, anything wrong. (Art batch 1 done.)
 2. ~~Cut and pack batch 1~~ done 2026-10-25. `tools/pack_walks.py` now reads `cut/` made by `cut_cc.py` (Gemini gave each walk sheet a different layout, so frames were picked by hand in the SEL table). Source jpgs are in `docs/art/batch1/`.
 3. **Tune from Bryce's notes:** timers, costs, content in `content.js`.
