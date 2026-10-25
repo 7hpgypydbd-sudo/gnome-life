@@ -17,7 +17,7 @@ SW = 280          # swatch width in world px: a square of ground about two and a
 SWATCHES = ('dirt', 'drygrass', 'grass', 'meadow', 'moss', 'path', 'pebbles', 'water', 'soil')
 # sticker sheets are about 3200 px wide; about one fifth makes a tuft a third of a gnome. Woodland bits were painted big, so they shrink more.
 STICKERS = {'st-bare': 0.2, 'st-grass': 0.17, 'st-flowers': 0.17, 'st-woodland': 0.12, 'st-water': 0.18, 'st-path': 0.2, 'st-seasons': 0.17}
-KITS = {'marks': (8, 2, 0.2), 'stumps-rocks': (12, 2, 0.25), 'leftovers': (12, 3, 0.2), 'secrets-nature': (12, 3, 0.15), 'secrets-treasures': (12, 3, 0.15)}
+KITS = {'marks': (8, 2, 0.4), 'stumps-rocks': (12, 2, 0.35), 'leftovers': (12, 3, 0.25), 'secrets-nature': (12, 3, 0.15), 'secrets-treasures': (12, 3, 0.15)}
 
 def swatch(path, name):
     im = Image.open(path).convert('RGB')
