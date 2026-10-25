@@ -73,15 +73,15 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 **7.2 The magical resource ("light").** ☑ Both night gathering and good deeds. ★ Gather it at night from wisps and dew / Earned by good deeds / Both.
 **7.3 Does the staff (Bryce's mystery) tie into magic levels?** ☑ Left to Bryce (default: decide later). Yes / No, separate / Bryce decides later (default).
 
-## Round 8 — Progression, pacing and ending (◐)
+## Round 8 — Progression, pacing and ending (☑; 8.4 asked with round 9)
 
 **8.1 Time to full woodland on the home tile.** ☑ 1-2 weeks (implied by 8.2). ★ about 1–2 weeks / a few days / a month.
 **8.2 Time to a finished village.** ☑ 3-6 months of light daily play. ★ 3–6 months of light daily play / 1 month / a year+.
-**8.3 Is there an ending?** ★ A soft ending (village festival), then it keeps living as a cosy world with seasons and events / Never ends / A firm ending with credits.
+**8.3 Is there an ending?** ☑ Soft ending (festival), then it keeps living. ★ A soft ending (village festival), then it keeps living as a cosy world with seasons and events / Never ends / A firm ending with credits.
 **8.4 Seasonal content.** ★ Yes, seasons change the art tint and bring special visitors and events / Light touch / Full seasonal art sets.
 **8.5 Replay / new game plus?** Later.
 
-## Round 9 — Tone, words and comfort (☐)
+## Round 9 — Tone, words and comfort (◐)
 
 **9.1 Voice of the text.** ★ Warm, a little old-fashioned, light humour (book narrator) / Minimal text, mostly pictures / Chatty and modern.
 **9.2 Amount of reading per visit.** ★ A line or two at a time / Short story paragraphs at milestones / Almost none.

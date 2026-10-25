@@ -100,6 +100,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Magic is for healing land and gentle weather only:** coax sprouts, call rain, wake a tree, clear mist. No crafting or conjuring; the staff mystery stays separate and special.
 - **Light (magical resource):** both gathered at night from wisps and dew AND earned by good deeds (finishing jobs, helping creatures), so day-only players are not punished.
 - **Pacing:** 3-6 months of light daily play to a finished village. Home tile green in 1-2 weeks, proper house around a month, village by about half a year; ageing spreads over a year or more.
+- **Ending:** a soft ending (a village festival marks the finish), then the world keeps living: seasons, visitors, events and ageing carry on gently.
 
 ## Open questions for Bryce (do not assume)
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?
