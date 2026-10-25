@@ -1,10 +1,10 @@
 # Gnome Life — every picture still to paint (written 2026-10-25)
 
-The whole game now works from start to festival with stand-ins (code drawings or emoji). This is the full list of pictures that would replace them. Each batch has its own file with the exact Gemini prompts (`docs/ART-BATCH-3.md` to `-7.md`). One "picture" here is one Gemini prompt; many are a sheet of 3 or 4 pieces that a tool cuts apart. Nothing needs code to drop in except where it says so.
+The whole game now works from start to festival with stand-ins (code drawings or emoji). This is the full list of pictures that would replace them. Each batch has its own file with the exact Gemini prompts (`docs/ART-BATCH-3.md` to `-8.md`). One "picture" here is one Gemini prompt; many are a sheet of 3 or 4 pieces that a tool cuts apart. Nothing needs code to drop in except where it says so.
 
 **Already painted and in the game:** the ground tiles, Wendel and Hazel (young) walking and doing their jobs, the pick-up icons, the first props (shelter, campfire, barrel, bench...), and six creatures (robin, mouse, hedgehog, owl, ladybird, wood spirit).
 
-## Ready to paint (prompts written): 53 pictures
+## Ready to paint (prompts written): 55 pictures
 
 | Batch | What it is | Pictures | Prompts |
 |---|---|---|---|
@@ -13,8 +13,9 @@ The whole game now works from start to festival with stand-ins (code drawings or
 | 5 | Sixteen more creatures (four sheets of four), the four kinds of nest, and the feeding dish | 6 | `ART-BATCH-5.md` |
 | 6 | The neighbours: three sheets of people (12 gnomes), their 8 homes, their 7 trade buildings, the glow jar and tent, the bridge, the four new icons (bread, plank, honey, yarn), the things you find in their stories, and 8 story paintings | 21 | `ART-BATCH-6.md` |
 | 7 | The festival: the long table (bare and laid for the feast), the bunting, the flower arch, a lantern; four seasonal creatures (silvereye, kingfisher, Christmas beetle, black cockatoo); and 6 festival story paintings | 9 | `ART-BATCH-7.md` |
+| 8 | Night lights: a glow-worm lantern and a glow-worm street lamp | 2 | `ART-BATCH-8.md` |
 
-**Suggested order:** 3, 4, 5, then 6 (paint its three neighbour sheets first and approve them, because the story paintings copy them), then 7.
+**Suggested order:** 3, 8 (small, goes with the home yard), 4, 5, then 6 (paint its three neighbour sheets first and approve them, because the story paintings copy them), then 7.
 
 ## Not written yet (prompts would be written when the time comes)
 

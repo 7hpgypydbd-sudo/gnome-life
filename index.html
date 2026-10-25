@@ -204,6 +204,9 @@ const ART_SLOTS = {
   'yard-stones':      { w: 64 },              // loose stones where the bench will be
   'yard-firewood':    { w: 84 },              // loose sticks where the woodpile will be
   'stepping-stones':  { w: 210 },             // "Lay a stepping-stone path"
+  // night lights (docs/ART-BATCH-8.md): glow-worm lanterns and street lamps (the glow itself stays code)
+  'worm-lantern':     { w: 34 },              // "Hang glow-worm lanterns": one small hanging lantern, drawn at each hook
+  'worm-lamp':        { w: 44 },              // "Set glow-worm street lamps": one lamp post, drawn at each spot
   // home stage 2 (docs/ART-BATCH-4.md): the shelter stump turning into a house, one picture per job, each the WHOLE stump
   'house-hollowed':   { w:'like:shelter' },   // "Hollow out the old stump"
   'house-windows':    { w:'like:shelter' },   // "Fit a plank wall and windows"
@@ -812,6 +815,8 @@ function drawOffer(o, now) {
   else { ctx.save(); ctx.font = `${Math.round(36 * k)}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(C.resources[o.kind].icon, x, y - 4 * k + b); ctx.restore(); }
 }
 // ---------- the feeding dish and nests ----------
+const WORM_LANTERNS = [[0.27, 0.40], [0.47, 0.30], [0.66, 0.46]];   // hooks and branches by the door and bench (home tile)
+const WORM_LAMPS = [[0.22, 0.62], [0.58, 0.80], [0.86, 0.60], [0.50, 0.58]];   // lamp posts along the yard
 const FEEDER = { gx: 0.74, gy: 0.64 };
 function drawFeeder(x, y, a, now) {
   const f = G.s.feeder.food, empty = !f && a >= 1;
@@ -1130,6 +1135,23 @@ function drawCamp(x, y, f, now) {   // the traveller's camp: a patched tent and 
   const fx = x + 56, fy = y + 18; blob(fx, fy, 12, 4, '#3a2a1a'); stick(fx - 8, fy - 2, 16, -0.3); stick(fx + 8, fy - 2, 16, -2.8);
   const fl = 0.75 + 0.25 * Math.sin(now / 90); blob(fx, fy - 6 * fl, 5, 7 * fl, 'rgba(255,170,60,0.9)'); blob(fx, fy - 5, 3, 4, 'rgba(255,230,140,0.9)');
 }
+function drawWormLight(x, y, lamp, a, now) {   // a glow-worm lantern (hangs) or street lamp (post): a glass jar with a few worms
+  ctx.save(); ctx.globalAlpha = a;
+  if (!drawSlot(lamp ? 'worm-lamp' : 'worm-lantern', x, y)) {
+    const h = lamp ? 52 : 18; shadow(x, y, lamp ? 7 : 0.1, lamp ? 3 : 0.1);
+    if (lamp) { stick(x, y, h, -1.57, '#5a3c24'); stick(x - 6, y - h, 12, 0, '#5a3c24'); }
+    else stick(x, y - h - 10, 10, -1.57, '#5a3c24');
+    const gy = y - h - (lamp ? 7 : 3);
+    blob(x, gy, 7, 9, 'rgba(210,235,225,0.55)'); blob(x, gy, 4, 6, `rgba(190,255,150,${0.75 + 0.2 * Math.sin(now / 500 + x)})`); blob(x - 1, gy - 1, 1.6, 2, 'rgba(255,255,220,0.95)');
+  }
+  ctx.restore();
+}
+function wormSpots() {   // [x, y, isLamp, progress] of every glow-worm light on the land
+  const out = [], la = taskProg('wormlantern'), pa = taskProg('wormlamp');
+  if (la > 0) for (const [gx, gy] of WORM_LANTERNS) out.push([...toWorld(gx, gy), false, la]);
+  if (pa > 0) for (const [gx, gy] of WORM_LAMPS) out.push([...toWorld(gx, gy), true, pa]);
+  return out;
+}
 function drawJars(now) {   // Juniper's glow jars along the village path (art slot glow-jar)
   if (taskProg('trade:juniper') <= 0) return;
   const a = taskProg('trade:juniper');
@@ -1320,6 +1342,8 @@ function frame(now) {
   if (visitor) items.push({ d: depthOf(visitor.gx, visitor.gy), draw: () => drawVisitor(visitor, now) });
   const fa = taskProg('feeder'); if (fa > 0) items.push({ d: depthOf(FEEDER.gx, FEEDER.gy), draw: () => { const [x, y] = toWorld(FEEDER.gx, FEEDER.gy); drawFeeder(x, y, fa, now); } });
   for (const id in NESTS) if (G.hasNest(id)) items.push({ d: depthOf(NESTS[id][0], NESTS[id][1]) - 0.05, draw: () => { const [x, y] = toWorld(NESTS[id][0], NESTS[id][1]); drawNest(id, x, y, now); } });
+  for (const [gx, gy] of WORM_LANTERNS) { const la = taskProg('wormlantern'); if (la > 0) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); drawWormLight(x, y, false, la, now); } }); }
+  for (const [gx, gy] of WORM_LAMPS) { const pa = taskProg('wormlamp'); if (pa > 0) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); drawWormLight(x, y, true, pa, now); } }); }
   villageItems(items, now);
   festItems(items, now);
   items.sort((a, b) => a.d - b.d);
@@ -1329,7 +1353,7 @@ function frame(now) {
   const night = 1 - ph.light;
   if (night > 0.02) {
     ctx.save(); ctx.globalCompositeOperation = 'multiply';
-    ctx.fillStyle = `rgba(${Math.round(255 - 150*night)},${Math.round(255 - 120*night)},${Math.round(255 - 60*night)},1)`;
+    ctx.fillStyle = `rgba(${Math.round(255 - 112*night)},${Math.round(255 - 92*night)},${Math.round(255 - 38*night)},1)`;   // a moonlit blue, never pitch dark
     ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); ctx.restore();
     const fire = PROPS.find(p => p.name === 'campfire'); const [fx, fy] = toWorld(fire.gx, fire.gy);
     const flick = 0.75 + 0.25 * Math.sin(now / 90) * Math.sin(now / 230);
@@ -1340,6 +1364,7 @@ function frame(now) {
     glow(sx - 20, sy - 60, 70, 'rgba(255,190,120,1)', 0.35 * night);
     if (taskProg('house2') >= 1) for (const [wx, wy] of houseWindows()) glow(wx, wy, 34, 'rgba(255,200,110,1)', 0.6 * night * (gnomes.some(g => g.inside) ? 1 : 0.5));
     villageGlows(night, now);
+    for (const [x, y, lamp, a] of wormSpots()) { const sw = 0.9 + 0.1 * Math.sin(now / 700 + x * 0.1), up = lamp ? 60 : 24; glow(x, y - up, lamp ? 105 : 62, 'rgba(190,255,150,1)', 0.5 * night * a * sw); glow(x, y - up, lamp ? 38 : 22, 'rgba(235,255,200,1)', 0.35 * night * a); }
     festGlows(night, now);
     for (const o of G.s.offers) if (o.kind === 'light' && o.screen) glow(o.screen.x, o.screen.y - 14, 40, 'rgba(255,240,170,1)', 0.5);
   }
