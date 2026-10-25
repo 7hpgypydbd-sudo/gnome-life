@@ -38,15 +38,15 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 **2.4 Children one day?** ☑ Maybe later, keep the door open. Yes, a baby arrives as a milestone / ★ Maybe later, keep the door open / No.
 **2.5 Who do you play as?** ☑ An unseen helper spirit. ★ An unseen helper spirit (you tap and things happen; the gnomes talk to "you") / One of the couple / No one, you are just watching and nudging.
 
-## Round 3 — A day in their life and a visit (◐)
+## Round 3 — A day in their life and a visit (☑; 3.2 ranking folded into the spec)
 
 **3.1 Daily routine shown on screen?** ☑ Yes, a real rhythm. ★ Yes, a visible rhythm (wake, breakfast by the fire, work, evening pipe/knitting, sleep) following the real clock / Loose, they just wander and work / Not needed.
 **3.2 What you do in a typical visit** (rank): collect pick-ups, give materials for a task, plant/water/harvest, tap gnomes for a chat line, note a visitor, cast a spell, decorate/move things.
-**3.3 Visit length target.** ★ 2–5 minutes / under 1 minute / up to 15 minutes.
+**3.3 Visit length target.** ☑ Mix: main loop 2-5 min, 2-3 times a day, plus quick bored check-ins always have something small. ★ 2–5 minutes / under 1 minute / up to 15 minutes.
 **3.4 Should a visit have a natural end?** ☑ Both. ★ Yes: a gentle "all done for now, the stew needs 3 hours" moment / No, always leave something tiny to do / Both: a clear "done" plus optional fiddling.
-**3.5 How many visits a day are we designing for?** ★ 2–3 (morning, after work, bedtime) / 1 / 4+.
+**3.5 How many visits a day are we designing for?** ☑ 2-3 main visits plus optional quick peeks. ★ 2–3 (morning, after work, bedtime) / 1 / 4+.
 
-## Round 4 — Home and buildings (☐)
+## Round 4 — Home and buildings (◐)
 
 **4.1 Homestead stages.** ★ Three: shelter under a root → snug house in a stump/under an oak → house plus garden, well, workshop / Two / Five or more small steps.
 **4.2 Interior.** ★ Tap the house to open a painted cut-away room (separate picture, FarmVille-style) / Interior always visible as a cut-away in the isometric view / No interior.

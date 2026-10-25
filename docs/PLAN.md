@@ -84,6 +84,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Daily routine:** yes, a real rhythm on the phone clock: wake, breakfast by the fire, work, an evening sit (Wendel's pipe, Hazel's knitting), sleep. Visit at night and you find them asleep or by the fire. Needs poses: sleep, eat, sit, pipe, knit.
 - **Visit end:** both: a clear gentle "all done for now" moment (a line from Hazel or Wendel, the screen settles) plus idle fiddling (decorating, chatting, collecting dew) that stays open.
 - **Children:** maybe later; nothing built now, but story and save leave room for a child arriving around the village stage.
+- **Visit length and frequency (Bryce's words):** the main loop is 2-5 minute visits, 2-3 times a day (jobs roughly 3-8 h), but quick bored check-ins must always find a little something to do (a dew drop, a chat line, a pot to move, a small 10-20 min job).
 
 ## Open questions for Bryce (do not assume)
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?
