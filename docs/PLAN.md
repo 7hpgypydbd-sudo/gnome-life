@@ -76,6 +76,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **World size:** Village, about 25 tiles (5x5). Big enough for a stream, a path, several neighbours' homes and a little square.
 - **Land spread:** ripples out from the home tile; each healed tile reveals its misty neighbours.
 - **Barren tiles:** a mix of human scars: bare plain, stumps (have), plus a dry creek bed, an old fence/rubbish and one more to paint.
+- **Finished map headline (Bryce's words):** a gnome village (homes, well, square, bridge, mill/workshop, orchard, pond) that stays cosy and embedded in nature, "not a gnome city, still plenty of nature and whimsy". Rule of thumb: more than half of every tile stays wild (ferns, toadstools, roots, water); buildings sit under or inside trees, roots and stumps rather than in rows.
 
 ## Open questions for Bryce (do not assume)
 - The couple's names and personalities.

@@ -8,7 +8,7 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 
 ---
 
-## Round 1 — The world map (◐)
+## Round 1 — The world map (☑)
 
 **1.1 How big does the world get, in tiles?** ☑ Village, 25 tiles (5x5) (one tile ≈ 3.7 gnomes across; today's game shows 1 home tile + up to 2 rings of neighbours)
 - Cosy: about 9 tiles (3×3). The whole thing fits on one screen when zoomed out.
@@ -25,12 +25,12 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 - Always stumps (logged clearing), simple and consistent.
 - Hidden in mist until healed, so no barren art needed beyond the two we have.
 
-**1.4 What ends up on the map once it is all green?** (pick the headline)
+**1.4 What ends up on the map once it is all green?** ☑ A gnome village, cosy and embedded in nature, not a city; plenty of nature and whimsy
 - ★ A gnome village: homes, a well, a square, a bridge over the stream, a mill or workshop, orchard, pond.
 - Mostly wild woodland with just the couple's homestead and a few scattered neighbours.
 - A busy farm: fields, veg patches, animal pens, barns.
 
-## Round 2 — The couple (☐)
+## Round 2 — The couple (◐)
 
 **2.1 Names.** Working names Ferdinand and Rosalind (not confirmed). Options: keep them / Bryce picks / Claude offers a shortlist of 5 pairs in the book's spirit.
 **2.2 Personalities.** Him: dreamer vs steady maker vs comic. Her: practical organiser vs gentle healer/gardener vs adventurous. Or Bryce's own words.
