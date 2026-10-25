@@ -44,6 +44,10 @@ window.CONTENT = {
     // --- first days ---
     { id:'ruts',    name:'Fill the wheel ruts',        who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:3, twig:2 }, mins:120, green:1, magic:2,
       blurb:'The loggers left deep ruts. Stones and twigs will pack them down.' },
+    { id:'clear',   name:'Clear the ground',           who:'her', act:'carry', spot:'clearing', cost:{}, give:{ twig:3, stone:2 }, mins:90, green:0, magic:1,
+      blurb:'Snapped branches and loggers\' rubbish everywhere. Hazel rakes a clean patch, and keeps the good sticks and stones.' },
+    { id:'bed',     name:'Dig a seed bed',             who:'her', act:'dig', spot:'clearing', cost:{ twig:2 },  mins:120, green:1, magic:1,
+      needs:['ruts', 'clear'], blurb:'Now the ground is flat and clear, the earth can be turned. Something can finally grow.' },
     { id:'roof',    name:'Moss for the shelter roof',  who:'her', spot:'shelter',     cost:{ moss:4 },           mins:180, green:1, magic:2,
       blurb:'The canvas leaks. A thick moss roof keeps the rain out and the warmth in.' },
     { id:'fence',   name:'Mend the fence',             who:'him', spot:'fence',       cost:{ twig:4 },           mins:120, green:1, magic:1,
@@ -66,7 +70,7 @@ window.CONTENT = {
       blurb:'A home is not a home until something is flowering by the window.' },
 
     // --- a glow (day 2 onward) ---
-    { id:'herbs',   name:'Plant a herb corner',        who:'her', act:'water', spot:'seedbed',     cost:{ seed:2, water:2, moss:1 }, mins:180, green:1, minLevel:2,
+    { id:'herbs',   name:'Plant a herb corner',        who:'her', act:'water', spot:'seedbed',     cost:{ seed:2, water:2, moss:1 }, mins:180, green:1, minLevel:2, needs:['bed'],
       blurb:'Thyme, mint and the one parsley that will not die. Good for tea and for bees.' },
     { id:'compost', name:'Start a compost heap',       who:'him', act:'dig', spot:'wheelbarrow', cost:{ twig:2, moss:3, water:1 }, mins:180, green:1, minLevel:2,
       blurb:'Nothing is waste if you wait. Leaves, peelings and patience.' },
@@ -74,7 +78,7 @@ window.CONTENT = {
       blurb:'A hollow stone full of dew. Somebody small will want a wash.' },
     { id:'wildflowers', name:'Scatter wildflower seed', who:'her', act:'water', spot:'sapling',    cost:{ seed:3, water:1 }, mins:240, green:2, minLevel:2, needs:['ruts'],
       blurb:'Not in rows. Wildflowers like to choose their own places.' },
-    { id:'beanpoles', name:'Raise the bean poles',     who:'him', act:'dig', spot:'seedbed',     cost:{ twig:5 },           mins:120, green:0, minLevel:2,
+    { id:'beanpoles', name:'Raise the bean poles',     who:'him', act:'dig', spot:'seedbed',     cost:{ twig:5 },           mins:120, green:0, minLevel:2, needs:['bed'],
       blurb:'A teepee of sticks for a vine that has not been planted yet. Optimism.' },
     { id:'path',    name:'Lay a stepping-stone path',  who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:6 },          mins:240, green:1, minLevel:2, needs:['doorstep'],
       blurb:'From the doorstep to the fire, so the grass can grow where the feet used to go.' },
