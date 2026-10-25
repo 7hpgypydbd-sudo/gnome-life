@@ -52,6 +52,14 @@
   .cost { font-size:14px; } .cost i { font-style:normal; margin-right:7px; white-space:nowrap; }
   .prog { height:7px; background:var(--paper2); border-radius:4px; overflow:hidden; margin-top:6px; } .prog i { display:block; height:100%; background:var(--green); }
   .meter { display:flex; gap:4px; margin:6px 0 10px; } .meter i { flex:1; height:10px; border-radius:5px; background:var(--paper2); } .meter i.on { background:#c9922e; box-shadow:0 0 6px #ffcf6a; }
+  .jgrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(92px, 1fr)); gap:10px; margin:10px 0 4px; }
+  .jcard { background:var(--paper2); border:0; border-radius:14px; padding:9px 4px 8px; font:inherit; color:var(--ink); display:flex; flex-direction:column; align-items:center; gap:4px; box-shadow:inset 0 -2px 0 rgba(43,36,24,.1); }
+  .jcard b { font-size:13.5px; line-height:1.2; text-align:center; } .jcard i { font-style:normal; font-size:11.5px; color:var(--green); font-weight:bold; }
+  .jcard.unseen .por img, .jcard.unseen .por span { filter:brightness(0); opacity:.22; } .jcard.unseen b { color:var(--ink2); }
+  .por { width:64px; height:64px; border-radius:50%; background:radial-gradient(circle at 50% 40%, #fbf4e2, #e2d3b2); border:2px solid rgba(107,90,68,.45); overflow:hidden; display:flex; align-items:center; justify-content:center; flex:none; }
+  .por img { width:100%; height:100%; object-fit:cover; } .por.pad img { object-fit:contain; padding:6px; box-sizing:border-box; } .por span { font-size:34px; }
+  .por.big { width:140px; height:140px; margin:4px auto 8px; border-width:3px; } .por.big span { font-size:76px; } .por.big.pad img { padding:12px; }
+  .jpage { text-align:center; } .jpage h2 { padding:0 !important; } .jpage .lore { font-size:17px; font-style:italic; color:var(--ink); margin:6px 8px 12px; } .jpage .meta { font-size:14px; margin:4px 0; }
   .jrow { display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid rgba(43,36,24,.12); }
   .jrow .sil { width:40px; height:40px; border-radius:50%; background:var(--paper2); display:flex; align-items:center; justify-content:center; font-size:22px; flex:none; }
   .jrow.unseen .sil { filter:grayscale(1); opacity:.5; }
@@ -160,14 +168,14 @@ const RHYTHM = {
   her: { eat:[0.60,0.38,'campfire'], sit:[0.62,0.42,'campfire'], sleep:[0.52,0.24,null] },
 };
 const ACT_FPS = { dig:4, water:3, carry:9, eat:2.5, sit:1.6, sleep:0.7 };
-const SPOT_ACT = { wheelbarrow:'dig', seedbed:'water', sapling:'water', shelter:'carry', fence:'carry', stonebench:'carry', fire:'carry' };
+const SPOT_ACT = { feeder:'carry', wheelbarrow:'dig', seedbed:'water', sapling:'water', shelter:'carry', fence:'carry', stonebench:'carry', fire:'carry' };
 function routineFor(h) {   // what the couple do at this hour when no job needs them
   if (h >= 22 || h < 6) return 'sleep';
   if ((h >= 7 && h < 8) || (h >= 18 && h < 19)) return 'eat';
   if (h >= 19 && h < 22) return 'sit';
   return null;
 }
-const WORKSPOT = { clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], fence:[0.80,0.74], sapling:[0.66,0.84], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
+const WORKSPOT = { feeder:[0.68,0.62], clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], fence:[0.80,0.74], sapling:[0.66,0.84], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
 
 // ---------- loading ----------
 const IM = {};
@@ -202,11 +210,15 @@ const ART_SLOTS = {
   'room-shelter': {}, 'room-stump': {},
   'btn-pack': {}, 'btn-jobs': {}, 'btn-magic': {}, 'btn-journal': {},   // painted button icons
 };
+// visitors and the journal (docs/ART-BATCH-5.md): vis-<id> is the creature in the garden (side view; faces in CONTENT says which way),
+// portrait-<id> is its round journal picture (optional: the journal falls back to vis-<id>, then to the stand-in icon)
+for (const v of C.visitors) { ART_SLOTS['vis-' + v.id] = {}; ART_SLOTS['portrait-' + v.id] = {}; }
+Object.assign(ART_SLOTS, { 'feeding-dish': { w: 58 }, 'nest-nest': { w: 40 }, 'nest-burrow': { w: 54 }, 'nest-leafpile': { w: 70 }, 'nest-stones': { w: 60 } });
 const ART = {};   // name -> loaded Image, only for slots whose file exists
 function art(k) { return ART[k] || null; }
 function loadArtSlots() {   // after the game starts, so missing files never slow the first picture
   for (const k of Object.keys(ART_SLOTS)) {
-    const im = new Image(); im.onload = () => { ART[k] = k.startsWith('btn-') || k.startsWith('plot-') || k.startsWith('room-') ? im : settle(im, k === 'stepping-stones'); if (k.startsWith('btn-')) paintButton(k); }; im.src = `sprites/${k}.webp`;
+    const im = new Image(); im.onload = () => { ART[k] = /^(btn|plot|room|vis|portrait)-/.test(k) ? im : settle(im, k === 'stepping-stones'); if (k.startsWith('btn-')) paintButton(k); }; im.src = `sprites/${k}.webp`;
   }
 }
 function slotSize(k, img, w) {   // world-pixel width and height for a slot picture (w: width of the prop it replaces)
@@ -735,35 +747,99 @@ function drawOffer(o, now) {
   const img = IM['icon-' + o.kind], sz = 64 * k;
   ctx.drawImage(img, x - sz / 2, y - 8 * k + b - sz * 0.8, sz, sz);
 }
-// placeholder visitors until painted ones exist: an ink-outlined body with a name tag
-const VIS_LOOK = { robin:['#9c5a3c', 10, 8], mouse:['#8f8070', 9, 6], hedgehog:['#6b5440', 16, 10], owl:['#8a7458', 12, 16], ladybird:['#b14c37', 6, 5], spirit:['#eaf6d2', 9, 12] };
-function drawVisitor(v, now) {
-  const [x, y] = toWorld(v.gx, v.gy); const [col, rx, ry] = v.def.look || VIS_LOOK[v.def.id]; const fly = v.def.id === 'spirit' || v.def.id === 'robin' && v.perch < 1 ? 30 : (v.def.fly || 0);
-  const yy = y - ry - fly + (fly ? Math.sin(now / 350) * 4 : 0);
-  if (!fly) shadow(x, y, rx, rx * 0.4);
-  if (v.def.id === 'spirit') glow(x, yy, 60, 'rgba(200,255,190,1)', 0.5);
-  ctx.save(); ctx.fillStyle = col; ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.ellipse(x, yy, rx, ry, 0, 0, 7); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#2a1510'; ctx.beginPath(); ctx.arc(x + rx * 0.5, yy - ry * 0.3, 1.5, 0, 7); ctx.fill();
+// ---------- the feeding dish and nests ----------
+const FEEDER = { gx: 0.74, gy: 0.64 };
+function drawFeeder(x, y, a, now) {
+  const f = G.s.feeder.food, empty = !f && a >= 1;
+  if (empty && (G.can({ seed: 1 }) || G.can({ berry: 1 }))) halo(x, y - 14, 34, now, 3);
+  FEEDER.screen = { x, y, w: 64, h: 40 };
+  if (!drawSlot('feeding-dish', x, y, a)) {   // stand-in: a flat stone dish on a short stump
+    ctx.save(); ctx.globalAlpha = a; shadow(x, y, 26, 8);
+    ctx.fillStyle = '#6e5038'; ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x - 10, y - 2); ctx.lineTo(x - 9, y - 16); ctx.lineTo(x + 9, y - 16); ctx.lineTo(x + 10, y - 2); ctx.closePath(); ctx.fill(); ctx.stroke();
+    blob(x, y - 18, 25, 8, '#8f897e'); ctx.beginPath(); ctx.ellipse(x, y - 18, 25, 8, 0, 0, 7); ctx.stroke();
+    blob(x, y - 19, 19, 5, '#6d675d'); ctx.restore();
+  }
+  if (!f || a < 1) return;
+  for (let i = 0; i < 9; i++) { const fx = x - 12 + rnd(i + 50) * 24, fy = y - 20 + rnd(i + 60) * 5; f === 'seed' ? blob(fx, fy, 2.4, 1.6, i % 2 ? '#c9a46a' : '#a88450') : blob(fx, fy - 1, 3.2, 3.2, i % 3 ? '#5a3d78' : '#7a4c8a'); }
+}
+// where each nesting creature settles once it has been fed on enough days (code stand-ins until nest-<kind> is painted)
+const NESTS = { robin:[0.92, 0.64], wren:[0.66, 0.94], mouse:[0.16, 0.66], hedgehog:[0.96, 0.82], bluetongue:[0.10, 0.30], bandicoot:[0.40, 0.92] };
+function drawNest(id, x, y, now) {
+  const kind = G.visitorDef(id).nest;
+  NESTS[id].screen = { x, y, w: 50, h: 34 };
+  if (drawSlot('nest-' + kind, x, y)) return;
+  ctx.save();
+  if (kind === 'nest') {   // a little woven cup of twigs and moss
+    shadow(x, y, 18, 5); blob(x, y - 6, 17, 8, '#7a5a3a'); blob(x, y - 9, 12, 4.5, '#4a3622');
+    ctx.strokeStyle = 'rgba(42,21,16,0.7)'; ctx.lineWidth = 1.2; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.ellipse(x, y - 6 + i * 0.6, 17 - i, 8 - i * 0.6, rnd(i) * 0.4 - 0.2, 0.2, 2.9); ctx.stroke(); }
+    blob(x - 3, y - 10, 3, 2.2, '#cfe0e8'); blob(x + 3, y - 10, 3, 2.2, '#cfe0e8');
+  } else if (kind === 'burrow') {   // a dark hole with a little heap of dug earth
+    blob(x + 12, y + 1, 20, 7, '#8a6a48'); blob(x + 12, y - 1, 14, 4, '#a07c56');
+    blob(x - 8, y - 2, 14, 8, '#2a1a10'); blob(x - 8, y - 4, 10, 5, '#140c06');
+  } else if (kind === 'leafpile') {   // a heap of fallen leaves; please do not tidy it
+    shadow(x, y, 32, 9);
+    for (let i = 0; i < 26; i++) blob(x - 28 + rnd(i + 70) * 56, y - 4 - rnd(i + 80) * 20 * (1 - Math.abs(rnd(i + 70) - 0.5)), 7, 4, ['#9a5a2a', '#b8782e', '#7a4a24', '#c4903c'][i % 4]);
+  } else {   // a pile of warm flat stones with a gap under them
+    blob(x, y - 2, 14, 6, '#1e140c'); stone(x - 14, y - 4, 11); stone(x + 12, y - 3, 12); stone(x - 1, y - 12, 10);
+  }
   ctx.restore();
-  v.screen = { x, y: y - fly, w: Math.max(40, rx * 3), h: ry * 2 + 20 };
 }
 
 // ---------- visitors ----------
-function spawnVisitor() {
-  const def = G.pickVisitor(); if (!def) return;
+// a painted creature (art slot vis-<id>) or, until it is painted, its stand-in icon; mirrored to face the way it is going
+function drawCreature(def, x, y, h, faceR, a = 1) {
+  const img = art('vis-' + def.id);
+  ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y);
+  if (img) { const w = h * img.width / img.height; if (faceR !== ((def.faces || 'L') === 'R')) ctx.scale(-1, 1); ctx.drawImage(img, -w / 2, -h, w, h); }
+  else { if (faceR) ctx.scale(-1, 1); ctx.font = `${Math.round(h * 0.95)}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(def.icon || '•', 0, h * 0.06); }
+  ctx.restore();
+}
+function drawVisitor(v, now) {
+  const def = v.def, [x, y] = toWorld(v.gx, v.gy), h = def.h || 30, moving = v.phase === 'in' || v.phase === 'out';
+  const fly = v.phase === 'eat' || (v.trouble && !def.fly) ? 0 : (def.fly || (def.id === 'robin' && v.perch < 1 ? 30 : 0));
+  const hop = moving && !fly ? Math.abs(Math.sin(now / 110)) * Math.min(6, h * 0.12) : 0, peck = v.phase === 'eat' ? Math.max(0, Math.sin(now / 160)) * 3 : 0;
+  const yy = y - fly - hop + peck + (fly ? Math.sin(now / 350) * 4 : 0);
+  if (!fly) shadow(x, y, Math.max(8, h * 0.45), Math.max(3, h * 0.14)); else shadow(x, y, h * 0.25, h * 0.08);
+  if (def.spirit || def.id === 'spirit' || def.id === 'glowworm') glow(x, yy - h / 2, h * 1.2, def.id === 'glowworm' ? 'rgba(170,255,210,1)' : 'rgba(200,255,190,1)', 0.45 + 0.1 * Math.sin(now / 400));
+  if (!G.met(def.id) || v.trouble) halo(x, yy - h / 2, Math.max(28, h * 0.8), now, 1);   // "touch me": someone new, or someone who needs a hand
+  drawCreature(def, x, yy, h, v.faceR);
+  if (v.trouble) {   // a small paper bubble with a "!" so you can see it needs help
+    const bx = x, by = yy - h - 16 - Math.sin(now / 300) * 2;
+    ctx.save(); ctx.fillStyle = '#f3e9d2'; ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(bx, by, 11, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#b14c37'; ctx.font = 'bold 15px Georgia, serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', bx, by + 1); ctx.restore();
+  }
+  v.screen = { x, y: y - fly, w: Math.max(40, h * 1.2), h: h + 20 + fly };
+}
+function spawnVisitor(forced) {
+  const def = forced || G.pickVisitor(); if (!def) return;
   const edge = Math.random() < 0.5; const from = edge ? [Math.random() < 0.5 ? -0.05 : 1.05, Math.random()] : [Math.random(), Math.random() < 0.5 ? -0.05 : 1.05];
-  const to = [0.25 + Math.random() * 0.5, 0.25 + Math.random() * 0.5];
-  visitor = { def, gx: from[0], gy: from[1], tx: to[0], ty: to[1], phase: 'in', t: 0, stay: 18 + Math.random() * 15, perch: 0, speed: def.speed || (def.id === 'robin' ? 0.25 : def.id === 'owl' ? 0.3 : 0.06) };
-  if (def.id === 'owl') { const l = PROPS.find(p => p.name === 'lanternstump'); visitor.tx = l.gx - 0.02; visitor.ty = l.gy - 0.02; }
+  let to = [0.25 + Math.random() * 0.5, 0.25 + Math.random() * 0.5];
+  const trouble = /trouble/.test(hash) && def.trouble ? def.trouble : G.troubleFor(def.id);
+  const hungry = !trouble && G.dishBuilt() && G.wantsFood(def.id);
+  if (hungry) to = [FEEDER.gx - 0.05, FEEDER.gy + 0.05];
+  const perch = def.id === 'owl' || (trouble && def.id === 'possum');
+  if (perch) { const l = PROPS.find(p => p.name === 'lanternstump'); to = [l.gx - 0.02, l.gy - 0.02]; }
+  visitor = { def, gx: from[0], gy: from[1], tx: to[0], ty: to[1], phase: 'in', t: 0, stay: trouble ? 1e9 : 18 + Math.random() * 15, perch: 0, hungry, trouble,
+              speed: def.speed || 0.06, faceR: to[0] - to[1] > from[0] - from[1] };
+  G.arrive(def.id);
 }
 function updateVisitor(dt) {
-  if (!visitor) { if (performance.now() > nextVisitorAt) { spawnVisitor(); const [a, b] = C.visitorEvery; nextVisitorAt = performance.now() + (a + Math.random() * (b - a)) * 1000; } return; }
+  if (!visitor) { if (performance.now() > nextVisitorAt) { spawnVisitor(); const [a, b] = C.visitorEvery, k = G.s.feeder.food ? 0.6 : 1; nextVisitorAt = performance.now() + (a + Math.random() * (b - a)) * k * 1000; } return; }
   const v = visitor; v.t += dt;
   const dx = v.tx - v.gx, dy = v.ty - v.gy, d = Math.hypot(dx, dy);
-  if (v.phase === 'in') { if (d < 0.01) { v.phase = 'stay'; v.t = 0; v.perch = 1; } else { const s = Math.min(d, v.speed * dt); v.gx += dx / d * s; v.gy += dy / d * s; } }
-  else if (v.phase === 'stay') { if (v.def.id === 'mouse' && Math.random() < dt * 0.4) { v.tx = Math.min(0.95, Math.max(0.05, v.gx + (Math.random() - 0.5) * 0.2)); v.ty = Math.min(0.95, Math.max(0.05, v.gy + (Math.random() - 0.5) * 0.2)); v.phase = 'in'; } if (v.t > v.stay) { v.phase = 'out'; v.tx = Math.random() < 0.5 ? -0.1 : 1.1; v.ty = Math.random(); v.perch = 0; } }
+  if (d > 0.005) v.faceR = dx - dy > 0;   // screen x grows with gx - gy
+  if (v.phase === 'in') { if (d < 0.01) { v.phase = v.hungry && G.wantsFood(v.def.id) ? 'eat' : 'stay'; v.t = 0; v.perch = 1; } else { const s = Math.min(d, v.speed * dt); v.gx += dx / d * s; v.gy += dy / d * s; } }
+  else if (v.phase === 'eat') { if (v.t > 6) { v.hungry = false; v.phase = 'stay'; v.t = 0; ate(v); } }
+  else if (v.phase === 'stay') { if (v.def.id === 'mouse' && !v.trouble && Math.random() < dt * 0.4) { v.tx = Math.min(0.95, Math.max(0.05, v.gx + (Math.random() - 0.5) * 0.2)); v.ty = Math.min(0.95, Math.max(0.05, v.gy + (Math.random() - 0.5) * 0.2)); v.phase = 'in'; } if (v.t > v.stay) { v.phase = 'out'; v.tx = Math.random() < 0.5 ? -0.1 : 1.1; v.ty = Math.random(); v.perch = 0; } }
   else { if (d < 0.02) visitor = null; else { const s = Math.min(d, v.speed * 1.5 * dt); v.gx += dx / d * s; v.gy += dy / d * s; } }
+}
+function ate(v) {   // the visitor finished at the dish
+  const out = G.feed(v.def.id); if (!out) return;
+  const [x, y] = toWorld(v.gx, v.gy), name = G.met(v.def.id) ? v.def.name : 'Someone new';
+  if (out === 'regular') { float('♥ a regular now', x, y - 30); toast(`${name} will come by every day now.`); btnAlert('bJournal', true); }
+  else if (out === 'nest') { float('♥ moving in', x, y - 30); toast(`${name} has made a home nearby. Look for it.`); btnAlert('bJournal', true); }
+  else float('♥', x, y - 20);
 }
 
 // ---------- main frame ----------
@@ -796,6 +872,8 @@ function frame(now) {
   for (const g of gnomes) items.push({ d: depthOf(g.gx, g.gy), draw: () => g.draw(now) });
   for (const o of G.s.offers) items.push({ d: depthOf(o.gx, o.gy, o.tile) - 0.02, draw: () => drawOffer(o, now) });
   if (visitor) items.push({ d: depthOf(visitor.gx, visitor.gy), draw: () => drawVisitor(visitor, now) });
+  const fa = taskProg('feeder'); if (fa > 0) items.push({ d: depthOf(FEEDER.gx, FEEDER.gy), draw: () => { const [x, y] = toWorld(FEEDER.gx, FEEDER.gy); drawFeeder(x, y, fa, now); } });
+  for (const id in NESTS) if (G.hasNest(id)) items.push({ d: depthOf(NESTS[id][0], NESTS[id][1]) - 0.05, draw: () => { const [x, y] = toWorld(NESTS[id][0], NESTS[id][1]); drawNest(id, x, y, now); } });
   items.sort((a, b) => a.d - b.d);
   for (const it of items) it.draw();
   drawParticles(ph);
@@ -889,12 +967,18 @@ function tap(cx, cy) {
   ripples.push({ x: cx, y: cy, t: 0 });
   // offerings first (small, on top)
   for (const o of [...G.s.offers].reverse()) if (hit(o.screen, wx, wy)) { G.gather(o.id); float(`+1 ${C.resources[o.kind].name}`, o.screen.x, o.screen.y); return; }
-  if (visitor && hit(visitor.screen, wx, wy)) { const isNew = G.noteVisitor(visitor.def.id); toast(isNew ? `${visitor.def.name}: noted in the journal.` : `${visitor.def.name} again. Hello.`); float(isNew ? '✎ new entry' : '✎', visitor.screen.x, visitor.screen.y); btnAlert('bJournal', isNew); return; }
+  if (visitor && hit(visitor.screen, wx, wy)) {
+    if (visitor.trouble) return openHelp();
+    const id = visitor.def.id, isNew = G.noteVisitor(id); float(isNew ? '✎ new entry' : '✎', visitor.screen.x, visitor.screen.y); btnAlert('bJournal', isNew);
+    toast(isNew ? `${visitor.def.name}: noted in the journal.` : G.isRegular(id) ? `${visitor.def.name}, a regular. Hello again.` : `${visitor.def.name} again. Hello.`); return;
+  }
   for (const g of [...gnomes].reverse()) if (hit(g.screen, wx, wy)) {
     const lines = g.job ? C.lines.working[g.who] : C.lines[g.who]; g.say = lines[(Math.random() * lines.length) | 0]; g.sayT = 3.2; bubble.textContent = g.say;
     if (!g.job && !g.act) { g.walking = false; g.wait = 3.5; g.dir = 'front'; g.frame = 0; }
     for (const o of gnomes) if (o !== g) o.sayT = 0; return;
   }
+  if (taskProg('feeder') >= 1 && hit(FEEDER.screen, wx, wy)) return openFeeder();
+  for (const id in NESTS) if (G.hasNest(id) && hit(NESTS[id].screen, wx, wy)) { const d = G.visitorDef(id); return toast(`The ${d.name.toLowerCase()}'s ${{ nest: 'nest', burrow: 'burrow', leafpile: 'leaf pile', stones: 'hidey-hole' }[d.nest]}. Quiet, someone may be home.`); }
   // props on the home tile (seed bed, tub, task spots)
   const f = fromWorld(wx, wy);
   if (f.tile === '0,0') {
@@ -1040,12 +1124,16 @@ sheet.addEventListener('click', e => {
   if (a === 'plant') { G.plant(); } if (a === 'water') { G.water(); } if (a === 'harvest') { if (G.harvest()) { const sb = PROPS.find(p => p.name === 'seedbed'); const [x, y] = toWorld(sb.gx, sb.gy); float('+2 seed +1 moss', x, y); } }
   if (a === 'start') { if (G.startTask(id)) { toast('Set to work.'); for (const g of gnomes) if (g.who === G.taskDef(id).who) { g.walking = false; g.wait = 0.1; } } }
   if (a === 'cast') { if (G.cast(id)) toast(C.spells[id].name + '.'); }
+  if (a === 'food') { if (G.putFood(id)) { toast(id === 'seed' ? 'Seed in the dish.' : 'Berries in the dish.'); closeSheet(); return; } }
+  if (a === 'help') return doHelp();
+  if (a === 'entry') return openEntry(id);
+  if (a === 'journal') return openJournal();
   if (a === 'reset') { if (confirm('Start the garden over? This wipes your save.')) G.reset(); return; }
   refreshSheet();
 });
 function iconHtml(k) { return `<img class="ico" src="sprites/icon-${k}.webp" alt="${C.resources[k].name}">`; }
 function costHtml(cost) { return Object.entries(cost || {}).map(([k, n]) => `<i>${iconHtml(k)}${n}</i>`).join(''); }
-function refreshSheet() { if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); renderInv(); renderHud(); }
+function refreshSheet() { if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); renderInv(); renderHud(); }
 function openSeedbed() {
   const p = G.plot(), c = C.crops.sprout; let body = '';
   if (!p.stage) body = `<div class="row"><div class="t"><b>Plant a seed</b><span>Costs ${costHtml(c.plant)} · ready about ${Math.round(c.grow / 60)} hours after watering</span></div><button class="act" data-a="plant" ${G.can(c.plant) ? '' : 'disabled'}>Plant</button></div>` + (G.can(c.plant) ? '' : `<p>No seeds. The land offers one now and then; look for a seed on the ground.</p>`);
@@ -1089,19 +1177,63 @@ function openMagic() {
   html += `<p style="margin-top:14px;font-size:12px">Save v${G.s.v} · ${new Date(G.s.created).toLocaleDateString()} · <a href="#" data-a="reset" style="color:var(--red)">start over</a></p>`;
   openSheet('magic', html);
 }
-const SIL = { robin:'🐦', mouse:'🐭', hedgehog:'🦔', owl:'🦉', ladybird:'🐞', spirit:'✨' };
+function portraitHtml(v, big) {   // the journal picture: painted portrait, else the garden painting, else the stand-in icon
+  const src = art('portrait-' + v.id) ? `sprites/portrait-${v.id}.webp` : art('vis-' + v.id) ? `sprites/vis-${v.id}.webp` : null;
+  return `<div class="por${big ? ' big' : ''}${src && !art('portrait-' + v.id) ? ' pad' : ''}">${src ? `<img src="${src}" alt="">` : `<span>${v.icon || '•'}</span>`}</div>`;
+}
+function journalFoot(v) {   // what you know about a creature's feeding, nest and good deeds, in words
+  const e = G.s.journal[v.id] || {}, F = C.feeding, n = (e.fed || []).length, bits = [];
+  if (v.eats && n) bits.push(G.hasNest(v.id) ? `Lives nearby now.` : G.isRegular(v.id) ? `A regular: comes by every day.${v.nest ? ` Fed on ${n} days; it may settle nearby after ${F.nestAfter}.` : ''}` : `Fed at the dish on ${n} of ${F.regularAfter} days it needs to become a regular.`);
+  else if (v.eats && G.dishBuilt()) bits.push(`Might come to the dish for ${v.eats.map(k => k === 'seed' ? 'seed' : 'berries').join(' or ')}.`);
+  if (e.helped) bits.push(`You have helped it ${e.helped === 1 ? 'once' : e.helped + ' times'}.`);
+  return bits.join(' ');
+}
 function openJournal() {
-  const j = G.s.journal, seen = Object.keys(j).length; let html = `<h2>Field journal<small>${seen} of ${C.visitors.length} met</small></h2><p>Tap a visitor in the garden to note it down. Some only come once there is something green.</p>`;
-  for (const v of C.visitors) { const e = j[v.id]; html += `<div class="jrow ${e ? '' : 'unseen'}"><div class="sil">${v.icon || SIL[v.id]}</div><div class="t"><b>${e ? v.name : '?'}</b><span>${e ? `${v.note} First seen ${new Date(e.first).toLocaleDateString()}; met ${e.count}×.` : 'not met yet'}</span></div></div>`; }
+  const seen = C.visitors.filter(v => G.met(v.id)).length, regs = C.visitors.filter(v => G.isRegular(v.id)).length;
+  let html = `<h2>Field journal<small>${seen} of ${C.visitors.length} met${regs ? ` · ${regs} regular${regs > 1 ? 's' : ''}` : ''}</small></h2><p>Tap a visitor in the garden to note it down; a soft glow means someone new. Tap a page to read it.</p><div class="jgrid">`;
+  for (const v of C.visitors) { const m = G.met(v.id); html += `<button class="jcard${m ? '' : ' unseen'}" data-a="${m ? 'entry' : ''}" data-id="${v.id}">${portraitHtml(v)}<b>${m ? v.name : '?'}</b>${G.hasNest(v.id) ? '<i>lives here</i>' : G.isRegular(v.id) ? '<i>regular</i>' : ''}</button>`; }
+  html += `</div>`;
   const log = [...G.s.log].reverse().slice(0, 8);
-  if (log.length) html += `<h2 style="margin-top:14px">Lately</h2>` + log.map(l => `<p style="margin:2px 0">${l.text}</p>`).join('');
-  openSheet('journal', html);
+  if (log.length) html += `<h3>Lately</h3>` + log.map(l => `<p style="margin:2px 0">${l.text}</p>`).join('');
+  openSheet('journal', html); btnAlert('bJournal', false);
+}
+function openEntry(id) {
+  const v = G.visitorDef(id), e = G.s.journal[id];
+  const foot = journalFoot(v);
+  openSheet('entry', `<p style="margin:0 0 4px"><button class="act quiet" data-a="journal">‹ Journal</button></p><div class="jpage">${portraitHtml(v, true)}<h2>${v.name}</h2><p class="lore">${v.note}</p>
+    <p class="meta">First seen ${new Date(e.first).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })} · met ${e.count === 1 ? 'once' : e.count + ' times'}</p>${foot ? `<p class="meta">${foot}</p>` : ''}</div>`);
+}
+function openFeeder() {
+  if (taskProg('feeder') < 1) return openTasks('feeder');
+  const f = G.s.feeder.food, F = C.feeding;
+  let html = `<h2>The feeding dish</h2>`;
+  if (f) html += `<p>There ${f === 'seed' ? 'is seed' : 'are berries'} in the dish. Someone will be along. Things go quicker while there is food out.</p>`;
+  else {
+    html += `<p>Put something out and see who comes. A creature fed here on ${F.regularAfter} different days becomes a regular and comes by every day; some may even make a home nearby.</p>`;
+    for (const k of F.foods) { const n = G.s.inv[k] || 0; html += `<div class="row"><div class="t"><b>Put out ${k === 'seed' ? 'seed' : 'berries'}</b><span>Costs ${costHtml({ [k]: 1 })} · you have ${n}</span></div><button class="act" data-a="food" data-id="${k}" ${n ? '' : 'disabled'}>Put out</button></div>`; }
+  }
+  const met = C.visitors.filter(v => v.eats && G.met(v.id));
+  if (met.length) html += `<h3>Who eats what</h3>` + met.map(v => `<p style="margin:2px 0"><b>${v.name}</b>: ${v.eats.map(k => k === 'seed' ? 'seed' : 'berries').join(', ')}${G.isRegular(v.id) ? ' · regular' : ` · fed ${G.fedDays(v.id)} of ${F.regularAfter} days`}</p>`).join('');
+  openSheet('feeder', html);
+}
+function openHelp() {
+  const v = visitor; if (!v || !v.trouble) return;
+  openSheet('help', `<div class="jpage">${portraitHtml(v.def, true)}<h2>The ${v.def.name.toLowerCase()}</h2><p class="lore">The ${v.def.name.toLowerCase()} ${v.trouble.text}</p></div><p style="text-align:center"><button class="act" data-a="help">${v.trouble.act}</button></p>`);
+}
+function doHelp() {
+  const v = visitor; if (!v || !v.trouble) return closeSheet();
+  G.entry(v.def.id); if (!G.met(v.def.id)) G.noteVisitor(v.def.id);
+  const light = G.help(v.def.id), [x, y] = toWorld(v.gx, v.gy);
+  float(light ? '+1 light ♥' : '♥', x, y - (v.def.h || 30));
+  openSheet('help', `<div class="jpage">${portraitHtml(v.def, true)}<h2>Thank you</h2><p class="lore">${v.trouble.thanks}</p><p class="meta">${light ? 'A good deed: +1 light.' : 'A good deed. (No more light from good deeds today, but it was still the right thing.)'}</p></div><p style="text-align:center"><button class="act" data-a="close">You're welcome</button></p>`);
+  v.trouble = null; v.stay = v.t + 8;
 }
 function openAway(r) {
-  const mins = Math.round(r.gone / 60000); if (mins < 10 && !r.finished.length) return;
+  const mins = Math.round(r.gone / 60000); if (mins < 10 && !r.finished.length && !r.ate) return;
   const gone = mins < 60 ? `${mins} minutes` : mins < 60 * 36 ? `${Math.round(mins / 60)} hours` : `${Math.round(mins / 1440)} days`;
   let html = `<h2>While you were away<small>${gone}</small></h2>`;
   if (r.event) html += `<p>${r.event}</p>`;
+  if (r.ate) html += `<p>The ${r.ate.toLowerCase()} came by and emptied the feeding dish.</p>`;
   if (r.newDay) html += `<p>A new day. Their magic has grown a little: ${G.magicInfo().name}.</p>`;
   if (r.offered) html += `<p>The land has left ${r.offered} thing${r.offered > 1 ? 's' : ''} for you to gather.</p>`;
   for (const f of r.finished) html += `<p>✓ ${f}</p>`;
@@ -1123,7 +1255,8 @@ function start() {
   [cam.x, cam.y] = G.s.flags.welcomed ? toWorld((gnomes[0].gx + gnomes[1].gx) / 2, (gnomes[0].gy + gnomes[1].gy) / 2) : toWorld(0.5, 0.5); clampCam();
   renderInv(); renderHud();
   const [a, b] = C.visitorEvery; nextVisitorAt = performance.now() + (G.FAST ? 5 : 25 + Math.random() * 30) * 1000;
-  if (/vis=(\w+)/.test(hash)) { const id = RegExp.$1; const def = C.visitors.find(v => v.id === id); if (def) { spawnVisitor(); if (visitor) visitor.def = def; } }
+  if (/vis=(\w+)/.test(hash)) { const def = C.visitors.find(v => v.id === RegExp.$1); if (def) spawnVisitor(def); }
+  G.view = () => ({ visitor, cam, W, H });   // for test scripts
   requestAnimationFrame(frame);
   loadArtSlots();
   if (G.away) openAway(G.away);
