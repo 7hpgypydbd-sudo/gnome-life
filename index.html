@@ -128,8 +128,8 @@ const ASSETS = {
   'icon-twig':'sprites/icon-twig.webp','icon-moss':'sprites/icon-moss.webp','icon-stone':'sprites/icon-stone.webp','icon-acorn':'sprites/icon-acorn.webp','icon-seed':'sprites/icon-seed.webp',
   'icon-water':'sprites/icon-water.webp','icon-light':'sprites/icon-light.webp','icon-berry':'sprites/icon-berry.webp','icon-feather':'sprites/icon-feather.webp',
 };
-// The blended ground and the night light layer (a test for now: add #newground to the address). See docs/GRAPHICS-RETHINK.md.
-const NEWGROUND = /newground/.test(location.hash);
+// The blended ground and the night light layer (on since 2026-10-25; #oldground shows the old big tiles to compare). See docs/GRAPHICS-RETHINK.md.
+const NEWGROUND = !/oldground/.test(location.hash);
 const GSWATCH = ['dirt', 'drygrass', 'grass', 'meadow', 'moss'], GSTRIP = ['water', 'creekbed', 'path'];
 const GSTICK = { dry: ['tuft-dry-1', 'tuft-dry-2', 'tuft-dry-3', 'pebbles-1', 'pebbles-2'], grass: ['clover', 'daisy', 'tuft-big', 'clover'], meadow: ['daisy', 'buttercup', 'clover', 'tuft-big'], moss: ['leaf', 'leaf', 'mushrooms', 'fern'], bank: ['reeds', 'rock-moss', 'rock-moss'], big: ['boulder', 'tuft-big'] };
 if (NEWGROUND) {
