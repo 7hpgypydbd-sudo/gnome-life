@@ -8,9 +8,9 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 
 ---
 
-## Round 1 — The world map (☐)
+## Round 1 — The world map (◐)
 
-**1.1 How big does the world get, in tiles?** (one tile ≈ 3.7 gnomes across; today's game shows 1 home tile + up to 2 rings of neighbours)
+**1.1 How big does the world get, in tiles?** ☑ Village, 25 tiles (5x5) (one tile ≈ 3.7 gnomes across; today's game shows 1 home tile + up to 2 rings of neighbours)
 - Cosy: about 9 tiles (3×3). The whole thing fits on one screen when zoomed out.
 - ★ Village: about 25 tiles (5×5). Enough room for a stream, a path, a few neighbours' homes and a little square.
 - Sprawling: 49 or more (7×7+), keeps growing for months.

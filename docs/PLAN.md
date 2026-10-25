@@ -73,7 +73,7 @@ Files: `index.html` (canvas scene, tile map, DOM sheets), `game.js` (state, rule
 
 ## Vision decisions (2026-10-25, from the "Pin down the game's vision" thread)
 The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded here as Bryce gives them.
-- (none yet)
+- **World size:** Village, about 25 tiles (5x5). Big enough for a stream, a path, several neighbours' homes and a little square.
 
 ## Open questions for Bryce (do not assume)
 - The couple's names and personalities.
