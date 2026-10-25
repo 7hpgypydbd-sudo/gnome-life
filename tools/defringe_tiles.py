@@ -27,4 +27,5 @@ def defringe(path, passes=6):
     Image.fromarray(np.dstack([rgb, al]).clip(0, 255).astype(np.uint8)).save(path, quality=90)
     print(f'{path}: {n0} pink pixels fixed')
 
-for p in sys.argv[1:]: defringe(p)
+if __name__ == '__main__':
+    for p in sys.argv[1:]: defringe(p)
