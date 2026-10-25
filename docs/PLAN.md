@@ -98,6 +98,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 - **Journal:** each creature gets a small painted portrait, one warm line of lore, and the date first seen.
 - **Regulars:** some creatures become daily regulars if you leave out food (seed, berries) and may nest nearby. No named pets.
 - **Magic is for healing land and gentle weather only:** coax sprouts, call rain, wake a tree, clear mist. No crafting or conjuring; the staff mystery stays separate and special.
+- **Light (magical resource):** both gathered at night from wisps and dew AND earned by good deeds (finishing jobs, helping creatures), so day-only players are not punished.
 
 ## Open questions for Bryce (do not assume)
 - Town stage: one fixed scene that gets busier, or neighbouring scenes to tap through (current engine suggests a spreading tile map)?

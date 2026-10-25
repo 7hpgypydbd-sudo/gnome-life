@@ -67,11 +67,11 @@ Rounds are asked a few themes at a time. Status: ☐ not asked · ◐ asked · �
 **6.3 Journal depth.** ☑ Portrait, a line of lore, first seen. ★ Name, picture, one line of lore, first seen date / Just a tick list / Full pages with facts.
 **6.4 Can creatures move in / be fed / befriended?** ☑ Some become regulars if fed. ★ Some can become regulars if you leave food / Visits only / Pets you can name.
 
-## Round 7 — Magic (◐)
+## Round 7 — Magic (☑)
 
 **7.1 What is magic for?** ☑ Healing land and gentle weather. ★ Healing land faster and gentle weather / Also crafting and conjuring items / Mostly story and spectacle.
-**7.2 The magical resource ("light").** ★ Gather it at night from wisps and dew / Earned by good deeds / Both.
-**7.3 Does the staff (Bryce's mystery) tie into magic levels?** Yes / No, separate / Bryce decides later (default).
+**7.2 The magical resource ("light").** ☑ Both night gathering and good deeds. ★ Gather it at night from wisps and dew / Earned by good deeds / Both.
+**7.3 Does the staff (Bryce's mystery) tie into magic levels?** ☑ Left to Bryce (default: decide later). Yes / No, separate / Bryce decides later (default).
 
 ## Round 8 — Progression, pacing and ending (◐)
 
