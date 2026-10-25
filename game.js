@@ -4,7 +4,9 @@
 const C = window.CONTENT;
 const FAST = /fast/.test(location.hash);          // #fast: minutes become tenths of a second (3h -> 18s)
 const MIN = FAST ? 100 : 60000;                   // ms per content "minute"
-const now = () => Date.now();
+const SKEW_KEY = 'gnomelife.skew';   // test panel: pretend this many extra days have gone by (whole days, so the time of day stays right)
+let SKEW = 0; try { SKEW = Number(localStorage.getItem(SKEW_KEY)) || 0; } catch (e) {}
+const now = () => Date.now() + SKEW;
 const DAY = () => 1440 * MIN;
 const lc = (t) => t[0].toLowerCase() + t.slice(1);   // "Build Mabel a home" -> "build Mabel a home" (keeps names capitalised)                    // a real day (a tenth-second-minute day under #fast)
 const dayKey = (t) => { const d = new Date(t); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; };
@@ -47,7 +49,7 @@ const G = {
   onChange(fn) { this.listeners.add(fn); },
   emit(kind, data) { for (const fn of this.listeners) fn(kind, data); this.dirty = true; },
   save() { if (!this.s) return; this.s.lastSeen = now(); Store.write(this.s); this.dirty = false; },
-  reset() { Store.clear(); this.s = fresh(); this.save(); location.hash = ''; location.reload(); },
+  reset() { Store.clear(); try { localStorage.removeItem(SKEW_KEY); } catch (e) {} this.s = fresh(); this.save(); location.hash = ''; location.reload(); },
   dur(mins) { return mins * MIN * this.taskSpeed(); },
   taskSpeed() { return 1 - 0.08 * (this.magicLevel() - 1); },   // each magic level trims task time 8%
 
@@ -334,7 +336,7 @@ const G = {
   villageTick(t) {
     const s = this.s, v = s.village, V = C.village, dk = dayKey(t), h = new Date(t).getHours();
     // a traveller arrives once the house is finished, when it is time, and someone is still on the road
-    if (!v.traveller && v.queue.length && t >= v.nextAt && (this.done(V.firstAfter) || /village/.test(location.hash))) {
+    if (!v.traveller && v.queue.length && t >= v.nextAt && (this.done(V.firstAfter) || /village|test/.test(location.hash))) {
       v.traveller = { id: v.queue.shift(), at: t };
       const f = this.folkDef(v.traveller.id); this.note(`A traveller has camped by the path: ${f.name}, ${f.trade}.`); this.emit('traveller', v.traveller.id);
     }
@@ -426,7 +428,12 @@ const G = {
 
   note(text) { const l = this.s.log; l.push({ t: now(), text }); if (l.length > 40) l.shift(); },
   timeLeft(endsAt) { const ms = Math.max(0, endsAt - now()); if (FAST) return `${Math.ceil(ms / 1000)}s`; const m = Math.ceil(ms / 60000); return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`; },
-  FAST,
+  FAST, now,
+  // ---- test panel helpers ----
+  skipDays(n) { try { localStorage.setItem(SKEW_KEY, String(SKEW + n * 86400000)); } catch (e) {} this.save(); location.reload(); },
+  finishAll() { const t = now(); for (const tk of Object.values(this.s.tasks)) if (!tk.done && tk.endsAt > t) tk.endsAt = t; const p = this.s.plots.seedbed; if (p.stage === 'growing') p.readyAt = t; this.tick(); this.emit('inv'); },
+  fillPack() { const o = {}; for (const k of Object.keys(C.resources)) o[k] = 20; this.give(o); },
+  callTraveller() { this.s.village.nextAt = 0; this.tick(); },
 };
 
 // autosave on a timer and whenever the page is hidden
