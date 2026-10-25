@@ -120,7 +120,7 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 ## Open questions for Bryce (do not assume)
 - The staff mystery itself (Bryce writes it).
 
-## Roadmap after the seed-bed chain (proposed 2026-10-25, waiting for Bryce's OK)
+## Roadmap after the seed-bed chain (agreed by Bryce 2026-10-25)
 Another thread is building step 0. Each later step is its own new chat. Models follow Bryce's cap: Sonnet for routine, Opus medium preferred, Opus high at most, no Fable.
 0. **(Building now, other thread)** Fill the ruts, then "Clear the ground", then "Dig a seed bed" makes the seed bed appear.
 1. **Soft glow fix** (Sonnet): pick-ups glow softly from behind instead of the ring under them. Tiny code job.
