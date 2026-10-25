@@ -50,6 +50,6 @@ The hard rule is that Bryce must own everything, because the game may be sold on
 
 ## Order of work
 
-1. **A before/after test** on the home tile and its neighbours: harvested swatches, blended edges, the stream as a stencil, and the new night with three lamps. One thread, Opus at medium effort, no new paintings. Bryce looks at two pictures and says yes or no.
+1. **A before/after test** on the home tile and its neighbours: harvested swatches, blended edges, the stream as a stencil, and the new night with three lamps. One thread, Opus at medium effort, no new paintings. Bryce looks at two pictures and says yes or no. **Built 2026-10-25 behind `#newground`; details in docs/PLAN.md, pictures in `/mnt/project-files/graphics-test/`.**
 2. If yes: write the Ground 1 prompts, Bryce paints them, then convert the rest of the map, turn painted-in stumps and rocks into objects, and retire the big tiles.
 3. Lamps become craftable and placeable as part of the decorating set.
