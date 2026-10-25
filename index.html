@@ -420,7 +420,7 @@ function drawProp(p) {
   const w = img.width * s, h = img.height * s, a = propAlpha(p), now = performance.now();
   if (a < 1 && BEFORE[p.name]) BEFORE[p.name](x, y, 1 - a);
   const tap = p.name === 'seedbed' && a < 1 ? clearingWantsTap() : p.name !== 'lanternstump' && wantsTap(p);
-  if (tap) halo(x, y - h * 0.45, Math.min(Math.max(w, h) * 0.7, 110), now, p.gx * 5);
+  if (tap) { if (a < 1) halo(x, y - 6, 24, now, p.gx * 5); else halo(x, y - h * 0.4, Math.min(Math.max(w, h) * 0.3, 40), now, p.gx * 5); }
   if (a <= 0) return;
   ctx.save(); ctx.globalAlpha = a;
   if (!p.flat) shadow(x, y, w * 0.4, w * 0.14);
@@ -532,7 +532,7 @@ function drawOffer(o, now) {
   const k = Math.max(1, 0.7 / cam.z);            // keep offerings finger-sized when zoomed out
   o.screen = { x, y, w: 46 * k, h: 46 * k };
   shadow(x, y, 9 * k, 4 * k);
-  halo(x, y - 20 * k + b, 40 * k, now, o.gx * 7);
+  halo(x, y - 18 * k + b, 26 * k, now, o.gx * 7);
   if (o.kind === 'light') { glow(x, y - 14 * k + b, 36 * k, 'rgba(255,240,170,1)', 0.6 + 0.2 * Math.sin(now / 200)); }
   const img = IM['icon-' + o.kind], sz = 64 * k;
   ctx.drawImage(img, x - sz / 2, y - 8 * k + b - sz * 0.8, sz, sz);
