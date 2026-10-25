@@ -1,24 +1,24 @@
 {
  "him": {
   "cell": [
-   109,
+   108,
    242
   ],
   "dirs": {
-   "side": 10,
-   "front": 6,
-   "back": 6
+   "side": 8,
+   "front": 8,
+   "back": 8
   }
  },
  "her": {
   "cell": [
-   137,
+   122,
    242
   ],
   "dirs": {
-   "side": 10,
-   "front": 6,
-   "back": 6
+   "side": 8,
+   "front": 8,
+   "back": 8
   }
  }
 }

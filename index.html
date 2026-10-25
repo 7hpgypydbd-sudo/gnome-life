@@ -80,6 +80,10 @@ const EX = [PLOT.right[0]-PLOT.top[0], PLOT.right[1]-PLOT.top[1]];   // one tile
 const EY = [PLOT.left[0]-PLOT.top[0],  PLOT.left[1]-PLOT.top[1]];    // one tile south
 const ASSETS = {
   plot:'sprites/plot-barren.webp',
+  // painted ground tiles (art batch 1). stream + path are loaded but not placed yet: for the town/map pass.
+  'tile-barren-plain':'sprites/tile-barren-plain.webp', 'tile-barren-stumps':'sprites/tile-barren-stumps.webp',
+  'tile-green':'sprites/tile-green.webp', 'tile-meadow':'sprites/tile-meadow.webp', 'tile-woodland':'sprites/tile-woodland.webp',
+  'tile-stream':'sprites/tile-stream.webp', 'tile-path':'sprites/tile-path.webp',
   shelter:'sprites/shelter.webp', campfire:'sprites/campfire.webp', firewood:'sprites/firewood.webp',
   barrel:'sprites/barrel.webp', seedbed:'sprites/seedbed.webp', stonebench:'sprites/stonebench.webp',
   tub:'sprites/tub.webp', lanternstump:'sprites/lanternstump.webp', wheelbarrow:'sprites/wheelbarrow.webp',
@@ -87,7 +91,7 @@ const ASSETS = {
   'him-side':'sprites/him-side.png','him-front':'sprites/him-front.png','him-back':'sprites/him-back.png',
   'her-side':'sprites/her-side.png','her-front':'sprites/her-front.png','her-back':'sprites/her-back.png',
 };
-const GNOMES = {"him": {"cell": [109, 242], "dirs": {"side": 10, "front": 6, "back": 6}}, "her": {"cell": [137, 242], "dirs": {"side": 10, "front": 6, "back": 6}}};
+const GNOMES = { "him": {"cell": [ 108, 242],"dirs": { "side": 8, "front": 8, "back": 8} }, "her": {"cell": [ 122, 242],"dirs": { "side": 8, "front": 8, "back": 8} }};
 
 // ---------- world helpers ----------
 function tileOrigin(k) { const [tx, ty] = k.split(',').map(Number); return [tx*EX[0] + ty*EY[0], tx*EX[1] + ty*EY[1]]; }
@@ -268,16 +272,17 @@ function diamondPath(tile) {
   const [ox, oy] = tileOrigin(tile);
   ctx.beginPath(); ctx.moveTo(ox + PLOT.top[0], oy + PLOT.top[1]); ctx.lineTo(ox + PLOT.right[0], oy + PLOT.right[1]); ctx.lineTo(ox + PLOT.bottom[0], oy + PLOT.bottom[1]); ctx.lineTo(ox + PLOT.left[0], oy + PLOT.left[1]); ctx.closePath();
 }
-const GREEN_ALPHA = { barren: 0, green: 0.16, meadow: 0.30, wood: 0.40 };
+// which painted tile shows for each land stage of the home patch; other tiles go bare -> (regrowing) -> green
+const HOME_TILE = { barren:'plot', green:'tile-green', meadow:'tile-meadow', wood:'tile-woodland' };
 function drawTile(k, tl, now) {
   const [ox, oy] = tileOrigin(k);
-  ctx.drawImage(IM.plot, ox, oy);
-  // placeholder regrowth: a green wash over the bare slab until the painted tile set exists
-  let a = 0;
-  if (k === '0,0') a = GREEN_ALPHA[G.landStage().key];
-  else if (tl.state === 'green') a = 0.22;
-  else if (tl.state === 'regrowing') { const tk = G.s.tasks['regrow:' + k]; const p = tk ? 1 - Math.max(0, tk.endsAt - Date.now()) / (tk.endsAt - tk.startedAt) : 0; a = 0.05 + 0.15 * p + 0.03 * Math.sin(now / 500); }
-  if (a > 0) { ctx.save(); diamondPath(k); ctx.clip(); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = `rgba(120,150,70,${a * 1.6})`; ctx.fillRect(ox, oy, PLOT.w, PLOT.h); ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = `rgba(140,170,80,${a * 0.5})`; ctx.fillRect(ox, oy, PLOT.w, PLOT.h); ctx.restore(); }
+  if (k === '0,0') { ctx.drawImage(IM[HOME_TILE[G.landStage().key] || 'plot'], ox, oy); return; }
+  if (tl.state === 'green') { ctx.drawImage(IM['tile-green'], ox, oy); return; }
+  ctx.drawImage(IM['tile-barren-plain'], ox, oy);
+  if (tl.state === 'regrowing') {   // the green tile fades in over the bare one as the task runs
+    const tk = G.s.tasks['regrow:' + k]; const p = tk ? 1 - Math.max(0, tk.endsAt - Date.now()) / (tk.endsAt - tk.startedAt) : 0;
+    ctx.save(); ctx.globalAlpha = Math.min(1, Math.max(0, 0.08 + 0.9 * p + 0.04 * Math.sin(now / 500))); ctx.drawImage(IM['tile-green'], ox, oy); ctx.restore();
+  }
   if (tl.state === 'revealed') { ctx.save(); diamondPath(k); ctx.clip(); ctx.fillStyle = 'rgba(200,205,195,0.28)'; ctx.fillRect(ox, oy, PLOT.w, PLOT.h); ctx.restore(); }
 }
 function drawProp(p) {
