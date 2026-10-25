@@ -134,6 +134,25 @@ Another thread is building step 0. Each later step is its own new chat. Models f
 7. **Neighbours and village** (Opus high for the quest/neighbour design, then medium): travellers who stay if housed, trades, mini-quests, first buildings (VISION batch 5).
 Ongoing: Bryce's playtest notes get tuned in `content.js` (Sonnet); the staff mystery waits for Bryce to write it.
 
+## Later phase: smaller-piece ground art (idea agreed for AFTER the whole game works, 2026-10-25)
+Bryce's idea: break the ground into smaller, simpler pieces, because the image generator is more reliable on small, simple pictures, and today's big tiles have details painted into the ground (stumps, fences, ruts) that look wrong and can't move. **Do not build this until the game itself is finished.**
+
+**How other games do it (plain words):**
+- **Plain ground + stickers + objects.** Most cosy games (Stardew Valley, Animal Crossing, Cozy Grove) keep the ground itself plain: grass, dirt, sand, water. Small details (a tuft, a pebble, a crack, fallen leaves) are separate little "stickers" (decals) scattered on top, and anything you can touch is a separate object. Nothing important is painted into the ground.
+- **Edge pieces (auto-tiles).** Where grass meets dirt, the game picks a matching edge piece automatically. Old way: 47 pieces per pair of grounds (too many for an image generator). Clever newer way, the **"dual grid"**: shift the art half a tile so each piece only has to know its 4 corners. That needs just **5-6 pieces per pair** of grounds.
+- **Blend by code (texture splatting).** Many 3D and newer 2D games skip edge pieces entirely: each ground is one big seamless texture, and the computer paints a soft, wobbly mask to blend grass into dirt. No edges to match at all.
+
+**Recommendation for Gnome Life (the clever trick):**
+1. **Ask Gemini only for plain, seamless, flat ground swatches** (barren dirt, dry grass, green grass, meadow, moss, path dirt, creek pebbles, water). These are the easiest thing for an image generator to get right, and they are drawn flat; the game squashes them into the diamond shape. No details, no edges to line up.
+2. **The game blends them with soft painted masks** (splatting). Healing then spreads green outwards like watercolour, cell by cell, instead of a whole tile swapping at once. That looks more alive and needs no transition art.
+3. **Paths and the stream are drawn by the game** as smooth curves through the tiles, filled with the path or water swatch, with a soft edge. This permanently fixes the "tile joins don't match the paths/stream" to-do: there are no joins.
+4. **One "sticker sheet" per biome** (tufts, pebbles, twigs, leaves, cracks, little flowers, ~12 small pieces on plain magenta). The game scatters them with a little randomness, plus a sticker ring around the base of every object so things sit IN the ground. This attacks the "objects look pasted on" to-do.
+5. **Everything else stays an object**: stumps, fences, dead trees and ruts come out of the ground art and become separate pieces the gnomes can clear, so a job removes the actual thing.
+6. **A finer placement grid**: keep the 5x5 big tiles for the village layout, but split each into a 4x4 grid of small cells. Objects, stickers and healing snap to those cells, so placing and decorating gets easier.
+Fallback if code blending looks too smudgy: the dual-grid edge pieces (5-6 per pair of grounds), which are still small and simple enough for Gemini.
+
+**Rough order when the time comes** (Opus medium for the code, Sonnet for prompts): one test swatch + blend on the home tile with a before/after preview for Bryce; then the swatch set + sticker sheets as one art batch; then curves for path and stream; then convert painted-in details to objects; retire the old big tiles.
+
 ## What's next (prioritised)
 - **Clear-the-land chain (built 2026-10-25, PR on branch `claude/project-thread-k0v9ff`):** new jobs "Clear the ground" (Hazel, costs nothing, gives 3 twigs + 2 stones) and "Dig a seed bed" (Hazel, after ruts + clear). The seed bed is hidden until it is dug (older saves with a crop keep theirs). The bench and woodpile only appear once their jobs are done (stones / loose sticks lie there before). Every early job now changes the picture with a code-drawn stand-in (`BEFORE`, `AFTER`, `EXTRAS`, `drawGroundChanges` in index.html): raked patch + stick pile, moss roof, doorstep stones, window box, second fence run, oak planted out of its pot, water in the barrel, washing line, lit lantern (night glow only once mended). **Art to paint later to replace them:** raked clearing patch, gathered stick pile, moss-roofed shelter, flat-stone doorstep, window box, mended fence run, oak planted in the ground, full rain barrel, washing line, lit lantern, loose bench stones, loose firewood.
 - **To-do from Bryce (2026-10-25):** the glowing ring under pick-ups should become a soft glow from behind the item itself (no ring). Small code change in `drawOffer`; do it in the next gameplay pass.
