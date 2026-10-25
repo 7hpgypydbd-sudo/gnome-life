@@ -1,4 +1,4 @@
-"""Turn finished Batch 3 pictures (docs/ART-BATCH-3.md) into the game's art-slot files.
+"""Turn finished Batch 3 and 4 pictures (docs/ART-BATCH-3.md, docs/ART-BATCH-4.md) into the game's art-slot files.
 usage: python3 tools/slot_in_art.py <folder with the finished .jpg/.png files> [--thresh 0.42]
 Looks for each file by its Batch 3 name (plot-ruts-filled.jpg, yard-bits.jpg, icons-buttons.jpg ...), keys out the magenta,
 crops, sizes it and writes sprites/<slot>.webp. Files that are missing are skipped. The game picks the new files up on its
@@ -19,7 +19,10 @@ SINGLE = {
     'barrel-full': ('barrel-full', 'barrel'), 'lantern-lit': ('lantern-lit', 'lanternstump'),
     'oak-planted': ('oak-planted', 220), 'washing-line': ('washing-line', 400), 'stick-pile': ('stick-pile', 240),
     'stepping-stones': ('stepping-stones', 520),
+    # batch 4: home stage 2, each the whole stump at the shelter's width
+    'house-hollowed': ('house-hollowed', 'shelter'), 'house-windows': ('house-windows', 'shelter'), 'house-finished': ('house-finished', 'shelter'),
 }
+ROOMS = ('room-shelter', 'room-stump')   # square room paintings: no magenta to key, just sized to 1000x1000
 SHEETS = {   # one row of separate pieces, left to right
     'yard-bits': (['yard-doorstep', 'yard-windowbox', 'yard-stones', 'yard-firewood'], [180, 90, 170, 220]),
     'icons-buttons': (['btn-pack', 'btn-jobs', 'btn-magic', 'btn-journal'], [160, 160, 160, 160]),
@@ -47,6 +50,9 @@ def main():
     for name in ('plot-ruts-filled', 'plot-cleared'):   # whole tiles: stretched onto the exact plot diamond
         p = find(folder, name)
         if p: save(crop(key_magenta(Image.open(p), thresh)), name, size=PLOT)
+    for name in ROOMS:
+        p = find(folder, name)
+        if p: im = Image.open(p).convert('RGB'); side = min(im.size); save(np.array(im.crop(((im.width - side) // 2, (im.height - side) // 2, (im.width + side) // 2, (im.height + side) // 2))), name, size=(1000, 1000))
     for name, (slot, w) in SINGLE.items():
         p = find(folder, name)
         if not p: continue
