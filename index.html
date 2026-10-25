@@ -58,6 +58,14 @@
   .jrow .t b { font-weight:bold; display:block; font-size:17px; } .jrow .t span { font-size:14.5px; color:var(--ink2); }
   .close { position:absolute; right:8px; top:6px; width:44px; height:44px; background:none; border:0; font:inherit; font-size:30px; line-height:44px; color:var(--ink2); }
   #toast { position:fixed; left:50%; top:calc(env(safe-area-inset-top) + 68px); transform:translateX(-50%); background:rgba(243,233,210,.96); color:var(--ink); border-radius:14px; padding:10px 16px; font-size:16px; opacity:0; transition:opacity .25s; pointer-events:none; max-width:84vw; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.3); }
+  /* the room: tap the home to look inside */
+  #room { position:fixed; inset:0; background:rgba(10,12,8,.82); display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s; z-index:5; }
+  #room.on { opacity:1; pointer-events:auto; }
+  #room .box { position:relative; width:min(94vw, 520px); background:var(--paper); border-radius:20px; padding:12px 12px 14px; box-shadow:0 6px 24px rgba(0,0,0,.5); }
+  #room h2 { margin:2px 44px 8px 6px; font-size:21px; color:var(--ink); }
+  #room canvas { width:100%; height:auto; aspect-ratio:1; border-radius:14px; display:block; background:#2a1d12; }
+  #room p { margin:10px 6px 2px; font-size:16px; line-height:1.4; color:var(--ink2); min-height:44px; }
+  #room .row2 { display:flex; gap:8px; margin:8px 4px 0; }
   /* the pack sheet */
   .pack { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:6px; }
   .pack div { background:rgba(43,36,24,.06); border-radius:12px; padding:8px 6px; text-align:center; font-size:14px; color:var(--ink2); }
@@ -81,6 +89,7 @@
 </div>
 <div id="shade"></div>
 <div id="sheet"></div>
+<div id="room"><div class="box"><button class="close" id="rClose">×</button><h2 id="rTitle"></h2><canvas id="rc" width="1000" height="1000"></canvas><p id="rCap"></p><div class="row2" id="rBtns"></div></div></div>
 <div id="load">waking the garden…</div>
 <script src="content.js"></script>
 <script src="game.js"></script>
@@ -185,13 +194,19 @@ const ART_SLOTS = {
   'yard-stones':      { w: 64 },              // loose stones where the bench will be
   'yard-firewood':    { w: 84 },              // loose sticks where the woodpile will be
   'stepping-stones':  { w: 210 },             // "Lay a stepping-stone path"
+  // home stage 2 (docs/ART-BATCH-4.md): the shelter stump turning into a house, one picture per job, each the WHOLE stump
+  'house-hollowed':   { w:'like:shelter' },   // "Hollow out the old stump"
+  'house-windows':    { w:'like:shelter' },   // "Fit a plank wall and windows"
+  'house-finished':   { w:'like:shelter' },   // "Raise the roof and chimney": home stage 2
+  // the room you see when you tap the home: square paintings, no gnomes in them (the gnomes are drawn on top, see ROOMS)
+  'room-shelter': {}, 'room-stump': {},
   'btn-pack': {}, 'btn-jobs': {}, 'btn-magic': {}, 'btn-journal': {},   // painted button icons
 };
 const ART = {};   // name -> loaded Image, only for slots whose file exists
 function art(k) { return ART[k] || null; }
 function loadArtSlots() {   // after the game starts, so missing files never slow the first picture
   for (const k of Object.keys(ART_SLOTS)) {
-    const im = new Image(); im.onload = () => { ART[k] = k.startsWith('btn-') || k.startsWith('plot-') ? im : settle(im, k === 'stepping-stones'); if (k.startsWith('btn-')) paintButton(k); }; im.src = `sprites/${k}.webp`;
+    const im = new Image(); im.onload = () => { ART[k] = k.startsWith('btn-') || k.startsWith('plot-') || k.startsWith('room-') ? im : settle(im, k === 'stepping-stones'); if (k.startsWith('btn-')) paintButton(k); }; im.src = `sprites/${k}.webp`;
   }
 }
 function slotSize(k, img, w) {   // world-pixel width and height for a slot picture (w: width of the prop it replaces)
@@ -252,6 +267,11 @@ class Gnome {
     const h = dayPhase().h, rt = routineFor(h);
     const job = G.running().find(r => r.def.who === this.who);
     if (rt === 'sleep' || (rt && !job)) {   // the daily rhythm: sleep always wins, meals and the evening sit only when no job waits
+      if (this.goesIn(rt)) {   // bedtime (and the evening sit, once the house has a hearth) happen indoors: walk to the door and go in
+        this.job = null; this.routine = rt;
+        if (this.inside) { this.act = rt; this.wait = 2; return; }
+        this.plan = 'inside'; this.act = null; this.goto(SPOTS.door[0], SPOTS.door[1]); return;
+      }
       const [sx, sy, face] = RHYTHM[this.who][rt]; this.job = null; this.plan = rt; this.routine = rt;
       if (this.act === rt) { this.wait = 2; return; }
       this.goto(sx, sy); this.faceTowards(sx, sy, face); return;
@@ -267,9 +287,20 @@ class Gnome {
     const keys = Object.keys(SPOTS); const [sx, sy] = SPOTS[keys[(Math.random() * keys.length) | 0]];
     this.goto(sx + (Math.random() - 0.5) * 0.08, sy + (Math.random() - 0.5) * 0.08);
   }
+  goesIn(rt) { return rt === 'sleep' || (rt === 'sit' && homeStage() >= 2); }
+  settleIn() {   // opening the game at bedtime: they are already indoors
+    const rt = routineFor(dayPhase().h);
+    if (rt && this.goesIn(rt) && (rt === 'sleep' || !G.running().some(r => r.def.who === this.who))) { this.inside = true; this.routine = rt; this.act = rt; [this.gx, this.gy] = SPOTS.door; this.tx = this.gx; this.ty = this.gy; this.wait = 2; }
+  }
   update(dt) {
     if (this.sayT > 0) this.sayT -= dt;
     if (this.act) { this.at += dt; const n = this.acts[this.act].n, fps = ACT_FPS[this.act]; if (this.at > 1 / fps) { this.at -= 1 / fps; this.aframe = (this.aframe + 1) % n; } }
+    if (this.inside) {   // indoors (see the room); come out when the routine ends, or for a job unless it is bedtime
+      this.wait -= dt; if (this.wait > 0) return; this.wait = 2;
+      const rt = routineFor(dayPhase().h), job = G.running().some(r => r.def.who === this.who);
+      if (rt !== this.routine || !this.goesIn(rt) || (rt !== 'sleep' && job)) { this.inside = false; this.act = null; this.routine = null; this.plan = null; this.dir = 'front'; this.wait = 0; this.pick(); }
+      return;
+    }
     if (!this.walking) {
       this.wait -= dt;
       if (this.job) {
@@ -289,6 +320,7 @@ class Gnome {
     const dx = this.tx - this.gx, dy = this.ty - this.gy, d = Math.hypot(dx, dy);
     if (d < 0.004) {
       this.walking = false; this.frame = 0; this.aframe = 0; this.at = 0;
+      if (this.plan === 'inside') { this.inside = true; this.plan = null; this.act = this.routine; this.aframe = 0; this.wait = 2; return; }
       if (this.plan) { this.act = this.plan; this.wait = this.pace ? 0.6 : 2; if (this.pace) this.faceTowards(this.gx, this.gy, 'campfire'); return; }
       this.act = null; this.wait = 2 + Math.random() * 5; this.dir = Math.random() < 0.6 ? 'front' : this.dir; return;
     }
@@ -303,6 +335,7 @@ class Gnome {
     if (this.ft > 1 / fps) { this.ft -= 1 / fps; this.frame = (this.frame + 1) % this.n[this.dir]; }
   }
   draw(now) {
+    if (this.inside) { this.screen = null; return; }
     const [wx, wy] = toWorld(this.gx, this.gy);
     const s = SPR * 0.92;
     const carrying = this.walking && this.pace && this.dir === 'side';   // carrying wood to and fro: use the carry strip instead of the walk
@@ -370,6 +403,8 @@ function spawnParticles(dt, ph) {
     const [x, y] = toWorld(Math.random(), Math.random());
     particles.push({ k:'mote', x, y: y - Math.random()*120, vx:6+Math.random()*6, vy:-2+Math.random()*4, life:0, max:8 });
   }
+  if (taskProg('house3') >= 1 && Math.random() < dt * 2.5) { const [cx, cy] = chimneyTop(); particles.push({ k:'smoke', x: cx + (Math.random()-0.5)*4, y: cy, vx:(Math.random()-0.5)*3 + 2, vy:-10-Math.random()*6, r:3+Math.random()*3, life:0, max:3+Math.random()*2 }); }
+  if (ph.light < 0.5 && gnomes.some(g => g.inside && g.routine === 'sleep') && Math.random() < dt * 0.5) { const [dx, dy] = toWorld(SPOTS.door[0], SPOTS.door[1]); particles.push({ k:'zzz', x: dx + 8, y: dy - 50, vx: 4, vy: -8, life:0, max:3.5 }); }
   // work puffs where a gnome is busy
   for (const g of gnomes) if (g.job && !g.walking && g.act === 'dig' && Math.random() < dt * 2) { const [x, y] = toWorld(g.gx, g.gy); particles.push({ k:'puff', x: x + (Math.random()-0.5)*30, y: y - 10, vx:(Math.random()-0.5)*6, vy:-6, r:3, life:0, max:1.2 }); }
 }
@@ -388,6 +423,7 @@ function drawParticles(ph) {
     if (p.k === 'smoke' || p.k === 'puff') { ctx.globalAlpha = 0.18 * (1 - t); ctx.fillStyle = p.k === 'puff' ? '#c9b58f' : '#d9d2c4'; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); }
     else if (p.k === 'spark') { ctx.globalAlpha = 0.9 * (1 - t); ctx.fillStyle = '#ffb347'; ctx.fillRect(p.x, p.y, 2, 2); }
     else if (p.k === 'fly') { const a = (0.5 + 0.5 * Math.sin(p.ph * 4)) * Math.min(1, t * 4, (1 - t) * 4); ctx.globalAlpha = a; ctx.fillStyle = '#e8ff9a'; ctx.shadowColor = '#d8ff70'; ctx.shadowBlur = 8; ctx.beginPath(); ctx.arc(p.x, p.y, 1.8, 0, 7); ctx.fill(); ctx.shadowBlur = 0; }
+    else if (p.k === 'zzz') { ctx.globalAlpha = 0.8 * Math.sin(Math.PI * t); ctx.font = `italic bold ${12 + 8 * t}px Georgia`; ctx.textAlign = 'center'; ctx.fillStyle = '#f3e9d2'; ctx.fillText('z', p.x + Math.sin(p.life * 2) * 5, p.y); }
     else if (p.k === 'mote') { ctx.globalAlpha = 0.35 * Math.sin(Math.PI * t) * ph.light; ctx.fillStyle = '#fff6d0'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, 7); ctx.fill(); }
   }
   ctx.globalAlpha = 1;
@@ -509,7 +545,8 @@ function drawProp(p) {
   ctx.save(); ctx.globalAlpha = a;
   if (!p.flat) { groundPatch(x, y, w * 0.7, w * 0.26); shadow(x, y, w * 0.4, w * 0.14); }
   const sw = SWAP_ART[p.name], sp = sw && art(sw[0]) ? taskProg(sw[1]) : 0;   // painted "after" picture crossfades in as its job runs
-  if (p.name === 'sapling' && taskProg('sapling') >= 1) { if (!drawSlot('oak-planted', x, y)) drawPlantedOak(x, y, s); }
+  if (p.name === 'shelter') drawHouse(img, x, y, w, h);
+  else if (p.name === 'sapling' && taskProg('sapling') >= 1) { if (!drawSlot('oak-planted', x, y)) drawPlantedOak(x, y, s); }
   else if (p.name === 'fence' && art('fence-fallen')) { const f = taskProg('fence'); drawSlot('fence-fallen', x, y, 1 - f, { w }); ctx.globalAlpha = a * f; ctx.drawImage(img, x - w / 2, y - h, w, h); }
   else {
     if (sp < 1) { ctx.globalAlpha = a * (sw && sp > 0 ? 1 - sp * 0.5 : 1); ctx.drawImage(img, x - w / 2, y - h + (p.flat ? h / 2 : 0), w, h); }
@@ -528,7 +565,60 @@ function stone(x, y, r) { blob(x, y + r * 0.25, r * 1.1, r * 0.45, 'rgba(40,30,2
 function stick(x, y, len, ang, col = '#7a5a3a') { ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(42,21,16,0.8)'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(-len / 2, 0); ctx.lineTo(len / 2, 0); ctx.stroke(); ctx.strokeStyle = col; ctx.lineWidth = 3.5; ctx.stroke(); ctx.restore(); }
 // painted pictures that take over from the code below once they exist (see ART_SLOTS)
 const BEFORE_ART = { stonebench:'yard-stones', firewood:'yard-firewood' };
-const SWAP_ART = { shelter:['shelter-mossroof', 'roof'], barrel:['barrel-full', 'rainbarrel'], lanternstump:['lantern-lit', 'lantern'] };
+const SWAP_ART = { barrel:['barrel-full', 'rainbarrel'], lanternstump:['lantern-lit', 'lantern'] };
+// the home: each roof/house job has its own painting of the whole stump; the latest finished one shows, the next crossfades in while its job runs
+const HOUSE_STEPS = [['shelter-mossroof', 'roof'], ['house-hollowed', 'house1'], ['house-windows', 'house2'], ['house-finished', 'house3']];
+function houseArt() { let top = -1; HOUSE_STEPS.forEach(([k, j], i) => { if (art(k) && taskProg(j) >= 1) top = i; }); return top; }
+function homeStage() { return taskProg('house3') >= 1 ? 2 : 1; }
+function drawHouse(img, x, y, w, h) {
+  const top = houseArt();
+  if (top < 0) ctx.drawImage(img, x - w / 2, y - h, w, h); else drawSlot(HOUSE_STEPS[top][0], x, y, 1, { w });
+  for (let i = top + 1; i < HOUSE_STEPS.length; i++) { const [k, j] = HOUSE_STEPS[i], pr = taskProg(j); if (art(k) && pr > 0 && pr < 1) drawSlot(k, x, y, pr, { w }); }
+}
+// code stand-ins for home stage 2, drawn over the shelter painting (sprite pixels; skipped once that step's painting exists)
+const HOUSE_WIN = [[318, 158, 20], [279, 288, 19]];   // the two round windows: x, y, radius
+const HOUSE_GAP = [[236, 222], [292, 194], [324, 232], [320, 304], [302, 372], [238, 390]];   // the dark gap beside the door that the plank wall fills
+const HOUSE_ROOF = [[80, 252], [146, 180], [312, 168], [318, 240], [250, 304], [174, 276]];   // bark shingles over where the canvas was
+const CHIMNEY = [270, 196, 34, 92];   // left, bottom, width, height
+function housePoly(at, pts) { ctx.beginPath(); pts.forEach(([px, py], i) => { const [wx, wy] = at(px, py); i ? ctx.lineTo(wx, wy) : ctx.moveTo(wx, wy); }); ctx.closePath(); }
+function drawHouseStandIns(at, s, now, top) {
+  const p1 = top < 1 ? taskProg('house1') : 0, p2 = top < 2 ? taskProg('house2') : 0, p3 = top < 3 ? taskProg('house3') : 0;
+  if (p1 > 0 && p2 < 1) {   // hollowing: a heap of pale wood shavings grows at the foot, and a round hole is carved high in the trunk
+    for (let i = 0; i < Math.floor(60 * p1); i++) { const k = rnd(i + 50), [wx, wy] = at(300 + k * 130, 452 - Math.sin(k * Math.PI) * 30 * rnd(i + 51) - rnd(i + 54) * 10); blob(wx, wy, (8 + rnd(i + 52) * 7) * s, (4 + rnd(i + 53) * 3) * s, ['#e2c695', '#cfae78', '#b8935e'][i % 3]); }
+    const [hx, hy] = at(HOUSE_WIN[0][0], HOUSE_WIN[0][1]); ctx.save(); ctx.globalAlpha = Math.min(1, p1 * 1.5); blob(hx, hy, HOUSE_WIN[0][2] * s, HOUSE_WIN[0][2] * s * 1.1, '#2a1c12'); ctx.restore();
+  }
+  if (p2 > 0) {   // a plank wall across the gap, and both round windows framed and glazed
+    ctx.save(); ctx.globalAlpha = Math.min(1, p2 * 1.3); housePoly(at, HOUSE_GAP); ctx.fillStyle = '#8a6440'; ctx.fill(); ctx.clip();
+    ctx.strokeStyle = 'rgba(42,21,16,0.55)'; ctx.lineWidth = 1.4;
+    for (let px = 240; px < 326; px += 12) { const [ax, ay] = at(px, 180), [bx, by] = at(px + 4, 400); ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke(); }
+    ctx.restore(); ctx.save(); ctx.globalAlpha = Math.min(1, p2 * 1.3); housePoly(at, HOUSE_GAP); ctx.strokeStyle = 'rgba(42,21,16,0.8)'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
+    if (p2 >= 0.5) for (const [px, py, r] of HOUSE_WIN) {
+      const [wx, wy] = at(px, py), R = r * s; ctx.save(); ctx.globalAlpha = Math.min(1, (p2 - 0.5) * 3);
+      blob(wx, wy, R * 1.35, R * 1.35, '#5a3a22'); blob(wx, wy, R, R, '#f2d58a'); blob(wx - R * 0.3, wy - R * 0.3, R * 0.35, R * 0.3, 'rgba(255,250,225,0.8)');
+      ctx.strokeStyle = '#3a2414'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(wx - R, wy); ctx.lineTo(wx + R, wy); ctx.moveTo(wx, wy - R); ctx.lineTo(wx, wy + R); ctx.stroke();
+      ctx.restore();
+    }
+  }
+  if (p3 > 0) {   // bark shingles, row by row from the eaves up, then the stone chimney
+    ctx.save(); housePoly(at, HOUSE_ROOF); ctx.clip();
+    const rows = 10, shown = Math.ceil(rows * Math.min(1, p3 * 1.4));
+    for (let r = 0; r < shown; r++) {
+      const py = 312 - r * 14;
+      for (let k = 0; k < 18; k++) { const px = 70 + k * 16 + (r % 2) * 8, [wx, wy] = at(px, py); blob(wx, wy, 10 * s, 9 * s, ['#6e4b2e', '#7d5836', '#5f3f26', '#86613d'][(k + r) % 4]); ctx.strokeStyle = 'rgba(42,21,16,0.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(wx, wy, 10 * s, 9 * s, 0, 0.1, Math.PI - 0.1); ctx.stroke(); }
+    }
+    for (let i = 0; i < Math.floor(40 * p3); i++) { const [wx, wy] = at(100 + rnd(i + 70) * 210, 180 + rnd(i + 71) * 110); blob(wx, wy, (5 + rnd(i + 72) * 6) * s, (3 + rnd(i + 73) * 3) * s, ['rgba(92,116,48,0.8)', 'rgba(118,140,62,0.75)'][i % 2]); }
+    ctx.restore(); housePoly(at, HOUSE_ROOF); ctx.strokeStyle = 'rgba(42,21,16,0.75)'; ctx.lineWidth = 2; ctx.stroke();
+    if (p3 > 0.6) {
+      const [cl, cb, cw, ch] = CHIMNEY, k = Math.min(1, (p3 - 0.6) * 2.5), [x0, y0] = at(cl, cb - ch * k), [x1, y1] = at(cl + cw, cb);
+      ctx.fillStyle = '#857c70'; ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+      for (let i = 0; i < 6 * k; i++) for (let j = 0; j < 2; j++) blob(x0 + (j + 0.5 + (i % 2) * 0.3) * (x1 - x0) / 2.3, y1 - (i + 0.5) * (y1 - y0) / (6 * k), (x1 - x0) / 4.5, (y1 - y0) / (16 * k), ['#9a9285', '#8b8377'][(i + j) % 2]);
+      ctx.strokeStyle = 'rgba(42,21,16,0.8)'; ctx.lineWidth = 1.6; ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+      if (k >= 1) { ctx.fillStyle = '#5c564d'; ctx.fillRect(x0 - 3, y0 - 4, x1 - x0 + 6, 6); }
+    }
+  }
+}
+function chimneyTop() { const sh = PROPS.find(p => p.name === 'shelter'), img = IM.shelter, s = SPR * sh.s, [x, y] = toWorld(sh.gx, sh.gy); return [x - img.width * s / 2 + (CHIMNEY[0] + CHIMNEY[2] / 2) * s, y - img.height * s + (CHIMNEY[1] - CHIMNEY[3]) * s - 4]; }
+function houseWindows() { const sh = PROPS.find(p => p.name === 'shelter'), img = IM.shelter, s = SPR * sh.s, [x, y] = toWorld(sh.gx, sh.gy); return HOUSE_WIN.map(([px, py]) => [x - img.width * s / 2 + px * s, y - img.height * s + py * s]); }
 // what stands in a prop's place before its job is done (fades out as the job runs)
 const BEFORE = {
   stonebench(x, y, a) { ctx.save(); ctx.globalAlpha = a; stone(x - 22, y - 4, 13); stone(x + 14, y + 6, 11); stone(x + 2, y - 14, 9); ctx.restore(); },
@@ -537,7 +627,8 @@ const BEFORE = {
 // extra bits drawn on top of a prop once its job is done; at(px, py) turns sprite pixels into world pixels
 const AFTER = {
   shelter(at, s, now) {
-    const roof = art('shelter-mossroof') ? 0 : taskProg('roof');
+    const top = houseArt(); if (top >= 1) return drawHouseStandIns(at, s, now, top);   // a painted house picture already has the roof, doorstep and window box in it
+    const roof = top >= 0 ? 0 : taskProg('roof');
     if (roof > 0) {   // moss creeps over the patched canvas
       const poly = [[98, 234], [150, 196], [300, 188], [296, 240], [246, 292], [180, 266]];
       ctx.save(); ctx.beginPath(); poly.forEach(([px, py], i) => { const [wx, wy] = at(px, py); i ? ctx.lineTo(wx, wy) : ctx.moveTo(wx, wy); }); ctx.closePath(); ctx.clip();
@@ -553,6 +644,7 @@ const AFTER = {
       for (let i = 0; i < 7; i++) { const fx = bx + 4 + i * bw / 7, fy = by - 4 - rnd(i) * 6; blob(fx, fy + 3, 3, 4, '#5c7a30'); blob(fx, fy, 3.2, 3.2, ['#e8b4c8', '#f2d65c', '#ffffff', '#c58ad6'][i % 4]); }
       ctx.fillStyle = '#7a5032'; ctx.fillRect(bx, by, bw, bh); ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1.5; ctx.strokeRect(bx, by, bw, bh);
     }
+    drawHouseStandIns(at, s, now, top);
   },
   fence(at, s) {   // mended: the fallen run stands again beside it
     if (taskProg('fence') < 1 || art('fence-fallen')) return;
@@ -720,6 +812,7 @@ function frame(now) {
     const ls = SPR * lan.s; if (taskProg('lantern') >= 1) glow(lx - IM.lanternstump.width * ls / 2 + LANTERN[0] * ls, ly - IM.lanternstump.height * ls + LANTERN[1] * ls, 110, 'rgba(255,205,110,1)', 0.5 * night * (0.9 + 0.1 * Math.sin(now / 400)));
     const sh = PROPS.find(p => p.name === 'shelter'); const [sx, sy] = toWorld(sh.gx, sh.gy);
     glow(sx - 20, sy - 60, 70, 'rgba(255,190,120,1)', 0.35 * night);
+    if (taskProg('house2') >= 1) for (const [wx, wy] of houseWindows()) glow(wx, wy, 34, 'rgba(255,200,110,1)', 0.6 * night * (gnomes.some(g => g.inside) ? 1 : 0.5));
     for (const o of G.s.offers) if (o.kind === 'light' && o.screen) glow(o.screen.x, o.screen.y - 14, 40, 'rgba(255,240,170,1)', 0.5);
   }
   if (ph.warm > 0) { ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = `rgba(255,170,90,${0.28 * ph.warm})`; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); ctx.restore(); }
@@ -738,6 +831,7 @@ function frame(now) {
     const sx = (g.screen.x - cam.x) * cam.z + W / 2, sy = (g.screen.y - g.screen.h - cam.y) * cam.z + H / 2;
     bubble.style.left = sx + 'px'; bubble.style.top = (sy - 10) + 'px'; bubble.style.opacity = 1;
   } else bubble.style.opacity = 0;
+  if (roomOn) drawRoom(now);
   requestAnimationFrame(frame);
 }
 
@@ -807,12 +901,116 @@ function tap(cx, cy) {
     let best = null, bd = 1e9;
     const pad = 14 / cam.z;   // a generous margin around each prop
     for (const p of PROPS) { const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s, h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 4 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
-    if (best) { if (best.name === 'seedbed') { if (propAlpha(best) >= 1) return openSeedbed(); const t = C.tasks.find(t => t.spot === 'clearing' && !(G.s.tasks[t.id] && G.s.tasks[t.id].done)); return openTasks(t ? t.id : ''); } const task = C.tasks.find(t => t.spot === best.name); if (task) return openTasks(task.id); }
+    if (best) { if (best.name === 'seedbed') { if (propAlpha(best) >= 1) return openSeedbed(); const t = C.tasks.find(t => t.spot === 'clearing' && !(G.s.tasks[t.id] && G.s.tasks[t.id].done)); return openTasks(t ? t.id : ''); } if (best.name === 'shelter' && !wantsTap(best)) return openRoom(); const task = C.tasks.find(t => t.spot === best.name); if (task) return openTasks(task.id); }
   } else if (G.s.tiles[f.tile] && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openTasks('regrow:' + f.tile);
 }
 
 // ---------- UI ----------
 const $ = id => document.getElementById(id);
+// ---------- the room: tap the home to look inside ----------
+// One square picture per home stage (art slots room-shelter, room-stump; 1000x1000 room pixels). Until they are painted, code draws a
+// stand-in. The gnomes are drawn on top at these spots, so a painting only has to leave room for them: [x, y (feet), face left?]
+const ROOMS = {
+  1: { slot:'room-shelter', title:'Under the old root', light:[470, 690, 330], sleep:{ him:[740, 818], her:[810, 850] } },
+  2: { slot:'room-stump', title:'The stump house', light:[225, 760, 520], sleep:{ him:[690, 830], her:[745, 868] },
+       sit:{ him:[440, 905, true], her:[620, 935, true] } },
+};
+const RS = 1.6;   // gnome size in the room
+const rc = document.getElementById('rc'), rx = rc.getContext('2d');
+let roomOn = false, roomSay = null, roomSayT = 0;
+function rb(x, y, a, b, col, rot = 0) { rx.fillStyle = col; rx.beginPath(); rx.ellipse(x, y, a, b, rot, 0, 7); rx.fill(); }
+function rline(pts, col, w) { rx.strokeStyle = col; rx.lineWidth = w; rx.lineCap = 'round'; rx.beginPath(); pts.forEach(([x, y], i) => i ? rx.lineTo(x, y) : rx.moveTo(x, y)); rx.stroke(); }
+function skyCol(ph) { const k = ph.light, m = (a, b) => Math.round(a + (b - a) * k); return `rgb(${m(24, 190)},${m(32, 214)},${m(58, 226)})`; }
+function roomShelter(ph, now) {   // stand-in: a low earthy hollow under the root, a bed of leaves, a crate table with a candle
+  rx.fillStyle = '#2b1e13'; rx.fillRect(0, 0, 1000, 1000);
+  const g = rx.createRadialGradient(500, 600, 60, 500, 560, 520); g.addColorStop(0, '#8a6644'); g.addColorStop(1, '#4a3422');
+  rb(500, 560, 480, 470, g);
+  for (let i = 0; i < 9; i++) { const x = 90 + i * 105 + rnd(i) * 40, len = 120 + rnd(i + 3) * 200; rline([[x, 60], [x + 20 - rnd(i + 5) * 40, 60 + len * 0.5], [x + 30 - rnd(i + 6) * 60, 60 + len]], '#3e2a19', 22 - i % 3 * 6); rline([[x - 3, 60], [x + 16 - rnd(i + 5) * 40, 60 + len * 0.5]], 'rgba(150,115,80,0.35)', 4); }
+  rb(500, 905, 490, 150, '#7d5f40'); rb(470, 875, 230, 62, '#6a7a38'); rb(470, 868, 200, 48, '#7d8c45');
+  rb(110, 640, 92, 158, '#3b2a1b'); rb(110, 645, 74, 140, skyCol(ph));   // the way out
+  rx.fillStyle = '#d8cdb0'; rx.beginPath(); rx.moveTo(30, 470); rx.lineTo(210, 470); rx.lineTo(170, 600); rx.lineTo(60, 590); rx.closePath(); rx.fill();
+  rb(760, 820, 200, 62, '#8c6a32'); for (let i = 0; i < 26; i++) rb(580 + rnd(i + 20) * 360, 790 + rnd(i + 21) * 60, 22, 9, ['#a07a36', '#b58c40', '#7f6a2c'][i % 3], rnd(i + 22) * 3);
+  rx.fillStyle = '#7a5032'; rx.fillRect(400, 700, 150, 110); rx.strokeStyle = '#3a2414'; rx.lineWidth = 4; rx.strokeRect(400, 700, 150, 110); rline([[400, 755], [550, 755]], '#3a2414', 3);
+  rx.fillStyle = '#efe6cf'; rx.fillRect(462, 650, 18, 52); rb(471, 640, 7, 13, `rgba(255,${200 + Math.sin(now / 120) * 30},90,1)`);
+  rx.fillStyle = '#5a3d26'; rx.fillRect(250, 380, 200, 14); for (const [x, c] of [[275, '#8aa0a8'], [320, '#c9a45a'], [370, '#9b6a8a'], [415, '#7c8a4a']]) { rx.fillStyle = c; rx.fillRect(x - 14, 340, 28, 40); rx.fillStyle = '#d9ccb0'; rx.fillRect(x - 15, 334, 30, 8); }
+}
+function roomStump(ph, now) {   // stand-in: round wooden room inside the stump, tree rings on the walls, a stone hearth, a bed and a round window
+  rx.fillStyle = '#21170e'; rx.fillRect(0, 0, 1000, 1000);
+  rx.save(); rx.beginPath(); rx.arc(500, 540, 480, 0, 7); rx.clip();
+  rx.fillStyle = '#8a6240'; rx.fillRect(0, 0, 1000, 1000);
+  for (let r = 160; r < 1200; r += 34) { rx.strokeStyle = `rgba(60,36,20,${0.18 + 0.12 * (r / 34 % 2)})`; rx.lineWidth = 3; rx.beginPath(); rx.arc(500, 1180, r, Math.PI, 2 * Math.PI); rx.stroke(); }
+  rb(500, 900, 500, 170, '#9c7852'); for (let i = -6; i < 7; i++) rline([[500 + i * 80, 740], [500 + i * 110, 1000]], 'rgba(60,36,20,0.35)', 3);
+  rb(500, 890, 260, 78, '#a5513a'); rb(500, 890, 220, 60, '#c8803e'); rb(500, 890, 170, 44, '#a5513a');
+  // round window
+  rb(700, 320, 92, 92, '#4a3220'); rb(700, 320, 76, 76, skyCol(ph)); if (ph.light < 0.4) rb(735, 290, 4, 4, '#fff7d0');
+  rline([[624, 320], [776, 320]], '#4a3220', 9); rline([[700, 244], [700, 396]], '#4a3220', 9);
+  // hearth and chimney
+  rx.fillStyle = '#857c70'; rx.fillRect(140, 80, 170, 520); rx.fillRect(100, 560, 250, 330);
+  for (let i = 0; i < 40; i++) rb(110 + rnd(i + 30) * 230, 90 + rnd(i + 31) * 790, 26, 15, ['#9a9285', '#726a5e', '#a8a094'][i % 3]);
+  rx.fillStyle = '#1c130c'; rx.beginPath(); rx.moveTo(150, 880); rx.lineTo(150, 720); rx.quadraticCurveTo(225, 620, 300, 720); rx.lineTo(300, 880); rx.closePath(); rx.fill();
+  const fl = 0.8 + 0.2 * Math.sin(now / 90) * Math.sin(now / 210);
+  for (let i = 0; i < 5; i++) rb(190 + i * 18, 850 - fl * (30 + rnd(i + 40) * 40), 14, 30 + rnd(i + 41) * 30 * fl, ['#ffb347', '#ff8a3a', '#ffd27a'][i % 3]);
+  rx.fillStyle = '#4a3020'; rx.fillRect(170, 852, 110, 16);
+  // shelf with jars
+  rx.fillStyle = '#5a3d26'; rx.fillRect(380, 420, 190, 14); for (const [x, c] of [[405, '#8aa0a8'], [450, '#c9a45a'], [500, '#9b6a8a'], [545, '#7c8a4a']]) { rx.fillStyle = c; rx.fillRect(x - 14, 380, 28, 40); rx.fillStyle = '#d9ccb0'; rx.fillRect(x - 15, 374, 30, 8); }
+  // bed with a patchwork quilt
+  rx.fillStyle = '#5a3a22'; rx.beginPath(); rx.arc(870, 760, 100, Math.PI, 2 * Math.PI); rx.fill();
+  rx.fillStyle = '#6e4a2c'; rx.fillRect(500, 780, 440, 90); rx.fillStyle = '#e6dcc2'; rx.fillRect(510, 770, 420, 26); rb(860, 772, 50, 18, '#f3ecd8');
+  rx.restore();
+}
+function roomGnome(g, x, y, flip) {
+  const a = g.acts[g.act]; if (!a) return; const img = IM[`${g.who}-${g.act}`], [cw, ch] = a.cell, f = g.aframe % a.n;
+  rb(x, y, cw * RS * 0.4, 14, 'rgba(30,20,8,0.3)');
+  rx.save(); rx.translate(x, y); if (flip) rx.scale(-1, 1); rx.drawImage(img, f * cw, 0, cw, ch, -cw * RS / 2, -ch * RS, cw * RS, ch * RS); rx.restore();
+  g.room = { x, y: y - ch * RS / 2, r: Math.max(cw, ch) * RS / 2 };
+}
+function drawRoom(now) {
+  const stage = homeStage(), R = ROOMS[stage], ph = dayPhase();
+  if (art(R.slot)) rx.drawImage(art(R.slot), 0, 0, 1000, 1000); else (stage === 2 ? roomStump : roomShelter)(ph, now);
+  const inside = gnomes.filter(g => g.inside);
+  for (const g of gnomes) g.room = null;
+  for (const g of inside) { const spot = (R[g.routine] || R.sleep)[g.who]; roomGnome(g, spot[0], spot[1], spot[2]); }
+  const dark = 1 - ph.light;   // evening and night: dim the room, then the fire or candle glows
+  rx.save(); rx.globalCompositeOperation = 'multiply'; rx.fillStyle = `rgba(${Math.round(255 - 150 * dark)},${Math.round(255 - 140 * dark)},${Math.round(255 - 90 * dark)},1)`; rx.fillRect(0, 0, 1000, 1000); rx.restore();
+  const [lx, ly, lr] = R.light, fl = 0.85 + 0.15 * Math.sin(now / 110) * Math.sin(now / 260);
+  const gr = rx.createRadialGradient(lx, ly, 0, lx, ly, lr * 1.6); gr.addColorStop(0, 'rgba(255,170,80,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  rx.save(); rx.globalCompositeOperation = 'lighter'; rx.globalAlpha = (0.18 + 0.4 * dark) * fl; rx.fillStyle = gr; rx.fillRect(0, 0, 1000, 1000); rx.restore();
+  if (roomSayT > 0 && (roomSayT -= 1 / 60) <= 0) roomCaption();
+}
+function doing(g) {   // where a gnome is when not indoors, in words
+  const r = G.running().find(r => r.def.who === g.who), rt = routineFor(dayPhase().h), n = C.names[g.who];
+  if (r) return `${n} is busy: ${shortName(r.def).toLowerCase()}`;
+  if (rt === 'eat') return `${n} is out by the campfire, having a bite`;
+  if (rt === 'sit') return `${n} is out by the campfire`;
+  return `${n} is pottering about outside`;
+}
+function roomCaption() {
+  const [him, her] = gnomes, ins = gnomes.filter(g => g.inside), cap = document.getElementById('rCap');
+  let t;
+  if (ins.length === 2 && ins.every(g => g.routine === 'sleep')) t = `Fast asleep. ${C.names.him} snores, very politely. ${C.names.her} pretends not to hear.`;
+  else if (ins.length === 2) t = `Evening by the hearth: ${C.names.him}'s pipe, ${C.names.her}'s knitting, and not much said. It's lovely.`;
+  else if (ins.length === 1) t = `${C.names[ins[0].who]} is ${ins[0].routine === 'sleep' ? 'asleep already' : 'by the hearth'}. ${doing(ins[0] === him ? her : him)}.`;
+  else { const a = doing(him), b = doing(her); t = /pottering/.test(a) && /pottering/.test(b) ? 'Nobody home. They are both out in the garden.' : `Nobody home. ${a}. ${b}.`; }
+  cap.textContent = t;
+}
+function homeJobs() { return G.taskList().filter(v => v.def.spot === 'shelter' && v.state !== 'done'); }
+function openRoom() {
+  closeSheet(); const R = ROOMS[homeStage()];
+  $('rTitle').textContent = R.title; roomSayT = 0; roomCaption();
+  const jobs = homeJobs(), ready = jobs.filter(v => v.state === 'ready' && v.can).length;
+  $('rBtns').innerHTML = jobs.length ? `<button class="act${ready ? '' : ' quiet'}" data-a="homejobs">Jobs for the home${ready ? ` (${ready} ready)` : ''}</button>` : '';
+  $('room').classList.add('on'); roomOn = true;
+}
+function closeRoom() { $('room').classList.remove('on'); roomOn = false; }
+$('rClose').onclick = closeRoom; G.openRoom = openRoom;   // console / tests: GL.openRoom()
+$('room').addEventListener('click', e => { if (e.target.id === 'room') closeRoom(); const b = e.target.closest('[data-a="homejobs"]'); if (b) { closeRoom(); const v = homeJobs().find(v => v.state === 'ready') || homeJobs()[0]; openTasks(v ? v.def.id : ''); } });
+rc.addEventListener('click', e => {   // tap a gnome in the room for a line (or a "shh" if they are asleep)
+  const b = rc.getBoundingClientRect(), x = (e.clientX - b.left) * 1000 / b.width, y = (e.clientY - b.top) * 1000 / b.height;
+  const g = gnomes.find(g => g.room && Math.hypot(x - g.room.x, y - g.room.y) < g.room.r); if (!g) return;
+  const n = C.names[g.who], lines = C.lines[g.who];
+  $('rCap').textContent = g.routine === 'sleep' ? `${n} is fast asleep. Best not wake ${g.who === 'him' ? 'him' : 'her'}.` : `${n}: "${lines[(Math.random() * lines.length) | 0]}"`;
+  roomSayT = 4;
+});
 function toast(t) { toastEl.textContent = t; toastEl.style.opacity = 1; clearTimeout(toast.h); toast.h = setTimeout(() => toastEl.style.opacity = 0, 2200); }
 function btnAlert(id, on) { $(id).classList.toggle('alert', !!on); }
 function renderInv(popKind) {   // the pack lives behind its button now; the badge shows how many things are in it
@@ -838,6 +1036,7 @@ shade.addEventListener('click', closeSheet);
 sheet.addEventListener('click', e => {
   const b = e.target.closest('[data-a]'); if (!b) return; const a = b.dataset.a, id = b.dataset.id;
   if (a === 'close') return closeSheet();
+  if (a === 'room') return openRoom();
   if (a === 'plant') { G.plant(); } if (a === 'water') { G.water(); } if (a === 'harvest') { if (G.harvest()) { const sb = PROPS.find(p => p.name === 'seedbed'); const [x, y] = toWorld(sb.gx, sb.gy); float('+2 seed +1 moss', x, y); } }
   if (a === 'start') { if (G.startTask(id)) { toast('Set to work.'); for (const g of gnomes) if (g.who === G.taskDef(id).who) { g.walking = false; g.wait = 0.1; } } }
   if (a === 'cast') { if (G.cast(id)) toast(C.spells[id].name + '.'); }
@@ -878,6 +1077,7 @@ function openTasks(focus = '') {
       html += `<div class="row${d.id === focus ? ' hi' : ''}"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>${sub}</span></div>${right}</div>`;
     }
   }
+  if (C.tasks.some(t => t.id === focus && t.spot === 'shelter')) html = html.replace('</h2>', `</h2><p><button class="act quiet" data-a="room">Look inside the home</button></p>`);
   openSheet('tasks:' + focus, html);
 }
 function openMagic() {
@@ -918,6 +1118,7 @@ function start() {
   document.getElementById('load').remove();
   gnomes.push(new Gnome('him', 0.46, 0.50), new Gnome('her', 0.40, 0.40));
   gnomes[1].wait = 0.5;
+  for (const g of gnomes) g.settleIn();
   cam.z = clampZ(G.s.flags.welcomed ? Math.max(1.5, minZ * 2.4) : 0.95);   // first visit: far enough out to see the whole yard
   [cam.x, cam.y] = G.s.flags.welcomed ? toWorld((gnomes[0].gx + gnomes[1].gx) / 2, (gnomes[0].gy + gnomes[1].gy) / 2) : toWorld(0.5, 0.5); clampCam();
   renderInv(); renderHud();

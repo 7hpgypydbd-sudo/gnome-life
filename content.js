@@ -99,6 +99,14 @@ window.CONTENT = {
     { id:'acornplant', name:'Plant acorns for a grove', who:'her', act:'dig', spot:'sapling',    cost:{ acorn:5, water:2 }, mins:360, green:2, minLevel:3, needs:['sapling'],
       blurb:'Most will be eaten or forgotten. That is how a forest begins.' },
 
+    // --- home stage 2: the old stump becomes a proper house (three jobs, each changes the picture) ---
+    { id:'house1', name:'Hollow out the old stump', short:'hollowing the stump', who:'him', act:'dig', spot:'shelter', cost:{ twig:4, stone:4 }, mins:360, green:1, minLevel:3, needs:['roof', 'doorstep'],
+      blurb:'The loggers left the stump; the gnomes will make it a home. Room for a bed, a hearth and, Wendel insists, a workbench.' },
+    { id:'house2', name:'Fit a plank wall and windows', short:'fitting the windows', who:'him', act:'carry', spot:'shelter', cost:{ twig:6, moss:2, light:2 }, mins:360, green:1, minLevel:3, needs:['house1'],
+      blurb:'Planks across the gap, and two round windows with a wisp of light set in the glass so they never quite go dark.' },
+    { id:'house3', name:'Raise the roof and chimney', short:'raising the roof', who:'her', act:'carry', spot:'shelter', cost:{ twig:8, moss:6, stone:6 }, mins:480, green:2, minLevel:4, needs:['house2'],
+      blurb:'Bark shingles instead of patched canvas, and a stone chimney for a real hearth. After this, it is a house.' },
+
     // --- a warm flame (day 5 onward) ---
     { id:'seedsave', name:'Keep a seed tin',           who:'her', spot:'shelter',     cost:{ seed:4, twig:2 },   mins:180, green:1, minLevel:4,
       blurb:'Labelled in her tiny handwriting. Next year starts with this year\'s best.' },
