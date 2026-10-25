@@ -7,8 +7,8 @@ const MIN = FAST ? 100 : 60000;                   // ms per content "minute"
 const SKEW_KEY = 'gnomelife.skew';   // test panel: pretend this many extra days have gone by (whole days, so the time of day stays right)
 let SKEW = 0; try { SKEW = Number(localStorage.getItem(SKEW_KEY)) || 0; } catch (e) {}
 const now = () => Date.now() + SKEW;
-const DAY = () => 1440 * MIN;
-const lc = (t) => t[0].toLowerCase() + t.slice(1);   // "Build Mabel a home" -> "build Mabel a home" (keeps names capitalised)                    // a real day (a tenth-second-minute day under #fast)
+const DAY = () => 1440 * MIN;                     // a real day (a tenth-second-minute day under #fast)
+const lc = (t) => t[0].toLowerCase() + t.slice(1);   // "Build Mabel a home" -> "build Mabel a home" (keeps names capitalised)
 const dayKey = (t) => { const d = new Date(t); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; };
 
 // ---------- storage adapter (swap this for a server later) ----------
@@ -40,6 +40,8 @@ function fresh() {
     events: { lastAt: t, seen: {} },        // gentle random happenings (CONTENT.events)
     story: { chapter: 0, flags: {}, found: [] },   // hook for the side mystery (the staff); Bryce writes the plot
     village: { traveller: null, nextAt: 0, queue: C.village.order.slice(), folk: {}, favour: null, favourAt: t, finds: [] },
+    season: '',                              // the season last seen (a new one gets a line in "While you were away")
+    festival: { stage: 'waiting', tile: null, at: 0, day: '', years: [] },   // waiting | planning | ready | on | done (see festivalTick)
   };
 }
 
@@ -74,6 +76,7 @@ const G = {
     const s = this.s, t = now(), gone = t - s.lastSeen, report = { gone, finished: [], offered: 0, newDay: false };
     const dk = dayKey(t);
     if (!s.days.includes(dk)) { s.days.push(dk); report.newDay = true; }
+    const se = this.season(t); if (s.season !== se) { if (s.season) report.season = se; s.season = se; }
     // offerings accumulate, but never a backlog beyond the cap
     const every = C.offerEvery * MIN;
     let n = Math.floor((t - s.lastOfferAt) / every);
@@ -113,13 +116,15 @@ const G = {
       this.emit('task', { id, done: true });
     }
     this.villageTick(t);
+    this.festivalTick(t);
     const E = C.events; if (E && t - s.events.lastAt >= E.every * MIN) this.rollEvent(t);
     // offerings trickle in during a visit too
     if (t - s.lastOfferAt >= C.offerEvery * MIN) { s.lastOfferAt = t; if (s.offers.length < C.offerCap) { this.spawnOffer(t); this.emit('offer'); } }
   },
 
   // ---- gentle events (data in CONTENT.events; never a loss) ----
-  season(t) { const m = new Date(t).getMonth(); return m >= 8 && m <= 10 ? 'spring' : m === 11 || m <= 1 ? 'summer' : m <= 4 ? 'autumn' : 'winter'; },
+  season(t) { const o = /(spring|summer|autumn|winter)/.exec(location.hash); if (o) return o[1];   // #autumn etc. to try a season
+    const m = new Date(t).getMonth(); return m >= 8 && m <= 10 ? 'spring' : m === 11 || m <= 1 ? 'summer' : m <= 4 ? 'autumn' : 'winter'; },
   rollEvent(t, quiet) {
     const E = C.events, s = this.s; if (!E) return null; s.events.lastAt = t;
     if (Math.random() > E.chance) return null;
@@ -181,6 +186,7 @@ const G = {
   // ---- tasks ----
   taskDef(id) {
     if (id.startsWith('regrow:')) { const tile = id.slice(7); return Object.assign({ id, tile }, C.regrow, { name: `${C.regrow.name} (${this.tileName(tile)})` }); }
+    if (id.startsWith('fest:')) { const j = C.festival.jobs.find(j => j.id === id); return j && Object.assign({ festival: true }, j, { cost: this.festCost(j) }); }
     const [kind, fid, step] = id.split(':'), f = this.folkDef(fid);
     if (f && kind === 'home') return Object.assign({ id, folk: fid, name: `Build ${f.short} a home`, short: 'building a home', green: 2, home: true, act: 'carry' }, f.build);
     if (f && kind === 'trade') return Object.assign({ id, folk: fid, green: 1 }, f.building);
@@ -197,6 +203,7 @@ const G = {
       out.push(this.taskView(this.taskDef('trade:' + fid)));
       const st = this.questStep(fid); if (st && st.job) out.push(this.taskView(this.taskDef(`quest:${fid}:${fs.q}`)));
     }
+    if (s.festival.stage !== 'waiting') for (const j of C.festival.jobs) out.push(this.taskView(this.taskDef(j.id)));
     return out.filter(v => v.show).sort((a, b) => (a.rank - b.rank));
   },
   taskView(d) {
@@ -205,14 +212,16 @@ const G = {
     const locked = (d.needs || []).some(n => !(s.tasks[n] && s.tasks[n].done)) || (d.minLevel && this.magicLevel() < d.minLevel) || !!gate;
     const state = tk ? (tk.done ? 'done' : (tk.endsAt <= t ? 'done' : 'running')) : (locked ? 'locked' : 'ready');
     return { def: d, state, locked, endsAt: tk ? tk.endsAt : 0, startedAt: tk ? tk.startedAt : 0, can: this.can(d.cost), missing: this.missing(d.cost),
-             show: (state !== 'done' || (t - (tk.endsAt || 0)) < 60 * MIN) && !(d.needs || []).some(n => n.startsWith('trade:') && !this.folkState(n.slice(6))),   // village jobs stay hidden until that neighbour lives here rank: { running: 0, ready: 1, locked: 2, done: 3 }[state],
+             show: (state !== 'done' || (t - (tk.endsAt || 0)) < 60 * MIN) && !(d.needs || []).some(n => n.startsWith('trade:') && !this.folkState(n.slice(6))),   // village jobs stay hidden until that neighbour lives here
+             rank: { running: 0, ready: 1, locked: 2, done: 3 }[state],
              why: gate ? gate : locked ? (d.minLevel && this.magicLevel() < d.minLevel ? `needs magic level ${d.minLevel}` : `after: ${(d.needs || []).map(n => lc(this.taskDef(n).name)).join(', ')}`) : '' };
   },
   startTask(id) {
     const d = this.taskDef(id), v = this.taskView(d); if (v.state !== 'ready' || !v.can) return false;
     this.pay(d.cost); const t = now();
     this.s.tasks[id] = { startedAt: t, endsAt: t + this.dur(d.mins), done: false };
-    if (d.home) this.s.tasks[id].tile = this.freeLot();
+    if (d.home || d.claims) this.s.tasks[id].tile = this.freeLot();
+    if (d.claims) this.s.festival.tile = this.s.tasks[id].tile;
     if (d.tile) this.s.tiles[d.tile].state = 'regrowing';
     this.note(`${C.names[d.who]} set to work: ${lc(d.name)}.`); this.emit('task', { id }); return true;
   },
@@ -259,7 +268,7 @@ const G = {
   visitorDef(id) { return C.visitors.find(v => v.id === id); },
   pickVisitor(t = now()) {
     const s = this.s, h = new Date(t).getHours(), stage = this.landStage().key, order = C.landStages.map(x => x.key), dk = dayKey(t), food = s.feeder.food;
-    const pool = C.visitors.filter(v => ((h >= v.hours[0] && h < v.hours[1]) || (v.alsoHours && h >= v.alsoHours[0] && h < v.alsoHours[1])) && (!v.stage || order.indexOf(stage) >= order.indexOf(v.stage)) && (!v.task || (s.tasks[v.task] && s.tasks[v.task].done)));
+    const pool = C.visitors.filter(v => ((h >= v.hours[0] && h < v.hours[1]) || (v.alsoHours && h >= v.alsoHours[0] && h < v.alsoHours[1])) && (!v.stage || order.indexOf(stage) >= order.indexOf(v.stage)) && (!v.task || (s.tasks[v.task] && s.tasks[v.task].done)) && (!v.seasons || v.seasons.includes(this.season(t))));
     if (!pool.length) return null;
     // a regular that has not been by today comes first; food in the dish draws the creatures that eat it
     const due = pool.filter(v => this.isRegular(v.id) && s.arrived[v.id] !== dk);
@@ -326,10 +335,12 @@ const G = {
   freeLot() {   // the nearest healed plain tile that has no home on it yet (one being built counts as taken)
     const s = this.s, taken = new Set(Object.values(s.village.folk).map(f => f.tile));
     for (const tk of Object.values(s.tasks)) if (tk.tile && !tk.done) taken.add(tk.tile);
+    if (s.festival.tile) taken.add(s.festival.tile);
     return C.village.lots.find(k => s.tiles[k] && s.tiles[k].state === 'green' && !taken.has(k)) || null;
   },
   gateWhy(d) {   // extra reasons a job cannot start yet, in words ('' = fine)
     if (d.home && !this.freeLot()) return 'needs a healed patch next door for their home';
+    if (d.claims && !this.s.tasks[d.id] && !this.freeLot()) return 'needs a healed patch with no home on it';
     if (d.needsTile && !(this.s.tiles[d.needsTile] && this.s.tiles[d.needsTile].state === 'green')) return 'after the stepping-stone patch of the stream heals';
     return '';
   },
@@ -422,6 +433,42 @@ const G = {
     this.give(gift); this.note(`You did ${f.short} a favour. ${ask.thanks}`); this.emit('helped', { folk: fv.folk, light }); return gift;
   },
 
+  // ---- the festival: the soft ending (content in CONTENT.festival) ----
+  // waiting -> planning (enough neighbours: the idea and the secret story pages; festival jobs appear in Jobs) -> ready (every
+  // job done; the night is set for the next festival evening) -> on (the evening has come: index.html plays the night pages)
+  // -> done. Then it comes back on the same date each year (years: the years it has been held again).
+  festCost(j) { const k = this.knownKinds(); return j.alt && Object.keys(j.cost).some(x => !k.has(x)) ? j.alt : j.cost; },
+  festWhoId() { const v = this.s.village.folk; return Object.keys(v).sort((a, b) => v[a].since - v[b].since)[0] || null; },   // the neighbour who has lived here longest says the festival's lines
+  festWho() { const id = this.festWhoId(); return id ? this.folkDef(id).short : 'the oldest neighbour'; },
+  festText(t) { const F = this.s.festival, n = Math.max(1, F.years.length); return t.replace(/\{who\}/g, this.festWho()).replace(/\{years\}/g, ['One year', 'Two years', 'Three years', 'Four years', 'Five years'][n - 1] || `${n} years`); },
+  festivalTick(t) {
+    const F = C.festival, f = this.s.festival, h = new Date(t).getHours(); if (!F) return;
+    if (f.stage === 'waiting' && this.settled().length >= F.needFolk) { f.stage = 'planning'; this.note(`The neighbours want to hold ${F.name}.`); this.emit('festival', 'idea'); }
+    else if (f.stage === 'planning' && F.jobs.every(j => this.done(j.id))) {
+      f.stage = 'ready'; const d = new Date(t); d.setHours(F.hours[0], 0, 0, 0); if (d.getTime() - t < 60 * MIN && !FAST) d.setDate(d.getDate() + 1);
+      f.at = FAST ? t : d.getTime(); const when = dayKey(f.at) === dayKey(t) ? 'tonight' : 'tomorrow evening';
+      this.note(F.ready.replace('{when}', when)); this.emit('festival', 'ready');
+    }
+    else if (f.stage === 'ready' && t >= f.at && (this.inHours(F.hours, h) || t >= f.at + DAY())) { f.stage = 'on'; f.day = dayKey(t); this.emit('festival', 'night'); }
+    else if (f.stage === 'done' && f.day) {   // the same date in a later year: the festival comes back
+      const a = new Date(t), b = new Date(f.doneAt || t), yr = a.getFullYear();
+      if (a.getMonth() === b.getMonth() && a.getDate() === b.getDate() && yr > b.getFullYear() && !f.years.includes(yr)) { f.years.push(yr); this.note('The festival is back on the green tonight.'); this.emit('festival', 'yearly'); }
+    }
+  },
+  festivalOn(t = now()) {   // is there a festival on the green right now? (festival night, or its date in a later year, in the evening)
+    const f = this.s.festival, d = new Date(t), h = d.getHours(); if (f.stage === 'on') return true;
+    if (f.stage !== 'done' || !this.inHours(C.festival.hours, h)) return false;
+    return f.day === dayKey(t) || f.years.includes(d.getFullYear()) && new Date(f.doneAt).getMonth() === d.getMonth() && new Date(f.doneAt).getDate() === d.getDate();
+  },
+  finishFestival() {   // the night's pages have been read: the main story is complete
+    const f = this.s.festival; if (f.stage !== 'on') return false;
+    f.stage = 'done'; f.doneAt = now(); this.give(C.festival.reward); this.note(`${C.festival.name} was held on the green.`); this.emit('festival', 'done'); return true;
+  },
+  festStats() {
+    const s = this.s; return { days: s.days.length, green: Object.values(s.tiles).filter(t => t.state === 'green' || t.state === 'home').length, met: C.visitors.filter(v => this.met(v.id)).length,
+      folk: this.settled().length, stories: Object.values(s.village.folk).filter(f => f.q === 'done').length };
+  },
+
   // ---- story hook (placeholder; content lives in CONTENT.story once written) ----
   flag(k, v = true) { this.s.story.flags[k] = v; this.emit('story', k); },
   hasFlag(k) { return !!this.s.story.flags[k]; },
@@ -434,6 +481,14 @@ const G = {
   finishAll() { const t = now(); for (const tk of Object.values(this.s.tasks)) if (!tk.done && tk.endsAt > t) tk.endsAt = t; const p = this.s.plots.seedbed; if (p.stage === 'growing') p.readyAt = t; this.tick(); this.emit('inv'); },
   fillPack() { const o = {}; for (const k of Object.keys(C.resources)) o[k] = 20; this.give(o); },
   callTraveller() { this.s.village.nextAt = 0; this.tick(); },
+  testFestival(night) {   // test panel: start the festival plans now (ignoring the neighbour count), or jump straight to festival night
+    const f = this.s.festival, t = now();
+    if (f.stage === 'waiting') { f.stage = 'planning'; this.emit('festival', 'idea'); if (!night) return; }
+    if (!f.tile) { f.tile = this.freeLot() || ['0,1', '-1,0', '2,0'].find(k => !Object.values(this.s.village.folk).some(x => x.tile === k)); if (!this.s.tiles[f.tile] || this.s.tiles[f.tile].state !== 'green') this.s.tiles[f.tile] = { state: 'green', green: 4 }; }
+    if (!night) return;
+    for (const j of C.festival.jobs) this.s.tasks[j.id] = Object.assign(this.s.tasks[j.id] || {}, { startedAt: t - 1, endsAt: t - 1, done: true }, j.claims ? { tile: f.tile } : {});
+    f.stage = 'on'; f.day = dayKey(t); this.emit('festival', 'night');
+  },
 };
 
 // autosave on a timer and whenever the page is hidden

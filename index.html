@@ -171,6 +171,7 @@ const RHYTHM = {
 const ACT_FPS = { dig:4, water:3, carry:9, eat:2.5, sit:1.6, sleep:0.7 };
 const SPOT_ACT = { feeder:'carry', wheelbarrow:'dig', seedbed:'water', sapling:'water', shelter:'carry', fence:'carry', stonebench:'carry', fire:'carry' };
 function routineFor(h) {   // what the couple do at this hour when no job needs them
+  if (G.festivalOn()) return 'fest';   // festival evening: they dance on the green (beats jobs and bedtime)
   if (h >= 22 || h < 6) return 'sleep';
   if ((h >= 7 && h < 8) || (h >= 18 && h < 19)) return 'eat';
   if (h >= 19 && h < 22) return 'sit';
@@ -223,6 +224,9 @@ for (const v of C.visitors) { ART_SLOTS['vis-' + v.id] = {}; ART_SLOTS['portrait
 for (const f of C.folk) { for (const k of ['face-', 'story-']) ART_SLOTS[k + f.id] = {}; ART_SLOTS['story-' + f.id + '-home'] = {}; ART_SLOTS['folk-' + f.id] = {}; (f.members || []).forEach((_, i) => ART_SLOTS[`folk-${f.id}-${i + 2}`] = {});
   ART_SLOTS['home-' + f.id] = { w: 190 }; ART_SLOTS['bld-' + f.id] = { w: 130 }; if (f.quest.steps.some(st => st.find)) ART_SLOTS['find-' + f.id] = { w: 44 }; }
 Object.assign(ART_SLOTS, { 'bld-bridge': { w: 200 }, 'camp-tent': { w: 110 }, 'glow-jar': { w: 30 }, 'icon-bread': {}, 'icon-plank': {}, 'icon-honey': {}, 'icon-yarn': {} });
+// the festival (docs/ART-BATCH-7.md): the green's furniture, and story-fest-* paintings for the festival pages
+Object.assign(ART_SLOTS, { 'fest-table': { w: 300 }, 'fest-feast': { w: 300 }, 'fest-bunting': { w: 300 }, 'fest-lantern': { w: 44 }, 'fest-arch': { w: 120 } });
+for (const k of ['fest-idea', 'fest-secret', 'fest-night', 'fest-surprise', 'fest-dance', 'fest-end']) ART_SLOTS['story-' + k] = {};
 Object.assign(ART_SLOTS, { 'feeding-dish': { w: 58 }, 'nest-nest': { w: 40 }, 'nest-burrow': { w: 54 }, 'nest-leafpile': { w: 70 }, 'nest-stones': { w: 60 } });
 const ART = {};   // name -> loaded Image, only for slots whose file exists
 function art(k) { return ART[k] || null; }
@@ -288,6 +292,7 @@ class Gnome {
   pick() {
     const h = dayPhase().h, rt = routineFor(h);
     const job = G.running().find(r => r.def.who === this.who);
+    if (rt === 'fest') { const [cx, cy] = festSpot('dance'); this.job = null; this.act = null; this.routine = 'fest'; this.plan = 'dance'; this.speed = 0.16; this.goto(cx + (this.who === 'him' ? -0.05 : 0.05), cy); return; }
     if (rt === 'sleep' || (rt && !job)) {   // the daily rhythm: sleep always wins, meals and the evening sit only when no job waits
       if (this.goesIn(rt)) {   // bedtime (and the evening sit, once the house has a hearth) happen indoors: walk to the door and go in
         this.job = null; this.routine = rt;
@@ -310,13 +315,24 @@ class Gnome {
     this.goto(sx + (Math.random() - 0.5) * 0.08, sy + (Math.random() - 0.5) * 0.08);
   }
   goesIn(rt) { return rt === 'sleep' || (rt === 'sit' && homeStage() >= 2); }
-  settleIn() {   // opening the game at bedtime: they are already indoors
+  settleIn() {   // opening the game at bedtime: they are already indoors (on festival evening: already dancing on the green)
     const rt = routineFor(dayPhase().h);
+    if (rt === 'fest') { [this.gx, this.gy] = festSpot('dance'); this.tx = this.gx; this.ty = this.gy; this.routine = 'fest'; this.dancing = true; return; }
     if (rt && this.goesIn(rt) && (rt === 'sleep' || !G.running().some(r => r.def.who === this.who))) { this.inside = true; this.routine = rt; this.act = rt; [this.gx, this.gy] = SPOTS.door; this.tx = this.gx; this.ty = this.gy; this.wait = 2; }
   }
   update(dt) {
     if (this.sayT > 0) this.sayT -= dt;
     if (this.act) { this.at += dt; const n = this.acts[this.act].n, fps = ACT_FPS[this.act]; if (this.at > 1 / fps) { this.at -= 1 / fps; this.aframe = (this.aframe + 1) % n; } }
+    if (this.dancing) {   // festival night: the two of them turn slowly round each other on the green (stand-in until a painted dance exists)
+      if (routineFor(dayPhase().h) !== 'fest') { this.dancing = false; this.walking = false; this.routine = null; this.wait = 0; this.pick(); return; }
+      const [cx, cy] = festSpot('dance'), a = performance.now() / 1000 * 0.75 + (this.who === 'her' ? Math.PI : 0);
+      const nx = cx + Math.cos(a) * 0.05, ny = cy + Math.sin(a) * 0.045, [ax, ay] = toWorld(this.gx, this.gy), [bx, by] = toWorld(nx, ny);
+      this.gx = nx; this.gy = ny; this.tx = nx; this.ty = ny; this.walking = true;
+      const deg = Math.atan2(by - ay, bx - ax) * 180 / Math.PI;
+      this.dir = deg > 50 && deg < 130 ? 'front' : deg < -50 && deg > -130 ? 'back' : 'side'; if (this.dir === 'side') this.flip = bx < ax;
+      this.ft += dt; if (this.ft > 1 / 7) { this.ft -= 1 / 7; this.frame = (this.frame + 1) % this.n[this.dir]; }
+      return;
+    }
     if (this.inside) {   // indoors (see the room); come out when the routine ends, or for a job unless it is bedtime
       this.wait -= dt; if (this.wait > 0) return; this.wait = 2;
       const rt = routineFor(dayPhase().h), job = G.running().some(r => r.def.who === this.who);
@@ -329,7 +345,7 @@ class Gnome {
         this.bob += dt * 6; const still = G.running().some(r => r.id === this.job);
         if (!still) { this.job = null; this.act = null; this.pace = null; this.wait = 0.5; return; }
         if (this.wait <= 0) {
-          if (routineFor(dayPhase().h) === 'sleep') { this.pick(); return; }
+          if (/^(sleep|fest)$/.test(routineFor(dayPhase().h))) { this.pick(); return; }
           if (this.pace) { this.pace.reverse(); const [x, y] = this.pace[0]; this.goto(x, y); this.wait = 0.6; return; }   // carrying: to and fro
           this.wait = 1;
         }
@@ -342,6 +358,7 @@ class Gnome {
     const dx = this.tx - this.gx, dy = this.ty - this.gy, d = Math.hypot(dx, dy);
     if (d < 0.004) {
       this.walking = false; this.frame = 0; this.aframe = 0; this.at = 0;
+      if (this.plan === 'dance') { this.plan = null; this.dancing = true; this.speed = 0.055 + Math.random() * 0.01; return; }
       if (this.plan === 'inside') { this.inside = true; this.plan = null; this.act = this.routine; this.aframe = 0; this.wait = 2; return; }
       if (this.plan) { this.act = this.plan; this.wait = this.pace ? 0.6 : 2; if (this.pace) this.faceTowards(this.gx, this.gy, 'campfire'); return; }
       this.act = null; this.wait = 2 + Math.random() * 5; this.dir = Math.random() < 0.6 ? 'front' : this.dir; return;
@@ -427,6 +444,7 @@ function spawnParticles(dt, ph) {
   }
   if (taskProg('house3') >= 1 && Math.random() < dt * 2.5) { const [cx, cy] = chimneyTop(); particles.push({ k:'smoke', x: cx + (Math.random()-0.5)*4, y: cy, vx:(Math.random()-0.5)*3 + 2, vy:-10-Math.random()*6, r:3+Math.random()*3, life:0, max:3+Math.random()*2 }); }
   if (ph.light < 0.5 && gnomes.some(g => g.inside && g.routine === 'sleep') && Math.random() < dt * 0.5) { const [dx, dy] = toWorld(SPOTS.door[0], SPOTS.door[1]); particles.push({ k:'zzz', x: dx + 8, y: dy - 50, vx: 4, vy: -8, life:0, max:3.5 }); }
+  seasonParticles(dt, ph);
   // work puffs where a gnome is busy
   for (const g of gnomes) if (g.job && !g.walking && g.act === 'dig' && Math.random() < dt * 2) { const [x, y] = toWorld(g.gx, g.gy); particles.push({ k:'puff', x: x + (Math.random()-0.5)*30, y: y - 10, vx:(Math.random()-0.5)*6, vy:-6, r:3, life:0, max:1.2 }); }
 }
@@ -434,7 +452,9 @@ function updateParticles(dt) {
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i]; p.life += dt;
     if (p.life > p.max) { particles.splice(i, 1); continue; }
-    if (p.k === 'fly') { p.ph += dt; p.x += Math.sin(p.ph * 1.3) * 12 * dt; p.y += Math.cos(p.ph * 0.9) * 8 * dt; }
+    if (p.k === 'leaf' || p.k === 'petal') { p.ph += dt * 3; p.rot += dt * p.spin; p.x += (p.vx + Math.sin(p.ph * 0.7) * 14) * dt; p.y += p.vy * dt; }
+    else if (p.k === 'mist') { p.x += p.vx * dt; }
+    else if (p.k === 'fly') { p.ph += dt; p.x += Math.sin(p.ph * 1.3) * 12 * dt; p.y += Math.cos(p.ph * 0.9) * 8 * dt; }
     else { p.x += p.vx * dt; p.y += p.vy * dt; if (p.k === 'smoke' || p.k === 'puff') { p.vx += (Math.random()-0.5)*8*dt; p.r += 6*dt; } if (p.k === 'spark') p.vy += 10*dt; }
   }
   for (let i = floaters.length - 1; i >= 0; i--) { const f = floaters[i]; f.life += dt; f.y -= 28 * dt; if (f.life > 1.4) floaters.splice(i, 1); }
@@ -446,11 +466,46 @@ function drawParticles(ph) {
     else if (p.k === 'spark') { ctx.globalAlpha = 0.9 * (1 - t); ctx.fillStyle = '#ffb347'; ctx.fillRect(p.x, p.y, 2, 2); }
     else if (p.k === 'fly') { const a = (0.5 + 0.5 * Math.sin(p.ph * 4)) * Math.min(1, t * 4, (1 - t) * 4); ctx.globalAlpha = a; ctx.fillStyle = '#e8ff9a'; ctx.shadowColor = '#d8ff70'; ctx.shadowBlur = 8; ctx.beginPath(); ctx.arc(p.x, p.y, 1.8, 0, 7); ctx.fill(); ctx.shadowBlur = 0; }
     else if (p.k === 'zzz') { ctx.globalAlpha = 0.8 * Math.sin(Math.PI * t); ctx.font = `italic bold ${12 + 8 * t}px Georgia`; ctx.textAlign = 'center'; ctx.fillStyle = '#f3e9d2'; ctx.fillText('z', p.x + Math.sin(p.life * 2) * 5, p.y); }
+    else if (p.k === 'leaf' || p.k === 'petal') { const k = p.k === 'leaf' ? 1 : 0.6; ctx.globalAlpha = 0.85 * Math.min(1, t * 6, (1 - t) * 4); ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.scale(1, Math.abs(Math.sin(p.ph)) * 0.8 + 0.2); ctx.fillStyle = p.col; ctx.beginPath(); ctx.ellipse(0, 0, 9 * k * p.r, 5 * k * p.r, 0, 0, 7); ctx.fill(); ctx.restore(); }
+    else if (p.k === 'mist') { ctx.globalAlpha = 0.18 * Math.sin(Math.PI * t); const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r); g.addColorStop(0, 'rgba(235,240,245,1)'); g.addColorStop(1, 'rgba(235,240,245,0)'); ctx.fillStyle = g; ctx.fillRect(p.x - p.r, p.y - p.r, p.r * 2, p.r * 2); }
     else if (p.k === 'mote') { ctx.globalAlpha = 0.35 * Math.sin(Math.PI * t) * ph.light; ctx.fillStyle = '#fff6d0'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, 7); ctx.fill(); }
   }
   ctx.globalAlpha = 1;
   for (const f of floaters) { ctx.globalAlpha = 1 - f.life / 1.4; ctx.font = '600 22px Georgia'; ctx.textAlign = 'center'; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(30,22,12,.6)'; ctx.strokeText(f.text, f.x, f.y); ctx.fillStyle = '#f3e9d2'; ctx.fillText(f.text, f.x, f.y); }
   ctx.globalAlpha = 1;
+}
+// ---------- seasons (southern hemisphere, from the phone's date; #spring #summer #autumn #winter to try one) ----------
+// A gentle colour grade over the whole picture, plus things drifting through: blossom in spring, leaves in autumn, mist in winter.
+const SEASON_LOOK = {
+  spring: { tint:[238, 255, 226], amt:0.12, grey:0,    drift:'petal', cols:['#f6d6dc', '#fbeef0', '#f0c8d4', '#f0c030'] },
+  summer: { tint:[255, 218, 140], amt:0.16, grey:0,    drift:null },
+  autumn: { tint:[255, 176, 104], amt:0.28, grey:0,    drift:'leaf',  cols:['#c8642a', '#d9902e', '#a8482a', '#b8862e', '#8a5a2a'] },
+  winter: { tint:[196, 210, 236], amt:0.22, grey:0.28, drift:'mist' },
+};
+let seasonKey = null, seasonAt = 0;
+function season() { const t = performance.now(); if (t - seasonAt > 10000 || !seasonKey) { seasonKey = G.season(G.now()); seasonAt = t; } return seasonKey; }
+function seasonGrade(ph) {
+  const L = SEASON_LOOK[season()]; if (!L) return;
+  ctx.save();
+  if (L.grey) { ctx.globalCompositeOperation = 'saturation'; ctx.globalAlpha = L.grey; ctx.fillStyle = '#808080'; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); }
+  ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha = L.amt * (0.5 + 0.5 * ph.light); ctx.fillStyle = `rgb(${L.tint.join(',')})`; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000);
+  ctx.restore();
+}
+function viewBox() { return { x0: cam.x - W / 2 / cam.z, x1: cam.x + W / 2 / cam.z, y0: cam.y - H / 2 / cam.z, y1: cam.y + H / 2 / cam.z }; }
+function seasonParticles(dt, ph) {
+  const L = SEASON_LOOK[season()], v = viewBox(), wide = v.x1 - v.x0;
+  if (L && (L.drift === 'leaf' || L.drift === 'petal') && particles.filter(p => p.k === L.drift).length < 24 && Math.random() < dt * (L.drift === 'leaf' ? 2 : 2.4)) {
+    const y0 = v.y0 - 10 + Math.random() * (v.y1 - v.y0) * 0.5;
+    particles.push({ k: L.drift, x: v.x0 + Math.random() * wide, y: y0, vx: 8 + Math.random() * 10, vy: 18 + Math.random() * 14, ph: Math.random() * 6, rot: Math.random() * 6, spin: (Math.random() - 0.5) * 3,
+      r: 0.8 + Math.random() * 0.6, col: L.cols[(Math.random() * L.cols.length) | 0], life: 0, max: (v.y1 - y0) / 24 });
+  }
+  if (L && L.drift === 'mist' && particles.filter(p => p.k === 'mist').length < 6 && Math.random() < dt * 0.4) {
+    const [x, y] = toWorld(Math.random() * 1.4 - 0.2, Math.random() * 1.4 - 0.2); particles.push({ k: 'mist', x, y, vx: 4 + Math.random() * 4, vy: 0, r: 160 + Math.random() * 140, life: 0, max: 14 + Math.random() * 8 });
+  }
+  if (G.festivalOn() && festTile() && Math.random() < dt * 2.5) {   // festival night: petals and paper confetti over the green
+    const [x, y] = toWorld(...glob(festTile(), 0.3 + Math.random() * 0.5, 0.2 + Math.random() * 0.5));
+    particles.push({ k: 'petal', x, y: y - 140, vx: (Math.random() - 0.5) * 10, vy: 22 + Math.random() * 10, ph: Math.random() * 6, rot: Math.random() * 6, spin: (Math.random() - 0.5) * 4, r: 0.8, col: BUNT[(Math.random() * BUNT.length) | 0], life: 0, max: 6 });
+  }
 }
 function float(text, x, y) { floaters.push({ text, x, y: y - 40, life: 0 }); }
 // a little paper tag over a gnome who is on a job: name, the job, a progress bar and time left. Drawn in screen space so it stays readable at any zoom.
@@ -913,9 +968,12 @@ class Folk {
     this.walking = false; this.wait = 1 + Math.random() * 4; this.dir = 'front'; this.flip = Math.random() < 0.5; this.frame = 0; this.ft = 0; this.speed = 0.045;
   }
   spot(i) { const t = this.home; if (t.camp) return glob(CAMP.tile, CAMP.gx - 0.10 + 0.07 * i, CAMP.gy + 0.10 - 0.03 * i); const [sx, sy] = LOT.spots[i % LOT.spots.length]; return glob(t.tile, sx, sy); }
-  outside() { const h = dayPhase().h; return this.home.camp ? h >= 6 && h < 21 : h >= 7 && h < 20; }
+  outside() { if (G.festivalOn()) return true; const h = dayPhase().h; return this.home.camp ? h >= 6 && h < 21 : h >= 7 && h < 20; }
   update(dt) {
+    const seat = festSeat(this);   // festival evening: everyone walks to the long table
+    if (seat && !this.walking && Math.hypot(seat[0] - this.gx, seat[1] - this.gy) > 0.01) { this.tx = seat[0]; this.ty = seat[1]; this.walking = true; this.speed = 0.08; }
     if (!this.walking) {
+      if (seat) { this.dir = 'front'; return; }
       this.wait -= dt; if (this.wait > 0) return;
       this.wait = 3 + Math.random() * 6;
       if (this.home.camp || Math.random() < 0.35) { this.dir = Math.random() < 0.7 ? 'front' : 'side'; this.flip = Math.random() < 0.5; return; }
@@ -951,6 +1009,7 @@ function syncFolk() {
   if (key === villageKey) return; villageKey = key; folkOnLand.length = 0;
   if (v.traveller) { const f = G.folkDef(v.traveller.id); folkMembers(f).forEach((_, i) => folkOnLand.push(new Folk(f, i, { camp: true, ox: 0, oy: 0 }))); }
   for (const [fid, fs] of Object.entries(v.folk)) { const f = G.folkDef(fid); folkMembers(f).forEach((_, i) => folkOnLand.push(new Folk(f, i, { tile: fs.tile }))); }
+  for (const p of folkOnLand) { const seat = festSeat(p); if (seat) { [p.gx, p.gy] = seat; p.tx = p.gx; p.ty = p.gy; } }   // opening the game on festival evening: already at the table
 }
 function folkNeedsYou(fid) {   // a paper "!" over a neighbour: a favour to do, or a new part of their story to read
   const v = G.s.village, fs = v.folk[fid];
@@ -1139,9 +1198,108 @@ function villageGlows(night, now) {   // after the night tint: lit windows, the 
   if (v.traveller) { const [x, y] = toWorld(...glob(CAMP.tile, CAMP.gx, CAMP.gy)); glow(x, y - 20, 50, 'rgba(255,190,110,1)', 0.3 * night); glow(x + 56, y + 10, 70, 'rgba(255,150,60,1)', 0.5 * night * fl); }
   if (taskProg('trade:juniper') >= 1) for (const k of ['1,-2', '1,0', '1,1', '1,2']) if (G.s.tiles[k]) for (const [gx, gy] of JARS) { const [x, y] = toWorld(...glob(k, gx, gy)); glow(x + 10, y - 36, 50, 'rgba(255,235,160,1)', 0.55 * night); }
 }
+// ---------- the festival green (the soft ending; CONTENT.festival) ----------
+// Everything stands on the healed patch the "Mow a green" job claimed (G.s.festival.tile); spots are that tile's local grid.
+// Art slots: fest-table (the bare long table and benches), fest-feast (the same table laid), fest-bunting (two poles and the flags),
+// fest-lantern (one lantern on a pole; used four times), fest-arch (the flower arch). Code stand-ins until they are painted.
+const FEST = { table:[0.58, 0.34], arch:[0.24, 0.70], dance:[0.62, 0.66], bunting:[[0.22, 0.24], [0.74, 0.16]], lanterns:[[0.18, 0.46], [0.46, 0.14], [0.84, 0.40], [0.44, 0.86]] };
+const FEST_SPOT = { green:'dance', table:'table', arch:'arch', bunting:'bunting', lanterns:'lanterns' };
+function festTile() { return G.s.festival.tile; }
+function festSpot(k) { const t = festTile(), v = FEST[k]; if (!t) return SPOTS.fire; return glob(t, ...(Array.isArray(v[0]) ? v[0] : v)); }
+function festSeat(p) {   // a place at the long table for each neighbour on festival evening (back row, then front row), or null
+  if (!festTile() || !G.festivalOn()) return null;
+  const i = folkOnLand.indexOf(p), row = i % 2, col = (i >> 1) % 6, [tx, ty] = FEST.table;
+  return glob(festTile(), tx - 0.13 + col * 0.052 + row * 0.02, ty + (row ? 0.085 : -0.075));
+}
+function drawFestGround() {   // the mown green: a soft, lighter oval of short grass
+  const a = taskProg('fest:green'); if (a <= 0 || !festTile()) return;
+  const [x, y] = toWorld(...glob(festTile(), 0.52, 0.50));
+  ctx.save(); ctx.globalAlpha = 0.55 * a; const g = ctx.createRadialGradient(x, y, 0, x, y, 300); g.addColorStop(0, 'rgba(196,214,120,0.55)'); g.addColorStop(0.7, 'rgba(176,200,100,0.35)'); g.addColorStop(1, 'rgba(176,200,100,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(x, y, 300, 170, 0, 0, 7); ctx.fill(); ctx.restore();
+}
+function isoQuad(cx, cy, hx, hy, lift, col, edge) {   // a flat rectangle on the ground grid (half-sizes hx, hy), raised by lift world pixels
+  const pts = [[-hx, -hy], [hx, -hy], [hx, hy], [-hx, hy]].map(([dx, dy]) => { const [x, y] = toWorld(cx + dx, cy + dy); return [x, y - lift]; });
+  ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath(); ctx.fillStyle = col; ctx.fill();
+  if (edge) { ctx.strokeStyle = edge; ctx.lineWidth = 1.5; ctx.stroke(); } return pts;
+}
+function drawFestTable(gx, gy, a, feast, now) {
+  const [x, y] = toWorld(gx, gy);
+  shadow(x, y + 4, 120, 30);
+  if (drawSlot(feast >= 1 && art('fest-feast') ? 'fest-feast' : 'fest-table', x, y + 30, a)) return;
+  ctx.save(); ctx.globalAlpha *= a;
+  for (const dy of [-0.075, 0.075]) {   // two benches
+    const b = isoQuad(gx, gy + dy, 0.15, 0.014, 8, '#7a5634', '#3a2414');
+    ctx.strokeStyle = '#3a2414'; ctx.lineWidth = 3; for (const [px, py] of [b[0], b[1], b[3]]) { ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, py + 8); ctx.stroke(); }
+  }
+  const top = isoQuad(gx, gy, 0.16, 0.04, 20, '#9a6c42', '#3a2414');
+  ctx.strokeStyle = '#3a2414'; ctx.lineWidth = 4; for (const [px, py] of top) { ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, py + 20); ctx.stroke(); }
+  isoQuad(gx, gy, 0.15, 0.03, 21, '#efe6cf');   // a white cloth
+  if (feast > 0) {   // the feast: loaves, honey pots, berry tarts and one enormous pie, appearing as it is baked
+    const things = [[-0.12, 'loaf'], [-0.08, 'honey'], [-0.04, 'tart'], [0.0, 'pie'], [0.05, 'loaf'], [0.09, 'tart'], [0.12, 'honey'], [-0.02, 'cake']];
+    things.forEach(([dx, k], i) => {
+      if (i / things.length > feast) return; const [px, py] = toWorld(gx + dx, gy + (i % 2 ? 0.012 : -0.012)), ty = py - 22;
+      if (k === 'loaf') { blob(px, ty, 9, 5, '#c08a4a'); blob(px - 2, ty - 2, 6, 3, '#d9a866'); }
+      else if (k === 'honey') { blob(px, ty - 4, 5, 7, '#d4962a'); blob(px, ty - 10, 5.5, 2, '#efe6cf'); }
+      else if (k === 'tart') { blob(px, ty, 8, 4, '#c9a066'); blob(px, ty - 1, 6, 3, '#6a2c4a'); }
+      else if (k === 'pie') { blob(px, ty - 2, 14, 7, '#b5803e'); blob(px, ty - 4, 11, 5, '#d4a45a'); }
+      else { blob(px, ty - 4, 8, 8, '#f3ead6'); blob(px, ty - 10, 8, 3, '#fff8ea'); blob(px, ty - 13, 2, 2, '#c0392b'); }
+    });
+  }
+  ctx.restore();
+}
+const BUNT = ['#c0392b', '#e0b040', '#3a6a9a', '#f3e9d2', '#5a8a3a', '#b5532f', '#7a5a9a'];
+function drawBunting(a, now) {
+  const [p0, p1] = FEST.bunting.map(v => toWorld(...glob(festTile(), ...v)));
+  if (drawSlot('fest-bunting', (p0[0] + p1[0]) / 2, Math.max(p0[1], p1[1]), a)) return;
+  ctx.save(); ctx.globalAlpha *= a; const H = 96;
+  for (const [x, y] of [p0, p1]) { shadow(x, y, 6, 3); ctx.strokeStyle = '#3a2414'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - H); ctx.stroke(); ctx.strokeStyle = '#8a6440'; ctx.lineWidth = 3; ctx.stroke(); }
+  const ax = p0[0], ay = p0[1] - H + 4, bx = p1[0], by = p1[1] - H + 4, sag = 26, n = 13;
+  ctx.strokeStyle = '#efe6cf'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.quadraticCurveTo((ax + bx) / 2, (ay + by) / 2 + sag * 2, bx, by); ctx.stroke();
+  for (let i = 1; i < n; i++) {
+    const t = i / n, x = (1 - t) * (1 - t) * ax + 2 * (1 - t) * t * (ax + bx) / 2 + t * t * bx, yy = (1 - t) * (1 - t) * ay + 2 * (1 - t) * t * ((ay + by) / 2 + sag * 2) + t * t * by;
+    const sw = Math.sin(now / 300 + i) * 2;
+    ctx.fillStyle = BUNT[i % BUNT.length]; ctx.beginPath(); ctx.moveTo(x - 6, yy); ctx.lineTo(x + 6, yy); ctx.lineTo(x + sw, yy + 15); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
+function drawFestLantern(x, y, a, now) {
+  if (drawSlot('fest-lantern', x, y, a)) return;
+  ctx.save(); ctx.globalAlpha *= a; shadow(x, y, 6, 3);
+  ctx.strokeStyle = '#3a2414'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 70); ctx.lineTo(x + 14, y - 70); ctx.stroke();
+  const sw = Math.sin(now / 500 + x) * 1.5; ctx.strokeStyle = '#3a2414'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x + 14, y - 70); ctx.lineTo(x + 14 + sw, y - 62); ctx.stroke();
+  blob(x + 14 + sw, y - 52, 9, 11, '#e8a040'); blob(x + 14 + sw, y - 52, 6, 9, '#f6c870'); ctx.fillStyle = '#3a2414'; ctx.fillRect(x + 9 + sw, y - 64, 10, 3); ctx.fillRect(x + 10 + sw, y - 42, 8, 2);
+  ctx.restore();
+}
+function drawFestArch(x, y, a) {
+  if (drawSlot('fest-arch', x, y, a)) return;
+  ctx.save(); ctx.globalAlpha *= a; const w = 50, h = 92;
+  shadow(x - w, y, 8, 3); shadow(x + w, y, 8, 3);
+  ctx.strokeStyle = '#5a3d26'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(x - w, y); ctx.lineTo(x - w, y - h + w); ctx.arc(x, y - h + w, w, Math.PI, 0); ctx.lineTo(x + w, y); ctx.stroke();
+  for (let i = 0; i <= 28; i++) {   // leaves, wattle and paper daisies along the willow
+    const t = i / 28, ang = Math.PI + t * Math.PI, onArc = t > 0.18 && t < 0.82;
+    let px, py; if (onArc) { const u = (t - 0.18) / 0.64, aa = Math.PI + u * Math.PI; px = x + Math.cos(aa) * w; py = y - h + w + Math.sin(aa) * w; } else { const side = t <= 0.18 ? -1 : 1, u = t <= 0.18 ? t / 0.18 : (1 - t) / 0.18; px = x + side * w; py = y - u * (h - w); }
+    blob(px + (rnd(i) - 0.5) * 6, py + (rnd(i + 1) - 0.5) * 6, 5, 3.5, ['#4a6a2a', '#5a7a32', '#3e5a24'][i % 3]);
+    if (i % 2 === 0) blob(px + (rnd(i + 2) - 0.5) * 8, py + (rnd(i + 3) - 0.5) * 8, 3.2, 3.2, i % 4 === 0 ? '#f0c030' : '#f6f0e0');
+  }
+  ctx.restore();
+}
+function festItems(items, now) {
+  if (!festTile()) return; const tile = festTile();
+  const ta = taskProg('fest:table'); if (ta > 0) { const [gx, gy] = glob(tile, ...FEST.table); items.push({ d: depthOf(gx, gy), draw: () => { drawFestTable(gx, gy, ta, taskProg('fest:feast'), now); const [x, y] = toWorld(gx, gy); FEST.screen = { x, y, w: 260, h: 90 }; } }); }
+  const ba = taskProg('fest:bunting'); if (ba > 0) { const [gx, gy] = glob(tile, ...FEST.bunting[1]); items.push({ d: depthOf(gx, gy), draw: () => drawBunting(ba, now) }); }
+  const la = taskProg('fest:lanterns'); if (la > 0) FEST.lanterns.forEach((v, i) => { if (i / FEST.lanterns.length > la) return; const [gx, gy] = glob(tile, ...v); items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); drawFestLantern(x, y, 1, now); } }); });
+  const aa = taskProg('fest:arch'); if (aa > 0) { const [gx, gy] = glob(tile, ...FEST.arch); items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); drawFestArch(x, y, aa); FEST.archScreen = { x, y, w: 120, h: 100 }; } }); }
+}
+function festGlows(night, now) {   // lanterns round the green glow after dark (brighter on festival night)
+  if (!festTile() || taskProg('fest:lanterns') < 1) return; const on = G.festivalOn() ? 1 : 0.55;
+  for (const v of FEST.lanterns) { const [x, y] = toWorld(...glob(festTile(), ...v)); glow(x + 14, y - 52, 70, 'rgba(255,200,110,1)', 0.6 * night * on * (0.9 + 0.1 * Math.sin(now / 300 + x))); }
+  if (G.festivalOn() && taskProg('fest:table') >= 1) { const [x, y] = toWorld(...glob(festTile(), ...FEST.table)); glow(x, y - 30, 240, "rgba(255,190,110,1)", 0.45 * night); }
+}
 // where a gnome works on a village job (home-tile grid), or null for jobs at home
 function jobSpot(job) {
-  const d = job.def; if (!d.folk && job.id !== 'bridge') return null;
+  const d = job.def;
+  if (d.festival) { if (!festTile()) return null; const k = FEST_SPOT[d.spot] || 'table', [gx, gy] = festSpot(k); return k === 'table' ? [gx - 0.06, gy + 0.12] : [gx + 0.04, gy + 0.06]; }
+  if (!d.folk && job.id !== 'bridge') return null;
   if (job.id === 'bridge') { const [gx, gy] = glob(BRIDGE.tile, BRIDGE.gx, BRIDGE.gy); return [gx + 0.1, gy + 0.14]; }
   if (d.at === 'home') return null;
   const tk = G.s.tasks[job.id], fs = G.folkState(d.folk), tile = d.home ? tk && tk.tile : fs && fs.tile; if (!tile) return null;
@@ -1173,6 +1331,7 @@ function frame(now) {
   for (const [k, tl] of tiles) drawTile(k, tl, now);
   drawGroundChanges(now);
   drawJars(now);
+  drawFestGround();
 
   // depth-sorted things
   const items = [];
@@ -1186,6 +1345,7 @@ function frame(now) {
   for (const [gx, gy] of WORM_LANTERNS) { const la = taskProg('wormlantern'); if (la > 0) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); drawWormLight(x, y, false, la, now); } }); }
   for (const [gx, gy] of WORM_LAMPS) { const pa = taskProg('wormlamp'); if (pa > 0) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); drawWormLight(x, y, true, pa, now); } }); }
   villageItems(items, now);
+  festItems(items, now);
   items.sort((a, b) => a.d - b.d);
   for (const it of items) it.draw();
   drawParticles(ph);
@@ -1205,8 +1365,10 @@ function frame(now) {
     if (taskProg('house2') >= 1) for (const [wx, wy] of houseWindows()) glow(wx, wy, 34, 'rgba(255,200,110,1)', 0.6 * night * (gnomes.some(g => g.inside) ? 1 : 0.5));
     villageGlows(night, now);
     for (const [x, y, lamp, a] of wormSpots()) { const sw = 0.9 + 0.1 * Math.sin(now / 700 + x * 0.1), up = lamp ? 60 : 24; glow(x, y - up, lamp ? 105 : 62, 'rgba(190,255,150,1)', 0.5 * night * a * sw); glow(x, y - up, lamp ? 38 : 22, 'rgba(235,255,200,1)', 0.35 * night * a); }
+    festGlows(night, now);
     for (const o of G.s.offers) if (o.kind === 'light' && o.screen) glow(o.screen.x, o.screen.y - 14, 40, 'rgba(255,240,170,1)', 0.5);
   }
+  seasonGrade(ph);
   if (ph.warm > 0) { ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = `rgba(255,170,90,${0.28 * ph.warm})`; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); ctx.restore(); }
   ctx.restore();
 
@@ -1296,6 +1458,7 @@ function tap(cx, cy) {
     if (!g.job && !g.act) { g.walking = false; g.wait = 3.5; g.dir = 'front'; g.frame = 0; }
     for (const o of gnomes) if (o !== g) o.sayT = 0; return;
   }
+  if (festTile() && (hit(FEST.screen, wx, wy) || hit(FEST.archScreen, wx, wy))) return openFestGreen();
   if (taskProg('feeder') >= 1 && hit(FEEDER.screen, wx, wy)) return openFeeder();
   for (const id in NESTS) if (G.hasNest(id) && hit(NESTS[id].screen, wx, wy)) { const d = G.visitorDef(id); return toast(`The ${d.name.toLowerCase()}'s ${{ nest: 'nest', burrow: 'burrow', leafpile: 'leaf pile', stones: 'hidey-hole' }[d.nest]}. Quiet, someone may be home.`); }
   // props on the home tile (seed bed, tub, task spots)
@@ -1305,7 +1468,8 @@ function tap(cx, cy) {
     const pad = 14 / cam.z;   // a generous margin around each prop
     for (const p of PROPS) { const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s, h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 4 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
     if (best) { if (best.name === 'seedbed') { if (propAlpha(best) >= 1) return openSeedbed(); const t = C.tasks.find(t => t.spot === 'clearing' && !(G.s.tasks[t.id] && G.s.tasks[t.id].done)); return openTasks(t ? t.id : ''); } if (best.name === 'shelter' && !wantsTap(best)) return openRoom(); const task = C.tasks.find(t => t.spot === best.name); if (task) return openTasks(task.id); }
-  } else if (G.s.tiles[f.tile] && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openTasks('regrow:' + f.tile);
+  } else if (f.tile === festTile() && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openFestGreen();
+  else if (G.s.tiles[f.tile] && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openTasks('regrow:' + f.tile);
 }
 
 // ---------- UI ----------
@@ -1383,6 +1547,7 @@ function drawRoom(now) {
 function doing(g) {   // where a gnome is when not indoors, in words
   const r = G.running().find(r => r.def.who === g.who), rt = routineFor(dayPhase().h), n = C.names[g.who];
   if (r) return `${n} is busy: ${lcName(shortName(r.def))}`;
+  if (rt === 'fest') return `${n} is at the festival on the green`;
   if (rt === 'eat') return `${n} is out by the campfire, having a bite`;
   if (rt === 'sit') return `${n} is out by the campfire`;
   return `${n} is pottering about outside`;
@@ -1423,7 +1588,7 @@ function renderInv(popKind) {   // the pack lives behind its button now; the bad
 }
 function renderHud() {
   const st = G.landStage(), ph = dayPhase();
-  $('sub').textContent = ph.light < 0.3 ? `${st.name}; the fire is lit, everything else sleeps` : st.sub;
+  $('sub').textContent = G.festivalOn() ? `${C.seasons[season()].name} · festival night on the green` : `${C.seasons[season()].name} · ` + (ph.light < 0.3 ? `${st.name}; the fire is lit, everything else sleeps` : st.sub);
   const busy = G.running().map(r => `${C.names[r.def.who]} is busy: ${lcName(shortName(r.def))} (${G.timeLeft(r.endsAt)} to go)`);
   $('busy').textContent = busy.join(' · ');
   const canStart = G.taskList().filter(v => v.state === 'ready' && v.can).length + (G.plot().stage === 'ready' || (G.plot().stage === 'planted' && G.can({ water: 1 })) ? 1 : 0);
@@ -1452,6 +1617,12 @@ sheet.addEventListener('click', e => {
   if (a === 'qgive') { if (G.questGive(id)) toast('Given, with thanks.'); }
   if (a === 'favour') { const g = G.doFavour(); if (g) toast(`Thank you! ${Object.entries(g).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(', ')}`); }
   if (a === 'entry') return openEntry(id);
+  if (a === 'fest') { const [k, i] = id.split(':'); return openFest(k, +i || 0); }
+  if (a === 'festgreen') return openFestGreen();
+  if (a === 'festend') { G.finishFestival(); return openFest('end'); }
+  if (a === 'jobs') return openTasks(id || '');
+  if (a === 'tseason') { location.hash = id ? 'test&' + id : 'test'; return; }
+  if (a === 'tfest') { closeSheet(); G.testFestival(b.dataset.n === '1'); return; }
   if (a === 'journal') return openJournal();
   if (a === 'tskip') return G.skipDays(+b.dataset.n);
   if (a === 'tfinish') { G.finishAll(); toast('Every job finished.'); }
@@ -1468,12 +1639,14 @@ function openTest() {
   <h3>Jump ahead in time</h3><p><button class="act" data-a="tskip" data-n="1">+1 day</button> <button class="act" data-a="tskip" data-n="3">+3 days</button> <button class="act" data-a="tskip" data-n="7">+1 week</button></p>
   <h3>Speed things up</h3><p><button class="act" data-a="tfinish">Finish every job now</button></p><p><button class="act" data-a="tpack">Fill my pack (20 of everything)</button></p>
   <h3>Call someone</h3><p><button class="act" data-a="tvisit">A creature visits</button> <button class="act" data-a="ttrav">A traveller arrives</button></p>
+  <h3>Seasons</h3><p>${['spring', 'summer', 'autumn', 'winter'].map(k => `<button class="act${season() === k ? '' : ' quiet'}" data-a="tseason" data-id="${k}">${C.seasons[k].name}</button>`).join(' ')} <button class="act quiet" data-a="tseason" data-id="">The phone's own</button></p>
+  <h3>The festival</h3><p><button class="act" data-a="tfest" data-n="0">Start the festival plans now</button> <button class="act" data-a="tfest" data-n="1">Festival night now</button></p>
   <p class="meta">A normal play-through order: fill the pack, start jobs in the Jobs list, tap "Finish every job now", repeat. "+1 day" brings the daily things back.</p>
   <p style="margin-top:14px;font-size:12px"><a href="#" data-a="reset" style="color:var(--red)">start over (wipes this garden)</a></p>`);
 }
 let titleTaps = 0, titleTapAt = 0;
 function testPeek(x, y) { if (x < 200 && y < 80 + 20) { const n = performance.now(); titleTaps = n - titleTapAt < 900 ? titleTaps + 1 : 1; titleTapAt = n; if (titleTaps >= 5) { titleTaps = 0; openTest(); return true; } } return false; }
-function refreshSheet() { if (sheetKind === 'test') return; if (sheetKind && sheetKind.startsWith('folk:')) openFolk(sheetKind.slice(5)); else if (sheetKind === 'traveller') G.s.village.traveller ? openTraveller() : closeSheet(); else if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); renderInv(); renderHud(); }
+function refreshSheet() { if (sheetKind === 'test') return; if (sheetKind && sheetKind.startsWith('folk:')) openFolk(sheetKind.slice(5)); else if (sheetKind === 'traveller') G.s.village.traveller ? openTraveller() : closeSheet(); else if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); else if (sheetKind === 'fest') openFestGreen(); renderInv(); renderHud(); }
 function openSeedbed() {
   const p = G.plot(), c = C.crops.sprout; let body = '';
   if (!p.stage) body = `<div class="row"><div class="t"><b>Plant a seed</b><span>Costs ${costHtml(c.plant)} · ready about ${Math.round(c.grow / 60)} hours after watering</span></div><button class="act" data-a="plant" ${G.can(c.plant) ? '' : 'disabled'}>Plant</button></div>` + (G.can(c.plant) ? '' : `<p>No seeds. The land offers one now and then; look for a seed on the ground.</p>`);
@@ -1530,7 +1703,7 @@ function journalFoot(v) {   // what you know about a creature's feeding, nest an
 }
 function openJournal() {
   const seen = C.visitors.filter(v => G.met(v.id)).length, regs = C.visitors.filter(v => G.isRegular(v.id)).length;
-  let html = `<h2>Field journal<small>${seen} of ${C.visitors.length} met${regs ? ` · ${regs} regular${regs > 1 ? 's' : ''}` : ''}</small></h2><p>Tap a visitor in the garden to note it down; a soft glow means someone new. Tap a page to read it.</p>${neighboursHtml()}<div class="jgrid">`;
+  let html = `<h2>Field journal<small>${seen} of ${C.visitors.length} met${regs ? ` · ${regs} regular${regs > 1 ? 's' : ''}` : ''}</small></h2><p>Tap a visitor in the garden to note it down; a soft glow means someone new. Tap a page to read it.</p>${G.s.festival.stage !== 'waiting' ? `<p><button class="act quiet" data-a="festgreen">🎉 ${C.festival.name}</button></p>` : ''}${neighboursHtml()}<div class="jgrid">`;
   for (const v of C.visitors) { const m = G.met(v.id); html += `<button class="jcard${m ? '' : ' unseen'}" data-a="${m ? 'entry' : ''}" data-id="${v.id}">${portraitHtml(v)}<b>${m ? v.name : '?'}</b>${G.hasNest(v.id) ? '<i>lives here</i>' : G.isRegular(v.id) ? '<i>regular</i>' : ''}</button>`; }
   html += `</div>`;
   const log = [...G.s.log].reverse().slice(0, 8);
@@ -1614,6 +1787,50 @@ function openStory(fid, kind) {
   else if (kind === 'arrived') openSheet('story', `<div class="jpage">${folkPor(f, true)}<h2>A traveller on the path</h2><p class="lore">${f.intro}</p></div><p style="text-align:center"><button class="act" data-a="traveller">Go and see</button> <button class="act quiet" data-a="close">Later</button></p>`);
   else { const r = f.quest.reward; openSheet('story', `<div class="jpage">${storyPic(fid, f)}<h2>${f.quest.story.title}</h2><p class="lore" style="text-align:left">${f.quest.story.text}</p><p class="meta">The end of ${f.short}'s story. ${r ? 'A gift for you: ' + costHtml(r) : ''}</p></div><p style="text-align:center"><button class="act" data-a="close">Close the book</button></p>`); }
 }
+// ---------- the festival pages ----------
+const dayKeyOf = t => new Date(t).toDateString();
+let COUPLE = null;
+function couplePic() {   // stand-in for a festival painting: Wendel and Hazel side by side, from their painted walks
+  if (!COUPLE) { const c = document.createElement('canvas'); c.width = 240; c.height = 240; const x = c.getContext('2d');
+    [['him', -46], ['her', 46]].forEach(([w, off]) => { const [cw, ch] = GNOMES[w].cell; x.drawImage(IM[w + '-front'], 0, 0, cw, ch, 120 - cw * 0.45 + off, 22, cw * 0.9, ch * 0.9); });
+    COUPLE = c.toDataURL(); }
+  return `<div class="por big"><img src="${COUPLE}" alt="" style="object-fit:contain"></div>`;
+}
+function festPic(key, fid) { return art('story-' + key) ? `<img class="story" src="sprites/story-${key}.webp" alt="">` : fid && G.folkDef(fid) ? folkPor(G.folkDef(fid), true) : couplePic(); }
+function festCheck() {   // open whichever festival page is waiting to be read
+  const f = G.s.festival, yr = new Date(G.now()).getFullYear();
+  if (f.stage !== 'waiting' && !f.seenIdea) return openFest('idea');
+  if (f.stage === 'on') return openFest('night', 0);
+  if (f.years.includes(yr) && f.yearSeen !== yr) return openFest('yearly');
+}
+function openFest(kind, i = 0) {
+  const F = C.festival, f = G.s.festival, T = t => G.festText(t), who = G.festWhoId(); let html;
+  if (kind === 'idea') { f.seenIdea = true; G.dirty = true;
+    html = `<div class="jpage">${festPic('fest-idea')}<h2>${F.idea.title}</h2><p class="lore" style="text-align:left">${T(F.idea.text)}</p><p class="meta">New jobs: getting ready for ${F.name}.</p></div><p style="text-align:center"><button class="act" data-a="fest" data-id="secret">Next</button></p>`; }
+  else if (kind === 'secret') html = `<div class="jpage">${festPic('fest-secret', who)}<h2>${F.secret.title}</h2><p class="lore" style="text-align:left">${T(F.secret.text)}</p></div><p style="text-align:center"><button class="act" data-a="jobs" data-id="fest:green">I promise</button></p>`;
+  else if (kind === 'night') { const pg = F.night[i], last = i >= F.night.length - 1, done = f.stage === 'done';
+    html = `<div class="jpage">${festPic(pg.key)}<h2>${pg.title}</h2><p class="lore" style="text-align:left">${T(pg.text)}</p><p class="meta">${i + 1} of ${F.night.length}</p></div><p style="text-align:center">` +
+      (last ? (done ? `<button class="act" data-a="fest" data-id="end">Next</button>` : `<button class="act" data-a="festend">Next</button>`) : `<button class="act" data-a="fest" data-id="night:${i + 1}">Next</button>`) + `</p>`; }
+  else if (kind === 'end') { const st = G.festStats();
+    html = `<div class="jpage">${festPic(F.end.key)}<h2>${F.end.title}</h2><p class="lore" style="text-align:left">${T(F.end.text)}</p>
+      <p class="meta">${[[st.days, 'day', 'visited'], [st.green, 'patch', 'of land healed'], [st.met, 'creature', 'in the journal'], [st.folk, 'neighbour', ''], [st.stories, 'story', 'told']].map(([n, w, x]) => `${n} ${n === 1 ? w : w === 'patch' ? 'patches' : w === 'story' ? 'stories' : w + 's'}${x ? ' ' + x : ''}`).join(' · ')}</p>${f.stage === 'done' && !f.endSeen ? `<p class="meta">A gift for you: ${costHtml(F.reward)}</p>` : ''}</div><p style="text-align:center"><button class="act" data-a="close">Close the book</button></p>`;
+    f.endSeen = true; G.dirty = true; }
+  else if (kind === 'yearly') { f.yearSeen = new Date(G.now()).getFullYear(); G.dirty = true;
+    html = `<div class="jpage">${festPic('fest-dance')}<h2>${F.yearly.title}</h2><p class="lore" style="text-align:left">${T(F.yearly.text)}</p></div><p style="text-align:center"><button class="act" data-a="close">To the green</button></p>`; }
+  openSheet('story', html);
+}
+function openFestGreen() {   // tap the green (or the festival button in the journal)
+  const F = C.festival, f = G.s.festival; let html = `<h2>${F.name}</h2>`;
+  if (f.stage === 'planning') {
+    html += `<p>Getting the green ready. Every job here brings the night a little closer. <button class="act quiet" data-a="fest" data-id="secret">The secret</button></p>`;
+    for (const j of F.jobs) { const v = G.taskView(G.taskDef(j.id)); html += `<p style="margin:3px 0">${v.state === 'done' ? '✓' : v.state === 'running' ? '⏳' : '○'} ${j.name} <span class="who">${C.names[j.who]}</span>${v.state === 'running' ? ` · ${G.timeLeft(v.endsAt)} to go` : ''}</p>`; }
+    html += `<p style="margin-top:10px"><button class="act" data-a="jobs" data-id="">Open Jobs</button></p>`;
+  } else if (f.stage === 'ready') html += `<p>Everything is ready: the table, the bunting, the lanterns, the arch and the feast. The festival is ${dayKeyOf(f.at) === dayKeyOf(G.now()) ? 'tonight' : 'tomorrow evening'}, from five o'clock. Nobody has told Wendel and Hazel. Nobody.</p>`;
+  else if (f.stage === 'on') html += `<p>It's festival night!</p><p><button class="act" data-a="fest" data-id="night:0">Join in</button></p>`;
+  else if (f.stage === 'done') html += `<p>The green where ${F.name} was held, on ${new Date(f.doneAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}. It comes back on that date every year.</p><p><button class="act" data-a="fest" data-id="night:0">Read the festival story again</button> <button class="act quiet" data-a="fest" data-id="end">The end of the beginning</button></p>`;
+  else html += `<p>Not yet.</p>`;
+  openSheet('fest', html);
+}
 function neighboursHtml() {   // the journal's neighbours section
   const v = G.s.village, ids = Object.keys(v.folk); if (!ids.length && !v.traveller) return '';
   let html = `<h3>Neighbours</h3><div class="jgrid">`;
@@ -1622,9 +1839,10 @@ function neighboursHtml() {   // the journal's neighbours section
   return html + `</div><h3>Creatures</h3>`;
 }
 function openAway(r) {
-  const mins = Math.round(r.gone / 60000); if (mins < 10 && !r.finished.length && !r.ate) return r.traveller ? openStory(r.traveller, 'arrived') : undefined;
+  const mins = Math.round(r.gone / 60000); if (mins < 10 && !r.finished.length && !r.ate && !r.season) return r.traveller ? openStory(r.traveller, 'arrived') : undefined;
   const gone = mins < 60 ? `${mins} minutes` : mins < 60 * 36 ? `${Math.round(mins / 60)} hours` : `${Math.round(mins / 1440)} days`;
   let html = `<h2>While you were away<small>${gone}</small></h2>`;
+  if (r.season) html += `<p><b>${C.seasons[r.season].name}.</b> ${C.seasons[r.season].arrive.replace(/^\w+\. /, '')}</p>`;
   if (r.event) html += `<p>${r.event}</p>`;
   if (r.ate) html += `<p>The ${r.ate.toLowerCase()} came by and emptied the feeding dish.</p>`;
   if (r.traveller) { const f = G.folkDef(r.traveller); html += `<p>A traveller has camped by the path: <b>${f.name}</b>, ${f.trade}. Tap their tent to meet them.</p>`; }
@@ -1639,6 +1857,7 @@ G.onChange((kind, data) => { renderInv(kind === 'inv' && typeof data === 'string
   if (kind === 'traveller' && data) { btnAlert('bJournal', true); if (!sheetKind) openStory(data, 'arrived'); else toast('A traveller has camped by the path.'); }
   if (kind === 'story') { btnAlert('bJournal', true); openStory(data.folk, data.kind); }
   if (kind === 'quest') btnAlert('bJournal', true);
+  if (kind === 'festival') { if (data === 'ready') toast(G.festText(C.festival.ready).replace('{when}', dayKeyOf(G.s.festival.at) === dayKeyOf(G.now()) ? 'tonight' : 'tomorrow evening')); else festCheck(); }
   if (kind === 'favour') { const f = G.folkDef(data); toast(`${f.short[0].toUpperCase() + f.short.slice(1)} could use a small favour.`); } });
 
 // ---------- start ----------
@@ -1659,6 +1878,7 @@ function start() {
   loadArtSlots();
   if (/test/.test(hash)) { const b = document.createElement('button'); b.className = 'act'; b.textContent = '🧪 Test'; b.style.cssText = 'position:fixed;right:10px;top:calc(env(safe-area-inset-top) + 10px);z-index:5;min-height:40px;padding:8px 12px'; b.onclick = openTest; document.body.appendChild(b); }
   if (G.away) openAway(G.away);
+  festCheck();
   if (!G.s.flags.welcomed) {
     G.s.flags.welcomed = true; G.save();
     openSheet('welcome', `<h2>Welcome to the garden</h2><p>Wendel and Hazel, two small gnomes, have just arrived in this logged clearing. You are their unseen helper spirit.</p><h3>How it works</h3><p>✨ <b>Touch the softly glowing things.</b> Things lying on the ground go into your pack (🧺 Pack).</p><p>🔨 <b>A soft glow behind their belongings means a job you can start.</b> Give the materials and a gnome gets to work while you go about your day.</p><p>Come back whenever you like: the land leaves something new for you each time.</p><p style="margin-top:12px"><button class="act" data-a="close">Let's begin</button></p>`);

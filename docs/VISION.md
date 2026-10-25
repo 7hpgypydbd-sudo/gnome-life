@@ -6,7 +6,7 @@ Everything here was chosen by Bryce in the "Pin down the game's vision" thread (
 A cosy game with no real stakes. The main storyline is **a sweet story of Wendel and Hazel's love over their marriage**, with small tribulations brought by visitors and neighbours (a forgotten anniversary, too long in the workshop, a worry about winter), always mended warmly. Each neighbour's little story shows one such moment. The **magic staff story is 100% optional**, late game, started by an object found in mysterious circumstances; it may never happen, and Bryce writes it.
 
 ## The game in a paragraph
-You are an unseen helper spirit. A young newlywed gnome couple, **Wendel** (the dreamer: tinkers, invents, gazes at stars, loses his pipe) and **Hazel** (the practical one: organises, gardens, keeps them fed, dry wit), arrive in a logged, human-scarred clearing. Over three to six months of real time you help them heal the land tile by tile, turn a root-shelter into a snug home, and welcome wandering gnomes who stay when you build them a house. The result is a cosy village tucked into nature, never a city. A festival marks the soft ending, and then the world keeps living: seasons turn, visitors come, the couple slowly grows old.
+You are an unseen helper spirit. A young newlywed gnome couple, **Wendel** (the dreamer: tinkers, invents, gazes at stars, loses his pipe) and **Hazel** (the practical one: organises, gardens, keeps them fed, dry wit), arrive in a logged, human-scarred clearing. Over three to six months of real time you help them heal the land tile by tile, turn a root-shelter into a snug home, and welcome wandering gnomes who stay when you build them a house. The result is a cosy village tucked into nature, never a city. A festival marks the soft ending (built 2026-10-25: a Greening Festival that the neighbours secretly make into Wendel and Hazel's wedding feast, after 6 neighbours, back every year on its date), and then the world keeps living: seasons turn, visitors come, the couple slowly grows old.
 
 ## The world
 - **Size:** about 25 tiles (5x5). One tile is the current diamond, about 3.7 gnomes across.
@@ -80,6 +80,6 @@ Each batch is about 10-15 Gemini prompts, written by Claude from `STYLE-GUIDE.md
 **Batch 5 — village**
 13. Traveller gnomes: the 8 neighbours above (prompts in `ART-BATCH-6.md`). Fresh reference sheets first, approved by Bryce.
 14. Neighbour homes under roots and in stumps (3-4 variants) and the first four buildings: well, bakery oven, workshop, bridge.
-15. Festival props: bunting, long table, lanterns.
+15. Festival props: bunting, long table, lanterns (prompts written 2026-10-25 as `ART-BATCH-7.md`, with a flower arch, the feast, seasonal visitors and six festival story paintings; the full list of everything still to paint is `ART-LIST.md`).
 
 **Later (not yet)**: middle-aged and old versions of Wendel and Hazel; seasonal props; mill, orchard, beehives, pond; a child.
