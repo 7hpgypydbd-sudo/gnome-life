@@ -281,7 +281,7 @@ const PROPS = [
   { name:'firewood',     gx:0.12, gy:0.34, s:0.9, until:'woodpile' },
   { name:'barrel',       gx:0.43, gy:0.29, s:0.9 },   // at the house's right corner, catching the roof's rain (yard layout plan)
   { name:'campfire',     gx:0.52, gy:0.48, s:0.9 },
-  { name:'lanternstump', gx:0.75, gy:0.50, s:0.9, gone:'stump' },   // dug out by "Dig out the old stump"
+  { name:'lanternstump', gx:0.75, gy:0.50, s:0.9, gone:'stump' },   // a plain old stump now (Bryce: the lamp post nailed to it made no sense); dug out by "Dig out the old stump"
   { name:'seedbed',      gx:0.58, gy:0.74, s:1.0, flat:true, until:'bed' },   // until: hidden until that job is done (fades in while it runs)
   { name:'tub',          gx:0.50, gy:0.21, s:0.7, until:'clothesline' },   // the covered tub (Bryce: "a big drum in the way" by the bed, no job): now the wash tub under the washing line
   { name:'wheelbarrow',  gx:0.26, gy:0.56, s:0.6, until:'barrow' },   // Bryce: small, just a decoration the gnomes make
@@ -397,7 +397,7 @@ const ART_SLOTS = {
   'fence-fallen':     { w:'like:fence' },     // the fence BEFORE it is mended (the existing fence is the after)
   'oak-planted':      { h: 92 },              // "Plant the sapling out" (drawn by height: it is taller than the potted one)
   'barrel-full':      { w:'like:barrel' },    // "Scrub the rain barrel"
-  'lantern-lit':      { w:'like:lanternstump' }, // "Mend the old lantern" (the glow stays code)
+  'lantern-lit':      { w:'like:lanternstump' }, // "Mend the old lantern": parked with the lamp post, so unused for now
   'yard-bench':       { w: 64 },              // "Build a bench by the fire": a plank on two legs (art day 13)
   'washing-line':     { w: 150 },             // "String up a washing line"
   'stick-pile':       { w: 90 },              // "Clear the ground": the gathered pile
@@ -1257,7 +1257,7 @@ function flatStone(x, y, r, i = 0) {   // a stone set into the earth: a ring of 
 function stick(x, y, len, ang, col = '#7a5a3a') { ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(42,21,16,0.8)'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(-len / 2, 0); ctx.lineTo(len / 2, 0); ctx.stroke(); ctx.strokeStyle = col; ctx.lineWidth = 3.5; ctx.stroke(); ctx.restore(); }
 // painted pictures that take over from the code below once they exist (see ART_SLOTS)
 const BEFORE_ART = { stonebench:'yard-stones' };
-const SWAP_ART = { barrel:['barrel-full', 'rainbarrel'], lanternstump:['lantern-lit', 'lantern'] };
+const SWAP_ART = { barrel:['barrel-full', 'rainbarrel'] };
 // the home: each roof/house job has its own painting of the whole stump; the latest finished one shows, the next crossfades in while its job runs
 const HOUSE_STEPS = [['shelter-mossroof', 'roof'], ['house-hollowed', 'house1'], ['house-windows', 'house2'], ['house-finished', 'house3']];
 function houseArt() { let top = -1; HOUSE_STEPS.forEach(([k, j], i) => { if (art(k) && taskProg(j) >= 1) top = i; }); return top; }
@@ -1354,18 +1354,12 @@ const AFTER = {
     if (taskProg('rainbarrel') < 1 || art('barrel-full')) return;
     const [wx, wy] = at(52, 36); ctx.save(); blob(wx, wy, 30 * s, 9 * s, 'rgba(120,170,200,0.85)'); blob(wx - 6 * s, wy - 2 * s, 12 * s, 3 * s, `rgba(240,250,255,${0.5 + 0.3 * Math.sin(now / 500)})`); ctx.restore();
   },
-  lanternstump(at, s, now) {   // mended: a small steady flame, day and night
-    if (taskProg('lantern') < 1) return;
-    const [wx, wy] = at(lanternPt()[0], lanternPt()[1]); glow(wx, wy, 26, 'rgba(255,210,120,1)', 0.55 + 0.1 * Math.sin(now / 300));
-  },
 };
-const LANTERN_OLD = [133, 102], LANTERN_PAINTED = [130, 87];   // the painted lantern-lit picture is 16 px taller than the old stump, hence the different y
-function lanternPt() { return art('lantern-lit') ? LANTERN_PAINTED : LANTERN_OLD; }
 function drawPlantedOak(x, y, s) {   // "Plant the sapling out": the pot is gone; the oak stands in a mound of earth, a little taller
   const img = IM.sapling, top = 82, k = s * 1.5, w = img.width * k, h = top * k;
   blob(x, y, 26, 9, 'rgba(90,64,40,0.95)'); blob(x - 4, y - 2, 14, 4, 'rgba(140,105,70,0.8)');
   ctx.drawImage(img, 0, 0, img.width, top, x - w / 2 + 3, y - h, w, h);
-}   // where the lantern hangs on the lantern stump, in sprite pixels
+}
 // ground-level changes, drawn right after the home tile
 const BED_OVAL = { w: 340, ratio: 205 / 324, rows: 4 };   // the dug oval (painted kit-marks-05): drawn width, height/width, rows Hazel digs
 function bedDig(p) {   // where the digging has got to: row by row across the oval, back to front, turning at each end
@@ -1674,7 +1668,7 @@ function spawnVisitor(forced) {
   const hungry = !trouble && G.dishBuilt() && G.wantsFood(def.id);
   if (hungry) to = [FEEDER.gx - 0.05, FEEDER.gy + 0.05];
   const perch = def.id === 'owl' || (trouble && def.id === 'possum');
-  if (perch) { const l = PROPS.find(p => p.name === (taskProg('stump') >= 1 ? 'firewood' : 'lanternstump')); to = [l.gx - 0.02, l.gy - 0.02]; }   // once the stump is dug out, the woodpile
+  if (perch) { const l = PROPS.find(p => p.name === 'firewood'); to = [l.gx - 0.02, l.gy - 0.02]; }   // up on the woodpile
   visitor = { def, gx: from[0], gy: from[1], tx: to[0], ty: to[1], phase: 'in', t: 0, stay: trouble ? 1e9 : 18 + Math.random() * 15, perch: 0, hungry, trouble,
               speed: def.speed || 0.06, faceR: to[0] - to[1] > from[0] - from[1] };
   G.arrive(def.id);
@@ -2398,8 +2392,6 @@ function frame(now) {
     const fire = PROPS.find(p => p.name === 'campfire'); const [fx, fy] = toWorld(fire.gx, fire.gy);
     const flick = 0.75 + 0.25 * Math.sin(now / 90) * Math.sin(now / 230);
     glow(fx, fy - 30, 150, 'rgba(255,150,60,1)', 0.55 * night * flick);
-    const lan = PROPS.find(p => p.name === 'lanternstump'); const [lx, ly] = toWorld(lan.gx, lan.gy);
-    const ls = SPR * lan.s; if (taskProg('lantern') >= 1 && taskProg('stump') < 1) glow(lx - IM.lanternstump.width * ls / 2 + lanternPt()[0] * ls, ly - IM.lanternstump.height * ls + lanternPt()[1] * ls, 110, 'rgba(255,205,110,1)', 0.5 * night * (0.9 + 0.1 * Math.sin(now / 400)));
     const sh = PROPS.find(p => p.name === 'shelter'); const [sx, sy] = toWorld(sh.gx, sh.gy);
     glow(sx - 20, sy - 60, 70, 'rgba(255,190,120,1)', 0.35 * night);
     if (taskProg('house2') >= 1) for (const [wx, wy] of houseWindows()) glow(wx, wy, 34, 'rgba(255,200,110,1)', 0.6 * night * (gnomes.some(g => g.inside) ? 1 : 0.5));
@@ -2732,7 +2724,7 @@ function openPack() {
   openSheet('pack', html + `</div>`);
 }
 const JOB_PIC = { ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'yard-bench', barrow: 'wheelbarrow',
-  woodpile: 'firewood', doorstep: 'yard-doorstep', rainbarrel: 'barrel-full', clothesline: 'washing-line', lantern: 'lanternstump', windowbox: 'yard-windowbox', wormlantern: 'worm-lantern',
+  woodpile: 'firewood', doorstep: 'yard-doorstep', rainbarrel: 'barrel-full', clothesline: 'washing-line', lantern: 'lanternstump', stump: 'lanternstump', windowbox: 'yard-windowbox', wormlantern: 'worm-lantern',
   wormlamp: 'worm-lamp', house1: 'house-hollowed', house2: 'house-windows', house3: 'house-finished', hedgehoghouse: 'nest-leafpile', nestbox: 'nest-nest', bridge: 'bld-bridge' };
 function jobPic(d) {   // a small painted picture of what the job makes, for the parchment job cards ('' if there is none)
   const [kind, f] = d.id.split(':'), k = JOB_PIC[d.id] || (kind === 'home' ? 'home-' + f : kind === 'trade' ? 'bld-' + f : kind === 'quest' ? 'folk-' + f : kind === 'regrow' ? 'sapling' : '');
