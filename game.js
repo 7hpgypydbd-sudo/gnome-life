@@ -64,6 +64,8 @@ const G = {
     const tk = this.s.tasks; if (tk.bedwater && !tk.spring) tk.spring = { startedAt: tk.bedwater.startedAt, endsAt: tk.bedwater.startedAt, done: true };   // watered before the spring job existed: the spring counts as found
     if (tk.fence) this.s.flags.rabbit = true;
     if (this.s.plots.seedbed.grown) this.s.flags.firstpick = true;   // fenced before the rabbit's raid existed
+    if (tk.wormlamp && tk.wormlamp.done && !this.s.flags.lampsSplit) for (const id of ['wormlamp2', 'wormlamp3', 'wormlamp4']) tk[id] = tk[id] || { startedAt: tk.wormlamp.startedAt, endsAt: tk.wormlamp.endsAt, done: true };   // all four posts came from one job before they were split
+    this.s.flags.lampsSplit = true;
     this.away = this.catchUp();
     this.save();
     return this.s;
@@ -241,13 +243,13 @@ const G = {
   taskView(d) {
     const s = this.s, tk = s.tasks[d.id], t = now();
     const gate = tk ? '' : this.gateWhy(d);
-    const met = n => n.startsWith('flag:') ? !!s.flags[n.slice(5)] : !!(s.tasks[n] && s.tasks[n].done);   // 'flag:x' = after something happened (e.g. the rabbit's raid)
+    const met = n => n.startsWith('flag:') ? !!s.flags[n.slice(5)] : n.startsWith('tile:') ? !!s.tiles[n.slice(5)] : !!(s.tasks[n] && s.tasks[n].done);   // 'flag:x' = after something happened (e.g. the rabbit's raid)
     const locked = (d.needs || []).some(n => !met(n)) || (d.minLevel && this.magicLevel() < d.minLevel) || !!gate;
     const state = tk ? (tk.done ? 'done' : (tk.endsAt <= t ? 'done' : 'running')) : (locked ? 'locked' : 'ready');
     return { def: d, state, locked, endsAt: tk ? tk.endsAt : 0, startedAt: tk ? tk.startedAt : 0, can: this.can(d.cost), missing: this.missing(d.cost),
-             show: (state !== 'done' || (t - (tk.endsAt || 0)) < 60 * MIN) && !(d.needs || []).some(n => (n.startsWith('trade:') && !this.folkState(n.slice(6))) || (n.startsWith('flag:') && !met(n))),   // village jobs stay hidden until that neighbour lives here
+             show: (state !== 'done' || (t - (tk.endsAt || 0)) < 60 * MIN) && !(d.needs || []).some(n => (n.startsWith('trade:') && !this.folkState(n.slice(6))) || ((n.startsWith('flag:') || n.startsWith('tile:')) && !met(n))),   // village jobs stay hidden until that neighbour lives here
              rank: { running: 0, ready: 1, locked: 2, done: 3 }[state],
-             why: gate ? gate : locked ? (d.minLevel && this.magicLevel() < d.minLevel ? `needs magic level ${d.minLevel}` : `after: ${(d.needs || []).filter(n => !n.startsWith('flag:')).map(n => lc(this.taskDef(n).name)).join(', ')}`) : '' };
+             why: gate ? gate : locked ? (d.minLevel && this.magicLevel() < d.minLevel ? `needs magic level ${d.minLevel}` : `after: ${(d.needs || []).filter(n => !n.startsWith('flag:') && !n.startsWith('tile:')).map(n => lc(this.taskDef(n).name)).join(', ')}`) : '' };
   },
   startTask(id) {
     const d = this.taskDef(id), v = this.taskView(d); if (v.state !== 'ready' || !v.can) return false;
