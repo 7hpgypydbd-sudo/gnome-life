@@ -1,0 +1,402 @@
+[
+ {
+  "id": "b1-01-him-dowse",
+  "title": "Wendel dowsing strip",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-side.jpg",
+   "art-day-14/refs/sprites__him-dig.jpg"
+  ],
+  "cut": "pack like him-build: sprites/him-dowse.png, act dowse (4 frames), re-paste gnomes.json into index.html",
+  "note": ""
+ },
+ {
+  "id": "b1-02-yard-bench",
+  "title": "Plank bench",
+  "ref_files": [
+   "art-day-14/refs/sprites__stonebench.jpg"
+  ],
+  "cut": "cut_kit.py -> sprites/yard-bench.webp (slot yard-bench)",
+  "note": ""
+ },
+ {
+  "id": "b1-03-bench-couple",
+  "title": "Wendel and Hazel on the bench",
+  "ref_files": [
+   "art-day-14/painted/yard-bench.jpg (the finished painting from step 2)",
+   "art-day-14/refs/sprites__him-sit.jpg",
+   "art-day-14/refs/sprites__her-sit.jpg"
+  ],
+  "cut": "-> sprites/bench-couple.webp (slot like yard-bench)",
+  "note": "Paint AFTER the bench. If the bench painting is not done yet, paste its Gemini download."
+ },
+ {
+  "id": "b1-04-wheelbarrow-small",
+  "title": "Small wheelbarrow",
+  "ref_files": [
+   "art-day-14/refs/sprites__wheelbarrow.jpg"
+  ],
+  "cut": "-> slot make-barrow / wheelbarrow-small",
+  "note": ""
+ },
+ {
+  "id": "b1-05-toad-legs",
+  "title": "Toadstool on root legs",
+  "ref_files": [
+   "art-day-14/refs/sprites__kit__wood-15.jpg"
+  ],
+  "cut": "-> sprites/toad-legs.webp, used while it walks (toadItem in index.html)",
+  "note": ""
+ },
+ {
+  "id": "b1-06-toad-house",
+  "title": "Toadstool mouse house",
+  "ref_files": [
+   "art-day-14/refs/sprites__kit__wood-15.jpg"
+  ],
+  "cut": "-> sprites/toad-house.webp (replaces the code-drawn mouseHouse)",
+  "note": ""
+ },
+ {
+  "id": "b1-07-pond",
+  "title": "Dew pond",
+  "ref_files": [
+   "art-day-14/refs/sprites__spring-clear.jpg"
+  ],
+  "cut": "-> sprites/pond.webp",
+  "note": ""
+ },
+ {
+  "id": "b1-08-spirit-float",
+  "title": "Wood spirit floating",
+  "ref_files": [
+   "art-day-14/refs/sprites__vis-spirit.jpg"
+  ],
+  "cut": "-> sprites/spirit-float.webp (strip any pink fringe in the cut)",
+  "note": ""
+ },
+ {
+  "id": "b1-09-spirit-point",
+  "title": "Wood spirit pointing",
+  "ref_files": [
+   "art-day-14/refs/sprites__vis-spirit.jpg"
+  ],
+  "cut": "-> sprites/spirit-point.webp",
+  "note": ""
+ },
+ {
+  "id": "b1-10-spirit-settle",
+  "title": "Wood spirit settling",
+  "ref_files": [
+   "art-day-14/refs/sprites__vis-spirit.jpg"
+  ],
+  "cut": "-> sprites/spirit-settle.webp",
+  "note": ""
+ },
+ {
+  "id": "b1-11-edges-stream",
+  "title": "Stream banks (retry)",
+  "ref_files": [
+   "art-day-14/refs/sprites__kit__edge-01.jpg",
+   "art-day-14/refs/sprites__tile-stream.jpg"
+  ],
+  "cut": "cut_kit.py -> sprites/kit/bank-01..03.webp",
+  "note": "Retry. Look at edge-01 first: the old one had hard ends."
+ },
+ {
+  "id": "b1-12-edges-path",
+  "title": "Path edges (retry)",
+  "ref_files": [
+   "art-day-14/refs/sprites__kit__edge-04.jpg",
+   "art-day-14/refs/sprites__tile-path.jpg"
+  ],
+  "cut": "-> sprites/kit/pathedge-01..03.webp",
+  "note": "Retry."
+ },
+ {
+  "id": "b1-13-fix-orchard",
+  "title": "Orchard without the halo",
+  "ref_files": [
+   "art-day-14/refs/orchard-crop.jpg"
+  ],
+  "cut": "-> replaces the orchard in the Pebbleworth building (bld-pebbleworth / orchard slot)",
+  "note": ""
+ },
+ {
+  "id": "b1-14-fix-stickpile",
+  "title": "Stick pile, whole",
+  "ref_files": [
+   "art-day-14/refs/sprites__stick-pile.jpg"
+  ],
+  "cut": "-> sprites/stick-pile.webp (replace)",
+  "note": ""
+ },
+ {
+  "id": "b1-15-fix-barnaby",
+  "title": "Barnaby page, no walking man",
+  "ref_files": [
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/story-barnaby.webp (replace)",
+  "note": ""
+ },
+ {
+  "id": "b1-16-dish-full",
+  "title": "Feeding dish with seed and berries",
+  "ref_files": [
+   "art-day-14/refs/sprites__feeding-dish.jpg"
+  ],
+  "cut": "-> sprites/feeding-dish-full.webp",
+  "note": "Round four may add its own version of this prompt to docs/ART-DAY-13.md; if it has, use that one instead and skip this."
+ },
+ {
+  "id": "b1-17-dish-fill",
+  "title": "Gnome filling the dish",
+  "ref_files": [
+   "art-day-14/refs/sprites__her-side.jpg",
+   "art-day-14/refs/sprites__him-side.jpg",
+   "art-day-14/refs/sprites__her-water.jpg"
+  ],
+  "cut": "pack like her-build: sprites/her-fill.png act fill",
+  "note": "Either gnome can do it in the game; mirror in code."
+ },
+ {
+  "id": "b2-01-yard-1",
+  "title": "Little makes, yard: bare ground and first green",
+  "ref_files": [
+   "art-day-14/refs/sprites__wheelbarrow.jpg",
+   "art-day-14/refs/sprites__stonebench.jpg"
+  ],
+  "cut": "cut_kit.py (grow/min thresholds as for the secrets sheets) -> sprites/make-<id>.webp for each, in numbered order",
+  "note": ""
+ },
+ {
+  "id": "b2-02-yard-2",
+  "title": "Little makes, yard: meadow and small woodland things",
+  "ref_files": [
+   "art-day-14/refs/sprites__wheelbarrow.jpg",
+   "art-day-14/refs/sprites__stonebench.jpg"
+  ],
+  "cut": "cut_kit.py (grow/min thresholds as for the secrets sheets) -> sprites/make-<id>.webp for each, in numbered order",
+  "note": ""
+ },
+ {
+  "id": "b2-03-yard-3",
+  "title": "Little makes, yard: big three",
+  "ref_files": [
+   "art-day-14/refs/sprites__wheelbarrow.jpg",
+   "art-day-14/refs/sprites__stonebench.jpg"
+  ],
+  "cut": "cut_kit.py (grow/min thresholds as for the secrets sheets) -> sprites/make-<id>.webp for each, in numbered order",
+  "note": ""
+ },
+ {
+  "id": "b2-04-garden-1",
+  "title": "Little makes, garden: first green",
+  "ref_files": [
+   "art-day-14/refs/sprites__wheelbarrow.jpg",
+   "art-day-14/refs/sprites__stonebench.jpg"
+  ],
+  "cut": "cut_kit.py (grow/min thresholds as for the secrets sheets) -> sprites/make-<id>.webp for each, in numbered order",
+  "note": ""
+ },
+ {
+  "id": "b2-05-garden-2",
+  "title": "Little makes, garden: young meadow",
+  "ref_files": [
+   "art-day-14/refs/sprites__wheelbarrow.jpg",
+   "art-day-14/refs/sprites__stonebench.jpg"
+  ],
+  "cut": "cut_kit.py (grow/min thresholds as for the secrets sheets) -> sprites/make-<id>.webp for each, in numbered order",
+  "note": ""
+ },
+ {
+  "id": "b2-06-garden-3",
+  "title": "Little makes, garden: young woodland",
+  "ref_files": [
+   "art-day-14/refs/sprites__wheelbarrow.jpg",
+   "art-day-14/refs/sprites__stonebench.jpg"
+  ],
+  "cut": "cut_kit.py (grow/min thresholds as for the secrets sheets) -> sprites/make-<id>.webp for each, in numbered order",
+  "note": ""
+ },
+ {
+  "id": "b3-01-p1-1",
+  "title": "Story painting 1.1",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__her-front.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-1-1.webp (slot page-1-1)",
+  "note": ""
+ },
+ {
+  "id": "b3-02-p1-2",
+  "title": "Story painting 1.2",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__her-front.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-1-2.webp (slot page-1-2)",
+  "note": ""
+ },
+ {
+  "id": "b3-03-p1-3",
+  "title": "Story painting 1.3",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__her-front.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-1-3.webp (slot page-1-3)",
+  "note": ""
+ },
+ {
+  "id": "b3-04-p1-4",
+  "title": "Story painting 1.4",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__her-front.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-1-4.webp (slot page-1-4)",
+  "note": ""
+ },
+ {
+  "id": "b3-05-p1-5",
+  "title": "Story painting 1.5",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__her-front.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-1-5.webp (slot page-1-5)",
+  "note": ""
+ },
+ {
+  "id": "b3-06-p2-1",
+  "title": "Story painting 2.1",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__her-front.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-2-1.webp (slot page-2-1)",
+  "note": ""
+ },
+ {
+  "id": "b3-07-p2-2",
+  "title": "Story painting 2.2",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__her-front.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-2-2.webp (slot page-2-2)",
+  "note": ""
+ },
+ {
+  "id": "b3-08-p2-3",
+  "title": "Story painting 2.3",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__her-front.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-2-3.webp (slot page-2-3)",
+  "note": ""
+ },
+ {
+  "id": "b3-09-p2-4",
+  "title": "Story painting 2.4",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__her-front.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-2-4.webp (slot page-2-4)",
+  "note": ""
+ },
+ {
+  "id": "b3-10-p2-5",
+  "title": "Story painting 2.5",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__her-front.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-2-5.webp (slot page-2-5)",
+  "note": ""
+ },
+ {
+  "id": "b3-11-p3-0",
+  "title": "Story painting 3.0",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__her-front.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-3-0.webp (slot page-3-0)",
+  "note": ""
+ },
+ {
+  "id": "b3-12-p3-1",
+  "title": "Story painting 3.1",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__her-front.jpg",
+   "art-day-14/refs/sprites__kit__wood-15.jpg",
+   "art-day-14/refs/sprites__vis-spirit.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-3-1.webp (slot page-3-1)",
+  "note": ""
+ },
+ {
+  "id": "b3-13-p3-2",
+  "title": "Story painting 3.2",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__her-front.jpg",
+   "art-day-14/refs/sprites__kit__wood-15.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-3-2.webp (slot page-3-2)",
+  "note": ""
+ },
+ {
+  "id": "b3-14-p3-3",
+  "title": "Story painting 3.3",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__her-front.jpg",
+   "art-day-14/refs/sprites__kit__wood-15.jpg",
+   "art-day-14/refs/sprites__portrait-mouse.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-3-3.webp (slot page-3-3)",
+  "note": ""
+ },
+ {
+  "id": "b3-15-p3-4",
+  "title": "Story painting 3.4",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-3-4.webp (slot page-3-4)",
+  "note": ""
+ },
+ {
+  "id": "b3-16-p3-5",
+  "title": "Story painting 3.5",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-front.jpg",
+   "art-day-14/refs/sprites__her-front.jpg",
+   "art-day-14/refs/sprites__story-barnaby.jpg"
+  ],
+  "cut": "-> sprites/page-3-5.webp (slot page-3-5)",
+  "note": ""
+ }
+]
