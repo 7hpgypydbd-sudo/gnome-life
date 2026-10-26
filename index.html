@@ -178,7 +178,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v50</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v51</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -196,15 +196,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 50;
+const BUILD = 51;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=50"></script>
-<script src="game.js?v=50"></script>
+<script src="content.js?v=51"></script>
+<script src="game.js?v=51"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -281,7 +281,7 @@ const PROPS = [
   { name:'firewood',     gx:0.12, gy:0.34, s:0.9, until:'woodpile' },
   { name:'barrel',       gx:0.43, gy:0.29, s:0.9 },   // at the house's right corner, catching the roof's rain (yard layout plan)
   { name:'campfire',     gx:0.52, gy:0.48, s:0.9 },
-  { name:'lanternstump', gx:0.75, gy:0.50, s:0.9 },
+  { name:'lanternstump', gx:0.75, gy:0.50, s:0.9, gone:'stump' },   // dug out by "Dig out the old stump"
   { name:'seedbed',      gx:0.58, gy:0.74, s:1.0, flat:true, until:'bed' },   // until: hidden until that job is done (fades in while it runs)
   { name:'tub',          gx:0.50, gy:0.21, s:0.7, until:'clothesline' },   // the covered tub (Bryce: "a big drum in the way" by the bed, no job): now the wash tub under the washing line
   { name:'wheelbarrow',  gx:0.26, gy:0.56, s:0.6, until:'barrow' },   // Bryce: small, just a decoration the gnomes make
@@ -358,6 +358,7 @@ const WORKPATH = {
   doorstep: () => [0.33, 0.27, 'dig'],   // kneeling by the door, bedding each flat stone in (stones: kneel, not hammer)
   clothesline: p => p < 0.5 ? [0.48, 0.16, 'build'] : [0.58, 0.10, 'build'],   // one post, then the other
   lantern: () => [0.71, 0.54, 'build'],   // at the old lantern stump
+  stump: p => [0.71 + Math.sin(p * 40) * 0.015, 0.54, 'dig'],   // kneeling round the roots, shifting side to side as he works it loose
   path: p => { const i = Math.min(PATH_STONES.length - 1, Math.floor(p * PATH_STONES.length)), [x, y] = PATH_STONES[i]; return [x + 0.04, y + 0.01, 'dig']; },   // stone by stone down from the door, kneeling
   fence: p => { const f = bedFrame(), a = Math.PI / 2 + (0.5 + p * (FENCE_N - 0.5)) * 2 * Math.PI / FENCE_N; return [...fromRing(Math.cos(a) * 1.18, Math.sin(a) * 1.18, f), 'build']; },   // round the ring panel by panel, gate last
   bedwater: (p, g) => workLoop(g, 'bedwater', c => [[SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3], [...wetPatchAt(Math.min(WET_PATCHES.length - 1, Math.floor(bedWet() * WET_PATCHES.length)), 0.75), 'water', 'can', 5]]),   // to and fro: fill the can at the spring pool, water a different bit of the bed each time
@@ -376,8 +377,8 @@ function wetPatchXY(k) {   // world point of patch k on the drawn oval (tilted: 
 function wetPatchAt(k) { const [x, y] = wetPatchXY(k), g = fromWorld(x, y + 14), [i, j] = g.tile.split(',').map(Number); return [g.gx + i, g.gy + j]; }   // where he stands to pour on patch k (just in front of it)
 function bedReady() { const pl = G.plot(); return G.done('bedwater') || !!(pl.stage || pl.grown); }   // dug and watered (older gardens already planted count)
 const BENCH = [0.62, 0.40];   // the plank bench, on the far side of the fire so sitting gnomes face you (yard layout plan)
-const JOB_FACE = { bench:[0.62, 0.40], lantern:[0.75, 0.50] };   // what a working gnome turns to face (default: the middle of the yard)
-const WORKSPOT = { logseat:[0.675,0.395], feeder:[0.82,0.66], clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], fence:[0.80,0.74], sapling:[0.24,0.84], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
+const JOB_FACE = { bench:[0.62, 0.40], lantern:[0.75, 0.50], stump:[0.75, 0.50] };   // what a working gnome turns to face (default: the middle of the yard)
+const WORKSPOT = { logseat:[0.675,0.395], feeder:[0.82,0.66], clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], lanternstump:[0.71,0.54], fence:[0.80,0.74], sapling:[0.24,0.84], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
 
 // ---------- loading ----------
 const IM = {};
@@ -1211,6 +1212,7 @@ function drawRutsFilled(ox, oy, now) {
   ctx.restore();
 }
 function propAlpha(p) {   // how much of a prop shows: props with "until" appear as that job is done
+  if (p.gone) return 1 - taskProg(p.gone);   // things a job takes away fade as it runs
   if (!p.until) return 1;
   if (p.name === 'seedbed') { const pl = G.plot(); if (pl.stage || pl.grown) return 1; return taskProg('bed') >= 1 ? 1 : 0; }   // older gardens already had a bed
   if (p.name === 'firewood') return woodStage() ? 1 : 0;
@@ -1220,6 +1222,7 @@ function drawProp(p) {
   const img = p.name === 'firewood' ? IM['woodpile-' + Math.max(1, woodStage())] : IM[p.name]; const [x, y] = toWorld(p.gx, p.gy); const s = SPR * p.s;   // the woodpile is painted in three steps, one per lot of wood
   const w = img.width * s, h = img.height * s, a = propAlpha(p), now = performance.now();
   if (a < 1 && BEFORE[p.name] && !drawSlot(BEFORE_ART[p.name], x, y, 1 - a)) BEFORE[p.name](x, y, 1 - a);
+  if (p.gone && a < 1) { ctx.save(); ctx.globalAlpha = (1 - a) * 0.9; groundPatch(x, y, w * 0.5, w * 0.18); for (let i = 0; i < 9; i++) blob(x + (rnd(i + 90) - 0.5) * w * 0.55, y - 2 + (rnd(i + 91) - 0.5) * w * 0.14, (3 + rnd(i + 92) * 4) * 1.2, (2 + rnd(i + 93) * 2) * 1.2, ['#6e5238', '#7d6046', '#5e4632'][i % 3]); ctx.restore(); }   // a few clods of freshly turned earth where it stood
   // no glow on built things or job spots (Bryce: a fence shouldn't glow); only things you pick up glow. The Jobs badge says when there's work.
   if (a <= 0 || p.name === 'fence') return;
   if (p.name === 'seedbed') return drawCrop(x, y);   // no square of tilled earth (Bryce: it spoilt the storybook look); the dug oval is the bed, and seedlings come up in it
@@ -1308,6 +1311,19 @@ function drawHouseStandIns(at, s, now, top) {
 }
 function chimneyTop() { const sh = PROPS.find(p => p.name === 'shelter'), img = IM.shelter, s = SPR * sh.s, [x, y] = toWorld(sh.gx, sh.gy); return [x - img.width * s / 2 + (CHIMNEY[0] + CHIMNEY[2] / 2) * s, y - img.height * s + (CHIMNEY[1] - CHIMNEY[3]) * s - 4]; }
 function houseWindows() { const sh = PROPS.find(p => p.name === 'shelter'), img = IM.shelter, s = SPR * sh.s, [x, y] = toWorld(sh.gx, sh.gy); return HOUSE_WIN.map(([px, py]) => [x - img.width * s / 2 + px * s, y - img.height * s + py * s]); }
+// "Hang a window box" comes once the house is finished: a box of flowers under the round window in the plank wall
+function drawWindowBox(at, s) {
+  const p = taskProg('windowbox'); if (p <= 0 || homeStage() < 2) return;   // an older save may have hung it on the shelter: it waits for the house
+  const [px, py] = art('house-finished') ? WINDOWBOX_PAINTED : [HOUSE_WIN[1][0], HOUSE_WIN[1][1] + HOUSE_WIN[1][2] + 12], [wx, wy] = at(px, py);
+  ctx.save(); ctx.globalAlpha = Math.min(1, p * 1.5);
+  if (!drawSlot('yard-windowbox', wx, wy)) {
+    const bw = 44 * s, bh = 12 * s, bx = wx - bw / 2, by = wy - bh;
+    for (let i = 0; i < 6; i++) { const fx = bx + 4 + i * bw / 6, fy = by - 4 - rnd(i) * 6; blob(fx, fy + 3, 3, 4, '#5c7a30'); blob(fx, fy, 3.2, 3.2, ['#e8b4c8', '#f2d65c', '#ffffff', '#c58ad6'][i % 4]); }
+    ctx.fillStyle = '#7a5032'; ctx.fillRect(bx, by, bw, bh); ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1.5; ctx.strokeRect(bx, by, bw, bh);
+  }
+  ctx.restore();
+}
+const WINDOWBOX_PAINTED = [346, 332];   // bottom-centre of the box under the round window in house-finished, in shelter sprite pixels
 // what stands in a prop's place before its job is done (fades out as the job runs)
 const BEFORE = {
   stonebench(x, y, a) { ctx.save(); ctx.globalAlpha = a; stone(x - 22, y - 4, 13); stone(x + 14, y + 6, 11); stone(x + 2, y - 14, 9); ctx.restore(); },
@@ -1315,7 +1331,7 @@ const BEFORE = {
 // extra bits drawn on top of a prop once its job is done; at(px, py) turns sprite pixels into world pixels
 const AFTER = {
   shelter(at, s, now) {
-    const top = houseArt(); if (top >= 1) return drawHouseStandIns(at, s, now, top);   // a painted house picture already has the roof, doorstep and window box in it
+    const top = houseArt(); if (top >= 1) { drawHouseStandIns(at, s, now, top); drawWindowBox(at, s); return; }   // a painted house picture already has the roof and doorstep in it
     const roof = top >= 0 ? 0 : taskProg('roof');
     if (roof > 0) {   // moss creeps over the patched canvas
       const poly = [[98, 234], [150, 196], [300, 188], [296, 240], [246, 292], [180, 266]];
@@ -1328,13 +1344,7 @@ const AFTER = {
       const im = art('yard-doorstep'), [w, h] = slotSize('yard-doorstep', im), [ax, ay] = at(130, 380), [bx, by] = at(198, 410), [wx, wy] = at(161, 407);
       ctx.save(); ctx.globalAlpha = Math.min(1, taskProg('doorstep') * 1.5); ctx.translate(wx, wy); ctx.rotate(Math.atan2(by - ay, bx - ax) - 0.32); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, -h / 2, w, h); ctx.restore(); }
     else if (taskProg('doorstep') >= 1) { for (const [px, py, r] of [[150, 430, 20], [196, 442, 22], [242, 432, 18]]) { const [wx, wy] = at(px, py); ctx.save(); ctx.globalAlpha = 0.95; blob(wx, wy + 2, r * s * 1.6, r * s * 0.7, 'rgba(40,30,20,0.25)'); blob(wx, wy, r * s * 1.5, r * s * 0.6, '#a7a094'); blob(wx - 3, wy - 2, r * s * 0.8, r * s * 0.25, 'rgba(230,226,215,0.6)'); ctx.restore(); } }
-    if (taskProg('windowbox') >= 1 && art('yard-windowbox')) { const [wx, wy] = at(177, 366); drawSlot('yard-windowbox', wx, wy); }
-    else if (taskProg('windowbox') >= 1) {   // a little box of flowers under the round window
-      const [bx, by] = at(150, 352), bw = 54 * s, bh = 14 * s;
-      for (let i = 0; i < 7; i++) { const fx = bx + 4 + i * bw / 7, fy = by - 4 - rnd(i) * 6; blob(fx, fy + 3, 3, 4, '#5c7a30'); blob(fx, fy, 3.2, 3.2, ['#e8b4c8', '#f2d65c', '#ffffff', '#c58ad6'][i % 4]); }
-      ctx.fillStyle = '#7a5032'; ctx.fillRect(bx, by, bw, bh); ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1.5; ctx.strokeRect(bx, by, bw, bh);
-    }
-    drawHouseStandIns(at, s, now, top);
+    drawHouseStandIns(at, s, now, top); drawWindowBox(at, s);
   },
   fence(at, s) {   // mended: the fallen run stands again beside it
     if (taskProg('fence') < 1 || art('fence-fallen')) return;
@@ -1664,7 +1674,7 @@ function spawnVisitor(forced) {
   const hungry = !trouble && G.dishBuilt() && G.wantsFood(def.id);
   if (hungry) to = [FEEDER.gx - 0.05, FEEDER.gy + 0.05];
   const perch = def.id === 'owl' || (trouble && def.id === 'possum');
-  if (perch) { const l = PROPS.find(p => p.name === 'lanternstump'); to = [l.gx - 0.02, l.gy - 0.02]; }
+  if (perch) { const l = PROPS.find(p => p.name === (taskProg('stump') >= 1 ? 'firewood' : 'lanternstump')); to = [l.gx - 0.02, l.gy - 0.02]; }   // once the stump is dug out, the woodpile
   visitor = { def, gx: from[0], gy: from[1], tx: to[0], ty: to[1], phase: 'in', t: 0, stay: trouble ? 1e9 : 18 + Math.random() * 15, perch: 0, hungry, trouble,
               speed: def.speed || 0.06, faceR: to[0] - to[1] > from[0] - from[1] };
   G.arrive(def.id);
@@ -2389,7 +2399,7 @@ function frame(now) {
     const flick = 0.75 + 0.25 * Math.sin(now / 90) * Math.sin(now / 230);
     glow(fx, fy - 30, 150, 'rgba(255,150,60,1)', 0.55 * night * flick);
     const lan = PROPS.find(p => p.name === 'lanternstump'); const [lx, ly] = toWorld(lan.gx, lan.gy);
-    const ls = SPR * lan.s; if (taskProg('lantern') >= 1) glow(lx - IM.lanternstump.width * ls / 2 + lanternPt()[0] * ls, ly - IM.lanternstump.height * ls + lanternPt()[1] * ls, 110, 'rgba(255,205,110,1)', 0.5 * night * (0.9 + 0.1 * Math.sin(now / 400)));
+    const ls = SPR * lan.s; if (taskProg('lantern') >= 1 && taskProg('stump') < 1) glow(lx - IM.lanternstump.width * ls / 2 + lanternPt()[0] * ls, ly - IM.lanternstump.height * ls + lanternPt()[1] * ls, 110, 'rgba(255,205,110,1)', 0.5 * night * (0.9 + 0.1 * Math.sin(now / 400)));
     const sh = PROPS.find(p => p.name === 'shelter'); const [sx, sy] = toWorld(sh.gx, sh.gy);
     glow(sx - 20, sy - 60, 70, 'rgba(255,190,120,1)', 0.35 * night);
     if (taskProg('house2') >= 1) for (const [wx, wy] of houseWindows()) glow(wx, wy, 34, 'rgba(255,200,110,1)', 0.6 * night * (gnomes.some(g => g.inside) ? 1 : 0.5));
@@ -2510,7 +2520,7 @@ function tap(cx, cy) {
   if (f.tile === '0,0') {
     let best = null, bd = 1e9;
     const pad = 14 / cam.z;   // a generous margin around each prop
-    for (const p of PROPS) { const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s, h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 4 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
+    for (const p of PROPS) { if (p.gone && taskProg(p.gone) >= 1) continue; const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s, h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 4 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
     if (best) { if (best.name === 'seedbed') { if (propAlpha(best) >= 1 && bedReady()) return openSeedbed(); const t = C.tasks.find(t => t.spot === 'clearing' && !(G.s.tasks[t.id] && G.s.tasks[t.id].done)); return openTasks(t ? t.id : ''); } if (best.name === 'shelter' && !wantsTap(best)) return openRoom(); if (best.name === 'barrel' && G.drawBarrel()) { const [bx, by] = toWorld(best.gx, best.gy); float(`+${C.barrel.give.water} ${C.resources.water.name}`, bx, by - 60); return; } const task = C.tasks.find(t => t.spot === best.name && !t.retired); if (task) return openTasks(task.id); }
   } else if (f.tile === festTile() && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openFestGreen();
   else if (G.s.tiles[f.tile] && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openTasks('regrow:' + f.tile);
