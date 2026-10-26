@@ -256,12 +256,12 @@ const PROPS = [
   { name:'seedbed',      gx:0.60, gy:0.70, s:1.0, flat:true, until:'bed' },   // until: hidden until that job is done (fades in while it runs)
   { name:'tub',          gx:0.44, gy:0.76, s:0.85 },
   { name:'wheelbarrow',  gx:0.26, gy:0.62, s:0.9 },
-  { name:'fence',        gx:0.86, gy:0.78, s:0.9 },
-  { name:'sapling',      gx:0.72, gy:0.86, s:0.8 },
+  { name:'fence',        gx:0.75, gy:0.72, s:0.9 },   // only a tap spot now; the fence itself is drawn round the seed bed (BED_FENCE)
+  { name:'sapling',      gx:0.22, gy:0.82, s:0.8 },
 ];
 const SPOTS = {   // places the gnomes like to go (home tile)
   door:[0.36,0.33], fire:[0.46,0.52], bench:[0.62,0.36], bed:[0.56,0.66], barrel:[0.46,0.44],
-  tub:[0.40,0.72], sprout:[0.50,0.52], barrow:[0.32,0.66], lantern:[0.72,0.56], fence:[0.80,0.72]
+  tub:[0.40,0.72], sprout:[0.50,0.52], barrow:[0.32,0.66], lantern:[0.72,0.56], fence:[0.79,0.74]
 };
 // where each gnome eats, sits and sleeps (daily rhythm); [gx, gy, faceTowards]
 const RHYTHM = {
@@ -277,7 +277,7 @@ function routineFor(h) {   // what the couple do at this hour when no job needs 
   if (h >= 19 && h < 22) return 'sit';
   return null;
 }
-const WORKSPOT = { feeder:[0.68,0.62], clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], fence:[0.80,0.74], sapling:[0.66,0.84], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
+const WORKSPOT = { feeder:[0.58,0.54], clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], fence:[0.80,0.74], sapling:[0.28,0.86], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
 
 // ---------- loading ----------
 const IM = {};
@@ -942,23 +942,25 @@ function drawHomePlot(ox, oy, now) {   // the bare home tile changes as the ruts
 // The bare home patch on the blended ground, built from the painted kit (sprites/kit, art day 3): two wheel ruts that fill in
 // as Wendel works; branches, brambles and old human leftovers that go as Hazel clears the ground; and stumps, a rock and a log
 // that heal (moss, ferns, a sapling) once the land greens.
-const HOME_RUTS = [[0.37, 0.99, 0.62, -0.04], [0.54, 0.99, 0.79, 0.02]];   // grid: near edge -> far edge
+const HOME_RUTS = [[0.905, 1.12, 0.905, -0.12]];   // grid: near edge -> far edge; one truck rut along the yard's right-hand side, running off both edges
 function drawHomeRuts() {
   const p = taskProg('ruts'), mud = IM['kit-marks-01'], fill = IM['kit-marks-03']; if (!mud || !mud.width) return;
-  for (const [gx0, gy0, gx1, gy1] of HOME_RUTS) for (const t of [0.2, 0.4, 0.6, 0.8]) {
-    const [x, y] = toWorld(gx0 + (gx1 - gx0) * t, gy0 + (gy1 - gy0) * t), w = 250, h = w * mud.height / mud.width;
+  ctx.save(); diamondPath('0,0'); ctx.clip();   // the rut runs right off the patch, so trim it at the edges
+  for (const [gx0, gy0, gx1, gy1] of HOME_RUTS) for (let t = 0; t <= 1.001; t += 1 / 12) {   // pieces overlap well, so no gaps show
+    const [x, y] = toWorld(gx0 + (gx1 - gx0) * t, gy0 + (gy1 - gy0) * t), w = 270, h = w * mud.height / mud.width;
     ctx.save(); ctx.translate(x, y);
     if (p < 1) { ctx.globalAlpha = 1 - p; ctx.drawImage(mud, -w / 2, -h / 2, w, h); }
     if (p > 0) { ctx.globalAlpha = p; ctx.drawImage(fill, -w / 2, -h / 2, w, h); }
     ctx.restore();
   }
+  ctx.restore();
 }
 const HOME_KIT = [   // [piece, healed piece (null: it goes when the job is done), gx, gy, scale, job that clears it]
-  ['stumps-rocks-01', 'stumps-rocks-07', 0.88, 0.20, 0.7], ['stumps-rocks-02', 'stumps-rocks-08', 0.13, 0.84, 0.7],
+  ['stumps-rocks-01', 'stumps-rocks-07', 0.74, 0.13, 0.7], ['stumps-rocks-02', 'stumps-rocks-08', 0.13, 0.84, 0.7],
   ['stumps-rocks-03', 'stumps-rocks-09', 0.07, 0.20, 0.55], ['stumps-rocks-06', 'stumps-rocks-12', 0.30, 0.94, 0.6],
-  ['stumps-rocks-04', null, 0.60, 0.13, 0.6, 'clear'], ['stumps-rocks-05', null, 0.93, 0.62, 0.55, 'clear'],
+  ['stumps-rocks-04', null, 0.60, 0.13, 0.6, 'clear'], ['stumps-rocks-05', null, 0.46, 0.07, 0.55, 'clear'],
   ['leftovers-01', null, 0.22, 0.50, 0.55, 'clear'], ['leftovers-02', null, 0.58, 0.58, 0.45, 'clear'], ['leftovers-03', null, 0.18, 0.74, 0.6, 'clear'],
-  ['leftovers-04', null, 0.84, 0.36, 0.55, 'clear'], ['leftovers-05', null, 0.52, 0.90, 0.5, 'clear'], ['leftovers-09', null, 0.70, 0.60, 0.45, 'clear'],
+  ['leftovers-04', null, 0.70, 0.40, 0.55, 'clear'], ['leftovers-05', null, 0.52, 0.90, 0.5, 'clear'], ['leftovers-09', null, 0.70, 0.60, 0.45, 'clear'],
   ['leftovers-11', null, 0.06, 0.62, 0.5, 'clear'],
 ];
 function taskProg(id) {   // 0 before a job starts, rising to 1 while it runs, 1 once done
@@ -1002,7 +1004,7 @@ function drawProp(p) {
   if (a < 1 && BEFORE[p.name] && !drawSlot(BEFORE_ART[p.name], x, y, 1 - a)) BEFORE[p.name](x, y, 1 - a);
   const tap = p.name === 'seedbed' && a < 1 ? clearingWantsTap() : p.name !== 'lanternstump' && wantsTap(p);
   if (tap) { if (a >= 1) halo(x, y - h * 0.4, Math.min(Math.max(w, h) * 0.3, 40), now, p.gx * 5); }
-  if (a <= 0) return;
+  if (a <= 0 || p.name === 'fence') return;
   ctx.save(); ctx.globalAlpha = a;
   if (!p.flat) { groundPatch(x, y, w * 0.7, w * 0.26); shadow(x, y, w * 0.4, w * 0.14); }
   const sw = SWAP_ART[p.name], sp = sw && art(sw[0]) ? taskProg(sw[1]) : 0;   // painted "after" picture crossfades in as its job runs
@@ -1133,9 +1135,9 @@ function drawGroundChanges(now) {
   const c = taskProg('clear') * (art('plot-cleared') ? 1 - taskProg('ruts') : 1); if (c <= 0) return;
   const sb = PROPS.find(p => p.name === 'seedbed'), [x, y] = toWorld(sb.gx, sb.gy);
   const rk = NEWGROUND && IM['kit-marks-05'];
-  if (rk && rk.width) {   // the painted raked patch grows as Hazel clears
-    const w = 340 * Math.min(1, 0.4 + c * 0.6), h = w * rk.height / rk.width;
-    ctx.save(); ctx.globalAlpha = Math.min(1, c * 1.2); ctx.drawImage(rk, x - w / 2, y - h / 2, w, h); ctx.restore();
+  if (rk && rk.width) {   // the painted raked patch grows as Hazel clears; once the land greens, grass creeps back to a soft edge round the bed
+    const healed = G.landStage().key !== 'barren', w = healed ? 215 : 340 * Math.min(1, 0.4 + c * 0.6), h = w * rk.height / rk.width;
+    ctx.save(); ctx.globalAlpha = Math.min(1, c * 1.2) * (healed ? 0.7 : 1); ctx.drawImage(rk, x - w / 2, y - h / 2, w, h); ctx.restore();
     if (c < 1) glow(x, y, 60, 'rgba(230,205,160,1)', 0.2 + 0.1 * Math.sin(now / 300));
     return;
   }
@@ -1176,6 +1178,30 @@ const EXTRAS = [
       const [lx, ly] = sag(t), sw = Math.sin(now / 700 + t * 6) * 2;
       ctx.fillStyle = col; ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(lx - cw / 2, ly); ctx.lineTo(lx + cw / 2, ly); ctx.lineTo(lx + cw / 2 + sw, ly + ch); ctx.lineTo(lx - cw / 2 + sw, ly + ch); ctx.closePath(); ctx.fill(); ctx.stroke(); }); } },
 ];
+// "Fence the seed bed": a low woven fence all round the bed, panels going up one by one while Wendel works, a gate at the front.
+// fence.webp runs along +gx (down to the right); mirrored it runs along +gy (down to the left). FOOT = its two post feet.
+const BED_FENCE = { gx0: 0.47, gx1: 0.735, gy0: 0.575, gy1: 0.825, gate: 0.62 }, FENCE_FOOT = [[15, 150], [190, 225]];
+let fenceFlip = null;
+function drawFencePanel(A, B, flip, a) {   // stretch one panel so its post feet land on world points A (left foot) and B (right foot)
+  const img = IM.fence; if (!img || !img.width) return;
+  if (flip && !fenceFlip) { fenceFlip = Object.assign(document.createElement('canvas'), { width: img.width, height: img.height }); const fx = fenceFlip.getContext('2d'); fx.translate(img.width, 0); fx.scale(-1, 1); fx.drawImage(img, 0, 0); }
+  const im = flip ? fenceFlip : img, [fa, fb] = flip ? [[img.width - FENCE_FOOT[1][0], FENCE_FOOT[1][1]], [img.width - FENCE_FOOT[0][0], FENCE_FOOT[0][1]]] : FENCE_FOOT;
+  const sx = (B[0] - A[0]) / (fb[0] - fa[0]), sy = sx * 0.66, sh = ((B[1] - A[1]) - sy * (fb[1] - fa[1])) / (fb[0] - fa[0]);   // sy < sx: a low fence, knee to waist high on a gnome
+  ctx.save(); ctx.globalAlpha = a; ctx.transform(sx, sh, 0, sy, A[0] - sx * fa[0], A[1] - sh * fa[0] - sy * fa[1]); ctx.drawImage(im, 0, 0); ctx.restore();
+}
+function gatePost(x, y, a) { ctx.save(); ctx.globalAlpha = a; stick(x, y - 20, 40, Math.PI / 2, '#7a5a3a'); blob(x, y - 41, 4, 2.5, '#5a3e26'); ctx.restore(); }
+function bedFenceSides() {   // [from grid point, to grid point, flip] in building order: back first, gate side last
+  const F = BED_FENCE, m = (F.gx0 + F.gx1) / 2, n = (F.gy0 + F.gy1) / 2;
+  return [[[F.gx0, F.gy0], [m, F.gy0], 0], [[m, F.gy0], [F.gx1, F.gy0], 0],                 // back (far) side, along gx
+    [[F.gx0, n], [F.gx0, F.gy0], 1], [[F.gx0, F.gy1], [F.gx0, n], 1],                         // left side, along gy (left foot is the nearer end)
+    [[F.gx1, n], [F.gx1, F.gy0], 1], [[F.gx1, F.gy1], [F.gx1, n], 1],                         // right side
+    [[F.gx0, F.gy1], [F.gate - 0.035, F.gy1], 0], [[F.gate + 0.035, F.gy1], [F.gx1, F.gy1], 0]];   // front side, a gap for the gate
+}
+function bedFenceShown() { return taskProg('fence') > 0 && propAlpha(PROPS.find(p => p.name === 'seedbed')) > 0; }
+bedFenceSides().forEach(([P, Q, flip], i, all) => EXTRAS.push({ gx: (P[0] + Q[0]) / 2, gy: (P[1] + Q[1]) / 2,
+  show: () => bedFenceShown() ? Math.min(1, Math.max(0, taskProg('fence') * all.length - i)) : 0,
+  draw(x, y, al) { drawFencePanel(toWorld(...P), toWorld(...Q), flip, al); } }));
+for (const d of [-0.035, 0.035]) EXTRAS.push({ gx: BED_FENCE.gate + d, gy: BED_FENCE.gy1 + 0.005, show: () => bedFenceShown() ? (taskProg('fence') >= 1 ? 1 : 0) : 0, draw: (x, y, al) => gatePost(x, y, al) });
 if (NEWGROUND) for (const [a, b, gx, gy, sc, job] of HOME_KIT) EXTRAS.push({ gx, gy,
   show: () => G.landStage().key === 'barren' ? 1 - (job ? taskProg(job) : 0) : b ? 1 : 0,
   draw(x, y, al) { const im = IM['kit-' + (G.landStage().key === 'barren' ? a : b)]; if (!im || !im.width) return; const w = im.width * sc, h = im.height * sc;
@@ -1198,6 +1224,7 @@ function wantsTap(p) {   // does this thing have something the player can do rig
   if (p.name === 'seedbed') { const s = G.plot().stage; return s === 'ready' || (!s && G.can(C.crops.sprout.plant)) || (s === 'planted' && G.can({ water: 1 })); }
   return C.tasks.some(t => t.spot === p.name && !G.s.tasks[t.id] && G.taskView(t).state === 'ready' && G.can(t.cost));
 }
+const TRUE_SIZE = { twig: 50, moss: 30, stone: 24, acorn: 22, seed: 18, water: 18, berry: 22, feather: 34, light: 36, bread: 26, plank: 40, honey: 24, yarn: 22 };   // world px; a gnome is about 120
 function drawOffer(o, now) {
   const [x, y] = toWorld(o.gx, o.gy, o.tile); const b = Math.sin(now / 400 + o.gx * 9) * 2;
   const k = Math.max(1, 0.7 / cam.z);            // keep offerings finger-sized when zoomed out
@@ -1205,7 +1232,7 @@ function drawOffer(o, now) {
   shadow(x, y, 9 * k, 4 * k);
   halo(x, y - 18 * k + b, 26 * k, now, o.gx * 7);
   if (o.kind === 'light') { glow(x, y - 14 * k + b, 36 * k, 'rgba(255,240,170,1)', 0.6 + 0.2 * Math.sin(now / 200)); }
-  const img = IM['icon-' + o.kind] || art('icon-' + o.kind), sz = 64 * k;
+  const img = IM['icon-' + o.kind] || art('icon-' + o.kind), sz = (TRUE_SIZE[o.kind] || 30) * k;   // drawn at its real size beside a gnome; the tap box above stays finger-sized
   if (img) { const f = sz / Math.max(img.width, img.height), w = img.width * f, h = img.height * f; ctx.drawImage(img, x - w / 2, y - 8 * k + b - sz * 0.2 - h * 0.6, w, h); }   // keep the painted icon's own shape
   else { ctx.save(); ctx.font = `${Math.round(36 * k)}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(C.resources[o.kind].icon, x, y - 4 * k + b); ctx.restore(); }
 }
@@ -1213,8 +1240,8 @@ function drawOffer(o, now) {
 const WORM_LANTERNS = [[0.27, 0.40], [0.47, 0.30], [0.66, 0.46]];   // hooks and branches by the door and bench (home tile)
 const WORM_LAMPS = [[0.22, 0.62], [0.58, 0.80], [0.86, 0.60], [0.50, 0.58]];   // lamp posts along the yard
 const TOAD_LAMPS = [[0.36, 0.74], [0.74, 0.34]];   // toadstool lamps (lamp-toadstool), lit with the street lamps
-const FIREFLY_STRINGS = [[0.62, 0.80]];            // firefly strings between two posts (lamp-fireflies), centred here
-const FEEDER = { gx: 0.74, gy: 0.64 };
+const FIREFLY_STRINGS = [[0.62, 0.92]];            // firefly strings between two posts (lamp-fireflies), centred here
+const FEEDER = { gx: 0.63, gy: 0.50 };
 function drawFeeder(x, y, a, now) {
   const f = G.s.feeder.food, empty = !f && a >= 1;
   if (empty && (G.can({ seed: 1 }) || G.can({ berry: 1 }))) halo(x, y - 14, 34, now, 3);

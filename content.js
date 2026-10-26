@@ -47,16 +47,16 @@ window.CONTENT = {
   // act: which painted action loop plays while working (dig, water, carry); if missing, the spot decides (wheelbarrow dig, seed bed and sapling water, otherwise carry).
   tasks: [
     // --- first days ---
-    { id:'ruts',    name:'Fill the wheel ruts',        who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:3, twig:2 }, mins:120, green:1, magic:2,
-      blurb:'The loggers left deep ruts. Stones and twigs will pack them down.' },
+    { id:'ruts',    name:'Fill the wheel rut',         who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:3, twig:2 }, mins:120, green:1, magic:2,
+      blurb:'The loggers\' truck left a deep rut along the yard. Stones and twigs will pack it into a good firm track.' },
     { id:'clear',   name:'Clear the ground',           who:'her', act:'carry', spot:'clearing', cost:{}, give:{ twig:3, stone:2 }, mins:90, green:0, magic:1,
       blurb:'Snapped branches and loggers\' rubbish everywhere. Hazel rakes a clean patch, and keeps the good sticks and stones.' },
     { id:'bed',     name:'Dig a seed bed',             who:'her', act:'dig', spot:'clearing', cost:{ twig:2 },  mins:120, green:1, magic:1,
       needs:['ruts', 'clear'], blurb:'Now the ground is flat and clear, the earth can be turned. Something can finally grow.' },
     { id:'roof',    name:'Moss for the shelter roof',  who:'her', spot:'shelter',     cost:{ moss:4 },           mins:180, green:1, magic:2,
       blurb:'The canvas leaks. A thick moss roof keeps the rain out and the warmth in.' },
-    { id:'fence',   name:'Mend the fence',             who:'him', spot:'fence',       cost:{ twig:4 },           mins:120, green:1, magic:1,
-      blurb:'Half the fence is down. Rabbits know it.' },
+    { id:'fence',   name:'Fence the seed bed',         who:'him', spot:'fence',       cost:{ twig:4 },           mins:120, green:1, magic:1,
+      needs:['bed'], blurb:'Rabbits have found the seed bed. A low woven fence all round, with a little gate.' },
     { id:'sapling', name:'Plant the sapling out',      who:'her', act:'water', spot:'sapling',     cost:{ water:2, moss:2 },  mins:360, green:2, magic:3,
       needs:['ruts'], blurb:'The potted oak is ready for real ground. It will outlive us all.' },
     { id:'feeder',  name:'Set out a feeding dish',     who:'her', act:'carry', spot:'feeder', cost:{ stone:2, twig:1 }, mins:45, green:0, magic:1, needs:['clear'],
