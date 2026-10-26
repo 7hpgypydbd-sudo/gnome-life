@@ -1,6 +1,6 @@
 # Art day 14: the next art batches (prepared 2026-10-26)
 
-Three batches painted in one go, in order, no waiting for approval between them (Bryce, 2026-10-26). **39 pictures**: batch 1 = 17 (strip, props, world pieces, retries, fixes, feeding dish), batch 2 = 6 sheets holding the 33 little makes (docs/DECORATIONS.md), batch 3 = 16 story paintings (docs/STORY.md "Paintings and hidden snails").
+Three batches painted in one go, in order, no waiting for approval between them (Bryce, 2026-10-26). **40 pictures**: batch 1 = 18 (strip, props, world pieces, retries, fixes, feeding dish), batch 2 = 6 sheets holding the 33 little makes (docs/DECORATIONS.md), batch 3 = 16 story paintings (docs/STORY.md "Paintings and hidden snails").
 
 Rules: see the art skill (nothing glows, paint lit things unlit, hidden snail in every painting, flat magenta #FF00FF for cut-outs, new Gemini chat per picture, character reference sheets pasted first). Prompts are also one .txt each in `art-day-14/prompts/` and on the Mac in `~/Downloads/Gnome Art Day/4 - Prompts to copy/Art day 14/`. Reference pictures: `art-day-14/refs/` (sprites on flat magenta). Painted pictures go in `art-day-14/painted/<id>.jpg` on branch `art-day-14-pictures`.
 
@@ -162,29 +162,41 @@ Generate an image: Style: traditional children's book illustration like The Secr
 
 Cut/wire: -> sprites/story-barnaby.webp (replace)
 
-## b1-16-dish-full: Feeding dish with seed and berries
+## b1-16-dish-food: Feeding dish with seed and with berries
 
 Paste first: `art-day-14/refs/sprites__feeding-dish.jpg`
 
-Round four may add its own version of this prompt to docs/ART-DAY-13.md; if it has, use that one instead and skip this.
+From docs/ART-DAY-13.md prompt 4 (round four).
 
 ```text
-Generate an image: Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Match the pasted picture's style, ink line, colours and scale exactly, same gentle slanted view from above and to the front. The same feeding dish and stump as the pasted picture (same dish, same stone, same stump), but now FULL: the shallow dish heaped with a small mound of pale seeds and a few round red berries on top, a couple of seeds spilled onto the stump beside it. Painted the same size as the pasted picture so it can swap in place. Hidden detail: a tiny snail on the edge of the stump. No ground, no shadow. Avoid pink and purple anywhere.
+Generate an image: Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Two copies of the same stone feeding dish on its little log stand as the pasted picture, side by side with a wide magenta gap, seen from exactly the same view and size: on the left the shallow stone bowl is heaped with a small pile of pale seeds and grain, a few spilled on the rim; on the right it is heaped with small dark berries (blackberries, a few red rowan berries and two leaves), one berry rolled onto the rim. Match the dish, its stand and the cut branch stub exactly so they can swap with the empty one. Hidden detail: a tiny snail on the log stand of the berry dish. No ground, no shadow. Avoid pink and purple anywhere.
 ```
 
-Cut/wire: -> sprites/feeding-dish-full.webp
+Cut/wire: cut_kit.py -> sprites/dish-seed.webp, sprites/dish-berry.webp (width 62 like feeding-dish)
 
-## b1-17-dish-fill: Gnome filling the dish
+## b1-17-her-feed: Hazel tipping food strip
 
-Paste first: `art-day-14/refs/sprites__her-side.jpg`; `art-day-14/refs/sprites__him-side.jpg`; `art-day-14/refs/sprites__her-water.jpg`
+Paste first: `art-day-14/refs/sprites__her-pickup.jpg`; `art-day-14/refs/sprites__her-side.jpg`
 
-Either gnome can do it in the game; mirror in code.
+From docs/ART-DAY-13.md prompt 5 (round four).
 
 ```text
-Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. The same gnome Hazel as the pasted pictures: match her face, plaits, green cap, brown dress and cream apron exactly. A loop of 4 frames in one row, her standing in side profile facing right beside a low feeding dish on a stump (paint a small low stump and shallow dish in every frame, the same size in all four), a little woven basket of berries on her arm: frame 1 reaching into the basket, frame 2 lifting a handful of red berries over the dish, frame 3 tipping the berries into the dish, frame 4 brushing her hands together with a satisfied smile. Same size and baseline as the pasted sheets, full body, feet visible, evenly spaced with wide clear magenta gaps so nothing touches the next frame. No ground, no shadow. Avoid pink and purple anywhere.
+Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. The same gnome as the pasted pictures, matching face, clothes and size exactly. A 4-frame loop in one row, side profile facing right, tipping food from a small woven willow basket held in both hands into something just off the right edge at waist height: frame 1 basket held level, frame 2 basket tilting forward, frame 3 basket tipped right over with a few berries falling out of it, frame 4 a gentle shake of the basket, smiling. Full body, feet visible, evenly spaced with wide clear magenta gaps. No dish, no ground, no shadow. Avoid pink and purple outside the berries.
 ```
 
-Cut/wire: pack like her-build: sprites/her-fill.png act fill
+Cut/wire: pack like him-build: sprites/her-feed.png, act feed (4 frames, ACT_FPS.feed 3), re-paste gnomes.json
+
+## b1-18-him-feed: Wendel tipping food strip
+
+Paste first: `art-day-14/refs/sprites__him-pickup.jpg`; `art-day-14/refs/sprites__him-side.jpg`
+
+From docs/ART-DAY-13.md prompt 5 (round four).
+
+```text
+Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. The same gnome as the pasted pictures, matching face, clothes and size exactly. A 4-frame loop in one row, side profile facing right, tipping food from a small woven willow basket held in both hands into something just off the right edge at waist height: frame 1 basket held level, frame 2 basket tilting forward, frame 3 basket tipped right over with a few berries falling out of it, frame 4 a gentle shake of the basket, smiling. Full body, feet visible, evenly spaced with wide clear magenta gaps. No dish, no ground, no shadow. Avoid pink and purple outside the berries.
+```
+
+Cut/wire: pack like him-build: sprites/him-feed.png, act feed (4 frames, ACT_FPS.feed 3), re-paste gnomes.json
 
 ## b2-01-yard-1: Little makes, yard: bare ground and first green
 
