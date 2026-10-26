@@ -140,24 +140,33 @@
   "note": ""
  },
  {
-  "id": "b1-16-dish-full",
-  "title": "Feeding dish with seed and berries",
+  "id": "b1-16-dish-food",
+  "title": "Feeding dish with seed and with berries",
   "ref_files": [
    "art-day-14/refs/sprites__feeding-dish.jpg"
   ],
-  "cut": "-> sprites/feeding-dish-full.webp",
-  "note": "Round four may add its own version of this prompt to docs/ART-DAY-13.md; if it has, use that one instead and skip this."
+  "cut": "cut_kit.py -> sprites/dish-seed.webp, sprites/dish-berry.webp (width 62 like feeding-dish)",
+  "note": "From docs/ART-DAY-13.md prompt 4 (round four)."
  },
  {
-  "id": "b1-17-dish-fill",
-  "title": "Gnome filling the dish",
+  "id": "b1-17-her-feed",
+  "title": "Hazel tipping food strip",
   "ref_files": [
-   "art-day-14/refs/sprites__her-side.jpg",
-   "art-day-14/refs/sprites__him-side.jpg",
-   "art-day-14/refs/sprites__her-water.jpg"
+   "art-day-14/refs/sprites__her-pickup.jpg",
+   "art-day-14/refs/sprites__her-side.jpg"
   ],
-  "cut": "pack like her-build: sprites/her-fill.png act fill",
-  "note": "Either gnome can do it in the game; mirror in code."
+  "cut": "pack like him-build: sprites/her-feed.png, act feed (4 frames, ACT_FPS.feed 3), re-paste gnomes.json",
+  "note": "From docs/ART-DAY-13.md prompt 5 (round four)."
+ },
+ {
+  "id": "b1-18-him-feed",
+  "title": "Wendel tipping food strip",
+  "ref_files": [
+   "art-day-14/refs/sprites__him-pickup.jpg",
+   "art-day-14/refs/sprites__him-side.jpg"
+  ],
+  "cut": "pack like him-build: sprites/him-feed.png, act feed (4 frames, ACT_FPS.feed 3), re-paste gnomes.json",
+  "note": "From docs/ART-DAY-13.md prompt 5 (round four)."
  },
  {
   "id": "b2-01-yard-1",
