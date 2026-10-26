@@ -8,6 +8,9 @@ A cosy game with no real stakes. The main storyline is **a sweet story of Wendel
 ## The game in a paragraph
 You are an unseen helper spirit. A young newlywed gnome couple, **Wendel** (the dreamer: tinkers, invents, gazes at stars, loses his pipe) and **Hazel** (the practical one: organises, gardens, keeps them fed, dry wit), arrive in a logged, human-scarred clearing. Over three to six months of real time you help them heal the land tile by tile, turn a root-shelter into a snug home, and welcome wandering gnomes who stay when you build them a house. The result is a cosy village tucked into nature, never a city. A festival marks the soft ending (built 2026-10-25: a Greening Festival that the neighbours secretly make into Wendel and Hazel's wedding feast, after 6 neighbours, back every year on its date), and then the world keeps living: seasons turn, visitors come, the couple slowly grows old.
 
+
+**Storybook concept (Bryce, 2026-10-26, added on top of everything above, replaces nothing):** the game is now a beautiful storybook picture that you grow by visiting it every day. You use the resources you collect to fill in the decorations and change the landscape. A story unfolds as you go, and the animals bring their own side stories, each of which can be worked out.
+
 ## The world
 - **Size:** about 25 tiles (5x5). One tile is the current diamond, about 3.7 gnomes across.
 - **Spread:** ripples out from the home tile. Each healed tile reveals its misty neighbours, which you coax green.
