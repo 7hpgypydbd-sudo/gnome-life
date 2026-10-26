@@ -1,6 +1,6 @@
 # Gnome Life: decorations by stage ("Little makes")
 
-Agreed with Bryce 2026-10-26 (thread "Write the first month's story"). Living copy for comments: https://claude.ai/artifact/2gJUHxfNv3thA8gDXmxeDp . **Not built yet**; the fresh merge chat builds it together with `docs/STORY.md`. Replaces VISION's old drag-and-place decorating set (see the concept review: decorations just appear in their planned spot).
+Agreed with Bryce 2026-10-26 (thread "Write the first month's story"). Living copy for comments: https://claude.ai/artifact/2gJUHxfNv3thA8gDXmxeDp . **Built in v52** (see docs/PLAN.md, v52 entry, for the few spots that moved). Replaces VISION's old drag-and-place decorating set (see the concept review: decorations just appear in their planned spot).
 
 ## How decorations unlock
 

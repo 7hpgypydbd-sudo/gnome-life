@@ -1,6 +1,6 @@
 # Gnome Life: the first month's story (chapters 1-3)
 
-Agreed by Bryce 2026-10-26 (thread "Write the first month's story"). Living copy for reading and comments: https://claude.ai/artifact/HUoQHsALfrq6PHMzn1mkT9 . This file is the master for the words; code takes them from here. **Not wired into the game yet**: the "Fitting it into the game" section at the end lists what code needs to change.
+Agreed by Bryce 2026-10-26 (thread "Write the first month's story"). Living copy for reading and comments: https://claude.ai/artifact/HUoQHsALfrq6PHMzn1mkT9 . This file is the master for the words; code takes them from here. **Wired into the game in v52** (see docs/PLAN.md, v52 entry); the "Fitting it into the game" section at the end is what was built.
 
 - **Story pages** are the big illustrated pages that open at a milestone. Each is short and ends with one button.
 - **Every page fires from something the player already does** in the job chain (see "Where every card appears").

@@ -43,6 +43,9 @@ function fresh() {
     secrets: { found: {}, out: [], nextAt: t + 30 * MIN },   // little finds (CONTENT.secrets): found id -> time, out = tucked in the land now
     season: '',                              // the season last seen (a new one gets a line in "While you were away")
     festival: { stage: 'waiting', tile: null, at: 0, day: '', years: [] },   // waiting | planning | ready | on | done (see festivalTick)
+    pages: { seen: {}, cards: [], makes: {} },   // story pages read (id -> time; 0 = it had already happened before pages existed), cards waiting to open, Hazel's lists shown ('yard:green')
+    spirit: { taught: {} },                  // the Wood spirit's lessons: number -> time taught
+    moved: {},                               // creatures that moved into a home the gnomes made (CONTENT.story.moveIns): id -> time
   };
 }
 
@@ -59,7 +62,9 @@ const G = {
   boot() {
     this.s = Store.load();
     if (!this.s) { this.s = fresh(); this.startingGifts(); }
+    const before = !('pages' in this.s) && this.s.flags && this.s.flags.welcomed;   // a garden begun before the story was in the game
     for (const [k, v] of Object.entries(fresh())) if (!(k in this.s)) this.s[k] = v;   // older saves gain new fields
+    if (before) this.storyCatchUp();
     const gully = this.s.tasks.ruts; if (gully && !gully.done) gully.endsAt = Math.min(gully.endsAt, now());   // the gully job is retired: one still running just finishes
     const tk = this.s.tasks; if (tk.bedwater && !tk.spring) tk.spring = { startedAt: tk.bedwater.startedAt, endsAt: tk.bedwater.startedAt, done: true };   // watered before the spring job existed: the spring counts as found
     if (tk.fence) this.s.flags.rabbit = true;
@@ -96,8 +101,9 @@ const G = {
     const p = s.plots.seedbed; if (p.stage === 'growing' && p.readyAt <= t) report.finished.push('the sprout is ready');
     if (gone >= 60 * MIN && !s.flags.rabbit && s.feeder.food && p.stage === 'growing') { this.rabbitRaid(); report.rabbit = C.rabbit.away; }   // the rabbit came while you were away
     if (gone >= 60 * MIN) { const ate = this.awayEater(); if (ate) report.ate = ate; }
-    const had = s.village.traveller && s.village.traveller.id;
+    const had = s.village.traveller && s.village.traveller.id, movedBefore = Object.keys(s.moved);
     this.tick();
+    const nowMoved = C.story.moveIns.filter(m => s.moved[m.id] && !movedBefore.includes(m.id)); if (nowMoved.length) report.moved = nowMoved.map(m => m.note);
     if (s.village.traveller && s.village.traveller.id !== had) report.traveller = s.village.traveller.id;
     if (gone >= 2 * 60 * MIN) { const ev = this.rollEvent(t, true); if (ev) report.event = ev.text; }
     return report;
@@ -114,13 +120,15 @@ const G = {
       if (tk.done || tk.endsAt > t) continue;
       tk.done = true; const d = this.taskDef(id);
       if (d.tile) { const tl = s.tiles[d.tile]; tl.state = 'green'; tl.green = 4; this.reveal(d.tile); this.note(`The land next door has greened.`); }
-      else this.addGreen(d.green);
+      else this.addGreen(d.green, d.make === 'garden' ? 'garden' : 'yard');
       if (d.folk) this.villageDone(id, d, tk);
       if (id === 'bridge') { for (const k of ['1,-1', '0,-1', '2,-1', '-1,-1']) if (s.tiles[k] && s.tiles[k].state === 'green') this.reveal(k); this.note('The bridge is up. The far side of the stream is reachable at last.'); }
       if (d.give) this.give(d.give);
       this.note(`${C.names[d.who]} finished: ${lc(d.name)}.`); if (d.doneNote) this.note(d.doneNote);
       this.emit('task', { id, done: true });
     }
+    this.storyTick(t);
+    this.moveInTick(t);
     this.villageTick(t);
     this.festivalTick(t);
     this.secretTick(t);
@@ -206,6 +214,7 @@ const G = {
   harvest() {
     const p = this.plot(); if (p.stage !== 'ready') return false;
     const c = C.crops[p.crop], got = Object.assign({}, c.harvest), nib = p.nibbled && got.seed > 1; if (nib) got.seed--;   // the rabbit had a few
+    if (this.done('compost')) got.seed = (got.seed || 0) + 1;   // the compost heap makes the soil rich: one extra seed every harvest
     this.give(got); this.addGreen(c.green); p.grown++;
     p.crop = null; p.stage = null; p.readyAt = 0; p.nibbled = false; this.s.flags.firstpick = true;   // the first crop opens up the home jobs
     this.note(`Picked ${c.name}${nib ? ' (what the rabbit left)' : ''}. The bed is clear again, and the ground remembers a little more of how to grow.`); this.emit('plot', p); return true;
@@ -247,7 +256,7 @@ const G = {
     const locked = (d.needs || []).some(n => !met(n)) || (d.minLevel && this.magicLevel() < d.minLevel) || !!gate;
     const state = tk ? (tk.done ? 'done' : (tk.endsAt <= t ? 'done' : 'running')) : (locked ? 'locked' : 'ready');
     return { def: d, state, locked, endsAt: tk ? tk.endsAt : 0, startedAt: tk ? tk.startedAt : 0, can: this.can(d.cost), missing: this.missing(d.cost),
-             show: (state !== 'done' || (t - (tk.endsAt || 0)) < 60 * MIN) && !(d.needs || []).some(n => (n.startsWith('trade:') && !this.folkState(n.slice(6))) || ((n.startsWith('flag:') || n.startsWith('tile:')) && !met(n))),   // village jobs stay hidden until that neighbour lives here
+             show: (state !== 'done' || (t - (tk.endsAt || 0)) < 60 * MIN) && (!d.make || !!tk || this.makeOpen(d)) && !(d.needs || []).some(n => (n.startsWith('trade:') && !this.folkState(n.slice(6))) || ((n.startsWith('flag:') || n.startsWith('tile:')) && !met(n))),   // village jobs stay hidden until that neighbour lives here
              rank: { running: 0, ready: 1, locked: 2, done: 3 }[state],
              why: gate ? gate : locked ? (d.minLevel && this.magicLevel() < d.minLevel ? `needs magic level ${d.minLevel}` : `after: ${(d.needs || []).filter(n => !n.startsWith('flag:') && !n.startsWith('tile:')).map(n => lc(this.taskDef(n).name)).join(', ')}`) : '' };
   },
@@ -265,11 +274,25 @@ const G = {
   // ---- land ----
   tileName(k) { const [x, y] = k.split(',').map(Number); return x > 0 ? 'east' : x < 0 ? 'west' : y > 0 ? 'south' : 'north'; },
   landStage(k = '0,0') { const g = this.s.tiles[k] ? this.s.tiles[k].green : 0; let st = C.landStages[0]; for (const s of C.landStages) if (g >= s.at) st = s; return st; },
-  addGreen(n) {
-    if (!n) return; const tl = this.s.tiles['0,0'], before = this.landStage().key; tl.green += n;
-    const after = this.landStage();
-    if (after.key !== before) { this.note(`The home patch is now ${after.name}.`); if (after.key === 'green') this.reveal('0,0'); this.emit('land', after); }
+  // Green the yard earns spreads into the couple's garden once it is open; what is grown in the garden stays in the garden.
+  addGreen(n, where = 'yard') {
+    if (!n) return;
+    const bump = k => { const before = this.landStage(k).key; this.s.tiles[k].green += n; const after = this.landStage(k); return after.key !== before ? after : null; };
+    if (where !== 'garden') { const st = bump('0,0');
+      if (st) { this.note(`The home patch is now ${st.name}.`); if (st.key === 'green') this.reveal('0,0'); this.s.pages.cards.push({ k: 'land', key: st.key }); this.emit('land', st); } }
+    if (this.gardenOpen()) { const st = bump('0,1'); if (st) this.note(`The garden is now ${st.name}.`); }
   },
+  gardenOpen() { const t = this.s.tiles['0,1']; return !!t && t.state === 'green' && !Object.values(this.s.village.folk).some(f => f.tile === '0,1'); },   // the couple's garden (tile 0,1; an older save may have a neighbour living there)
+  stageIndex(k) { return C.landStages.indexOf(this.landStage(k)); },
+  // ---- little makes (CONTENT.makes; the makes are tasks with make: yard | garden) ----
+  makeTile(d) { return C.makes[d.make].tile; },
+  makeOpen(d) {   // has this make come up yet? its patch is open and green enough, and anything it needs is there
+    const s = this.s, k = this.makeTile(d); if (k !== '0,0' && !this.gardenOpen()) return false;
+    if (d.make === 'yard' && !s.flags.firstpick) return false;   // the first makes come after the first harvest (Hazel's list)
+    if (this.stageIndex(k) < C.landStages.findIndex(x => x.key === d.stage)) return false;
+    return (d.needs || []).every(n => n.startsWith('flag:') ? !!s.flags[n.slice(5)] : this.done(n));
+  },
+  makesCount(patch) { const all = C.tasks.filter(d => d.make === patch); return { done: all.filter(d => this.done(d.id)).length, total: all.length }; },
   reveal(k) {   // bare neighbours appear around a greened tile (max 2 at a time so the map grows gently)
     const [x, y] = k.split(',').map(Number); let n = 0;
     for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
@@ -284,7 +307,7 @@ const G = {
   magicLevel() { const d = this.s.days.length; let L = 1; C.magicLevels.forEach((m, i) => { if (d >= m.days) L = i + 1; }); return L; },
   magicInfo() { const L = this.magicLevel(), m = C.magicLevels[L - 1], next = C.magicLevels[L]; return { level: L, name: m.name, days: this.s.days.length, nextDays: next ? next.days : null, spells: C.magicLevels.slice(0, L).map(x => x.unlock).filter(Boolean) }; },
   canCast(id) {
-    const sp = C.spells[id]; if (!(sp.special ? this.s.tiles['0,1'] : this.magicInfo().spells.includes(id))) return { ok: false, why: 'not yet learned' };   // special spells come with what they are for, not with days
+    const sp = C.spells[id]; if (!(sp.special ? this.gardenOpen() : this.magicInfo().spells.includes(id))) return { ok: false, why: 'not yet learned' };   // special spells come with what they are for, not with days
     if (!this.can(sp.cost)) return { ok: false, why: `needs ${this.missing(sp.cost).join(', ')}` };
     if (id === 'legs' && this.s.flags.toadWalk) return { ok: false, why: 'it has already walked off' };
     if (id === 'coax' && this.plot().stage !== 'growing') return { ok: false, why: 'nothing is growing' };
@@ -524,7 +547,71 @@ const G = {
       folk: this.settled().length, stories: Object.values(s.village.folk).filter(f => f.q === 'done').length };
   },
 
-  // ---- story hook (placeholder; content lives in CONTENT.story once written) ----
+  // ---- the first month's story (CONTENT.story; words from docs/STORY.md) ----
+  // Each page opens once, when its moment comes (storyDue). Pages, land cards and Hazel's lists wait in pages.cards until index.html
+  // can show them (one at a time, never over an open menu), so nothing is lost if the game is closed first.
+  storyDue(pg, t) {
+    const s = this.s, w = pg.when, h = new Date(t).getHours(), p = s.plots.seedbed;
+    if (w === 'welcome') return false;   // opened by index.html as the welcome page
+    if (w.startsWith('done:')) return this.done(w.slice(5));
+    if (w.startsWith('flag:')) return !!s.flags[w.slice(5)];
+    if (w === 'evening:woodpile') return this.done('woodpile') && (h >= 17 || h < 5);   // the first evening, so the stars are out
+    if (w === 'seedlings') return !!(p.stage === 'growing' || p.stage === 'ready' || p.grown);
+    if (w === 'week') return t - s.created >= 7 * DAY();
+    if (w === 'startable:house1') { const d = this.taskDef('house1'); return !!s.tasks.house1 || ((d.needs || []).every(n => this.done(n)) && this.magicLevel() >= (d.minLevel || 1)); }
+    if (w === 'garden') return this.gardenOpen();
+    if (w === 'toadWalked') return !!s.flags.toadWalk && t - s.flags.toadWalk >= 45000;   // index.html TOAD_WALK
+    return false;
+  },
+  storyTick(t) {
+    const s = this.s, P = s.pages, queued = id => P.cards.some(c => c.k === 'page' && c.id === id);
+    if (this.gardenOpen() && !s.flags.garden) s.flags.garden = true;   // garden jobs (the pond) wait for this
+    for (const pg of C.story.pages) if (!(pg.id in P.seen) && !queued(pg.id) && this.storyDue(pg, t)) { P.cards.push({ k: 'page', id: pg.id }); this.emit('card'); }
+    for (const [patch, M] of Object.entries(C.makes)) {   // Hazel's list: a patch reached a new stage, so new little makes are ready
+      if (M.tile !== '0,0' && !this.gardenOpen()) continue;
+      if (patch === 'yard' && !s.flags.firstpick) continue;
+      const st = this.landStage(M.tile).key, key = `${patch}:${st}`;
+      if (!M.lines[st] || P.makes[key]) continue;
+      P.makes[key] = t; if (C.tasks.some(d => d.make === patch && d.stage === st)) { P.cards.push({ k: 'makes', patch, stage: st }); this.emit('card'); }
+    }
+  },
+  seePage(id) { this.s.pages.seen[id] = now(); this.s.pages.cards = this.s.pages.cards.filter(c => !(c.k === 'page' && c.id === id)); this.dirty = true; },
+  pageDef(id) { return C.story.pages.find(p => p.id === id); },
+  pageText(pg) {   // the page's paragraphs as they read now (lines about things not done yet are left out)
+    const ok = c => c.startsWith('flag:') ? !!this.s.flags[c.slice(5)] : c.startsWith('helped:') ? !!(this.s.journal[c.slice(7)] || {}).helped : this.done(c);
+    const one = x => typeof x === 'string' ? x : x.if ? (ok(x.if) ? x.text : x.else || '') : x.text;
+    return pg.text.map(x => Array.isArray(x) ? x.map(one).filter(Boolean).join(' ') : x.margin ? { margin: true, text: x.text } : one(x)).filter(Boolean);
+  },
+  questSteps() { return C.story.quest.steps.map(([k, name]) => ({ name, done: k.startsWith('page:') ? k.slice(5) in this.s.pages.seen : this.done(k) })); },
+  storyCatchUp() {   // an older garden: everything that has already happened counts as read (it is all in the Journal under "Our story"); Hazel's list for now still comes
+    const s = this.s, t = now();
+    for (const pg of C.story.pages) if (pg.when === 'welcome' || this.storyDue(pg, t)) s.pages.seen[pg.id] = 0;
+    if (s.flags.toadWalk) s.spirit.taught[3] = 0;
+    for (const [patch, M] of Object.entries(C.makes)) { if (!s.tiles[M.tile]) continue; const cur = this.stageIndex(M.tile);
+      C.landStages.forEach((st, i) => { if (i < cur) s.pages.makes[`${patch}:${st.key}`] = 0; }); }
+  },
+  // ---- the Wood spirit: five lessons, one each time the magic grows (CONTENT.story.lessons) ----
+  spiritLesson() {   // the lesson it is waiting by now (its number), or 0
+    const s = this.s, sp = s.spirit.taught, L = this.magicLevel(), h = new Date(now()).getHours();
+    if (!(3 in sp) && this.gardenOpen() && !s.flags.toadWalk) return 3;   // when the garden opens and the toadstool is in the way
+    for (const [n, ok] of [[1, L >= 2 && this.done('bed')], [2, L >= 3 && this.done('spring')], [4, L >= 4], [5, L >= 5 && (h >= 17 || h < 5)]]) {
+      if (n in sp) continue; return ok ? n : 0;   // in order: a later lesson waits for the one before
+    }
+    return 0;
+  },
+  teach(n) { const first = !Object.keys(this.s.spirit.taught).length; this.s.spirit.taught[n] = now(); if (!this.met('spirit')) this.noteVisitor('spirit'); this.dirty = true; return first; },
+  // ---- creatures moving into homes the gnomes made: +1 green each (the greening rule) ----
+  moveInTick(t) {
+    const s = this.s;
+    for (const m of C.story.moveIns) {
+      if (s.moved[m.id]) continue;
+      const ready = m.job ? this.done(m.job) && t >= s.tasks[m.job].endsAt + C.story.moveInAfter * MIN : !!s.flags[m.flag];
+      if (!ready) continue;
+      s.moved[m.id] = t; this.addGreen(1, m.garden ? 'garden' : 'yard'); this.note(m.note); this.emit('movein', m);
+    }
+  },
+
+  // ---- story hook for the side mystery (the staff); Bryce writes the plot ----
   flag(k, v = true) { this.s.story.flags[k] = v; this.emit('story', k); },
   hasFlag(k) { return !!this.s.story.flags[k]; },
 

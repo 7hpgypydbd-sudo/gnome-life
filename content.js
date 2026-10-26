@@ -84,33 +84,33 @@ window.CONTENT = {
     { id:'stump', name:'Dig out the old stump', short:'digging out the stump', who:'either', act:'dig', spot:'lanternstump', cost:{}, give:{ twig:3 }, mins:60, green:0,
       needs:['woodpile'], blurb:'An old loggers\' stump, right where the fire wants room. Whoever is free digs round the roots, rocks it loose and chops it up for the woodpile.',
       doneNote:'The old stump is gone, chopped and stacked on the woodpile. There is room round the fire now.' },
+    { id:'springring', name:'Ring the spring with stones', short:'ringing the spring', who:'either', act:'dig', spot:'spring', cost:{ stone:5 }, mins:90, green:0, needs:['bedwater'],
+      blurb:'Flat stones round the spring pool, so the edges don\'t crumble and the birds have somewhere to stand. Not a well. Wells are for villages.' },
     { id:'windowbox', name:'Hang a window box', short:'hanging the window box',        who:'her', act:'water', spot:'shelter',     cost:{ twig:2, moss:2, seed:1 }, mins:90, green:1, needs:['house3'],
       blurb:'Now there is a proper house with a proper window. A home is not a home until something is flowering under it.' },
 
     // --- a glow (day 2 onward) ---
     { id:'herbs',   name:'Plant a herb corner', short:'planting herbs',        who:'her', act:'water', spot:'seedbed',     cost:{ seed:2, water:2, moss:1 }, mins:180, green:1, minLevel:2, needs:['bed'],
       blurb:'Thyme, mint and the one parsley that will not die. Good for tea and for bees.' },
-    { id:'compost', name:'Start a compost heap', short:'starting the compost',       who:'him', act:'dig', spot:'wheelbarrow', cost:{ twig:2, moss:3, water:1 }, mins:180, green:1, minLevel:2,
-      blurb:'Nothing is waste if you wait. Leaves, peelings and patience.' },
-    { id:'birdbath', name:'Set a stone birdbath', short:'setting the birdbath',      who:'him', act:'water', spot:'stonebench',  cost:{ stone:4, water:2 }, mins:120, green:1, minLevel:2,
+    { id:'compost', name:'Start a compost heap', short:'starting the compost',       who:'him', act:'dig', spot:'wheelbarrow', cost:{ twig:2, moss:3, water:1 }, mins:180, green:0, minLevel:2,
+      blurb:'Peelings, leaves and patience. Dug into the seed bed, it makes the soil rich: one extra seed every harvest.' },
+    { id:'birdbath', name:'Set a stone birdbath', short:'setting the birdbath',      who:'him', act:'water', spot:'stonebench',  cost:{ stone:4, water:2 }, mins:120, green:0, minLevel:2,
       blurb:'A hollow stone full of dew. Somebody small will want a wash.' },
-    { id:'wildflowers', name:'Scatter wildflower seed', short:'scattering seed', who:'her', act:'water', spot:'sapling',    cost:{ seed:3, water:1 }, mins:240, green:2, minLevel:2, needs:['bedwater'],
-      blurb:'Not in rows. Wildflowers like to choose their own places.' },
     { id:'beanpoles', name:'Raise the bean poles', short:'raising bean poles',     who:'him', act:'dig', spot:'seedbed',     cost:{ twig:5 },           mins:120, green:0, minLevel:2, needs:['bed'],
-      blurb:'A teepee of sticks for a vine that has not been planted yet. Optimism.' },
+      blurb:'For the beans, which have strong opinions about climbing.' },
     { id:'path',    name:'Lay a stepping-stone path', short:'laying the path',  who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:6 },          mins:240, green:0, minLevel:2, needs:['doorstep'],
       blurb:'From the doorstep to the fire, so the grass can grow where the feet used to go.' },
     { id:'berrybush', name:'Plant a berry bush', short:'planting the berry bush',       who:'her', act:'water', spot:'sapling',     cost:{ seed:2, water:2, moss:2 }, mins:300, green:2, minLevel:2, needs:['bedwater'],
       blurb:'Berries for jam, and berries for the birds. Mostly the birds.' },
 
     // --- a steady light (day 3 onward) ---
-    { id:'pond',    name:'Dig a little dew pond', short:'digging the pond',      who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:4, twig:2, water:3 }, mins:360, green:2, minLevel:3, needs:['compost'],
-      blurb:'Just big enough for a frog and a sky. Lined with clay and lots of stones.' },
-    { id:'beehive', name:'Hang a hollow-log bee house', short:'hanging the bee house', who:'him', spot:'fence',     cost:{ twig:4, moss:2, acorn:2 }, mins:240, green:1, minLevel:3, needs:['herbs'],
+    { id:'pond',    name:'Dig a little dew pond', short:'digging the pond',      who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:4, twig:2, water:3 }, mins:360, green:0, minLevel:3, needs:['spring', 'flag:garden'],
+      blurb:'Just big enough for a frog and a sky, in the corner of the garden, fed by a trickle from the spring. Lined with clay and lots of stones.' },
+    { id:'beehive', name:'Hang a hollow-log bee house', short:'hanging the bee house', who:'him', spot:'fence',     cost:{ twig:4, moss:2, acorn:2 }, mins:240, green:0, minLevel:3, needs:['herbs'],
       blurb:'For the little native bees who live alone and sting almost never.' },
-    { id:'nestbox', name:'Nail up a nest box', short:'nailing up the nest box',         who:'him', spot:'fence',       cost:{ twig:3, feather:1, acorn:1 }, mins:180, green:1, minLevel:3, needs:['fence'],
+    { id:'nestbox', name:'Nail up a nest box', short:'nailing up the nest box',         who:'him', spot:'fence',       cost:{ twig:3, feather:1, acorn:1 }, mins:180, green:0, minLevel:3, needs:['fence'],
       blurb:'The hole must be the right size. Too big and the wrong sort of bird moves in.' },
-    { id:'hedgehoghouse', name:'Build a leaf-pile shelter', short:'piling the leaves', who:'her', spot:'fence',  cost:{ twig:3, moss:3 },   mins:180, green:1, minLevel:3,
+    { id:'hedgehoghouse', name:'Build a leaf-pile shelter', short:'piling the leaves', who:'her', spot:'fence',  cost:{ twig:3, moss:3 },   mins:180, green:0, minLevel:3,
       blurb:'A heap of leaves and sticks in a quiet corner. Please do not tidy it.' },
     { id:'toadstools', name:'Coax a ring of toadstools', short:'coaxing toadstools', who:'her', act:'water', spot:'sapling',   cost:{ moss:4, water:2, light:2 }, mins:300, green:1, minLevel:3,
       blurb:'A little light, a lot of damp. The ring will be the best seat in the garden.' },
@@ -128,37 +128,110 @@ window.CONTENT = {
     // --- a warm flame (day 5 onward) ---
     { id:'seedsave', name:'Keep a seed tin', short:'filling the seed tin',           who:'her', spot:'shelter',     cost:{ seed:4, twig:2 },   mins:180, green:0, minLevel:4,
       blurb:'Labelled in her tiny handwriting. Next year starts with this year\'s best.' },
-    { id:'wildmeadow', name:'Sow the meadow strip', short:'sowing the meadow',    who:'her', act:'water', spot:'wheelbarrow', cost:{ seed:5, water:3 },  mins:360, green:3, minLevel:4, needs:['wildflowers'],
+    { id:'wildmeadow', name:'Sow the meadow strip', short:'sowing the meadow',    who:'her', act:'water', spot:'wheelbarrow', cost:{ seed:5, water:3 },  mins:360, green:3, minLevel:4, needs:['bedwater'],
       blurb:'A long ribbon of grasses and clover along the fence, left to grow wild.' },
     { id:'lanternpath', name:'Line the path with glow jars', short:'lining the path', who:'her', spot:'fence', cost:{ light:5, stone:2 }, mins:240, green:0, minLevel:4, needs:['path'],
       blurb:'Wisps in jars, so nobody trips on the way back from the creek.' },
     // --- night lights: glow-worm lanterns and street lamps ---
-    { id:'wormlantern', name:'Hang glow-worm lanterns', short:'hanging the lanterns', who:'her', act:'carry', spot:'shelter', cost:{ twig:2, moss:2, light:1 }, mins:120, green:0, minLevel:2,
+    { id:'wormlantern', retired:true, name:'Hang glow-worm lanterns', short:'hanging the lanterns', who:'her', act:'carry', spot:'shelter', cost:{ twig:2, moss:2, light:1 }, mins:120, green:0, minLevel:2,
       blurb:'Little glass jars with a few sleepy glow-worms and a scrap of moss. Hung by the door, they light the way home.' },
-    { id:'barrow', name:'Make a little wheelbarrow', short:'making a wheelbarrow', who:'him', act:'build', spot:'wheelbarrow', cost:{ twig:3, stone:1 }, mins:90, green:0, needs:['flag:firstpick'],
-      blurb:'A small wheelbarrow for the yard, just for looks. Hazel will fill it with moss and flowers.', doneNote:'The little wheelbarrow is done, and already full of moss.' },
-    { id:'wormlamp', name:'Set glow-worm street lamps', short:'setting the lamps', who:'him', act:'carry', spot:'fence', cost:{ twig:4, stone:2, light:2 }, mins:240, green:0, minLevel:3, needs:['wormlantern'],
+    { id:'wormlamp', retired:true, name:'Set glow-worm street lamps', short:'setting the lamps', who:'him', act:'carry', spot:'fence', cost:{ twig:4, stone:2, light:2 }, mins:240, green:0, minLevel:3, needs:['wormlantern'],
       blurb:'Four little lamp posts along the yard, each with a jar of worms. Wendel named them all and will not say what the names are.' },
-    { id:'leanto',  name:'Raise a spare-room lean-to', short:'raising the lean-to', who:'him', spot:'shelter',     cost:{ twig:8, moss:6, stone:4 }, mins:360, green:0, minLevel:4, needs:['windowbox'],
-      blurb:'In case friends come to stay. Or family. Mostly family.' },
-    { id:'swing',   name:'Hang a bark swing', short:'hanging the swing',          who:'him', spot:'sapling',     cost:{ twig:4, moss:1 },   mins:120, green:0, minLevel:4, needs:['acornplant'],
-      blurb:'From the lowest branch of the new oak. For the afternoons when nothing needs doing.' },
+    { id:'leanto',  name:'Raise Wendel\'s workshop lean-to', short:'raising the workshop', who:'him', act:'build', spot:'shelter', cost:{ twig:8, moss:6, stone:4 }, mins:360, green:0, minLevel:4, needs:['house1'],
+      blurb:'A lean-to of his own against the side of the house, with a hook for every tool and a little window for the stars. His mess lives in here now. Hazel is delighted.' },
+
+    // --- little makes (docs/DECORATIONS.md): each patch earns 4-5 small makes per land stage, paid with what you gather, so the pack never piles up.
+    // make: which patch (yard = home tile 0,0; garden = the couple's garden 0,1). stage: the land stage of THAT patch they come with. at: their fixed
+    // spot on that patch (yard layout plan); nothing to place or drag. Either gnome can make any of them, one job at a time. Only planted ones give green.
+    // barrow, swing, sign and wildflowers were jobs before and keep their ids, so a garden that already made them still has them.
+    { id:'barrow', make:'yard', stage:'barren', at:[0.26, 0.56], name:'Make a little wheelbarrow', short:'making a wheelbarrow', who:'either', act:'build', spot:'wheelbarrow', cost:{ twig:2, stone:1 }, mins:40, green:0,
+      blurb:'The old one lost its wheel on the hill. This one is smaller, and mostly for Hazel\'s flowers.', doneNote:'The little wheelbarrow is done, and already full of moss.' },
+    { id:'firering', make:'yard', stage:'barren', at:[0.52, 0.48], name:'Ring the fire with stones', short:'ringing the fire', who:'either', act:'dig', cost:{ stone:3 }, mins:30, green:0,
+      blurb:'So the sparks stay where they\'re put.' },
+    { id:'potstools', make:'yard', stage:'barren', at:[0.40, 0.53], name:'Two upturned-pot stools', short:'setting out the stools', who:'either', act:'carry', cost:{ twig:1, moss:1 }, mins:20, green:0,
+      blurb:'They had a lot of pots. Now they have chairs.' },
+    { id:'spinner', make:'yard', stage:'barren', at:[0.08, 0.30], name:'A tin-can wind spinner', short:'making the spinner', who:'either', act:'build', cost:{ twig:2, stone:1 }, mins:30, green:0,
+      blurb:'Made from the loggers\' old tins. It squeaks. Wendel calls that music.' },
+    { id:'scraper', make:'yard', stage:'barren', at:[0.29, 0.39], name:'A boot-scraper stone', short:'setting the scraper', who:'either', act:'dig', cost:{ stone:2 }, mins:20, green:0,
+      blurb:'For the mud. Hazel\'s idea, Wendel\'s boots.' },
+
+    { id:'doorpots', make:'yard', stage:'green', at:[0.41, 0.36], name:'Flower pots by the door', short:'potting flowers', who:'either', act:'water', cost:{ seed:2, water:2, moss:1 }, mins:30, green:1,
+      blurb:'Three of the travelling pots, finally with something in them.' },
+    { id:'doormat', make:'yard', stage:'green', at:[0.36, 0.35], name:'A woven grass doormat', short:'weaving the doormat', who:'either', act:'craft', cost:{ moss:3, twig:2 }, mins:40, green:0,
+      blurb:'Wipe your feet. Yes, you.' },
+    { id:'scarecrow', make:'yard', stage:'green', at:[0.60, 0.69], name:'A little scarecrow', short:'making the scarecrow', who:'either', act:'build', cost:{ twig:3, moss:1, feather:1 }, mins:40, green:0, needs:['bed'],
+      blurb:'It does not scare the rabbit. The rabbit naps under it.' },
+    { id:'pebbles', make:'yard', stage:'green', at:[0.58, 0.74], name:'Pebble edging round the seed bed', short:'edging the bed', who:'either', act:'dig', cost:{ stone:5 }, mins:45, green:0, needs:['bed'],
+      blurb:'Little white pebbles, one at a time, all round the bed.' },
+    { id:'daisypot', make:'yard', stage:'green', at:[0.75, 0.50], name:'A pot of daisies where the old stump stood', short:'potting daisies', who:'either', act:'water', cost:{ seed:2, water:1, moss:1 }, mins:25, green:1, needs:['stump'],
+      blurb:'The spot where the old stump stood needed something to do.' },
+
+    { id:'swing', make:'yard', stage:'meadow', at:[0.18, 0.80], name:'Hang a bark swing', short:'hanging the swing', who:'either', act:'build', cost:{ twig:4, moss:2, acorn:1 }, mins:45, green:0, needs:['sapling'],
+      blurb:'From the lowest branch of the oak. For the afternoons when nothing needs doing.' },
+    { id:'sundial', make:'yard', stage:'meadow', at:[0.87, 0.26], name:'A sundial', short:'setting the sundial', who:'either', act:'build', cost:{ stone:5, twig:2, feather:1 }, mins:45, green:0,
+      blurb:'It\'s always teatime somewhere. Usually here.' },
+    { id:'herbpots', make:'yard', stage:'meadow', at:[0.48, 0.26], name:'Herb pots by the rain barrel', short:'potting herbs', who:'either', act:'water', cost:{ seed:3, water:2, moss:2 }, mins:35, green:1,
+      blurb:'Mint, because it will grow anywhere, and thyme, because Hazel insists.' },
+    { id:'wreath', make:'yard', stage:'meadow', at:[0.36, 0.33], name:'A wattle wreath on the door', short:'weaving the wreath', who:'either', act:'craft', cost:{ twig:3, seed:2, berry:2 }, mins:30, green:0,
+      blurb:'Golden and smelling of honey. It changes with the seasons.' },
+    { id:'plank', make:'yard', stage:'meadow', at:[0.73, 0.25], name:'A plank over the spring trickle', short:'laying the plank', who:'either', act:'build', cost:{ twig:5, stone:2 }, mins:30, green:0, needs:['spring'],
+      blurb:'So nobody has to hop.' },
+
+    { id:'hammock', make:'yard', stage:'wood', at:[0.10, 0.70], name:'A hammock', short:'stringing the hammock', who:'either', act:'craft', cost:{ twig:6, moss:4, feather:2 }, mins:45, green:0, needs:['sapling'],
+      blurb:'Built for one. Used by two.' },
+    { id:'chime', make:'yard', stage:'wood', at:[0.42, 0.25], name:'A snail-shell wind chime', short:'stringing the chime', who:'either', act:'craft', cost:{ twig:4, stone:5, feather:2 }, mins:40, green:0,
+      blurb:'Every shell was empty when they found it. They checked.' },
+    { id:'nameboard', make:'yard', stage:'wood', at:[0.36, 0.33], name:'A name board over the door', short:'painting the name board', who:'either', act:'build', cost:{ twig:6, stone:2, berry:2, acorn:2 }, mins:45, green:0, needs:['house3'],
+      blurb:'The house needs a name.' },
+    { id:'cushion', make:'yard', stage:'wood', at:[0.62, 0.40], name:'A moss cushion on the bench', short:'stuffing the cushion', who:'either', act:'craft', cost:{ moss:8, feather:2 }, mins:25, green:0, needs:['bench'],
+      blurb:'Softer. Greener. Slightly damp.' },
+    { id:'sign', make:'yard', stage:'wood', at:[0.95, 0.60], name:'Carve a welcome sign', short:'carving the sign', who:'either', act:'build', cost:{ twig:6, feather:2, berry:2, stone:2 }, mins:45, green:0,
+      blurb:'"All Creatures Welcome. Please Wipe Paws." The second line took three tries.' },
+
+    { id:'gstones', make:'garden', stage:'green', at:[0.45, 0.20], name:'Stepping stones into the garden', short:'laying stepping stones', who:'either', act:'dig', cost:{ stone:5 }, mins:45, green:0,
+      blurb:'Flat stones, a gnome\'s stride apart. Wendel\'s stride.' },
+    { id:'wicket', make:'garden', stage:'green', at:[0.46, 0.02], name:'A little wicket gate', short:'hanging the gate', who:'either', act:'build', cost:{ twig:5 }, mins:40, green:0,
+      blurb:'Not to keep anyone out. Just to have a gate.' },
+    { id:'mousering', make:'garden', stage:'green', at:[0.24, 0.78], name:'A pebble ring round the mouse house', short:'ringing the mouse house', who:'either', act:'dig', cost:{ stone:4, moss:1 }, mins:30, green:0, needs:['flag:toadWalk'],
+      blurb:'So the mice have a front garden too.' },
+    { id:'sitstone', make:'garden', stage:'green', at:[0.64, 0.40], name:'A sitting stone', short:'setting the sitting stone', who:'either', act:'dig', cost:{ stone:4, moss:2 }, mins:35, green:0,
+      blurb:'Warm by noon. Hazel\'s thinking spot.' },
+    { id:'wildflowers', make:'garden', stage:'green', at:[0.86, 0.14], name:'A wildflower patch', short:'scattering seed', who:'either', act:'water', cost:{ seed:3, water:2 }, mins:40, green:2,
+      blurb:'Not in rows. Wildflowers choose their own places.' },
+
+    { id:'border', make:'garden', stage:'meadow', at:[0.45, 0.26], name:'A flower border along the path', short:'planting the border', who:'either', act:'water', cost:{ seed:4, water:2, moss:2 }, mins:45, green:1,
+      blurb:'Foxgloves at the back, daisies at the front, a wiggle in the middle.' },
+    { id:'arch', make:'garden', stage:'meadow', at:[0.46, 0.09], name:'A sweet-pea arch', short:'bending the arch', who:'either', act:'build', cost:{ twig:5, seed:2, water:1 }, mins:45, green:1,
+      blurb:'Bent willow and sweet peas. Smells like summer.' },
+    { id:'mousetable', make:'garden', stage:'meadow', at:[0.33, 0.80], name:'A mouse-sized table and stools', short:'making a tiny table', who:'either', act:'craft', cost:{ acorn:4, twig:2 }, mins:25, green:0, needs:['flag:miceIn'],
+      blurb:'Wendel made them from acorn cups. The mice approve.' },
+    { id:'stonefrog', make:'garden', stage:'meadow', at:[0.17, 0.58], name:'A stone frog', short:'carving the stone frog', who:'either', act:'craft', cost:{ stone:6, moss:1 }, mins:40, green:0, needs:['pond'],
+      blurb:'It doesn\'t croak. The real frog is unimpressed.' },
+    { id:'birddish', make:'garden', stage:'meadow', at:[0.90, 0.56], name:'A bird dish on a post', short:'putting up the bird dish', who:'either', act:'build', cost:{ stone:3, twig:3, water:1 }, mins:30, green:0,
+      blurb:'A saucer of dew up high, out of the rabbit\'s reach.' },
+
+    { id:'logbench', make:'garden', stage:'wood', at:[0.26, 0.14], name:'A mossy log bench', short:'rolling the log bench', who:'either', act:'build', cost:{ twig:6, moss:6 }, mins:45, green:0,
+      blurb:'An old log, a lot of moss, room for two and a rabbit.' },
+    { id:'ferns', make:'garden', stage:'wood', at:[0.08, 0.30], name:'A fern corner', short:'planting ferns', who:'either', act:'water', cost:{ seed:4, moss:4, water:3 }, mins:40, green:1,
+      blurb:'Ferns like the dark and the damp. So does Gerald.' },
+    { id:'willowseat', make:'garden', stage:'wood', at:[0.40, 0.62], name:'A willow seat for two', short:'weaving the willow seat', who:'either', act:'craft', cost:{ twig:8, moss:2, feather:1 }, mins:45, green:0, needs:['pond'],
+      blurb:'Woven by Hazel. Sat in mostly by Wendel.' },
+    { id:'pebblepath', make:'garden', stage:'wood', at:[0.64, 0.59], name:'A painted pebble path to the creature corner', short:'painting pebbles', who:'either', act:'craft', cost:{ stone:8, berry:3, feather:1 }, mins:45, green:0,
+      blurb:'Every pebble painted with a different animal. One is a snail.' },
 
     // --- with the neighbours: jobs that use what they make (each waits for that neighbour's trade building) ---
-    { id:'workbench', name:'Fit Wendel a proper workbench', short:'fitting the workbench', who:'him', spot:'shelter', cost:{ plank:4, stone:2 }, mins:240, green:0, needs:['trade:tobias'],
-      blurb:'Real planks, a vice, and a drawer for the things he swears he will tidy away.' },
+    { id:'workbench', name:'Fit Wendel a proper workbench', short:'fitting the workbench', who:'him', spot:'shelter', cost:{ plank:4, stone:2 }, mins:240, green:0, needs:['trade:tobias', 'leanto'],
+      blurb:'In his workshop: real planks, a vice, and a drawer for the things he swears he will tidy away.' },
     { id:'quilt', name:'Knit a winter quilt', short:'knitting the quilt', who:'her', act:'sit', spot:'shelter', cost:{ yarn:4, moss:2 }, mins:300, green:0, needs:['trade:nettle'],
       blurb:'Square by square, of an evening. Wendel holds the wool and talks too much.' },
     { id:'pantry', name:'Fill the pantry for winter', short:'filling the pantry', who:'her', spot:'shelter', cost:{ bread:3, honey:2, seed:3 }, mins:180, green:0, needs:['trade:mabel', 'trade:clem'],
       blurb:'Jars, sacks and one very good cake tin. Let it snow. (It will not snow. But still.)' },
-    { id:'bridge', name:'Build a bridge at the stepping stones', short:'building the bridge', who:'him', act:'build', cost:{ plank:4, stone:4, twig:4 }, mins:420, green:2, needs:['trade:tobias'], needsTile:'1,-1',
+    { id:'bridge', name:'Build a bridge at the stepping stones', short:'building the bridge', who:'him', act:'build', cost:{ plank:4, stone:4, twig:4 }, mins:420, green:0, needs:['trade:tobias'], needsTile:'1,-1',
       blurb:'Tobias draws it, Wendel builds it, and the far side of the stream can finally be reached with dry feet.' },
 
     // --- a bright fire (day 8 onward) ---
     { id:'greatgrove', name:'Plant the grove', short:'planting the grove',         who:'her', act:'dig', spot:'sapling',     cost:{ acorn:8, seed:4, water:4 }, mins:360, green:3, minLevel:5, needs:['acornplant'],
       blurb:'Oaks, wattles and one very hopeful fig. They will not see it finished. Someone will.' },
-    { id:'sign',    name:'Carve a welcome sign', short:'carving the sign',       who:'him', spot:'fence',       cost:{ twig:4, feather:2 }, mins:120, green:0, minLevel:5, needs:['leanto'],
-      blurb:'"All Creatures Welcome. Please Wipe Paws." The second line took three tries.' },
     { id:'picnic',  name:'A thank-you picnic for the garden', short:'laying the picnic', who:'her', spot:'stonebench', cost:{ berry:4, moss:2, acorn:2 }, mins:120, green:0, minLevel:5,
       blurb:'Crumbs for the ants, berries for the birds, one slice of cake for the gnomes.' },
   ],
@@ -171,11 +244,11 @@ window.CONTENT = {
   landStages: [
     { at:0, key:'barren', name:'bare ground',  sub:'a bare patch of ground, waiting' },
     { at:4, key:'green',  name:'first green',  sub:'a haze of green over the bare earth',
-      explain:'Every living thing the gnomes grow here teaches the soil to grow again. The spring brought back the first water, and each crop from the seed bed leaves a little more life behind. Now a haze of green is creeping over the bare earth. Keep growing things and it will spread.' },
+      explain:'You would have to kneel to see it. A haze of green over the bare brown earth, so faint that Hazel thought it was her eyes. It isn\'t. Every living thing the gnomes grow here teaches the soil to grow again. The spring brought the water back, and each crop leaves a little more life behind. Keep growing things, and it will spread.' },
     { at:12,key:'meadow', name:'young meadow', sub:'grass, clover and the first daisies',
-      explain:'Crop after crop, and the ground remembers. Grass, clover and the first daisies have come back round the house. Planting things that stay, like saplings, bushes and flowers, will bring the woods back too.' },
+      explain:'One morning there was grass round the house. Not a haze any more: real grass, with clover in it, and the first daisies, and a magpie strutting about on it as if he had planted it himself. The ground remembers now. Plant things that stay, like trees and bushes and flowers, and the woods will start to come home.' },
     { at:26,key:'wood',   name:'young woodland', sub:'saplings taller than a gnome',
-      explain:'The trees are coming home. Saplings stand taller than a gnome, and the creatures that left long ago are finding their way back.' },
+      explain:'The saplings are taller than a gnome now. You have to look up at them. The creatures who left long ago are finding their way back, one by one, following the green. This is not a clearing any more. It is the beginning of a wood.' },
   ],
 
   // Magic grows with the days you visit. level by distinct days visited.
@@ -441,17 +514,17 @@ window.CONTENT = {
     needFolk: 6,              // neighbours living here before the festival is proposed (Bryce 2026-10-25: 6 minimum)
     hours: [17, 23],          // the festival evening (the couple dance on the green; the neighbours gather at the table)
     jobs: [
-      { id:'fest:green', name:'Mow a green for the festival', short:'mowing the green', who:'her', act:'dig', cost:{ twig:2, stone:2 }, mins:240, green:1, claims:true, spot:'green',
+      { id:'fest:green', name:'Mow a green for the festival', short:'mowing the green', who:'her', act:'dig', cost:{ twig:2, stone:2 }, mins:240, green:0, claims:true, spot:'green',
         blurb:'A soft, mown green on a healed patch with no home on it, with room for a long table and a little dancing.' },
-      { id:'fest:table', name:'Build the long table', short:'building the long table', who:'him', act:'carry', cost:{ plank:4, twig:4 }, alt:{ twig:10, stone:4 }, mins:360, green:1, needs:['fest:green'], spot:'table',
+      { id:'fest:table', name:'Build the long table', short:'building the long table', who:'him', act:'carry', cost:{ plank:4, twig:4 }, alt:{ twig:10, stone:4 }, mins:360, green:0, needs:['fest:green'], spot:'table',
         blurb:'One long table and two benches, long enough for the whole village and somebody\'s cousin.' },
-      { id:'fest:bunting', name:'Sew the bunting', short:'sewing bunting', who:'her', act:'carry', cost:{ yarn:3, feather:3 }, alt:{ moss:4, feather:4 }, mins:300, green:1, needs:['fest:green'], spot:'bunting',
+      { id:'fest:bunting', name:'Sew the bunting', short:'sewing bunting', who:'her', act:'carry', cost:{ yarn:3, feather:3 }, alt:{ moss:4, feather:4 }, mins:300, green:0, needs:['fest:green'], spot:'bunting',
         blurb:'Little cloth flags on a string from pole to pole, every one a different colour. Hazel has opinions about the order.' },
-      { id:'fest:lanterns', name:'Hang lanterns round the green', short:'hanging lanterns', who:'him', act:'carry', cost:{ light:4, twig:4, stone:2 }, mins:300, green:1, needs:['fest:green'], spot:'lanterns',
+      { id:'fest:lanterns', name:'Hang lanterns round the green', short:'hanging lanterns', who:'him', act:'carry', cost:{ light:4, twig:4, stone:2 }, mins:300, green:0, needs:['fest:green'], spot:'lanterns',
         blurb:'Paper lanterns on poles round the green, each with a wisp of light inside, so the dancing can go on after dark.' },
-      { id:'fest:arch', name:'Weave a flower arch', short:'weaving the arch', who:'her', act:'carry', cost:{ seed:4, moss:4, berry:2 }, mins:360, green:1, needs:['fest:green'], spot:'arch',
+      { id:'fest:arch', name:'Weave a flower arch', short:'weaving the arch', who:'her', act:'carry', cost:{ seed:4, moss:4, berry:2 }, mins:360, green:0, needs:['fest:green'], spot:'arch',
         blurb:'An arch of willow woven with wattle and paper daisies, for the way onto the green. (You know what it is really for.)' },
-      { id:'fest:feast', name:'Help bake the festival feast', short:'baking the feast', who:'him', act:'carry', cost:{ bread:3, honey:2, berry:4 }, alt:{ seed:4, berry:6, water:2 }, mins:300, green:1, needs:['fest:table'], spot:'table',
+      { id:'fest:feast', name:'Help bake the festival feast', short:'baking the feast', who:'him', act:'carry', cost:{ bread:3, honey:2, berry:4 }, alt:{ seed:4, berry:6, water:2 }, mins:300, green:0, needs:['fest:table'], spot:'table',
         blurb:'Loaves, honey cakes, berry tarts and one enormous pie. Wendel is in charge of tasting.' },
     ],
     idea: { title:'A festival?', text:'The neighbours came up the path together this morning, which has never happened before, and stood in a row outside the stump house looking pleased with themselves. "The valley is green again," said {who}. "Every patch of it. That deserves a festival." Wendel was delighted. Hazel was already making a list. A Greening Festival, then: a mown green, a long table, bunting, lanterns, a flower arch and a feast.' },
@@ -469,7 +542,162 @@ window.CONTENT = {
 
   // Side mystery placeholder: a magic staff one of the gnomes finds. Bryce is writing this story himself;
   // nothing here is plot, only the shape: ordered beats with a trigger and a flag the engine can set.
-  story: { beats: [ /* { id:'staff-found', when:{ landStage:'green' }, text:'...', sets:'staffFound' } */ ] },
+  // The first month's story (docs/STORY.md is the master for the words). Each page opens once, from something the player
+  // already does (when: see game.js storyDue), at most one at a time and never over an open menu; all are kept in the Journal.
+  // text: paragraphs; a paragraph may be { if:'taskId' | 'flag:x', text } (left out until that has happened). pic: a creature
+  // portrait as the stand-in picture until the page is painted (art slot page-<id with a dash>, e.g. page-1-1); else the couple.
+  story: { beats: [ /* { id:'staff-found', when:{ landStage:'green' }, text:'...', sets:'staffFound' } */ ],
+    chapters: { 1:'Chapter one: The bare clearing', 2:'Chapter two: Putting down roots', 3:'Chapter three: A proper home' },
+    pages: [
+      { id:'1.1', ch:1, when:'welcome', title:'The end of the road', button:`Let's begin`, text:[
+        `They came up the old logging track at the end of a long, hot afternoon: Wendel pushing the old wheelbarrow, Hazel carrying the little oak in its pot, because she did not trust him with it. Everything they owned was in that barrow. Most of it was pots. Twenty steps from the top, the wheel came off and rolled away down the hill, and they carried the rest.`,
+        `The clearing at the top of the hill was not what the travelling pedlar had promised. The loggers had taken every tree but the stumps, and left their rubbish behind: tins, broken crates, a wheel with no cart. Nothing grew. Even the creek had given up.`,
+        `"Well," said Wendel. "It's got a lovely view."`,
+        `"It's got a lovely everything," said Hazel, "once we've done it." She set the oak down by the biggest stump, as if that settled it. It did.`,
+        `Gnomes have a gift, you see. Wherever they live and tend and grow things, the land slowly remembers how to be alive. And they are not quite alone. Someone small and unseen has followed them up the hill to help. That's you.` ] },
+      { id:'1.2', ch:1, when:'evening:woodpile', title:'The first fire', button:'Goodnight, you two', text:[
+        `Wendel stacked the woodpile bark side up, the way his grandfather did, and stood back to admire it for so long that Hazel lit the fire herself.`,
+        `It was their first fire in their first home, and it crackled as if it knew. They sat on an upturned pot each and ate the last of the travelling bread. A beetle came out of the woodpile to see what the fuss was. Wendel named him Gerald.`,
+        `"I had a speech," said Wendel, patting his pockets. "About new beginnings. It's written down somewhere. With my pipe."`,
+        `Hazel took his pipe out of her apron pocket, where it had been since the bottom of the hill, and handed it over. "Do the speech," she said.`,
+        `He looked at the fire, and at the stars coming out over the stumps, and at her. "We're here," he said. That was the whole speech. She said it was the best one she had ever heard.` ] },
+      { id:'1.3', ch:1, when:'done:spring', title:'Water under the rubbish', button:'The land noticed', text:[
+        `Under the very last of the loggers' crates, Wendel's forked twig gave a twitch.`,
+        `"There," he said. "Water. I can feel it."`,
+        `"You can feel a twig," said Hazel. But she fetched the trowel.`,
+        `Three stones and a great deal of mud later, a thread of clear water came up out of the ground, cold as a secret, and filled a hollow no bigger than a teacup. Then a saucer. Then a little pool.`,
+        `They knelt either side of it and watched it the way other people watch a sleeping baby. It was the first water this land had held in years. Somewhere, very faintly, the land noticed.` ] },
+      { id:'1.4', ch:1, when:'seedlings', title:'Rows and wiggles', button:'Grow, little ones', text:[
+        `Planting day. Hazel opened the seed tin her mother had pressed into her hands the day they set off: carrots, beans, a pinch of lettuce, and one enormous pumpkin seed that Wendel was saving "for something special".`,
+        `"Rows," said Hazel.`,
+        `"Wiggles," said Wendel.`,
+        `They planted in rows, with one wiggle at the end, which is how most marriages work.`,
+        `By evening the bed was dark and damp and very still. By morning it was not. Tiny green shoots stood up all over it, looking surprised to be there.` ] },
+      { id:'1.5', ch:1, when:'flag:rabbit', pic:'rabbit', title:'The thief', button:`Fair's fair`, text:[
+        `Somebody had been in the seed bed. Somebody with long ears, a white tail and no shame at all. The feeding dish was licked clean, and three of the sprouts were bitten off at the bottom.`,
+        `Wendel was cross. He marched up and down with a stick and made a speech about thieves.`,
+        `Hazel was not cross. She had seen the rabbit from the doorway: thin as a rake, sitting up with a sprout in its mouth, chewing as fast as it could in case someone took it away.`,
+        `"It's hungry, love," she said. "Same as us when we got here."`,
+        `Wendel put the stick down. Then he picked it up again, and a few more, and started measuring. "A low fence," he said. "With a gate. It can have the dish. It can't have the carrots."` ] },
+      { id:'2.1', ch:2, when:'flag:firstpick', title:'Supper from our own ground', button:'About that roof', text:[
+        `The first carrots came out of the ground small, crooked and very orange. One had two legs. Wendel said it looked like him. Hazel said it was better looking.`,
+        `They washed them in the spring and ate them by the fire with a pinch of salt, and nothing had ever tasted so good, because nothing had ever been theirs before.`,
+        `"Now then," said Hazel, licking her fingers and looking at the shelter in the way Wendel had learned to be nervous of. "About that roof."` ] },
+      { id:'2.2', ch:2, when:'done:roof', title:'The night it rained', button:'Snug at last', text:[
+        `It rained the night before the roof was done. Not a gentle rain. A proper hill rain, sideways and cheerful, that found every hole in the old canvas and came through all of them at once.`,
+        `They ended up in the one dry corner, squashed together under Hazel's shawl, with every pot they owned set out to catch the drips. Plink, went the pots. Plonk. Plink.`,
+        `"This is the worst night of our marriage," said Wendel.`,
+        `"It's the only night of our marriage in this house," said Hazel. "Give it time." And then they were both laughing too hard to hear the drips.`,
+        `In the morning Hazel laid the moss on thick, green and springy, and the shelter has not leaked since. They kept one pot by the door anyway, for luck.` ] },
+      { id:'2.3', ch:2, when:'done:bench', title:'Room for two', button:'Shuffle up', text:[
+        `Wendel had been building something behind the woodpile all afternoon and telling Hazel it was "nothing, a stick thing, go away".`,
+        `It was a bench. A plank on two stout legs, by the fire, just long enough for two gnomes if one of them was Hazel and the other did not mind being sat close to.`,
+        `She sat on it. It wobbled. He wedged a stone under one leg. It stopped wobbling.`,
+        `"Do you like it?" he asked.`,
+        `"No," said Hazel, which is what she says when she likes something so much she cannot talk about it. They sat there until the fire went down to embers.` ] },
+      { id:'2.4', ch:2, when:'done:sapling', title:'The little oak', button:'Grow tall', text:[
+        `The little oak had come a long way in its pot. Hazel had picked up the acorn by the side of the road on the morning they were married, and carried it in her pocket all day, and planted it that night in a teacup.`,
+        `Now it went into real ground, at the front corner of the yard, with a can of spring water and both of them patting the soil down round it.`,
+        `"It'll outlive us," said Wendel.`,
+        `"That's the idea," said Hazel. "Someday some other gnome can sit under it and wonder who planted it."`,
+        `"We'll carve our names on it."`,
+        `"We will not." But she did let him carve a very small W and H on the pot, which he kept.` ] },
+      { id:'2.5', ch:2, when:'week', title:'Our first week', sub:`in Hazel's handwriting`, button:'Turn the page', journal:true, text:[
+        [ `Seven days.`, { if:'roof', text:`We have a roof (moss, no leaks)` }, { if:'woodpile', text:`and a fire (Wendel's woodpile, very proud of it).` },
+          { if:'spring', text:`We have a spring that we found ourselves (Wendel found it, he would like that written down).` },
+          { if:'bed', text:`We have a seed bed` }, { if:'fence', text:`a fence, and a rabbit who thinks the fence is a suggestion.` } ],
+        `The land is waking up. There's green at the edges now, I'm sure of it.`,
+        `I think somebody is helping us. Things turn up where we need them. Twigs by the door. Dew in the morning. I don't know who you are, but thank you.`,
+        { margin:true, text:`Best week of my life. Lost my pipe four times. Found it in her apron four times.` } ] },
+      { id:'3.0', ch:3, when:'startable:house1', title:'A house for winter', button:`Let's build a house`, quest:true, text:[
+        `It was the first cold morning. Not very cold: just enough that Hazel's breath made a little cloud, and Wendel's toes found hers under the blanket and were told to go away.`,
+        `Hazel sat up and looked at the canvas, and the moss roof, and the big old stump the shelter leaned against.`,
+        `"Wendel," she said. "That stump is hollow."`,
+        `"Mm."`,
+        `"A stump that size could be a house. A real one. With a door, and windows, and a chimney, before the winter comes."`,
+        `Wendel was out of bed so fast he took the blanket with him. He had been waiting the whole of his life for somebody to say those words.` ] },
+      { id:'3.1', ch:3, when:'garden', title:'Next door', button:'Hello there', text:[
+        `Hazel stood at the edge of the yard with her hands on her hips and looked at the patch next door, which had been grey and bare a week ago and was now, very definitely, green.`,
+        `"A garden," she said. "A real one. Flowers by the path. A corner for the creatures. Somewhere to sit that isn't next to your woodpile."`,
+        `"What's wrong with my woodpile?"`,
+        `"Gerald lives in it."`,
+        `There was only one problem. Right in the middle of her garden stood the biggest, reddest, most stubborn toadstool either of them had ever seen. Wendel pushed it. Hazel pulled it. It did not so much as wobble.`,
+        `"It's not going anywhere," said Wendel.`,
+        `Neither of them noticed what drifted out of the trees just then, soft and green as new leaves, and settled beside the toadstool as if it had been waiting for exactly this. But you did.` ] },
+      { id:'3.2', ch:3, when:'toadWalked', title:'The toadstool takes a walk', button:'Just a little magic', text:[
+        `It is not every day you see a toadstool get up.`,
+        `First it shivered. Then four knobbly root legs wriggled out from under its cap, tested the ground one at a time, and stood it up with a creak. It looked about, the way you do when you've slept too long. Then it set off, wobble, wobble, wobble, to the far corner of the garden, and sat down there with a sigh of great satisfaction.`,
+        `Wendel's pipe fell out of his mouth. Hazel picked it up and put it back in without looking.`,
+        `"Did you do that?" Wendel asked her.`,
+        `"No," said Hazel, and looked straight at you. "But I know who did."` ] },
+      { id:'3.3', ch:3, when:'flag:miceIn', pic:'mouse', title:`Somebody's moved in`, button:'Welcome home, mice', text:[
+        `On the morning after the toadstool grew its door, there was a tiny line of washing strung between its stalk and a blade of grass.`,
+        { if:'helped:mouse', text:`The field mouse they had once helped out of a bottle had moved in, and brought her family: one husband, very polite, and three small mice who had already found the seed bed. Hazel let them off, the first time.`,
+          else:`A field mouse who had been watching from the long grass had moved in, and brought her family: one husband, very polite, and three small mice who had already found the seed bed. Hazel let them off, the first time.` },
+        `"That's our first neighbours," said Wendel, delighted.`,
+        `"That's our first tenants," said Hazel. "They can pay rent in being sweet." They are very good at it.`,
+        `And look: wherever a creature makes a home, the land takes heart. The grass round the toadstool was greener by lunchtime.` ] },
+      { id:'3.4', ch:3, when:'done:house1', title:'Big plans', button:'Back to work', text:[
+        `The old stump was hollow now, with room inside for a bed, a hearth and a table. Wendel had drawn the plans. There were a lot of them.`,
+        `There was a tower, for the stars. A round room at the top with a telescope. A workbench in the kitchen, "so I can be near you", with all his bits and pieces on the shelf where the plates should go.`,
+        `Hazel looked at the plans for a long time. Then she said, "No," and it was not her happy no.`,
+        `They ate supper without talking much. Wendel went to bed early, and Hazel sat up by the fire. In the morning, she found him already outside, drawing again. This time it was a small lean-to against the side of the house, all his own, with a workbench and a hook for every tool and a little window that looked at the stars.`,
+        `"Your mess can live in there," said Hazel, and kissed the top of his head. "And the spare room stays spare."`,
+        `"What for?"`,
+        `"You never know," said Hazel.` ] },
+      { id:'3.5', ch:3, when:'done:house3', title:'Over the threshold', button:'The end of chapter three', text:[
+        `The last shingle went on at sunset. The chimney drew on the first try. The round windows glowed.`,
+        `Wendel insisted on doing it properly. He scooped Hazel up at the doorstep, took one grand step, caught his foot on the doorstep he had laid himself, and they both went through the door in a heap and lay on the new floor laughing until they cried.`,
+        `"Welcome home, my love," said Wendel, from somewhere under her skirts.`,
+        `"Welcome home, you great lump," said Hazel.`,
+        `That night, for the first time, they slept under a real roof in a real house in a valley that was learning to be green again. And far down the old track, a small lantern was bobbing up the hill. Somebody else was coming.` ] },
+    ],
+    // the stump house quest, started by page 3.0 and shown at the top of the Journal
+    quest: { name:'A proper home', steps:[ ['house1', 'Hollow out the old stump'], ['house2', 'Fit a plank wall and windows'], ['house3', 'Raise the roof and chimney'], ['page:3.5', 'Move in'] ] },
+    // The Wood spirit comes five times, once each time your magic grows, and floats by what it is teaching about until you tap it.
+    // Its one lesson: magic is for asking, not pushing. The gnomes cannot see it.
+    spiritFirst: `Something soft and green drifts out of the trees, like a handful of new leaves that forgot to fall. It looks at you as if it has always known you were there.`,
+    lessons: [
+      { n:1, at:'seedbed', spell:'coax', title:'Coax a sprout', text:`"You feel the light you gather, little spirit? That is your magic. It cannot make a thing grow. Nothing can. But it can whisper to a seed that is already trying, and tell it to hurry, because somebody is hungry."` },
+      { n:2, at:'spring', spell:'rain', title:'Call soft rain', text:`"The clouds go over this hill without stopping. They think nothing lives here. Ask them nicely to look down, and they might. Never ask for a storm. A garden needs a drink, not a bath."` },
+      { n:3, at:'toadstool', spell:'legs', title:'Give the toadstool legs', text:`"Big, isn't it? And very settled. You could push it all day and it wouldn't care. But ask it kindly, give it a little light, and it will find its own legs. It might even like the corner better."` },
+      { n:4, at:'edge', spell:'wake', title:'Wake the land', text:`"See out there, where the world is only drawn and not yet painted? It is not dead. It is asleep, and dreaming of what it was. When the gnomes have done their part, you can wake it a little sooner. Only a little. Waking up is not something you rush."` },
+      { n:5, at:'fire', spell:null, title:'A bright fire', text:`"Your light is strong now, stronger than mine was at your age. There is nothing new to teach you today, only this: you will find light in the dark, in wisps and dew, and you will also find it every time you are kind. Help the small ones when they are in trouble. That is the brightest magic there is."`,
+        after:`"I'll be about. When the valley needs something new, I'll come and show you."` },
+    ],
+    // creatures moving into a home the gnomes made bring the land back too (+1 green each), a while after the home is made
+    moveIns: [
+      { id:'nestbox', job:'nestbox', note:'The robins have moved into the nest box. The grass by the fence looks greener this morning.' },
+      { id:'leafpile', job:'hedgehoghouse', note:'Something prickly has moved into the leaf pile. The ground round it is waking up.' },
+      { id:'beehouse', job:'beehive', note:'The little native bees have moved into the log house. The herbs are humming, and the land is the better for it.' },
+      { id:'pond', job:'pond', note:'A frog has moved into the pond, and the land is the better for it.' },
+      { id:'mice', flag:'miceIn', garden:true, note:'The mice have moved into the toadstool. Wherever someone makes a home, the land takes heart.' },
+    ],
+    moveInAfter: 720,   // minutes after the home is made before someone moves in
+    // "All done for now": once a visit, when both gnomes are busy (or nothing more can be started) and nothing is left lying about.
+    // {time} is when their next job finishes.
+    allDone: {
+      busy: [ ['her', `That's us busy till about {time}, love. Off you go. We'll be here.`], ['him', `Nothing more to do but wait and work. Come back after {time} and see what we've made.`], ['her', `Go on, shoo. A watched seed bed never sprouts.`] ],
+      nothing: [ ['him', `We'll need a few more bits before the next job. The land always leaves something out. Come and look later.`], ['her', `That's all we can do today. It's enough. A little each day, that's the trick.`] ],
+      evening: [ ['her', `Kettle's on, the fire's lit, and we're stopping. Come and say goodnight later if you like.`], ['him', `I'm putting my feet up. Don't tell anyone I said that before six.`] ],
+      night: [ ['her', `He's asleep already. Come back in the morning, there'll be dew.`], ['him', `Night, little spirit. Mind the wisps on the way out.`] ],
+      bigDay: [ ['her', `What a day. I think we've earned a sit down, the three of us.`] ],
+    },
+  },
+
+  // Little makes (docs/DECORATIONS.md): when a patch reaches a new land stage, Hazel says what they could make now (a small card);
+  // the makes themselves are in tasks (make: yard | garden). Lines by patch and stage.
+  makes: {
+    yard: { name:'The yard', tile:'0,0', lines:{
+      barren:`Now we've eaten from our own ground, let's make this place ours. A ring of stones for the fire, something to sit on, and a scraper for your boots, Wendel.`,
+      green:`Now the yard's greening, I'd love some flower pots by the door.`,
+      meadow:`Grass round the house! A swing for the oak, a sundial, herbs by the barrel. Oh, the things we could make now.`,
+      wood:`It's a proper wood now. A house in a wood should have a name, don't you think? And a hammock. Definitely a hammock.` } },
+    garden: { name:'The garden', tile:'0,1', lines:{
+      green:`A garden of our own. Stepping stones first, so we don't tread on anything, then a gate, then somewhere to sit and think.`,
+      meadow:`The garden's filling out. It wants flowers along the path, and an arch to walk under on the way in.`,
+      wood:`Ferns in the shady corner, a log to sit on under the trees, and a seat for two by the pond.` } },
+  },
 
   lines: {
     him: ["Bare as a baker's elbow. We'll fix that.", "Did you see? A sprout. Right in the middle.", "There's a beetle living in the woodpile now. I've called him Gerald.", "Kettle's on.", "Tomorrow we dig the bed properly.", "I remember when all this was ferns.",
