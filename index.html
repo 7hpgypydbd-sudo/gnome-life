@@ -200,7 +200,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v53</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v54</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -219,15 +219,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 53;
+const BUILD = 54;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=53"></script>
-<script src="game.js?v=53"></script>
+<script src="content.js?v=54"></script>
+<script src="game.js?v=54"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -368,6 +368,15 @@ const WORKPATH = {
     const [i, s] = segOf(p, DISH_FETCH.length), f = DISH_FETCH[i], d = [FEEDER.gx, FEEDER.gy], got = i < 2 && s > 0.3;   // once the round or the stone is at the dish she just works there
     return workLoop(g, 'feeder' + i + got, () => [got ? [d[0] + 0.04, d[1] - 0.02, 'pickup', false, 3] : [f[0] + 0.04, f[1] + 0.02, i === 2 ? 'pickup' : 'gather', false, 4],
       [d[0] - 0.05, d[1] + 0.03, 'pickup', !got, 3], [d[0] - 0.05, d[1] + 0.03, 'gather', false, 5], [d[0] + 0.03, d[1] + 0.05, 'dig', false, 4]]);
+  },
+  sapling: (p, g) => {   // Bryce: she fetches the potted oak from beside the house and carries it to where it will grow, then digs and plants it
+    const F = G.s.flags, [hx, hy] = POT_HOME, [px, py] = SAPLING_AT;
+    if (!F.potLifted) {
+      if (g && Math.hypot(g.gx - hx - 0.04, g.gy - hy - 0.01) < 0.04) { g.potAt = g.potAt || performance.now(); if (performance.now() - g.potAt > 2500) { F.potLifted = true; g.potAt = 0; } } else if (g) g.potAt = 0;
+      if (!F.potLifted) return [hx + 0.04, hy + 0.01, 'pickup'];
+    }
+    if (!F.potPlaced && g && Math.hypot(g.gx - px - 0.05, g.gy - py - 0.01) < 0.04) F.potPlaced = true;
+    return [px + 0.05, py + 0.01, p < 0.55 ? 'dig' : 'water'];   // digs the hole beside it, then sets it in and waters it
   },
   bed: p => { const d = bedDig(p), f = fromWorld(d.cx + (d.x - d.cx) * 0.8, d.y + 2); return [f.gx, f.gy, 'dig']; },   // standing just inside the bed at the digging edge
   spring: (p, g) => {   // he walks the yard kneeling to feel the ground; then, at the old stump, pulls the choking stones out one by one
@@ -640,6 +649,10 @@ class Gnome {
       const sp = L * 0.12; for (const [w, c] of [[3.2, 'rgba(42,21,16,0.85)'], [1.6, '#9a7a50']]) { ctx.lineWidth = w; ctx.strokeStyle = c; ctx.beginPath(); ctx.moveTo(-L * 0.1, -sp); ctx.lineTo(L * 0.3, 0); ctx.moveTo(-L * 0.1, sp); ctx.lineTo(L * 0.3, 0); ctx.lineTo(L * 0.85, 0); ctx.stroke(); }
     }
     ctx.restore();
+    if (potInHands(this)) {   // the potted oak held in front of her at waist height (code stand-in until a carrying-the-sapling strip is painted)
+      const im = IM.sapling, k = SPR * 0.62, w = im.width * k, h = im.height * k, side = this.dir === 'side' ? (this.flip ? -1 : 1) : 0;
+      ctx.drawImage(im, wx + side * cw * s * 0.2 - w / 2, wy - ch * s * 0.24 - h, w, h);
+    }
     // Wendel's pipe: a soft curl of smoke on the frames where the pipe is at his lips (the painted smoke was stripped)
     if (act === 'sit' && this.who === 'him' && (f === 1 || f === 2) && Math.random() < 0.25) {
       const mx = wx + (flip ? -1 : 1) * cw * s * 0.22, my = wy - ch * s * 0.62;
@@ -853,9 +866,10 @@ const TAGFONT = '15px "IM Fell English", Georgia, serif';
 function drawBusyTag(g, now) {
   const r = G.running().find(r => r.id === g.job); if (!r) return;
   const sx = (g.screen.x - cam.x) * cam.z + W / 2, sy = (g.screen.y - g.screen.h - cam.y) * cam.z + H / 2 - 14 + Math.sin(now / 600) * 2;
+  const fy = (g.screen.y - cam.y) * cam.z + H / 2; if (sx < 0 || sx > W || fy < 0 || sy > H) return;   // Bryce: the tag goes off screen with its gnome (it used to stick to the edge)
   const label = `${C.names[g.who]} · ${shortName(r.def)}`, left = G.timeLeft(r.endsAt);
   ctx.save(); ctx.font = TAGFONT; const tw = ctx.measureText(label).width; ctx.font = 'italic 12px "EB Garamond", Georgia'; const lw = ctx.measureText(left).width;
-  const w = Math.max(tw, lw + 60) + 22, h = 44, x = Math.round(Math.max(6, Math.min(W - w - 6, sx - w / 2))), y = Math.round(Math.max(90, sy - h));   // kept on screen even when the gnome has wandered off the edge
+  const w = Math.max(tw, lw + 60) + 22, h = 44, x = Math.round(Math.max(6, Math.min(W - w - 6, sx - w / 2))), y = Math.round(Math.max(90, sy - h));   // nudged in from the edges while its gnome is still on screen
   ctx.globalAlpha = 0.96; ctx.fillStyle = '#f1e5c6'; ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
   rrect(x, y, w, h, 4); ctx.fill(); ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; ctx.strokeStyle = 'rgba(51,37,26,.25)'; ctx.lineWidth = 1; rrect(x + 2.5, y + 2.5, w - 5, h - 5, 3); ctx.stroke();
   if (sx > x + 10 && sx < x + w - 10) { ctx.beginPath(); ctx.moveTo(sx - 6, y + h); ctx.lineTo(sx + 6, y + h); ctx.lineTo(sx, y + h + 7); ctx.closePath(); ctx.fill(); }
@@ -1258,7 +1272,9 @@ function drawProp(p) {
   // no glow on built things or job spots (Bryce: a fence shouldn't glow); only things you pick up glow. The Jobs badge says when there's work.
   if (a <= 0 || p.name === 'fence') return;
   if (p.name === 'seedbed') return drawCrop(x, y);   // no square of tilled earth (Bryce: it spoilt the storybook look); the dug oval is the bed, and seedlings come up in it
+  if (p.name === 'sapling' && potWhere() === 'carried') return;   // in Hazel's arms
   ctx.save(); ctx.globalAlpha = a;
+  if (p.name === 'sapling' && taskProg('sapling') > 0 && taskProg('sapling') < 1 && potWhere() === 'spot') { const k = Math.min(1, taskProg('sapling') / 0.55); blob(x - 26, y + 4, 8 + 10 * k, 3 + 4 * k, '#4a3424'); blob(x - 12, y + 8, 6 * k, 3 * k, '#7a5c40'); }   // the planting hole, spadeful by spadeful, with the dug earth heaped beside it
   if (!p.flat) { groundPatch(x, y, w * 0.72, w * 0.28); shadow(x, y, w * 0.48, w * 0.17); }
   const sw = SWAP_ART[p.name], sp = sw && art(sw[0]) ? taskProg(sw[1]) : 0;   // painted "after" picture crossfades in as its job runs
   if (p.name === 'shelter') drawHouse(img, x, y, w, h);
@@ -1623,6 +1639,10 @@ const WORM_LANTERNS = [[0.27, 0.40], [0.47, 0.30], [0.66, 0.46]];   // hooks and
 const WORM_LAMPS = [[0.40, 0.38], [0.58, 0.55], [0.70, 0.27], [0.92, 0.66]];   // lamp posts: by the door, by the hearth, on the spring path, where the yard meets the village path (yard layout plan's suggested spots; Bryce parked the lamps for now)
 const TOAD_LAMPS = [[0.36, 0.74], [0.74, 0.34]];   // toadstool lamps (lamp-toadstool), lit with the street lamps
 const FIREFLY_STRINGS = [[0.72, 0.97]];            // firefly strings between two posts (lamp-fireflies), centred here
+const SAPLING_AT = [0.18, 0.80], POT_HOME = [0.31, 0.41];   // where the oak will grow (yard plan, "The oak" in docs/PLAN.md), and where its pot has stood since they arrived (just in front of the house, left of the door path)
+function potWhere() { const F = G.s.flags; if (taskProg('sapling') >= 1) return 'spot'; if (!F.potLifted) return 'home'; return F.potPlaced ? 'spot' : 'carried'; }
+function potInHands(g) { return g.who === 'her' && g.job === 'sapling' && !g.inside && potWhere() === 'carried'; }
+function saplingSpot() { const p = PROPS.find(q => q.name === 'sapling'), [x, y] = potWhere() === 'home' ? POT_HOME : SAPLING_AT; p.gx = x; p.gy = y; }
 const FEEDER = { gx: 0.86, gy: 0.70 };   // right front, away from the hearth and outside the fence (yard layout plan); moves to the garden's creature corner when that opens (feederSpot)
 function gardenOpen() { const t = G.s.tiles['0,1']; return !!t && t.state === 'green' && !Object.values(G.s.village.folk).some(f => f.tile === '0,1'); }   // the couple's garden tile (Bryce: the LEFT tile)
 function feederSpot() { Object.assign(FEEDER, gardenOpen() ? { gx: 0.78, gy: 1.66 } : { gx: 0.86, gy: 0.70 }); }
@@ -2536,7 +2556,7 @@ function jobSpot(job) {
 // ---------- main frame ----------
 let last = performance.now(), tickAcc = 0;
 function frame(now) {
-  const dt = Math.min(0.05, (now - last) / 1000); last = now; feederSpot();
+  const dt = Math.min(0.05, (now - last) / 1000); last = now; feederSpot(); saplingSpot();
   const ph = dayPhase();
   tickAcc += dt; if (tickAcc > 0.5) { tickAcc = 0; G.tick(); cardCheck(); allDoneCheck(now); }
   easeCam(dt);
