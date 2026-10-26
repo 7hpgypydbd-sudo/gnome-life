@@ -178,7 +178,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v45</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v46</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -226,7 +226,7 @@ const ASSETS = {
   fence:'sprites/fence.webp', sapling:'sprites/sapling.webp',
   'him-side':'sprites/him-side.png','him-front':'sprites/him-front.png','him-back':'sprites/him-back.png',
   'her-side':'sprites/her-side.png','her-front':'sprites/her-front.png','her-back':'sprites/her-back.png',
-  'him-dig':'sprites/him-dig.png','him-water':'sprites/him-water.png','him-carry':'sprites/him-carry.png','him-eat':'sprites/him-eat.png','him-canwalk':'sprites/him-canwalk.png','him-craft':'sprites/him-craft.png','her-craft':'sprites/her-craft.png','him-sit':'sprites/him-sit.png','him-sleep':'sprites/him-sleep.png',
+  'him-dig':'sprites/him-dig.png','him-water':'sprites/him-water.png','him-carry':'sprites/him-carry.png','him-eat':'sprites/him-eat.png','him-canwalk':'sprites/him-canwalk.png','him-craft':'sprites/him-craft.png','her-craft':'sprites/her-craft.png','him-build':'sprites/him-build.png','her-build':'sprites/her-build.png','him-sit':'sprites/him-sit.png','him-sleep':'sprites/him-sleep.png',
   'her-pickup':'sprites/her-pickup.png','her-gather':'sprites/her-gather.png','him-pickup':'sprites/him-pickup.png','him-gather':'sprites/him-gather.png','her-dig':'sprites/her-dig.png','her-water':'sprites/her-water.png','her-carry':'sprites/her-carry.png','her-eat':'sprites/her-eat.png','her-sit':'sprites/her-sit.png','her-sleep':'sprites/her-sleep.png',
   'icon-twig':'sprites/icon-twig.webp','icon-moss':'sprites/icon-moss.webp','icon-stone':'sprites/icon-stone.webp','icon-acorn':'sprites/icon-acorn.webp','icon-seed':'sprites/icon-seed.webp',
   'woodpile-1':'sprites/woodpile-1.webp','woodpile-2':'sprites/woodpile-2.webp','woodpile-3':'sprites/woodpile-3.webp',   // art day 10, cut by tools/cut_day10.py
@@ -298,7 +298,7 @@ const RHYTHM = {
   him: { eat:[0.40,0.56,'campfire'], sit:[0.38,0.60,'campfire'], sleep:[0.24,0.40,null] },
   her: { eat:[0.60,0.38,'campfire'], sit:[0.62,0.42,'campfire'], sleep:[0.52,0.24,null] },
 };
-const ACT_FPS = { canwalk:9, craft:4, pickup:3, gather:3, dig:4, water:3, carry:9, eat:2.5, sit:1.6, sleep:0.7 };
+const ACT_FPS = { canwalk:9, craft:4, build:4, pickup:3, gather:3, dig:4, water:3, carry:9, eat:2.5, sit:1.6, sleep:0.7 };
 const SPOT_ACT = { feeder:'carry', wheelbarrow:'dig', seedbed:'water', sapling:'water', shelter:'carry', fence:'carry', stonebench:'carry', fire:'carry' };
 function routineFor(h) {   // what the couple do at this hour when no job needs them
   if (G.festivalOn()) return 'fest';   // festival evening: they dance on the green (beats jobs and bedtime)

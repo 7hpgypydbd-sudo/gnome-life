@@ -6,10 +6,11 @@ from PIL import Image
 sys.path.insert(0, __file__.rsplit('/', 1)[0])
 from cut_blobs import key_magenta, runs
 SRC = sys.argv[1]; OUT = 'sprites'; TARGET_H = 240
-JOBS = [('him-carry-can', 'him', 'canwalk'), ('him-craft', 'him', 'craft'), ('her-craft', 'her', 'craft')]
+JOBS = [('him-carry-can', 'him', 'canwalk'), ('him-craft', 'him', 'craft'), ('her-craft', 'her', 'craft'),
+        ('him-craft', 'him', 'build'), ('art-day-12/her-build', 'her', 'build')]   # 'build' = the generic building/hammering strip both gnomes share
 atlas = json.load(open(f'{OUT}/gnomes.json'))
 for name, who, act in JOBS:
-    im = Image.open(f'{SRC}/{name}.jpg').convert('RGB'); im = im.resize((im.width // 2, im.height // 2), Image.LANCZOS)
+    im = Image.open((name + '.jpg') if '/' in name else f'{SRC}/{name}.jpg').convert('RGB'); im = im.resize((im.width // 2, im.height // 2), Image.LANCZOS)
     rgba = key_magenta(im, 0.42); solid = rgba[..., 3] > 128
     prof = solid.sum(0); L = len(prof); cuts = [0]
     for k in range(1, 4):   # split at the emptiest column near each quarter line (props can reach into the next frame's space)
