@@ -31,3 +31,21 @@ Where it goes: cut with `tools/cut_kit.py` into `sprites/yard-bench.webp`. It is
 **Check:** full-size download, solid magenta, both gnomes whole, same bench, nothing glowing.
 
 Where it goes: cut with `tools/cut_kit.py` into `sprites/bench-couple.webp` (make it an art slot like `yard-bench`, same width so it lines up). The wiring chat then shows it instead of the bench + the two separate sitting gnomes whenever both sit on the bench of an evening.
+
+4. `dish-food.jpg` (Bryce 2026-10-26: the feeding dish needs a picture with seed and with berries in it. NEW chat; reference: `sprites/feeding-dish.webp`, the empty dish that is already in the game)
+
+```text
+[style line] Two copies of the same stone feeding dish on its little log stand as the pasted picture, side by side with a wide magenta gap, seen from exactly the same view and size: on the left the shallow stone bowl is heaped with a small pile of pale seeds and grain, a few spilled on the rim; on the right it is heaped with small dark berries (blackberries, a few red rowan berries and two leaves), one berry rolled onto the rim. Match the dish, its stand and the cut branch stub exactly so they can swap with the empty one. Hidden detail: a tiny snail on the log stand of the berry dish. No ground, no shadow. Avoid pink and purple outside the berries.
+```
+
+**Check:** both dishes the same size and outline as the empty one, solid magenta, food sitting INSIDE the bowl.
+
+Where it goes: cut with `tools/cut_kit.py` into `sprites/dish-seed.webp` and `sprites/dish-berry.webp`, make them art slots with the same width as `feeding-dish` (62), and in `drawFeeder` draw the matching one instead of the code-drawn heap (`dishFood()` gives the food and how much is tipped in; crossfade by that amount).
+
+5. `her-feed.jpg` + `him-feed.jpg` (Bryce 2026-10-26: whoever is free walks to the dish and tips the food in. Until painted, Hazel walks with her basket strip and Wendel with his plain walk, then both bend on the pick-up frame. NEW chat for each; references: that gnome's `sprites/<who>-pickup.png` and `sprites/<who>-side.png`)
+
+```text
+[style line] The same gnome as the pasted pictures, matching face, clothes and size exactly. A 4-frame loop in one row, side profile facing right, tipping food from a small woven willow basket held in both hands into something just off the right edge at waist height: frame 1 basket held level, frame 2 basket tilting forward, frame 3 basket tipped right over with a few berries falling out of it, frame 4 a gentle shake of the basket, smiling. Full body, feet visible, evenly spaced with wide clear magenta gaps. No dish, no ground, no shadow. Avoid pink and purple.
+```
+
+Where it goes: pack like `him-build` into `sprites/<who>-feed.png` with act `feed` (4 frames, `ACT_FPS.feed` 3), RE-PASTE gnomes.json into `const GNOMES`, and in the dish errand (`startDishFill` / `errand === 'dish'` in index.html) use act `feed` instead of the held pick-up frame. A walking-with-basket strip for Wendel would also help (his carry strip is firewood).
