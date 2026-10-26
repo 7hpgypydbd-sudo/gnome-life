@@ -176,7 +176,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v37</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v38</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -1048,7 +1048,7 @@ function drawHomeRuts() {
   const [x, y] = toWorld(...HOME_RUTS), w = 860, h = w * mud.height / mud.width;   // one long painted piece (art day 8), no repeats
   ctx.translate(x, y);
   if (p < 1) { ctx.globalAlpha = 1 - p; ctx.drawImage(mud, -w / 2, -h / 2, w, h); }
-  if (p > 0) { ctx.globalAlpha = p; ctx.drawImage(fill, -w / 2, -h / 2, w, h); }
+  if (p > 0 && p < 1) { ctx.globalAlpha = Math.min(1, p * 2) * Math.min(1, (1 - p) * 5); ctx.drawImage(fill, -w / 2, -h / 2, w, h); }   // packed track shows while he works; once the job is done the rut is simply gone, level with the ground
   ctx.restore();
 }
 const HOME_KIT = [   // [piece, healed piece (null: it goes when the job is done), gx, gy, scale, job that clears it]
