@@ -176,7 +176,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v31</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v32</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -194,15 +194,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 31;
+const BUILD = 32;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=31"></script>
-<script src="game.js?v=31"></script>
+<script src="content.js?v=32"></script>
+<script src="game.js?v=32"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -552,7 +552,8 @@ function spawnParticles(dt, ph) {
   const fire = PROPS.find(p => p.name === 'campfire'); const [fx, fy] = toWorld(fire.gx, fire.gy);
   if (Math.random() < dt * 6) particles.push({ k:'smoke', x: fx + (Math.random()-0.5)*6, y: fy - 60*SPR*1.8, vx:(Math.random()-0.5)*4, vy:-14-Math.random()*8, r:4+Math.random()*4, life:0, max:3.5+Math.random()*2 });
   if (Math.random() < dt * 5) particles.push({ k:'spark', x: fx + (Math.random()-0.5)*10, y: fy - 50*SPR*1.4, vx:(Math.random()-0.5)*10, vy:-25-Math.random()*20, life:0, max:0.8+Math.random()*0.8 });
-  if (ph.light < 0.35 && particles.filter(p => p.k === 'fly').length < 18 && Math.random() < dt * 1.5) {
+  const se = season(), flies = se === 'winter' ? 0 : se === 'summer' ? 34 : 18;   // no fireflies in the cold; a sky full of them on summer nights
+  if (ph.light < 0.35 && particles.filter(p => p.k === 'fly').length < flies && Math.random() < dt * 1.5) {
     const [x, y] = toWorld(Math.random(), Math.random());
     particles.push({ k:'fly', x, y: y - 20 - Math.random()*60, vx:0, vy:0, ph:Math.random()*6, life:0, max:12+Math.random()*10 });
   }
@@ -569,11 +570,12 @@ function spawnParticles(dt, ph) {
 function updateParticles(dt) {
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i]; p.life += dt;
-    if (p.life > p.max) { particles.splice(i, 1); continue; }
+    if (p.life > p.max) { if (p.k === 'leaf') settleLeaf(p); particles.splice(i, 1); continue; }
     if (p.k === 'leaf' || p.k === 'petal') { p.ph += dt * 3; p.rot += dt * p.spin; p.x += (p.vx + Math.sin(p.ph * 0.7) * 14) * dt; p.y += p.vy * dt; }
     else if (p.k === 'mist') { p.x += p.vx * dt; }
     else if (p.k === 'fly') { p.ph += dt; p.x += Math.sin(p.ph * 1.3) * 12 * dt; p.y += Math.cos(p.ph * 0.9) * 8 * dt; }
-    else { p.x += p.vx * dt; p.y += p.vy * dt; if (p.k === 'smoke' || p.k === 'puff') { p.vx += (Math.random()-0.5)*8*dt; p.r += 6*dt; } if (p.k === 'spark') p.vy += 10*dt; }
+    else if (p.k === 'bfly') { p.ph += dt; p.x += (p.vx + Math.sin(p.ph * 0.8) * 20) * dt; p.y += (Math.sin(p.ph * 1.7) * 16 + Math.cos(p.ph * 0.5) * 6) * dt; }
+    else { p.x += p.vx * dt; p.y += p.vy * dt; if (p.k === 'smoke' || p.k === 'puff') { p.vx += (Math.random()-0.5)*8*dt; p.r += 6*dt; } if (p.k === 'breath') { p.r += 7*dt; p.vx *= 1 - dt; } if (p.k === 'spark') p.vy += 10*dt; }
   }
   for (let i = floaters.length - 1; i >= 0; i--) { const f = floaters[i]; f.life += dt; f.y -= 28 * dt; if (f.life > 1.4) floaters.splice(i, 1); }
 }
@@ -581,6 +583,9 @@ function drawParticles(ph) {
   for (const p of particles) {
     const t = p.life / p.max;
     if (p.k === 'smoke' || p.k === 'puff') { ctx.globalAlpha = 0.18 * (1 - t); ctx.fillStyle = p.k === 'puff' ? '#c9b58f' : '#d9d2c4'; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); }
+    else if (p.k === 'breath') { ctx.globalAlpha = 0.32 * Math.sin(Math.PI * Math.min(1, t * 1.6)) * (1 - t); ctx.fillStyle = '#f4f7fa'; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); }
+    else if (p.k === 'bfly') { const f = Math.abs(Math.sin(p.ph * 14)), a = Math.min(1, t * 5, (1 - t) * 5); ctx.globalAlpha = 0.9 * a; ctx.fillStyle = p.col;
+      ctx.beginPath(); ctx.ellipse(p.x - 2.6 * f, p.y, 3 * f + 0.4, 2.4, -0.3, 0, 7); ctx.ellipse(p.x + 2.6 * f, p.y, 3 * f + 0.4, 2.4, 0.3, 0, 7); ctx.fill(); }
     else if (p.k === 'spark') { ctx.globalAlpha = 0.9 * (1 - t); ctx.fillStyle = '#ffb347'; ctx.fillRect(p.x, p.y, 2, 2); }
     else if (p.k === 'fly') { const a = (0.5 + 0.5 * Math.sin(p.ph * 4)) * Math.min(1, t * 4, (1 - t) * 4); ctx.globalAlpha = a; ctx.fillStyle = '#e8ff9a'; ctx.shadowColor = '#d8ff70'; ctx.shadowBlur = 8; ctx.beginPath(); ctx.arc(p.x, p.y, 1.8, 0, 7); ctx.fill(); ctx.shadowBlur = 0; }
     else if (p.k === 'zzz') { ctx.globalAlpha = 0.8 * Math.sin(Math.PI * t); ctx.font = `italic bold ${12 + 8 * t}px Georgia`; ctx.textAlign = 'center'; ctx.fillStyle = '#f3e9d2'; ctx.fillText('z', p.x + Math.sin(p.life * 2) * 5, p.y); }
@@ -602,6 +607,39 @@ const SEASON_LOOK = {
 };
 let seasonKey = null, seasonAt = 0;
 function season() { const t = performance.now(); if (t - seasonAt > 10000 || !seasonKey) { seasonKey = G.season(G.now()); seasonAt = t; } return seasonKey; }
+// what the season leaves on the ground (drawn under everything that stands): frost in winter, fallen leaves in autumn
+const LITTER = [];   // leaves that floated down this visit and settled; they fade after a few minutes
+function settleLeaf(p) { const f = fromWorld(p.x, p.y), tl = G.s.tiles[f.tile]; if (!tl || f.gx < 0.02 || f.gx > 0.98 || f.gy < 0.02 || f.gy > 0.98) return;
+  LITTER.push({ x: p.x, y: p.y, rot: p.rot, col: p.col, r: p.r, at: performance.now() }); if (LITTER.length > 80) LITTER.shift(); }
+function leafShape(x, y, r, rot, col, a) { ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y); ctx.scale(1, 0.55); ctx.rotate(rot); ctx.scale(r * 1.8, r * 1.8); ctx.fillStyle = col;
+  ctx.beginPath(); ctx.moveTo(-5, 0); ctx.quadraticCurveTo(0, -3.4, 5, 0); ctx.quadraticCurveTo(0, 3.4, -5, 0); ctx.fill();
+  ctx.strokeStyle = 'rgba(70,35,15,.35)'; ctx.lineWidth = 0.35; ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(4, 0); ctx.stroke(); ctx.restore(); }
+let FROST = null;
+function frostPattern() {   // pale rime: fine white specks and a few soft breath-blotches, tiled
+  if (FROST) return FROST; const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d');
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 26; i++) { const px = rnd() * 256, py = rnd() * 256, r = 20 + rnd() * 40, g = x.createRadialGradient(px, py, 0, px, py, r);
+    g.addColorStop(0, 'rgba(236,244,250,.55)'); g.addColorStop(1, 'rgba(236,244,250,0)'); x.fillStyle = g; x.fillRect(px - r, py - r, r * 2, r * 2); }
+  for (let i = 0; i < 1400; i++) { x.fillStyle = `rgba(250,253,255,${0.35 + rnd() * 0.6})`; x.fillRect(rnd() * 256, rnd() * 256, 1 + rnd() * 1.5, 1 + rnd() * 1.2); }
+  return (FROST = ctx.createPattern(c, 'repeat'));
+}
+function drawSeasonGround(now) {
+  const se = season(), hr = dayPhase().h;
+  if (se === 'winter') {   // frost on the ground: thick at dawn, thinning by noon, a little lingers in the shade all day
+    const a = hr < 4 || hr > 18 ? 0.32 : hr < 9 ? 0.5 : hr < 13 ? 0.5 - (hr - 9) * 0.08 : 0.18;
+    ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = frostPattern(); ctx.beginPath();   // one path for every tile, so no bright seams where tiles meet
+    for (const k of Object.keys(G.s.tiles)) { const [ox, oy] = tileOrigin(k); ctx.moveTo(ox + PLOT.top[0], oy + PLOT.top[1]); for (const c of [PLOT.right, PLOT.bottom, PLOT.left]) ctx.lineTo(ox + c[0], oy + c[1]); ctx.closePath(); }
+    ctx.fill('nonzero'); ctx.restore();
+  }
+  if (se === 'autumn') {   // fallen leaves lie on the healed ground; the ones that float down this visit settle on top
+    const L = SEASON_LOOK.autumn;
+    for (const [k, tl] of Object.entries(G.s.tiles)) { if (tl.state !== 'green' && !(k === '0,0' && tl.green > 2)) continue;
+      const [tx, ty] = k.split(',').map(Number); let seed = (tx * 73856093 ^ ty * 19349663) >>> 0 || 1; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+      for (let i = 0; i < 46; i++) { const [x, y] = toWorld(0.04 + rnd() * 0.92, 0.04 + rnd() * 0.92, k); leafShape(x, y, 0.9 + rnd() * 0.7, rnd() * 6, L.cols[(rnd() * L.cols.length) | 0], 0.75); } }
+    const t = performance.now();
+    for (let i = LITTER.length - 1; i >= 0; i--) { const l = LITTER[i], age = (t - l.at) / 1000; if (age > 240) { LITTER.splice(i, 1); continue; } leafShape(l.x, l.y, l.r * 1.1, l.rot, l.col, 0.85 * Math.min(1, (240 - age) / 30)); }
+  }
+}
 function seasonGrade(ph) {
   const L = SEASON_LOOK[season()]; if (!L) return;
   ctx.save();
@@ -617,7 +655,18 @@ function seasonParticles(dt, ph) {
     particles.push({ k: L.drift, x: v.x0 + Math.random() * wide, y: y0, vx: 8 + Math.random() * 10, vy: 18 + Math.random() * 14, ph: Math.random() * 6, rot: Math.random() * 6, spin: (Math.random() - 0.5) * 3,
       r: 0.8 + Math.random() * 0.6, col: L.cols[(Math.random() * L.cols.length) | 0], life: 0, max: (v.y1 - y0) / 24 });
   }
-  if (L && L.drift === 'mist' && particles.filter(p => p.k === 'mist').length < 6 && Math.random() < dt * 0.4) {
+  const hr = ph.h, early = hr >= 4 && hr < 11;
+  if (season() === 'winter' || (season() === 'autumn' && early)) {   // cold air: little puffs of breath from everyone out and about, most on frosty mornings
+    for (const g of [...gnomes, ...folkOnLand]) if (g.screen && !g.inside && Math.random() < dt * (early ? 0.7 : 0.3)) {
+      if (g.dir === 'back') continue; const dir = g.dir === 'side' ? (g.flip ? -1 : 1) : 0;
+      particles.push({ k: 'breath', x: g.screen.x + dir * g.screen.w * 0.14, y: g.screen.y - g.screen.h * 0.7, vx: dir * (6 + Math.random() * 4) + (Math.random() - 0.5) * 4, vy: -4 - Math.random() * 3, r: 2, life: 0, max: 1.6 }); }
+  }
+  if ((season() === 'spring' || season() === 'summer') && ph.light > 0.6 && particles.filter(p => p.k === 'bfly').length < 3 && Math.random() < dt * 0.15) {   // a butterfly or two over the healed grass
+    const ks = Object.keys(G.s.tiles).filter(k => G.s.tiles[k].state === 'green' || (k === '0,0' && G.landStage().key !== C.landStages[0].key));
+    if (ks.length) { const [x, y] = toWorld(...glob(ks[(Math.random() * ks.length) | 0], Math.random(), Math.random()));
+      particles.push({ k: 'bfly', x, y: y - 30 - Math.random() * 40, vx: (Math.random() - 0.5) * 20, ph: Math.random() * 6, col: ['#f6efc8', '#f3d36a', '#e9a24a', '#fbfbf4'][(Math.random() * 4) | 0], life: 0, max: 14 + Math.random() * 10 }); }
+  }
+  if (L && L.drift === 'mist' && particles.filter(p => p.k === 'mist').length < (early ? 12 : 6) && Math.random() < dt * (early ? 0.9 : 0.4)) {
     const [x, y] = toWorld(Math.random() * 1.4 - 0.2, Math.random() * 1.4 - 0.2); particles.push({ k: 'mist', x, y, vx: 4 + Math.random() * 4, vy: 0, r: 160 + Math.random() * 140, life: 0, max: 14 + Math.random() * 8 });
   }
   if (G.festivalOn() && festTile() && Math.random() < dt * 2.5) {   // festival night: petals and paper confetti over the green
@@ -1844,6 +1893,7 @@ function frame(now) {
   for (const [k, tl] of tiles) drawTile(k, tl, now);
   drawGroundChanges(now);
   if (NEWGROUND) drawFootpaths();
+  drawSeasonGround(now);
   drawJars(now);
   drawFestGround();
 
