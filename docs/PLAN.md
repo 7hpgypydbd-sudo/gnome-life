@@ -223,3 +223,5 @@ Fallback if code blending looks too smudgy: the dual-grid edge pieces (5-6 per p
 - Repo: https://github.com/7hpgypydbd-sudo/gnome-life (public, `main`; game at repo root, docs in `docs/`).
 - Live: https://7hpgypydbd-sudo.github.io/gnome-life/ (GitHub Pages from `main` root; redeploys on every push).
 - Mac working copy: `~/Downloads/gnome-life`.
+
+- **v34 + v35 (2026-10-26, PRs #37, #38):** Wendel's rut job now follows `WORKPATH` (index.html): he digs his way along the whole long rut as it fills; Hazel's clear job walks from one `HOME_KIT` rubbish piece to the next, each fading with a dust puff in turn (`clearLeft`). Footpaths are clipped to existing tiles (the stray pale line was the yard track heading for a path tile that did not exist yet). Key/cap/wire moved off the hidden seed-bed tap spot (tapping the key used to open the job menu). Field mouse `h` 30 -> 80 (gnome is about 120). To check: other visitors may also be small next to the gnomes.
