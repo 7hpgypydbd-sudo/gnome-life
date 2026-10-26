@@ -60,6 +60,7 @@ const G = {
     this.s = Store.load();
     if (!this.s) { this.s = fresh(); this.startingGifts(); }
     for (const [k, v] of Object.entries(fresh())) if (!(k in this.s)) this.s[k] = v;   // older saves gain new fields
+    const gully = this.s.tasks.ruts; if (gully && !gully.done) gully.endsAt = Math.min(gully.endsAt, now());   // the gully job is retired: one still running just finishes
     this.away = this.catchUp();
     this.save();
     return this.s;
@@ -215,7 +216,7 @@ const G = {
   },
   taskList() {   // everything the player could start or is waiting on, in a sensible order
     const s = this.s, out = [];
-    for (const d of C.tasks) out.push(this.taskView(d));
+    for (const d of C.tasks) if (!d.retired) out.push(this.taskView(d));
     for (const [k, tl] of Object.entries(s.tiles)) if (tl.state === 'revealed' || tl.state === 'regrowing') out.push(this.taskView(this.taskDef('regrow:' + k)));
     const v = s.village;
     if (v.traveller) out.push(this.taskView(this.taskDef('home:' + v.traveller.id)));
