@@ -64,8 +64,6 @@ const G = {
     const tk = this.s.tasks; if (tk.bedwater && !tk.spring) tk.spring = { startedAt: tk.bedwater.startedAt, endsAt: tk.bedwater.startedAt, done: true };   // watered before the spring job existed: the spring counts as found
     if (tk.fence) this.s.flags.rabbit = true;
     if (this.s.plots.seedbed.grown) this.s.flags.firstpick = true;   // fenced before the rabbit's raid existed
-    if (tk.wormlamp && tk.wormlamp.done && !this.s.flags.lampsSplit) for (const id of ['wormlamp2', 'wormlamp3', 'wormlamp4']) tk[id] = tk[id] || { startedAt: tk.wormlamp.startedAt, endsAt: tk.wormlamp.endsAt, done: true };   // all four posts came from one job before they were split
-    this.s.flags.lampsSplit = true;
     this.away = this.catchUp();
     this.save();
     return this.s;
@@ -537,7 +535,7 @@ const G = {
   testFestival(night) {   // test panel: start the festival plans now (ignoring the neighbour count), or jump straight to festival night
     const f = this.s.festival, t = now();
     if (f.stage === 'waiting') { f.stage = 'planning'; this.emit('festival', 'idea'); if (!night) return; }
-    if (!f.tile) { f.tile = this.freeLot() || ['0,1', '-1,0', '2,0'].find(k => !Object.values(this.s.village.folk).some(x => x.tile === k)); if (!this.s.tiles[f.tile] || this.s.tiles[f.tile].state !== 'green') this.s.tiles[f.tile] = { state: 'green', green: 4 }; }
+    if (!f.tile) { f.tile = this.freeLot() || ['-1,0', '2,0', '-1,1'].find(k => !Object.values(this.s.village.folk).some(x => x.tile === k)); if (!this.s.tiles[f.tile] || this.s.tiles[f.tile].state !== 'green') this.s.tiles[f.tile] = { state: 'green', green: 4 }; }
     if (!night) return;
     for (const j of C.festival.jobs) this.s.tasks[j.id] = Object.assign(this.s.tasks[j.id] || {}, { startedAt: t - 1, endsAt: t - 1, done: true }, j.claims ? { tile: f.tile } : {});
     f.stage = 'on'; f.day = dayKey(t); this.emit('festival', 'night');
