@@ -176,7 +176,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v35</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v36</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -2281,6 +2281,14 @@ let sheetKind = null;
 function openSheet(kind, html) { sheetKind = kind; sheet.innerHTML = `<button class="close" data-a="close">×</button>` + html; sheet.classList.add('on'); shade.classList.add('on'); }
 function closeSheet() { sheetKind = null; sheet.classList.remove('on'); shade.classList.remove('on'); }
 shade.addEventListener('click', closeSheet);
+// swipe down on a parchment (the sheet, or the room) to close it: only when it is scrolled to the top, so reading a long page still works
+function swipeDownToClose(el, close, scroller) {
+  let y0 = null, x0 = 0;
+  el.addEventListener('touchstart', e => { const t = e.touches[0]; y0 = (scroller || el).scrollTop <= 0 ? t.clientY : null; x0 = t.clientX; }, { passive: true });
+  el.addEventListener('touchend', e => { if (y0 === null) return; const t = e.changedTouches[0], dy = t.clientY - y0, dx = Math.abs(t.clientX - x0); y0 = null; if (dy > 80 && dy > dx * 1.5) close(); }, { passive: true });
+}
+swipeDownToClose(sheet, closeSheet);
+swipeDownToClose($('room'), closeRoom, $('room'));
 sheet.addEventListener('click', e => {
   const b = e.target.closest('[data-a]'); if (!b) return; const a = b.dataset.a, id = b.dataset.id;
   if (a === 'close') return closeSheet();

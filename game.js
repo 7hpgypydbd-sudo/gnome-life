@@ -359,6 +359,8 @@ const G = {
     return C.village.lots.find(k => s.tiles[k] && s.tiles[k].state === 'green' && !taken.has(k)) || null;
   },
   gateWhy(d) {   // extra reasons a job cannot start yet, in words ('' = fine)
+    const busy = d.who && Object.entries(this.s.tasks).find(([id, tk]) => !tk.done && tk.endsAt > now() && id !== d.id && (this.taskDef(id) || {}).who === d.who);   // one job at a time for each gnome
+    if (busy) return `${C.names[d.who]} is busy with ${lc(this.taskDef(busy[0]).name)}`;
     if (d.home && !this.freeLot()) return 'needs a healed patch next door for their home';
     if (d.claims && !this.s.tasks[d.id] && !this.freeLot()) return 'needs a healed patch with no home on it';
     if (d.needsTile && !(this.s.tiles[d.needsTile] && this.s.tiles[d.needsTile].state === 'green')) return 'after the stepping-stone patch of the stream heals';
