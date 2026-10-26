@@ -96,9 +96,9 @@
             mask: var(--edge) 0 0 / 160px 16px repeat-x, linear-gradient(#000,#000) 0 15px / 100% calc(100% - 15px) no-repeat; }
   #shade { background: rgba(18,13,6,.42); }
   #sheet h2, #room h2 { font-family: var(--fell); font-weight:400; font-size:29px; line-height:1.1; letter-spacing:.2px; color:var(--ink); }
-  #sheet h2::after { content:""; display:block; width:150px; height:16px; margin:6px 0 2px; background: var(--sprig) no-repeat; }
+  #sheet h2::after { content:""; display:block; width:190px; height:32px; margin:4px 0 0; background: url(sprites/ui/parch-twig.webp) left center / contain no-repeat; }   /* the painted twig divider (art day 8) */
   #sheet h2 small { display:block; margin:3px 0 0; font-family: var(--body); font-style:italic; font-size:15px; color:var(--ink2); }
-  #sheet .jpage h2::after { margin:6px auto 2px; }
+  #sheet .jpage h2::after { margin:6px auto 2px; background-position:center; }
   #sheet h3 { display:flex; align-items:center; gap:10px; margin:18px 0 4px; font-family: var(--fell); font-weight:400; font-variant: small-caps; text-transform:none; letter-spacing:1.4px; font-size:17px; color:var(--green); }
   #sheet h3::before, #sheet h3::after { content:""; flex:1; height:1px; background: linear-gradient(90deg, transparent, rgba(77,92,39,.55), transparent); }
   #sheet p { font-size:17px; color:var(--ink2); }
@@ -118,7 +118,7 @@
   .act[disabled] { background: rgba(255,250,235,.3); color: rgba(106,86,64,.75); box-shadow: inset 0 0 0 1.5px rgba(106,86,64,.35); }
   .act.quiet { background: rgba(255,250,235,.55); color: var(--ink); box-shadow: inset 0 0 0 1.5px rgba(51,37,26,.35), 0 1px 2px rgba(40,25,10,.2); }
   .close { right:12px; top:14px; width:44px; height:44px; border-radius:50%; font-family: var(--fell); font-size:24px; line-height:44px; color:#f2d9c4;
-    background: radial-gradient(circle at 38% 34%, #b8513a, #7b2416 72%); box-shadow: 0 2px 3px rgba(0,0,0,.35), inset 0 -2px 3px rgba(0,0,0,.25), inset 0 0 0 4px rgba(120,30,15,.6); }
+    background: url(sprites/ui/parch-seal.webp) center / contain no-repeat; text-shadow: 0 1px 1px rgba(60,10,5,.7); filter: drop-shadow(0 2px 2px rgba(0,0,0,.35)); }   /* the painted acorn wax seal (art day 8) */
   .prog { height:6px; background: rgba(51,37,26,.12); } .prog i { background: linear-gradient(90deg, #6f8a34, #a7b85a); }
   .meter i { background: rgba(51,37,26,.12); }
   .pack { gap:10px; } .pack div { background: rgba(255,250,235,.4); border:1px solid rgba(51,37,26,.13); border-radius:6px; }
@@ -162,7 +162,7 @@
   .find { position:relative; height:58px; border:0; padding:6px; font:inherit; display:flex; align-items:center; justify-content:center; border-radius:3px;
     background: rgba(255,250,232,.55); box-shadow: 0 1px 2px rgba(80,50,20,.25), inset 0 0 0 1px rgba(150,110,60,.18); }
   .find:nth-child(3n) { transform: rotate(-3deg); } .find:nth-child(3n+1) { transform: rotate(2deg); }
-  .find::before { content:""; position:absolute; top:-5px; left:50%; width:26px; height:10px; margin-left:-13px; background: rgba(220,205,160,.75); transform: rotate(-4deg); box-shadow: 0 1px 1px rgba(0,0,0,.08); }
+  .find::before { content:""; position:absolute; top:-8px; left:50%; width:40px; height:12px; margin-left:-20px; background: url(sprites/ui/parch-tape.webp) center / 100% 100% no-repeat; transform: rotate(-4deg); }
   .find img { max-width:100%; max-height:100%; filter: drop-shadow(0 1px 1px rgba(60,40,20,.3)); }
   .find.unseen { background: rgba(120,90,50,.07); box-shadow: inset 0 0 0 1px rgba(120,90,50,.18); color: rgba(90,65,40,.35); font-family: var(--fell); font-size:22px; }
   .find.unseen::before { display:none; }
@@ -176,7 +176,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v32</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v33</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -201,8 +201,8 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=32"></script>
-<script src="game.js?v=32"></script>
+<script src="content.js?v=33"></script>
+<script src="game.js?v=33"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -243,6 +243,15 @@ if (NEWGROUND) {
   for (const n of new Set(Object.values(GSTICK).flat())) ASSETS['g-st-' + n] = `sprites/ground/${n}.webp`;
   for (const n of [...kit('marks', 1, 3, 5), ...kit('stumps-rocks', 1, 2, 3, 4, 5, 6, 7, 8, 9, 12), ...kit('leftovers', 1, 2, 3, 4, 5, 9, 11)]) ASSETS['kit-' + n] = `sprites/kit/${n}.webp`;
   for (const d of C.secrets) ASSETS['kit-secrets-' + d.pic] = `sprites/kit/secrets-${d.pic}.webp`;
+}
+// art day 8 (woodland, fence kit, banks and path edges, long rut, ground patches, season touches), cut by tools/cut_kit.py
+const pad2 = n => String(n).padStart(2, '0');
+for (const n of ['fence-straight-a', 'fence-corner-front', 'fence-corner-back', 'gate-closed', 'gate-open']) ASSETS['kit-' + n] = `sprites/kit/${n}.webp`;
+if (NEWGROUND) {
+  for (let i = 1; i <= 18; i++) ASSETS['kit-wood-' + pad2(i)] = `sprites/kit/wood-${pad2(i)}.webp`;
+  for (let i = 1; i <= 8; i++) { ASSETS['kit-season-' + pad2(i)] = `sprites/kit/season-${pad2(i)}.webp`; ASSETS['g-st-patch-' + pad2(i)] = `sprites/kit/patch-${pad2(i)}.webp`; }
+  for (let i = 1; i <= 6; i++) ASSETS['g-st-edge-' + pad2(i)] = `sprites/kit/edge-${pad2(i)}.webp`;
+  ASSETS['kit-rut-mud'] = 'sprites/kit/rut-mud.webp'; ASSETS['kit-rut-filled'] = 'sprites/kit/rut-filled.webp';
 }
 const GNOMES = {"him":{"cell":[108,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[144,242]},"water":{"n":4,"cell":[129,245]},"carry":{"n":4,"cell":[140,260]},"eat":{"n":4,"cell":[118,241]},"sit":{"n":4,"cell":[127,208]},"sleep":{"n":4,"cell":[264,85]}}},"her":{"cell":[122,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[159,242]},"water":{"n":4,"cell":[148,241]},"carry":{"n":6,"cell":[105,244]},"eat":{"n":4,"cell":[102,244]},"sit":{"n":4,"cell":[119,208]},"sleep":{"n":2,"cell":[264,73]}}}};
 
@@ -747,7 +756,7 @@ function drawTile(k, tl, now) {
 // baked again when it or a neighbour changes. Until every tile is baked a morning mist hides the land (see drawMorningMist).
 const GS = 0.8;                                        // baked ground resolution: canvas px per world px
 const LEX = Math.hypot(...EX), LEY = Math.hypot(...EY);   // world px per tile step east / south
-const GR = { ready: false, px: {}, noise: null, tiles: {}, sig: {}, queue: [], checkAt: 0, job: null };
+const GR = { mir: {}, ready: false, px: {}, noise: null, tiles: {}, sig: {}, queue: [], checkAt: 0, job: null };
 const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 function groundPrep() {
   const grab = (img, sx, sy) => { const w = Math.max(1, Math.round(img.width * sx)), h = Math.max(1, Math.round(img.height * sy)); const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); x.drawImage(img, 0, 0, w, h); return { w, h, d: x.getImageData(0, 0, w, h).data }; };
@@ -873,6 +882,22 @@ function* bakeGroundTile(k) {   // a generator: yields every few rows so the wor
     x2.drawImage(im, (wx - ox) * GS - w / 2, (wy - oy) * GS - h / 2, w, h);
   };
   const kindSet = self.kind === 1 ? 'meadow' : self.kind === 2 ? 'moss' : 'grass';
+  const mirrored = (name) => { const im = IM['g-st-' + name]; if (!im || !im.width) return null; return GR.mir[name] || (GR.mir[name] = (() => { const c = Object.assign(document.createElement('canvas'), { width: im.width, height: im.height }), cx = c.getContext('2d'); cx.translate(im.width, 0); cx.scale(-1, 1); cx.drawImage(im, 0, 0); return c; })()); };
+  const putM = (name, gx, gy, sc) => {   // a flipped sticker: the painted strips run up-right, the stream runs down-right
+    const im = mirrored(name); if (!im) return; const [wx, wy] = toWorld(gx, gy, k), w = im.width * GS * sc, h = im.height * GS * sc;
+    x2.drawImage(im, (wx - ox) * GS - w / 2, (wy - oy) * GS - h / 2, w, h);
+  };
+  {   // soft patches of ground (art day 8): moss, clover, wildflowers, violets and pine needles on green; bare soil on earth; leaf litter in autumn
+    const green = self.g > 0.5, pset = green ? (self.kind === 2 ? ['patch-01', 'patch-05', 'patch-01'] : self.kind === 1 ? ['patch-04', 'patch-06', 'patch-02'] : ['patch-02', 'patch-01', 'patch-02']) : ['patch-07'];
+    if (green && season() === 'autumn') pset.push('patch-03', 'patch-03');
+    if (green && season() === 'spring') pset.push('patch-04', 'patch-06');
+    for (let n = 0; n < (green ? 4 : 1); n++) {
+      const gx = 0.14 + 0.72 * rn(n + 400), gy = 0.14 + 0.72 * rn(n + 410); const [wx, wy] = toWorld(gx, gy, k);
+      const i = Math.round((wx - ox) * GS), j = Math.round((wy - oy) * GS); if (i < 0 || j < 0 || i >= W || j >= H || zone[j * W + i]) continue;
+      const cv = cov[j * W + i] / 255; if (green ? cv < 0.85 : cv > 0.15) continue;
+      x2.globalAlpha = 0.8; put(pset[Math.floor(rn(n + 420) * pset.length)], gx, gy, 0.4 + 0.2 * rn(n + 430)); x2.globalAlpha = 1;
+    }
+  }
   for (let n = 0; n < 20; n++) {
     const gx = 0.1 + 0.8 * rn(n), gy = 0.1 + 0.8 * rn(n + 50); const [wx, wy] = toWorld(gx, gy, k);
     const i = Math.round((wx - ox) * GS), j = Math.round((wy - oy) * GS); if (i < 0 || j < 0 || i >= W || j >= H) continue;
@@ -907,7 +932,7 @@ function* bakeGroundTile(k) {   // a generator: yields every few rows so the wor
 function groundSig(k) {   // everything a tile's picture depends on (itself and its eight neighbours)
   const [tx, ty] = k.split(',').map(Number), out = [];
   for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const m = groundMat(`${tx + dx},${ty + dy}`); out.push(m ? [m.g, m.kind, m.wet, m.path, m.wash].join() : '-'); }
-  return out.join('|') + '|' + season();   // the seasonal stickers change with the season
+  return out.join('|') + '|' + season() + '|a8';   // the seasonal stickers change with the season
 }
 // Baked tiles are kept in the browser (IndexedDB) with the signature they were baked for, so the next visit opens with the
 // finished ground at once instead of baking it all again. A tile whose signature has changed is simply baked afresh.
@@ -1007,17 +1032,14 @@ function drawHomePlot(ox, oy, now) {   // the bare home tile changes as the ruts
 // The bare home patch on the blended ground, built from the painted kit (sprites/kit, art day 3): two wheel ruts that fill in
 // as Wendel works; branches, brambles and old human leftovers that go as Hazel clears the ground; and stumps, a rock and a log
 // that heal (moss, ferns, a sapling) once the land greens.
-const HOME_RUTS = [[0.905, 1.12, 0.905, -0.12]];   // grid: near edge -> far edge; one truck rut along the yard's right-hand side, running off both edges
+const HOME_RUTS = [0.905, 0.5];   // gx, gy of the middle of the one long truck rut down the yard's right-hand side; it runs off both edges
 function drawHomeRuts() {
-  const p = taskProg('ruts'), mud = IM['kit-marks-01'], fill = IM['kit-marks-03']; if (!mud || !mud.width) return;
+  const p = taskProg('ruts'), mud = IM['kit-rut-mud'], fill = IM['kit-rut-filled']; if (!mud || !mud.width) return;
   ctx.save(); diamondPath('0,0'); ctx.clip();   // the rut runs right off the patch, so trim it at the edges
-  for (const [gx0, gy0, gx1, gy1] of HOME_RUTS) for (let t = 0; t <= 1.001; t += 1 / 12) {   // pieces overlap well, so no gaps show
-    const [x, y] = toWorld(gx0 + (gx1 - gx0) * t, gy0 + (gy1 - gy0) * t), w = 270, h = w * mud.height / mud.width;
-    ctx.save(); ctx.translate(x, y);
-    if (p < 1) { ctx.globalAlpha = 1 - p; ctx.drawImage(mud, -w / 2, -h / 2, w, h); }
-    if (p > 0) { ctx.globalAlpha = p; ctx.drawImage(fill, -w / 2, -h / 2, w, h); }
-    ctx.restore();
-  }
+  const [x, y] = toWorld(...HOME_RUTS), w = 860, h = w * mud.height / mud.width;   // one long painted piece (art day 8), no repeats
+  ctx.translate(x, y);
+  if (p < 1) { ctx.globalAlpha = 1 - p; ctx.drawImage(mud, -w / 2, -h / 2, w, h); }
+  if (p > 0) { ctx.globalAlpha = p; ctx.drawImage(fill, -w / 2, -h / 2, w, h); }
   ctx.restore();
 }
 const HOME_KIT = [   // [piece, healed piece (null: it goes when the job is done), gx, gy, scale, job that clears it]
@@ -1244,29 +1266,35 @@ const EXTRAS = [
       ctx.fillStyle = col; ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(lx - cw / 2, ly); ctx.lineTo(lx + cw / 2, ly); ctx.lineTo(lx + cw / 2 + sw, ly + ch); ctx.lineTo(lx - cw / 2 + sw, ly + ch); ctx.closePath(); ctx.fill(); ctx.stroke(); }); } },
 ];
 // "Fence the seed bed": a low woven fence all round the bed, panels going up one by one while Wendel works, a gate at the front.
-// fence.webp runs along +gx (down to the right); mirrored it runs along +gy (down to the left). FOOT = its two post feet.
-const BED_FENCE = { gx0: 0.47, gx1: 0.735, gy0: 0.575, gy1: 0.825, gate: 0.62 }, FENCE_FOOT = [[15, 150], [190, 225]];
-let fenceFlip = null;
-function drawFencePanel(A, B, flip, a) {   // stretch one panel so its post feet land on world points A (left foot) and B (right foot)
-  const img = IM.fence; if (!img || !img.width) return;
-  if (flip && !fenceFlip) { fenceFlip = Object.assign(document.createElement('canvas'), { width: img.width, height: img.height }); const fx = fenceFlip.getContext('2d'); fx.translate(img.width, 0); fx.scale(-1, 1); fx.drawImage(img, 0, 0); }
-  const im = flip ? fenceFlip : img, [fa, fb] = flip ? [[img.width - FENCE_FOOT[1][0], FENCE_FOOT[1][1]], [img.width - FENCE_FOOT[0][0], FENCE_FOOT[0][1]]] : FENCE_FOOT;
-  const sx = (B[0] - A[0]) / (fb[0] - fa[0]), sy = sx * 0.66, sh = ((B[1] - A[1]) - sy * (fb[1] - fa[1])) / (fb[0] - fa[0]);   // sy < sx: a low fence, knee to waist high on a gnome
+// The fence kit (art day 8): the straight panel runs along +gx (down to the right); mirrored it runs along +gy (down to the left).
+// FENCE_FOOT = its two post feet in the picture. Every panel keeps the picture's own proportions, so the weave never stretches.
+const BED_FENCE = { gx0: 0.47, gx1: 0.735, gy0: 0.575, gy1: 0.825, gate: 0.62, gateHalf: 0.05 }, FENCE_FOOT = [[24, 210], [267, 349]], GATE_FOOT = [[22, 374], [271, 520]];
+const flipCache = new Map();
+function flipped(im) { let c = flipCache.get(im); if (!c) { c = Object.assign(document.createElement('canvas'), { width: im.width, height: im.height }); const fx = c.getContext('2d'); fx.translate(im.width, 0); fx.scale(-1, 1); fx.drawImage(im, 0, 0); flipCache.set(im, c); } return c; }
+function drawFencePanel(A, B, flip, a, img = IM['kit-fence-straight-a'], foot = FENCE_FOOT, up = 0.78) {   // fit one panel so its post feet land on world points A (left foot) and B (right foot)
+  if (!img || !img.width) return;
+  const im = flip ? flipped(img) : img, [fa, fb] = flip ? [[img.width - foot[1][0], foot[1][1]], [img.width - foot[0][0], foot[0][1]]] : foot;
+  const sx = (B[0] - A[0]) / (fb[0] - fa[0]), sy = sx * up, sh = ((B[1] - A[1]) - sy * (fb[1] - fa[1])) / (fb[0] - fa[0]);
   ctx.save(); ctx.globalAlpha = a; ctx.transform(sx, sh, 0, sy, A[0] - sx * fa[0], A[1] - sh * fa[0] - sy * fa[1]); ctx.drawImage(im, 0, 0); ctx.restore();
 }
-function gatePost(x, y, a) { ctx.save(); ctx.globalAlpha = a; stick(x, y - 20, 40, Math.PI / 2, '#7a5a3a'); blob(x, y - 41, 4, 2.5, '#5a3e26'); ctx.restore(); }
+function fenceCorner(name, x, y, a, foot) { const im = IM['kit-' + name]; if (!im || !im.width) return; const s = 0.27; ctx.save(); ctx.globalAlpha = a; ctx.drawImage(im, x - foot[0] * s, y - foot[1] * s, im.width * s, im.height * s); ctx.restore(); }
+function gateOpen() { return gnomes.some(g => g.screen && Math.hypot(g.gx - BED_FENCE.gate, g.gy - BED_FENCE.gy1) < 0.16); }   // swings open while a gnome is by the gate
 function bedFenceSides() {   // [from grid point, to grid point, flip] in building order: back first, gate side last
-  const F = BED_FENCE, m = (F.gx0 + F.gx1) / 2, n = (F.gy0 + F.gy1) / 2;
+  const F = BED_FENCE, m = (F.gx0 + F.gx1) / 2, n = (F.gy0 + F.gy1) / 2, h = F.gateHalf;
   return [[[F.gx0, F.gy0], [m, F.gy0], 0], [[m, F.gy0], [F.gx1, F.gy0], 0],                 // back (far) side, along gx
     [[F.gx0, n], [F.gx0, F.gy0], 1], [[F.gx0, F.gy1], [F.gx0, n], 1],                         // left side, along gy (left foot is the nearer end)
     [[F.gx1, n], [F.gx1, F.gy0], 1], [[F.gx1, F.gy1], [F.gx1, n], 1],                         // right side
-    [[F.gx0, F.gy1], [F.gate - 0.035, F.gy1], 0], [[F.gate + 0.035, F.gy1], [F.gx1, F.gy1], 0]];   // front side, a gap for the gate
+    [[F.gx0, F.gy1], [F.gate - h, F.gy1], 0], [[F.gate + h, F.gy1], [F.gx1, F.gy1], 0]];   // front side, a gap for the gate
 }
 function bedFenceShown() { return taskProg('fence') > 0 && propAlpha(PROPS.find(p => p.name === 'seedbed')) > 0; }
 bedFenceSides().forEach(([P, Q, flip], i, all) => EXTRAS.push({ gx: (P[0] + Q[0]) / 2, gy: (P[1] + Q[1]) / 2,
   show: () => bedFenceShown() ? Math.min(1, Math.max(0, taskProg('fence') * all.length - i)) : 0,
   draw(x, y, al) { drawFencePanel(toWorld(...P), toWorld(...Q), flip, al); } }));
-for (const d of [-0.035, 0.035]) EXTRAS.push({ gx: BED_FENCE.gate + d, gy: BED_FENCE.gy1 + 0.005, show: () => bedFenceShown() ? (taskProg('fence') >= 1 ? 1 : 0) : 0, draw: (x, y, al) => gatePost(x, y, al) });
+EXTRAS.push({ gx: BED_FENCE.gate, gy: BED_FENCE.gy1 + 0.005, show: () => bedFenceShown() ? (taskProg('fence') >= 1 ? 1 : 0) : 0, draw(x, y, al) {
+  const h = BED_FENCE.gateHalf, open = gateOpen(), g = IM['kit-' + (open ? 'gate-open' : 'gate-closed')];
+  drawFencePanel(toWorld(BED_FENCE.gate - h, BED_FENCE.gy1), toWorld(BED_FENCE.gate + h, BED_FENCE.gy1), 0, al, g, open ? [[43, 377], [271, 546]] : GATE_FOOT); } });
+for (const [gx, gy, name, foot] of [[BED_FENCE.gx0, BED_FENCE.gy0, 'fence-corner-back', [150, 208]], [BED_FENCE.gx1, BED_FENCE.gy1, 'fence-corner-front', [147, 364]]])
+  EXTRAS.push({ gx, gy, show: () => bedFenceShown() ? (taskProg('fence') >= 1 ? 1 : 0) : 0, draw: (x, y, al) => fenceCorner(name, x, y, al, foot) });
 if (NEWGROUND) for (const [a, b, gx, gy, sc, job] of HOME_KIT) EXTRAS.push({ gx, gy,
   show: () => G.landStage().key === 'barren' ? 1 - (job ? taskProg(job) : 0) : b ? 1 : 0,
   draw(x, y, al) { const im = IM['kit-' + (G.landStage().key === 'barren' ? a : b)]; if (!im || !im.width) return; const w = im.width * sc, h = im.height * sc;
@@ -1700,6 +1728,57 @@ function nookItems(items, tile, seed) {
     const [ux, uy] = glob(tile, gx + (rnd(seed + i * 3) - 0.5) * 0.06, gy + (rnd(seed + i * 5) - 0.5) * 0.06);
     items.push({ d: depthOf(ux, uy), draw: () => { const [x, y] = toWorld(ux, uy), w = im.width * sc, h = im.height * sc; shadow(x, y, w * 0.36, w * 0.1); ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); } }); });
 }
+// The woodland (art day 8): giant ferns, foxgloves, trunks, logs and toadstools at gnome scale, so the land reads as a wood and not a lawn.
+// WOOD maps a piece number to its standing height in world px (a gnome is about 120 px tall).
+const WOOD = { 1: 190, 2: 120, 3: 230, 4: 140, 5: 175, 6: 90, 7: 160, 8: 175, 9: 135, 10: 75, 11: 270, 12: 250, 13: 95, 14: 110, 15: 135, 16: 100, 17: 165, 18: 85 };
+const WOOD_PLANTS = [1, 2, 4, 5, 6, 7, 8, 9, 10, 1, 5, 9], WOOD_LOW = [2, 4, 6, 10, 13, 14, 15, 16, 17, 18];
+// the yard: [piece, gx, gy, land stage it appears with (1 green, 2 meadow, 3 wood)]; kept to the margins so the yard stays open
+const YARD_WOOD = [[11, 0.0, 0.40, 1], [12, 0.58, 0.0, 1], [1, 0.02, 0.45, 1], [3, 0.03, 0.66, 2], [13, 0.0, 0.86, 1], [4, 0.10, 0.97, 1], [7, 0.34, 0.99, 2], [15, 0.64, 0.99, 1], [16, 0.97, 0.88, 2],
+  [5, 0.97, 0.62, 1], [9, 0.93, 0.42, 2], [8, 0.86, 0.02, 2], [14, 0.60, 0.01, 1], [17, 0.46, 0.0, 3], [2, 0.08, 0.06, 2], [6, 0.12, 0.90, 3], [18, 0.97, 0.30, 3]];
+function woodPiece(items, n, ux, uy, vb, sc = 1, flip = false) {   // one depth-sorted piece, skipped when it is far off screen
+  const im = IM['kit-wood-' + pad2(n)]; if (!im || !im.width) return;
+  items.push({ d: depthOf(ux, uy), draw: () => { const [x, y] = toWorld(ux, uy), h = WOOD[n] * sc, w = im.width * h / im.height;
+    if (x < vb.x0 - w || x > vb.x1 + w || y < vb.y0 || y - h > vb.y1) return;
+    shadow(x, y, w * (n < 11 ? 0.3 : 0.4), w * (n < 11 ? 0.07 : 0.1));
+    if (flip) { ctx.save(); ctx.translate(x, 0); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, y - h * 0.94, w, h); ctx.restore(); } else ctx.drawImage(im, x - w / 2, y - h * 0.94, w, h); } });
+}
+const openGround = (ux, uy) => Math.abs(uy - streamV(ux)) * LEY > streamHW(ux) + 55 && Math.abs(ux - pathU(uy)) * LEX > 70;   // clear of the stream and the main path
+function landItems(items, now) {
+  const vb = viewBox(); vb.x0 -= 200; vb.x1 += 200; vb.y1 += 100; vb.y0 -= 360;
+  const se = season(), lvl = { barren: 0, green: 1, meadow: 2, wood: 3 }[G.landStage().key] || 0, homes = {};
+  for (const [fid, fs] of Object.entries(G.s.village.folk)) if (taskProg('home:' + fid) >= 1) homes[fs.tile] = glob(fs.tile, ...LOT.home);
+  for (const k of Object.keys(G.s.tiles)) {
+    const home = k === '0,0', tl = G.s.tiles[k], [tx, ty] = k.split(',').map(Number);
+    if (home ? lvl < 1 : tl.state !== 'green') continue;
+    const seed = tx * 31 + ty * 17 + 5;
+    if (home) { for (const [n, gx, gy, st] of YARD_WOOD) if (lvl >= st) woodPiece(items, n, gx, gy, vb); }
+    else {
+      for (let c = 0; c < 2; c++) {   // two little woodland corners on the tile, away from the stream, the path and the homes
+        const [gx, gy] = [[0.14, 0.84], [0.84, 0.16], [0.52, 0.92], [0.9, 0.62], [0.2, 0.2], [0.08, 0.5]][Math.floor(rnd(seed + c * 9) * 6)], [ux, uy] = glob(k, gx, gy);
+        if (!openGround(ux, uy) || (homes[k] && Math.hypot(gx - LOT.home[0], gy - LOT.home[1]) < 0.25) || (k === CAMP.tile && Math.hypot(gx - CAMP.gx, gy - CAMP.gy) < 0.3)) continue;
+        const cnt = 3 + Math.floor(rnd(seed + c * 5 + 1) * 2);
+        for (let i = 0; i < cnt; i++) { const pool = i === 0 && rnd(seed + c + 2) < 0.35 ? [13, 15, 17, 14, 16, 18] : WOOD_PLANTS;
+          woodPiece(items, pool[Math.floor(rnd(seed * 3 + c * 11 + i) * pool.length)], ux + (rnd(seed + c * 13 + i * 3) - 0.5) * 0.16, uy + (rnd(seed + c * 7 + i * 5) - 0.5) * 0.16, vb, 0.85 + 0.3 * rnd(seed + i * 19), rnd(seed + i * 23 + c) < 0.5); }
+      }
+      if (homes[k]) { const [hx, hy] = homes[k];   // round a home: a fern, a foxglove and a toadstool ring, tucked behind and beside
+        [[1, 0.1, -0.1], [3, 0.2, 0.0], [14, -0.12, -0.12], [15, 0.16, 0.12], [5, -0.2, 0.08], [10, 0.0, 0.2]].forEach(([n, du, dv], i) => { if (rnd(seed + i * 41) < 0.2) return; woodPiece(items, n, hx + du, hy + dv, vb, 0.9, rnd(seed + i) < 0.5); }); }
+    }
+    // the edge of the map: where nothing lies beyond, the wood closes in (tall trunks behind, low things in front)
+    for (const [dx, dy, ga, gb, gc, back] of [[0, -1, 0, 1, 0.02, true], [-1, 0, 1, 0, 0.02, true], [0, 1, 0, 1, 0.97, false], [1, 0, 1, 0, 0.97, false]]) {
+      if (G.s.tiles[`${tx + dx},${ty + dy}`]) continue;
+      for (let i = 0; i < 4; i++) { const t = 0.12 + 0.76 * (i + rnd(seed + i * 7 + dx * 3 + dy)) / 4, a = dx ? gc : t, b = dx ? t : gc, [ux, uy] = glob(k, a, b);
+        if (!openGround(ux, uy)) continue;
+        const n = back ? (i === 1 && rnd(seed + 3) < 0.45 ? (rnd(seed + i) < 0.5 ? 12 : 11) : i % 2 ? WOOD_LOW[Math.floor(rnd(seed + i * 5) * WOOD_LOW.length)] : WOOD_PLANTS[Math.floor(rnd(seed + i * 5) * WOOD_PLANTS.length)]) : WOOD_LOW[Math.floor(rnd(seed + i * 5) * WOOD_LOW.length)];   // a tall trunk only now and then: they stop at the top of the picture
+        if (n >= 11 && n <= 12 && home) continue; woodPiece(items, n, ux, uy, vb, 0.8 + 0.4 * rnd(seed + i * 11), rnd(seed + i * 3) < 0.5); }
+    }
+    // season touches (art day 8): frost, a spider's web, a bare bush and a snowy stone in winter; fallen leaves in autumn; petals and a dandelion clock in spring
+    const touch = { winter: [1, 2, 3, 4], autumn: [5, 6, 5, 6], spring: [7, 8, 7], summer: [8] }[se] || [];
+    touch.forEach((n, i) => { const gx = 0.14 + 0.72 * rnd(seed + i * 29 + 500), gy = 0.14 + 0.72 * rnd(seed + i * 31 + 600), [ux, uy] = glob(k, gx, gy);
+      if (!openGround(ux, uy) || rnd(seed + i * 37) < 0.3) return; const im = IM['kit-season-' + pad2(n)]; if (!im || !im.width) return;
+      items.push({ d: depthOf(ux, uy) - (n === 6 || n === 7 ? 0.2 : 0), draw: () => { const [x, y] = toWorld(ux, uy), h = [55, 85, 120, 70, 38, 34, 34, 62][n - 1], w = im.width * h / im.height;
+        if (x < vb.x0 || x > vb.x1 || y < vb.y0 + 360 || y > vb.y1 + 400) return; ctx.drawImage(im, x - w / 2, y - h * 0.9, w, h); } }); });
+  }
+}
 // the spring: a mossy boulder and a fern stump where the stream wells up, so it starts somewhere
 function springItems(items) {
   const tl = G.s.tiles['-2,-1']; if (!tl || tl.state !== 'green') return;
@@ -1914,6 +1993,7 @@ function frame(now) {
     if (art('lamp-fireflies')) for (const [gx, gy] of FIREFLY_STRINGS) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); drawFireflyString(x, y, tp); } });
   }
   villageItems(items, now);
+  if (NEWGROUND) landItems(items, now);
   festItems(items, now);
   items.sort((a, b) => a.d - b.d);
   for (const it of items) it.draw();
