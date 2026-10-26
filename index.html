@@ -176,7 +176,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v41</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v42</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -194,15 +194,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 41;
+const BUILD = 42;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=41"></script>
-<script src="game.js?v=41"></script>
+<script src="content.js?v=42"></script>
+<script src="game.js?v=42"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -227,6 +227,9 @@ const ASSETS = {
   'him-dig':'sprites/him-dig.png','him-water':'sprites/him-water.png','him-carry':'sprites/him-carry.png','him-eat':'sprites/him-eat.png','him-sit':'sprites/him-sit.png','him-sleep':'sprites/him-sleep.png',
   'her-pickup':'sprites/her-pickup.png','her-gather':'sprites/her-gather.png','him-pickup':'sprites/him-pickup.png','him-gather':'sprites/him-gather.png','her-dig':'sprites/her-dig.png','her-water':'sprites/her-water.png','her-carry':'sprites/her-carry.png','her-eat':'sprites/her-eat.png','her-sit':'sprites/her-sit.png','her-sleep':'sprites/her-sleep.png',
   'icon-twig':'sprites/icon-twig.webp','icon-moss':'sprites/icon-moss.webp','icon-stone':'sprites/icon-stone.webp','icon-acorn':'sprites/icon-acorn.webp','icon-seed':'sprites/icon-seed.webp',
+  'woodpile-1':'sprites/woodpile-1.webp','woodpile-2':'sprites/woodpile-2.webp','woodpile-3':'sprites/woodpile-3.webp',   // art day 10, cut by tools/cut_day10.py
+  'spring-choked':'sprites/spring-choked.webp','spring-clear':'sprites/spring-clear.webp',
+  'rabbit-dish':'sprites/rabbit-dish.webp','rabbit-nibble':'sprites/rabbit-nibble.webp','rabbit-sit':'sprites/rabbit-sit.webp','rabbit-nap':'sprites/rabbit-nap.webp','rabbit-berry':'sprites/rabbit-berry.webp',
   'icon-water':'sprites/icon-water.webp','icon-light':'sprites/icon-light.webp','icon-berry':'sprites/icon-berry.webp','icon-feather':'sprites/icon-feather.webp',
 };
 // The blended ground and the night light layer (on since 2026-10-25; #oldground shows the old big tiles to compare). See docs/GRAPHICS-RETHINK.md.
@@ -1145,9 +1148,8 @@ function propAlpha(p) {   // how much of a prop shows: props with "until" appear
   if (p.name === 'firewood') return woodStage() ? 1 : 0;
   return taskProg(p.until);
 }
-const WOOD_SCALE = [0, 0.5, 0.75, 1];   // the woodpile's three sizes (stand-in until the painted three-step woodpile, docs/ART-LIST.md)
 function drawProp(p) {
-  const img = IM[p.name]; const [x, y] = toWorld(p.gx, p.gy); const s = SPR * p.s * (p.name === 'firewood' ? WOOD_SCALE[woodStage()] : 1);
+  const img = p.name === 'firewood' ? IM['woodpile-' + Math.max(1, woodStage())] : IM[p.name]; const [x, y] = toWorld(p.gx, p.gy); const s = SPR * p.s;   // the woodpile is painted in three steps, one per lot of wood
   const w = img.width * s, h = img.height * s, a = propAlpha(p), now = performance.now();
   if (a < 1 && BEFORE[p.name] && !drawSlot(BEFORE_ART[p.name], x, y, 1 - a)) BEFORE[p.name](x, y, 1 - a);
   const tap = p.name === 'seedbed' && (a < 1 || !bedReady()) ? clearingWantsTap() : p.name !== 'lanternstump' && wantsTap(p);
@@ -1264,16 +1266,6 @@ const AFTER = {
     if (taskProg('rainbarrel') < 1 || art('barrel-full')) return;
     const [wx, wy] = at(52, 36); ctx.save(); blob(wx, wy, 30 * s, 9 * s, 'rgba(120,170,200,0.85)'); blob(wx - 6 * s, wy - 2 * s, 12 * s, 3 * s, `rgba(240,250,255,${0.5 + 0.3 * Math.sin(now / 500)})`); ctx.restore();
   },
-  firewood(at, s, now) {   // Gerald, the beetle who moved into the finished woodpile: he potters along the top log and stops to think
-    if (woodStage() < 3) return;
-    const k = 0.5 + 0.5 * Math.sin(now / 5200), [bx, by] = at(70 + 50 * k, 30 + 8 * k), dir = Math.cos(now / 5200) >= 0 ? 1 : -1;
-    ctx.save(); ctx.translate(bx, by); ctx.scale(dir, 1);
-    ctx.strokeStyle = '#1c1a14'; ctx.lineWidth = 0.9;
-    for (const lx of [-2.4, 0, 2.4]) { const w = Math.sin(now / 90 + lx) * (Math.abs(Math.sin(now / 5200 * 2)) > 0.15 ? 0.8 : 0); ctx.beginPath(); ctx.moveTo(lx, 0); ctx.lineTo(lx - 1.5 + w, 2.6); ctx.moveTo(lx, 0); ctx.lineTo(lx + 1 - w, -2.4); ctx.stroke(); }
-    blob(0, 0, 4.4, 2.7, '#2b3a2a'); blob(4.6, -0.3, 1.9, 1.7, '#1c1a14'); blob(-1, -1, 2.2, 0.8, 'rgba(160,210,170,0.55)');
-    ctx.beginPath(); ctx.moveTo(5.6, -1); ctx.lineTo(8, -3.6); ctx.moveTo(5.8, -0.2); ctx.lineTo(8.6, -1.2); ctx.stroke();
-    ctx.restore();
-  },
   lanternstump(at, s, now) {   // mended: a small steady flame, day and night
     if (taskProg('lantern') < 1) return;
     const [wx, wy] = at(lanternPt()[0], lanternPt()[1]); glow(wx, wy, 26, 'rgba(255,210,120,1)', 0.55 + 0.1 * Math.sin(now / 300));
@@ -1313,33 +1305,19 @@ function drawGreenWave(now) {
   ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill(); ctx.restore();
 }   // the painted oval darkened once, for the watered soil
 function springProg() { return taskProg('spring'); }
-function drawSpring(now) {
-  const p = springProg(), [x, y] = toWorld(...SPRING.at), damp = sstep(0.3, 0.5, p), water = sstep(0.55, 1, p);
+const SPRING_W = 150;   // drawn width of the painted hollow
+function drawSpring(now) {   // the hollow shows once Wendel finds it, then the painted choked picture crossfades into the cleared pool as the stones come out
+  const p = springProg(), [x, y] = toWorld(...SPRING.at), clear = sstep(SPRING_FOUND + 0.05, 0.9, p), seen = sstep(SPRING_FOUND - 0.1, SPRING_FOUND, p);
   SPRING.screen = { x, y, w: 80, h: 40 };
   if (wantsTap({ name: 'spring' })) halo(x, y - 6, 42, now, 1);
-  const soft = (r, col, a) => { ctx.save(); ctx.translate(x, y + 2); ctx.scale(1, 0.42); const g = ctx.createRadialGradient(0, 0, r * 0.2, 0, 0, r); g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(1, `rgba(${col},0)`); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill(); ctx.restore(); };
-  if (damp > 0) soft(64, '52,40,30', 0.6 * damp);   // damp dark earth where the water is coming up
-  if (water > 0) {   // the little pool, and the trickle running off the back of the yard toward the old creek
-    if (water > 0.4) { const [ax, ay] = toWorld(SPRING.at[0] + 0.02, SPRING.at[1] - 0.04), [bx, by] = toWorld(SPRING.at[0] + 0.03, -0.03);
-      ctx.save(); diamondPath('0,0'); ctx.clip(); ctx.globalAlpha = sstep(0.4, 1, water); ctx.lineCap = 'round';
-      ctx.strokeStyle = 'rgba(60,42,26,0.35)'; ctx.lineWidth = 12; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.quadraticCurveTo((ax + bx) / 2 + 14, (ay + by) / 2, bx, by); ctx.stroke();
-      ctx.strokeStyle = '#6d8f98'; ctx.lineWidth = 4; ctx.stroke(); ctx.strokeStyle = 'rgba(230,245,250,0.5)'; ctx.lineWidth = 1.2; ctx.setLineDash([6, 10]); ctx.lineDashOffset = -now / 60; ctx.stroke(); ctx.restore(); }
-    const rx = 8 + 28 * water, ry = 3 + 11 * water;
-    const gr = ctx.createRadialGradient(x - rx * 0.3, y - ry * 0.4, 1, x, y, rx); gr.addColorStop(0, '#a3bfc0'); gr.addColorStop(0.75, '#5f7f84'); gr.addColorStop(1, '#4a5f58');
-    ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, 7); ctx.fill();
-    ctx.strokeStyle = 'rgba(50,38,24,0.45)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();   // a little bank along the back edge
-    const r = (now / 2200) % 1; ctx.strokeStyle = `rgba(235,248,250,${0.45 * (1 - r) * water})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x + 6, y - 1, rx * 0.8 * r + 2, ry * 0.8 * r + 1, 0, 0, 7); ctx.stroke();   // the spring bubbling up
-    blob(x - rx * 0.35, y - ry * 0.45, rx * 0.3, ry * 0.18, 'rgba(255,255,255,0.35)');
-    if (p >= 1) { const a = now / 5200, lx = x + Math.cos(a) * rx * 0.55, ly = y + Math.sin(a) * ry * 0.55;   // a single leaf turning slowly round and round the pool
-      ctx.save(); ctx.translate(lx, ly); ctx.rotate(a * 1.7); blob(0, 0, 5, 2.4, '#b88a3a'); ctx.strokeStyle = 'rgba(90,60,20,0.7)'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(5, 0); ctx.stroke(); ctx.restore(); }
-  }
-  const leaves = 1 - sstep(SPRING_FOUND + 0.05, 0.8, p);   // the choke of dead leaves and stones, pulled out stone by stone onto a little heap beside
-  if (leaves > 0) for (let i = 0; i < 9; i++) { ctx.save(); ctx.globalAlpha = leaves; blob(x - 26 + rnd(i + 300) * 52, y - 6 + rnd(i + 310) * 14, 5, 2.5, ['#8a6a3a', '#a07a40', '#6e5232'][i % 3]); ctx.restore(); }
+  const ch = IM['spring-choked'], cl = IM['spring-clear'], w = SPRING_W, h = w * ch.height / ch.width;
+  ctx.save(); ctx.globalAlpha = seen * (1 - clear); if (ctx.globalAlpha > 0) ctx.drawImage(ch, x - w / 2, y - h / 2, w, h);
+  ctx.globalAlpha = seen * clear; if (ctx.globalAlpha > 0) ctx.drawImage(cl, x - w / 2, y - h / 2, w, h);
+  ctx.restore();
+  if (clear >= 1) { const r = (now / 2200) % 1; ctx.strokeStyle = `rgba(235,248,250,${0.4 * (1 - r)})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x - 4, y + 2, 26 * r + 2, 9 * r + 1, 0, 0, 7); ctx.stroke(); }   // the spring bubbling up
   const [hx, hy] = toWorld(SPRING.at[0] + 0.06, SPRING.at[1] + 0.11);
-  for (let i = 0; i < 7; i++) {
-    const out = p >= SPRING_FOUND + (0.9 - SPRING_FOUND) * (i + 1) / 7;
-    if (out) stone(hx - 12 + (i % 3) * 11 + rnd(i + 330) * 4, hy - Math.floor(i / 3) * 6, 6 + rnd(i + 340) * 3);
-    else stone(x - 18 + rnd(i + 320) * 36, y - 4 + rnd(i + 325) * 10, 7 + rnd(i + 340) * 4);
+  if (seen > 0) for (let i = 0; i < 7; i++) {   // stones pulled out of the hollow, piled on a little heap beside it
+    if (p >= SPRING_FOUND + (0.9 - SPRING_FOUND) * (i + 1) / 7) stone(hx - 12 + (i % 3) * 11 + rnd(i + 330) * 4, hy - Math.floor(i / 3) * 6, 6 + rnd(i + 340) * 3);
   }
 }
 function drawGroundChanges(now) {
@@ -1573,13 +1551,13 @@ function spawnVisitor(forced) {
 // First visit (G.rabbitDue): it hops in, empties the feeding dish, then nibbles a few sprouts until Wendel shoos it off; only then
 // is "Fence the seed bed" offered. Once the fence is up it pops back now and then: peering through the fence, napping by the woodpile,
 // or pinching a berry from the dish. Never a real loss.
-const RABBIT = { on: null, next: 0 }, RABBIT_SIZE = 1.9;   // a rabbit is a big animal next to a gnome
+const RABBIT = { on: null, next: 0 };
 function rabbitGo(steps) { const [gx, gy] = steps[0]; RABBIT.on = { steps, i: 1, gx, gy, act: null, t: 0, flip: false, hop: 0 }; }
 function gnomeSays(who, text) { const g = gnomes.find(g => g.who === who); if (!g) return; for (const o of gnomes) o.sayT = 0; g.say = text; g.sayT = 3.2; bubble.textContent = text; }
 function rabbitVisit() {   // a later visit, once the fence is up
   const kinds = ['peer', 'nap']; if (G.s.feeder.food === 'berry') kinds.push('berry');
   const k = kinds[(Math.random() * kinds.length) | 0], say = C.rabbit.visits[{ peer: 0, nap: 1, berry: 2 }[k]];
-  const spot = { peer: [0.80, 0.86, 'sniff', 30], nap: [WOOD_DROP[0] + 0.08, WOOD_DROP[1] + 0.01, 'nap', 50], berry: [FEEDER.gx + 0.07, FEEDER.gy - 0.03, 'eat', 7] }[k];
+  const spot = { peer: [0.80, 0.86, 'sniff', 30], nap: [WOOD_DROP[0] + 0.08, WOOD_DROP[1] + 0.01, 'nap', 50], berry: [FEEDER.gx + 0.07, FEEDER.gy - 0.03, 'berry', 7] }[k];
   rabbitGo([[1.05, 0.62], [...spot, () => { if (k === 'berry' && G.s.feeder.food === 'berry') { G.s.feeder.food = null; G.emit('feeder', G.s.feeder); } }], [1.06, 0.40]]);
   RABBIT.on.say = say;
 }
@@ -1588,7 +1566,7 @@ function updateRabbit(dt) {
   if (!r) {
     if (G.rabbitDue()) {   // the first raid
       rabbitGo([[1.05, 0.40], [FEEDER.gx + 0.07, FEEDER.gy - 0.03, 'eat', 7, () => { G.rabbitAte(); toast('A rabbit is eating everything in the dish!'); }],
-        [0.70, 0.62, 'eat', 8, () => { G.rabbitRaid(); gnomeSays('him', 'Oi! Shoo, you rascal!'); toast('The rabbit nibbled the sprouts. Time for a fence.'); }], [1.06, 0.92]]);
+        [0.70, 0.62, 'nibble', 8, () => { G.rabbitRaid(); gnomeSays('him', 'Oi! Shoo, you rascal!'); toast('The rabbit nibbled the sprouts. Time for a fence.'); }], [1.06, 0.92]]);
       RABBIT.on.fast = 2; return;
     }
     const h = dayPhase().h;
@@ -1607,25 +1585,13 @@ function updateRabbit(dt) {
   if (d <= sp) { r.gx = st[0]; r.gy = st[1]; r.hop = 0; if (st[2]) { r.act = st[2]; r.t = st[3]; if (r.say) { toast(r.say); r.say = null; } } else r.i++; return; }
   r.gx += dx / d * sp; r.gy += dy / d * sp;
 }
+const RABBIT_PIX = 0.75, RABBIT_POSE = { eat: 'dish', nibble: 'nibble', berry: 'berry', sniff: 'sit', nap: 'nap' };   // painted poses (art day 10); hopping uses the low crouch
 function drawRabbit(now) {
   const r = RABBIT.on; if (!r) return;
-  let [x, y] = toWorld(r.gx, r.gy); const up = r.act ? 0 : Math.abs(Math.sin(r.hop * Math.PI / 2)) * 12, nap = r.act === 'nap', bob = r.act === 'eat' ? Math.abs(Math.sin(now / 160)) * 3 : r.act === 'sniff' ? Math.sin(now / 90) * 0.8 : 0;
-  shadow(x, y, 38, 11); ctx.save(); ctx.translate(x, y - up); ctx.scale(RABBIT_SIZE, RABBIT_SIZE); if (r.flip) ctx.scale(-1, 1);
-  const fur = '#8c7258', dark = '#6e5843', ol = 'rgba(42,25,15,0.75)';
-  ctx.strokeStyle = ol; ctx.lineWidth = 1.2;
-  const bg = ctx.createRadialGradient(2, -20, 2, -2, -13, 19); bg.addColorStop(0, '#a88d70'); bg.addColorStop(1, '#6f5844');
-  ctx.fillStyle = bg; ctx.beginPath(); ctx.ellipse(-2, -13, 17, 12, 0, 0, 7); ctx.fill(); ctx.stroke();   // body
-  blob(8, -8, 6, 5, 'rgba(236,224,204,0.8)');   // pale chest
-  ctx.fillStyle = dark; ctx.beginPath(); ctx.ellipse(-9, -10, 10, 9, 0, 0, 7); ctx.fill();   // haunch
-  blob(-19, -15, 4.5, 4, '#f3ede2');   // tail
-  const hx = 13, hy = -21 + bob + (nap ? 6 : 0);
-  ctx.save(); ctx.translate(hx - 3, hy - 6);   // ears: up and twitching, or flat when asleep
-  for (const [dxe, a] of [[-2, -0.25], [3, 0.05]]) { ctx.save(); ctx.translate(dxe, 0); ctx.rotate(nap ? -1.3 : a + (r.act === 'sniff' ? Math.sin(now / 300 + dxe) * 0.12 : 0)); ctx.fillStyle = fur; ctx.beginPath(); ctx.ellipse(0, -10, 3.6, 11, 0, 0, 7); ctx.fill(); ctx.stroke(); blob(0, -10, 1.6, 8, '#d9a79a'); ctx.restore(); }
-  ctx.restore();
-  ctx.fillStyle = fur; ctx.beginPath(); ctx.ellipse(hx, hy, 9, 7.5, 0.2, 0, 7); ctx.fill(); ctx.stroke();   // head
-  if (nap) { ctx.beginPath(); ctx.moveTo(hx + 1, hy - 2); ctx.quadraticCurveTo(hx + 3.5, hy, hx + 6, hy - 2); ctx.stroke(); }
-  else { blob(hx + 3, hy - 2, 1.8, 1.8, '#1e140c'); blob(hx + 3.5, hy - 2.6, 0.6, 0.6, '#fff'); }
-  blob(hx + 8.5, hy + 1, 1.5, 1.2, '#c98a80');   // nose
+  let [x, y] = toWorld(r.gx, r.gy); const up = r.act ? 0 : Math.abs(Math.sin(r.hop * Math.PI / 2)) * 12, nap = r.act === 'nap', bob = r.act === 'eat' || r.act === 'nibble' ? Math.abs(Math.sin(now / 160)) * 1.5 : r.act === 'sniff' ? Math.sin(now / 90) * 0.5 : 0;
+  const img = IM['rabbit-' + (RABBIT_POSE[r.act] || 'dish')], w = img.width * RABBIT_PIX, h = img.height * RABBIT_PIX;
+  shadow(x, y, w * 0.5, w * 0.15); ctx.save(); ctx.translate(x, y - up + bob); if (r.flip) ctx.scale(-1, 1);
+  ctx.drawImage(img, -w / 2, -h, w, h);
   ctx.restore();
   if (nap) { ctx.save(); ctx.fillStyle = 'rgba(60,45,30,0.7)'; ctx.font = 'italic 12px Georgia'; const k = (now / 1400) % 1; ctx.globalAlpha = 1 - k; ctx.fillText('z', x + 26 + k * 10, y - 62 - k * 20); ctx.restore(); }
 }

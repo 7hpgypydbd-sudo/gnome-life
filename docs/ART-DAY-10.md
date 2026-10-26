@@ -1,4 +1,4 @@
-# Art day 10: the growing woodpile, the rabbit and the spring (written 2026-10-26, not painted yet)
+# Art day 10: the growing woodpile, the rabbit and the spring (painted 2026-10-26, wired as v42)
 
 Why: in the rebuilt early jobs (v39), Wendel's first job is **Gather the fallen wood**. He fetches three lots of wood (two fallen branches in the yard and the pile of good sticks Hazel saved while clearing) and stacks them by the house, so the woodpile grows in **three steps**. Today the game shows the old painted firewood stack at three sizes, which is only a stand-in. Painting is a separate Mac chat once Bryce says go.
 
