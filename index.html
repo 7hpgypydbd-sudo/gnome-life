@@ -176,7 +176,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v34</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v35</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -302,6 +302,12 @@ function routineFor(h) {   // what the couple do at this hour when no job needs 
   if (h >= 19 && h < 22) return 'sit';
   return null;
 }
+// jobs where the gnome moves about as the work goes: Wendel digs his way along the whole rut, Hazel goes from one bit of rubbish to the next
+const CLEAR_ITEMS = [];   // filled in below from HOME_KIT: the pieces Hazel clears, in the order she takes them
+const WORKPATH = {
+  ruts: p => [0.86, 0.08 + 0.84 * p],
+  clear: p => { const n = CLEAR_ITEMS.length, it = CLEAR_ITEMS[Math.min(n - 1, Math.floor(p * n))]; return [it[0] + 0.05, it[1] - 0.04]; }
+};
 const WORKSPOT = { 'job:ruts':[0.86,0.50], feeder:[0.58,0.54], clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], fence:[0.80,0.74], sapling:[0.28,0.86], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
 
 // ---------- loading ----------
@@ -432,7 +438,7 @@ class Gnome {
     }
     this.routine = null;
     if (job) {
-      const sp = jobSpot(job) || WORKSPOT['job:' + job.id] || WORKSPOT[job.def.spot] || SPOTS.fire; this.job = job.id;
+      const sp = jobSpot(job) || (WORKPATH[job.id] && WORKPATH[job.id](taskProg(job.id))) || WORKSPOT['job:' + job.id] || WORKSPOT[job.def.spot] || SPOTS.fire; this.job = job.id;
       this.plan = job.def.act || SPOT_ACT[job.def.spot] || (job.def.tile ? 'dig' : 'carry');
       this.pace = this.plan === 'carry' ? [[sp[0], sp[1]], [sp[0] - 0.12, sp[1] + 0.06]] : null;
       this.goto(sp[0], sp[1]); this.faceTowards(sp[0], sp[1], null); return;
@@ -474,6 +480,8 @@ class Gnome {
         if (this.wait <= 0) {
           if (/^(sleep|fest)$/.test(routineFor(dayPhase().h))) { this.pick(); return; }
           if (this.pace) { this.pace.reverse(); const [x, y] = this.pace[0]; this.goto(x, y); this.wait = 0.6; return; }   // carrying: to and fro
+          const wp = WORKPATH[this.job];
+          if (wp) { const [x, y] = wp(taskProg(this.job)); if (Math.hypot(x - this.gx, y - this.gy) > 0.04) { this.act = null; this.goto(x, y); this.faceTowards(x, y, null); if (this.job === 'ruts') this.flip = false; this.wait = 0.6; return; } }
           this.wait = 1;
         }
         return;
@@ -1046,8 +1054,8 @@ const HOME_KIT = [   // [piece, healed piece (null: it goes when the job is done
   ['stumps-rocks-01', 'stumps-rocks-07', 0.74, 0.13, 0.7], ['stumps-rocks-02', 'stumps-rocks-08', 0.13, 0.84, 0.7],
   ['stumps-rocks-03', 'stumps-rocks-09', 0.07, 0.20, 0.55], ['stumps-rocks-06', 'stumps-rocks-12', 0.30, 0.94, 0.6],
   ['stumps-rocks-04', null, 0.60, 0.13, 0.6, 'clear'], ['stumps-rocks-05', null, 0.46, 0.07, 0.55, 'clear'],
-  ['leftovers-01', null, 0.22, 0.50, 0.55, 'clear'], ['leftovers-02', null, 0.58, 0.58, 0.45, 'clear'], ['leftovers-03', null, 0.18, 0.74, 0.6, 'clear'],
-  ['leftovers-04', null, 0.70, 0.40, 0.55, 'clear'], ['leftovers-05', null, 0.52, 0.90, 0.5, 'clear'], ['leftovers-09', null, 0.70, 0.60, 0.45, 'clear'],
+  ['leftovers-01', null, 0.22, 0.50, 0.55, 'clear'], ['leftovers-02', null, 0.84, 0.36, 0.45, 'clear'], ['leftovers-03', null, 0.18, 0.74, 0.6, 'clear'],
+  ['leftovers-04', null, 0.30, 0.14, 0.55, 'clear'], ['leftovers-05', null, 0.52, 0.90, 0.5, 'clear'], ['leftovers-09', null, 0.88, 0.20, 0.45, 'clear'],
   ['leftovers-11', null, 0.06, 0.62, 0.5, 'clear'],
 ];
 function taskProg(id) {   // 0 before a job starts, rising to 1 while it runs, 1 once done
@@ -1296,9 +1304,17 @@ EXTRAS.push({ gx: BED_FENCE.gate, gy: BED_FENCE.gy1 + 0.005, show: () => bedFenc
 for (const [gx, gy, name, foot] of [[BED_FENCE.gx0, BED_FENCE.gy0, 'fence-corner-back', [150, 208]], [BED_FENCE.gx1, BED_FENCE.gy1, 'fence-corner-front', [147, 364]]])
   EXTRAS.push({ gx, gy, show: () => bedFenceShown() ? (taskProg('fence') >= 1 ? 1 : 0) : 0, draw: (x, y, al) => fenceCorner(name, x, y, al, foot) });
 if (NEWGROUND) for (const [a, b, gx, gy, sc, job] of HOME_KIT) EXTRAS.push({ gx, gy,
-  show: () => G.landStage().key === 'barren' ? 1 - (job ? taskProg(job) : 0) : b ? 1 : 0,
+  show: () => G.landStage().key === 'barren' ? (job === 'clear' ? clearLeft(gx, gy) : 1 - (job ? taskProg(job) : 0)) : b ? 1 : 0,
   draw(x, y, al) { const im = IM['kit-' + (G.landStage().key === 'barren' ? a : b)]; if (!im || !im.width) return; const w = im.width * sc, h = im.height * sc;
     ctx.save(); ctx.globalAlpha = al; shadow(x, y, w * 0.38, w * 0.1); ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); ctx.restore(); } });
+for (const [a, b, gx, gy, sc, job] of HOME_KIT) if (job === 'clear') CLEAR_ITEMS.push([gx, gy]);
+let clearDust = -1;
+function clearLeft(gx, gy) {   // each bit of rubbish goes in its turn while Hazel works, with a little puff of dust as it goes
+  const i = CLEAR_ITEMS.findIndex(c => c[0] === gx && c[1] === gy), n = CLEAR_ITEMS.length, p = taskProg('clear') * n;
+  const left = 1 - Math.max(0, Math.min(1, p - i));
+  if (left > 0 && left < 1 && Math.random() < 0.2) { const [x, y] = toWorld(gx, gy); particles.push({ k:'puff', x: x + (Math.random() - 0.5) * 40, y: y - 14, vx:(Math.random() - 0.5) * 10, vy:-8, r:5, life:0, max:1.4 }); }
+  return left;
+}
 function drawCrop(x, y) {
   const p = G.plot(); if (!p.stage) return;
   const t = G.now();
