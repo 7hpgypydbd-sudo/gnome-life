@@ -62,7 +62,8 @@ const G = {
     for (const [k, v] of Object.entries(fresh())) if (!(k in this.s)) this.s[k] = v;   // older saves gain new fields
     const gully = this.s.tasks.ruts; if (gully && !gully.done) gully.endsAt = Math.min(gully.endsAt, now());   // the gully job is retired: one still running just finishes
     const tk = this.s.tasks; if (tk.bedwater && !tk.spring) tk.spring = { startedAt: tk.bedwater.startedAt, endsAt: tk.bedwater.startedAt, done: true };   // watered before the spring job existed: the spring counts as found
-    if (tk.fence) this.s.flags.rabbit = true;   // fenced before the rabbit's raid existed
+    if (tk.fence) this.s.flags.rabbit = true;
+    if (this.s.plots.seedbed.grown) this.s.flags.firstpick = true;   // fenced before the rabbit's raid existed
     this.away = this.catchUp();
     this.save();
     return this.s;
@@ -204,7 +205,7 @@ const G = {
     const p = this.plot(); if (p.stage !== 'ready') return false;
     const c = C.crops[p.crop], got = Object.assign({}, c.harvest), nib = p.nibbled && got.seed > 1; if (nib) got.seed--;   // the rabbit had a few
     this.give(got); this.addGreen(c.green); p.grown++;
-    p.crop = null; p.stage = null; p.readyAt = 0; p.nibbled = false;
+    p.crop = null; p.stage = null; p.readyAt = 0; p.nibbled = false; this.s.flags.firstpick = true;   // the first crop opens up the home jobs
     this.note(`Picked ${c.name}${nib ? ' (what the rabbit left)' : ''}. The bed is clear again, and the ground remembers a little more of how to grow.`); this.emit('plot', p); return true;
   },
 
@@ -216,11 +217,17 @@ const G = {
     if (f && kind === 'home') return Object.assign({ id, folk: fid, name: `Build ${f.short} a home`, short: 'building a home', green: 2, home: true, act: 'carry' }, f.build);
     if (f && kind === 'trade') return Object.assign({ id, folk: fid, green: 1 }, f.building);
     if (f && kind === 'quest') { const st = f.quest.steps[+step]; return Object.assign({ id, folk: fid, green: 1, blurb: st.say, quest: true }, st.job); }
-    return C.tasks.find(t => t.id === id);
+    const d = C.tasks.find(t => t.id === id);
+    return d && d.who === 'either' ? Object.assign({}, d, { who: this.eitherWho(d) }) : d;
+  },
+  eitherWho(d) {   // a job either gnome can do: whoever took it on, else whoever is free (Hazel first if both are)
+    const tk = this.s.tasks[d.id]; if (tk && tk.who) return tk.who;
+    const busy = w => Object.entries(this.s.tasks).some(([id, k]) => !k.done && k.endsAt > now() && id !== d.id && (k.who || (C.tasks.find(t => t.id === id) || {}).who) === w);
+    return ['her', 'him'].find(w => !busy(w)) || 'her';
   },
   taskList() {   // everything the player could start or is waiting on, in a sensible order
     const s = this.s, out = [];
-    for (const d of C.tasks) if (!d.retired) out.push(this.taskView(d));
+    for (const d of C.tasks) if (!d.retired) out.push(this.taskView(this.taskDef(d.id)));
     for (const [k, tl] of Object.entries(s.tiles)) if (tl.state === 'revealed' || tl.state === 'regrowing') out.push(this.taskView(this.taskDef('regrow:' + k)));
     const v = s.village;
     if (v.traveller) out.push(this.taskView(this.taskDef('home:' + v.traveller.id)));
@@ -245,7 +252,7 @@ const G = {
   startTask(id) {
     const d = this.taskDef(id), v = this.taskView(d); if (v.state !== 'ready' || !v.can) return false;
     this.pay(d.cost); const t = now();
-    this.s.tasks[id] = { startedAt: t, endsAt: t + this.dur(d.mins), done: false };
+    this.s.tasks[id] = { startedAt: t, endsAt: t + this.dur(d.mins), done: false }; if (C.tasks.some(x => x.id === id && x.who === 'either')) this.s.tasks[id].who = d.who;
     if (d.home || d.claims) this.s.tasks[id].tile = this.freeLot();
     if (d.claims) this.s.festival.tile = this.s.tasks[id].tile;
     if (d.tile) this.s.tiles[d.tile].state = 'regrowing';
@@ -320,6 +327,9 @@ const G = {
     this.pay({ [kind]: 1 }); f.food = kind; f.at = now();
     this.note(`${kind === 'seed' ? 'Seed' : 'Berries'} in the feeding dish. Now, who will come?`); this.emit('feeder', f); return true;
   },
+  // ---- the rain barrel: once scrubbed it fills with rain; tap it to draw the water ----
+  barrelFull() { const tk = this.s.tasks.rainbarrel; if (!(tk && this.done('rainbarrel'))) return false; return now() - (this.s.barrelAt || tk.endsAt) >= C.barrel.every * MIN; },
+  drawBarrel() { if (!this.barrelFull()) return false; this.s.barrelAt = now(); this.give(C.barrel.give); this.note('Fresh rainwater from the barrel.'); return true; },
   // ---- the rabbit: a cheeky regular, never a real loss ----
   // The first time there is food in the dish while the seedlings are up, a rabbit eats the lot and then nibbles a few sprouts.
   // Only then is "Fence the seed bed" offered. index.html plays the raid when you are watching; catchUp() settles it when you were away.
