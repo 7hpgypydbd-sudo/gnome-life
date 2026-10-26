@@ -60,6 +60,7 @@
   .jcard.unseen .por img, .jcard.unseen .por span { filter:brightness(0); opacity:.22; } .jcard.unseen b { color:var(--ink2); }
   .por { width:64px; height:64px; border-radius:50%; background:radial-gradient(circle at 50% 40%, #fbf4e2, #e2d3b2); border:2px solid rgba(107,90,68,.45); overflow:hidden; display:flex; align-items:center; justify-content:center; flex:none; }
   .por img { width:100%; height:100%; object-fit:cover; } .por.pad img { object-fit:contain; padding:6px; box-sizing:border-box; } .por span { font-size:34px; }
+  .por.scene { border-radius:14px; } .por.big.scene { width:200px; height:200px; border-radius:18px; }
   .por.big { width:140px; height:140px; margin:4px auto 8px; border-width:3px; } .por.big span { font-size:76px; } .por.big.pad img { padding:12px; }
   .jpage { text-align:center; } .jpage h2 { padding:0 !important; } .jpage .lore { font-size:17px; font-style:italic; color:var(--ink); margin:6px 8px 12px; } .jpage .meta { font-size:14px; margin:4px 0; }
   .jpage.card { border:2px solid rgba(107,90,68,.35); border-radius:14px; padding:10px 10px 6px; margin:6px 4px 10px; box-shadow: inset 0 0 18px rgba(130,90,35,.18); }
@@ -177,7 +178,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v44</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v45</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -225,7 +226,7 @@ const ASSETS = {
   fence:'sprites/fence.webp', sapling:'sprites/sapling.webp',
   'him-side':'sprites/him-side.png','him-front':'sprites/him-front.png','him-back':'sprites/him-back.png',
   'her-side':'sprites/her-side.png','her-front':'sprites/her-front.png','her-back':'sprites/her-back.png',
-  'him-dig':'sprites/him-dig.png','him-water':'sprites/him-water.png','him-carry':'sprites/him-carry.png','him-eat':'sprites/him-eat.png','him-sit':'sprites/him-sit.png','him-sleep':'sprites/him-sleep.png',
+  'him-dig':'sprites/him-dig.png','him-water':'sprites/him-water.png','him-carry':'sprites/him-carry.png','him-eat':'sprites/him-eat.png','him-canwalk':'sprites/him-canwalk.png','him-craft':'sprites/him-craft.png','her-craft':'sprites/her-craft.png','him-sit':'sprites/him-sit.png','him-sleep':'sprites/him-sleep.png',
   'her-pickup':'sprites/her-pickup.png','her-gather':'sprites/her-gather.png','him-pickup':'sprites/him-pickup.png','him-gather':'sprites/him-gather.png','her-dig':'sprites/her-dig.png','her-water':'sprites/her-water.png','her-carry':'sprites/her-carry.png','her-eat':'sprites/her-eat.png','her-sit':'sprites/her-sit.png','her-sleep':'sprites/her-sleep.png',
   'icon-twig':'sprites/icon-twig.webp','icon-moss':'sprites/icon-moss.webp','icon-stone':'sprites/icon-stone.webp','icon-acorn':'sprites/icon-acorn.webp','icon-seed':'sprites/icon-seed.webp',
   'woodpile-1':'sprites/woodpile-1.webp','woodpile-2':'sprites/woodpile-2.webp','woodpile-3':'sprites/woodpile-3.webp',   // art day 10, cut by tools/cut_day10.py
@@ -297,7 +298,7 @@ const RHYTHM = {
   him: { eat:[0.40,0.56,'campfire'], sit:[0.38,0.60,'campfire'], sleep:[0.24,0.40,null] },
   her: { eat:[0.60,0.38,'campfire'], sit:[0.62,0.42,'campfire'], sleep:[0.52,0.24,null] },
 };
-const ACT_FPS = { pickup:3, gather:3, dig:4, water:3, carry:9, eat:2.5, sit:1.6, sleep:0.7 };
+const ACT_FPS = { canwalk:9, craft:4, pickup:3, gather:3, dig:4, water:3, carry:9, eat:2.5, sit:1.6, sleep:0.7 };
 const SPOT_ACT = { feeder:'carry', wheelbarrow:'dig', seedbed:'water', sapling:'water', shelter:'carry', fence:'carry', stonebench:'carry', fire:'carry' };
 function routineFor(h) {   // what the couple do at this hour when no job needs them
   if (G.festivalOn()) return 'fest';   // festival evening: they dance on the green (beats jobs and bedtime)
@@ -353,8 +354,8 @@ const WORKPATH = {
   },
   bench: (p, g) => workLoop(g, 'bench', () => [[0.90, 0.72, 'gather', false, 5], [0.65, 0.50, 'pickup', true, 3], [0.64, 0.48, 'dig', false, 4]]),   // he tugs a short log free at the yard edge, rolls it over and beds it in by the fire
   roof: (p, g) => workLoop(g, 'roof', c => [[...MOSS_SPOTS[c % MOSS_SPOTS.length], 'pickup', false, 4], [0.41, 0.35, 'pickup', true, 2.5], [0.41, 0.35, 'gather', false, 5]]),   // she gathers moss round the yard and presses it onto the low edge of the roof
-  rainbarrel: (p, g) => workLoop(g, 'rainbarrel', () => [[0.40, 0.48, 'gather', false, 6], [SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3], [0.41, 0.49, 'water', false, 4]]),   // scrub, fetch rinse water from the spring, rinse
-  bedwater: (p, g) => workLoop(g, 'bedwater', c => [[SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3], [0.50 + (c % 3) * 0.05, 0.60 + (c % 2) * 0.05, 'water', false, 5]]),   // to and fro: fill the can at the spring pool, water a different bit of the bed each time
+  rainbarrel: (p, g) => workLoop(g, 'rainbarrel', () => [[0.40, 0.48, 'gather', false, 6], [SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3], [0.41, 0.49, 'water', 'can', 4]]),   // scrub, fetch rinse water from the spring, rinse
+  bedwater: (p, g) => workLoop(g, 'bedwater', c => [[SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3], [0.50 + (c % 3) * 0.05, 0.60 + (c % 2) * 0.05, 'water', 'can', 5]]),   // to and fro: fill the can at the spring pool, water a different bit of the bed each time
 };
 function woodTaken(i) { const [k, t] = segOf(taskProg('woodpile'), WOOD_ITEMS.length); return taskProg('woodpile') >= 1 || k > i ? 1 : k < i ? 0 : sstep(0.25, 0.6, t); }   // 0..1: how much of that lot Wendel has picked up
 function woodStage() {   // the woodpile grows in 3 steps, one per lot of wood he brings
@@ -496,7 +497,7 @@ class Gnome {
     if (job) {
       const wp = WORKPATH[job.id] && WORKPATH[job.id](taskProg(job.id), this);
       const sp = jobSpot(job) || wp || WORKSPOT['job:' + job.id] || WORKSPOT[job.def.spot] || SPOTS.fire; this.job = job.id;
-      this.plan = (wp && wp[2]) || job.def.act || SPOT_ACT[job.def.spot] || (job.def.tile ? 'dig' : 'carry'); this.carryWalk = !!(wp && wp[3]);
+      this.plan = (wp && wp[2]) || job.def.act || SPOT_ACT[job.def.spot] || (job.def.tile ? 'dig' : 'carry'); this.carryWalk = (wp && wp[3]) || false;
       if (WORKPATH[job.id] && this.plan === 'carry') this.plan = 'pickup';   // gathering: she bends down to each piece, painted pick-up strip (art day 9)
       this.pace = this.plan === 'carry' && !WORKPATH[job.id] ? [[sp[0], sp[1]], [sp[0] - 0.12, sp[1] + 0.06]] : null;
       this.goto(sp[0], sp[1]); this.faceTowards(sp[0], sp[1], null); return;
@@ -539,7 +540,7 @@ class Gnome {
           if (/^(sleep|fest)$/.test(routineFor(dayPhase().h))) { this.pick(); return; }
           if (this.pace) { this.pace.reverse(); const [x, y] = this.pace[0]; this.goto(x, y); this.wait = 0.6; return; }   // carrying: to and fro
           const wp = WORKPATH[this.job];
-          if (wp) { const [x, y, act, carry] = wp(taskProg(this.job), this); if (Math.hypot(x - this.gx, y - this.gy) > 0.04) { this.act = null; if (act) this.plan = act; this.carryWalk = !!carry; this.goto(x, y); this.faceTowards(x, y, null); this.wait = 0.6; return; }
+          if (wp) { const [x, y, act, carry] = wp(taskProg(this.job), this); if (Math.hypot(x - this.gx, y - this.gy) > 0.04) { this.act = null; if (act) this.plan = act; this.carryWalk = carry || false; this.goto(x, y); this.faceTowards(x, y, null); this.wait = 0.6; return; }
             if (act && this.act !== act) { this.act = this.plan = act; this.aframe = 0; this.at = 0; } }   // a new task on the same spot (kneel, then tamp down)
           this.wait = 1;
         }
@@ -572,7 +573,7 @@ class Gnome {
     const [wx, wy] = toWorld(this.gx, this.gy);
     const s = SPR * 0.92;
     const carrying = this.walking && (this.pace || this.carryWalk) && this.dir === 'side';   // carrying wood: use the carry strip instead of the walk
-    const act = this.act || (carrying ? 'carry' : null);
+    const act = this.act || (carrying ? (this.carryWalk === 'can' && this.who === 'him' ? 'canwalk' : 'carry') : null);   // carryWalk 'can': he walks with the watering can
     let img, cw, ch, f, flip;
     if (act) { const a = this.acts[act]; img = IM[`${this.who}-${act}`]; [cw, ch] = a.cell; f = (carrying ? this.frame : this.aframe) % a.n; flip = this.flip; }
     else { img = IM[`${this.who}-${this.dir}`]; [cw, ch] = this.cell; f = this.walking ? this.frame : 0; flip = this.dir === 'side' && this.flip; }
@@ -2633,7 +2634,7 @@ function openMagic() {
 }
 function portraitHtml(v, big) {   // the journal picture: painted portrait, else the garden painting, else the stand-in icon
   const src = art('portrait-' + v.id) ? `sprites/portrait-${v.id}.webp` : art('vis-' + v.id) ? `sprites/vis-${v.id}.webp` : null;
-  return `<div class="por${big ? ' big' : ''}${src && !art('portrait-' + v.id) ? ' pad' : ''}">${src ? `<img src="${src}" alt="">` : `<span>${v.icon || '•'}</span>`}</div>`;
+  return `<div class="por${big ? ' big' : ''}${src && !art('portrait-' + v.id) ? ' pad' : ''}${art('portrait-' + v.id) ? ' scene' : ''}">${src ? `<img src="${src}" alt="">` : `<span>${v.icon || '•'}</span>`}</div>`;
 }
 function journalFoot(v) {   // what you know about a creature's feeding, nest and good deeds, in words
   const e = G.s.journal[v.id] || {}, F = C.feeding, n = (e.fed || []).length, bits = [];
