@@ -11,6 +11,19 @@ You are an unseen helper spirit. A young newlywed gnome couple, **Wendel** (the 
 
 **Storybook concept (Bryce, 2026-10-26, added on top of everything above, replaces nothing):** the game is now a beautiful storybook picture that you grow by visiting it every day. You use the resources you collect to fill in the decorations and change the landscape. A story unfolds as you go, and the animals bring their own side stories, each of which can be worked out.
 
+## Concept review (2026-10-26, thread "Review the whole game concept")
+Full review with pictures: https://claude.ai/artifact/PXGnkUXTJjaCHwTwExeskX . Verdict: the game is coherent. Everything hangs off **two threads: the land coming back, and Wendel and Hazel's marriage.** Creatures and the village hang off those two. Bryce chose the following by card.
+
+- **The story in five chapters:** (1) The bare clearing, days 1-3: arrival, rubbish cleared, first fire, the spring found under the loggers' rubbish, first seed bed, the rabbit. (2) Putting down roots, weeks 1-2: first harvest, roof, doorstep, oak planted, bench by the fire, first green, first regulars, an "Our first week" journal page. (3) A proper home, weeks 2-4: the stump house, the garden tile opens, the toadstool walks off and becomes the mouse family's house, a moving-in page (carried over the threshold). (4) Neighbours, months 1-4: eight neighbours, each story a moment in the marriage, the bridge. (5) The Greening Festival: the secret wedding feast, the soft ending; then seasons, ageing, and Bryce's optional staff story.
+- **The Wood spirit is the player's magic teacher (Bryce):** a spirit, not an animal. It appears each time the magic grows and shows the new thing it can do (coax a sprout, call soft rain, wake the land, give the big toadstool legs). This replaces the old idea of a wise guide; still no sage.
+- **Greening rule:** only living things bring the land back. Building gives no green. **When a creature moves into a home the gnomes made** (nest box, bee house, leaf pile, pond, birdbath, burrow), that counts as life coming back and greens the land a little (Bryce).
+- **Storybook look for unopened land (Bryce):** the land beyond the healed tiles is drawn as an unfinished book page, soft pencil on cream paper, and gets painted in with watercolour as it heals. This replaces the plain mist. Decoration spots are NOT pencil outlines; decorations stay the modest placed set above, built later.
+- **Animal side stories** follow one small pattern: (1) first visit and greeting card, (2) a little trouble you fix, (3) becomes a regular, (4) moves in, (5) a closing page (babies in spring, a gift on the doorstep). Steps 1-4 are built; step 5 is new.
+- **The rabbit (Bryce):** the cheeky foil makes slow peace after the fence, digs a burrow in the garden's creature corner and stays a regular. One spring morning, a row of baby rabbits peers through the fence at the vegetables.
+- **The mouse family:** the field mouse visitor (head in the bottle) is the one who moves into the big toadstool once it has walked to the garden corner and become a little house with a door and a window.
+- **The spring:** choked by the loggers' rubbish (Hazel clears the rubbish, Wendel finds the water under it). Its trickle heals the stream tiles behind the house.
+- **Tidy-ups (Bryce: "yes, all five"):** (1) one yard light, the mended lantern, with the glow-worm lanterns folded into it; path lights are Juniper the lamplighter's gift to the village (lamp posts stay parked); (2) the lean-to is **Wendel's workshop**, and the workbench goes inside it (the spare room is kept for a child, if one ever comes); (3) the yard spring gets a simple stone ring; **the village well belongs to the Fernsbys**; (4) **real crops** in the seed bed (carrots, beans, pumpkins and the like) that feed the pantry, tempt the rabbit, and give the bean poles a reason; (5) compost makes the bed richer, one extra seed per harvest (the dew pond needs the spring, not compost).
+
 ## The world
 - **Size:** about 25 tiles (5x5). One tile is the current diamond, about 3.7 gnomes across.
 - **Spread:** ripples out from the home tile. Each healed tile reveals its misty neighbours, which you coax green.
@@ -45,7 +58,7 @@ You are an unseen helper spirit. A young newlywed gnome couple, **Wendel** (the 
 
 ## Creatures and spirits
 - **Animals:** mostly Australian (fairy-wren, echidna, possum, blue-tongue, kookaburra, frog, and the rest of the current 20) plus a few honorary classics from the gnome books (hedgehog, owl, mouse).
-- **Spirits:** a few, rare and special: a spirit of the land, will-o'-wisps at night, maybe one mischievous troll-ish nuisance.
+- **Spirits:** a few, rare and special: the Wood spirit (your magic teacher, see the concept review), a spirit of the land, will-o'-wisps at night, maybe one mischievous troll-ish nuisance.
 - **Journal:** small painted portrait, one warm line of lore, date first seen.
 - **Regulars:** leave out seed or berries and some creatures turn up daily and may nest nearby. No named pets.
 
