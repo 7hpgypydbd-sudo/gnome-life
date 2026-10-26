@@ -64,21 +64,21 @@ window.CONTENT = {
       needs:['bed', 'spring'], blurb:'Can after can from the new spring pool, until the fresh soil is dark and damp. Then it is ready for seeds.' },
     { id:'roof',    name:'Moss for the shelter roof', short:'mossing the roof',  who:'her', spot:'shelter',     cost:{ moss:4 },           needs:['bedwater'], mins:180, green:0, magic:2,
       blurb:'The canvas leaks. A thick moss roof keeps the rain out and the warmth in.' },
-    { id:'fence',   name:'Fence the seed bed', short:'fencing the bed',         who:'him', spot:'fence',       cost:{ twig:4 },           mins:120, green:0, magic:1,
+    { id:'fence', act:'build',   name:'Fence the seed bed', short:'fencing the bed',         who:'him', spot:'fence',       cost:{ twig:4 },           mins:120, green:0, magic:1,
       needs:['bed', 'flag:rabbit'], blurb:'That rabbit ate the whole dish and then helped itself to the sprouts. A low woven fence all round the bed, with a little gate. The dish it can share.' },
     { id:'sapling', name:'Plant the sapling out', short:'planting the sapling',      who:'her', act:'water', spot:'sapling',     cost:{ water:2, moss:2 },  mins:360, green:2, magic:3,
       needs:['clear', 'flag:firstpick'], blurb:'The little oak they carried from their old home is ready for real ground. Trees bring life back faster than anything. It will outlive us all.' },
     { id:'feeder',  name:'Set out a feeding dish', short:'setting out the dish',     who:'her', act:'carry', spot:'feeder', cost:{ stone:2, twig:1 }, mins:45, green:0, magic:1, needs:['clear'],
       blurb:'A flat stone dish on a stump. Put out seed or berries and see who comes. Some will come back.' },
-    { id:'bench',   name:'Roll a log seat to the fire', short:'rolling a log seat',  who:'him', spot:'logseat',  cost:{ stone:2 },          needs:['bedwater'], mins:60,  green:0, magic:1,
-      blurb:'A short hollow log by the campfire, just the right size for two gnomes of an evening.' },
+    { id:'bench',   name:'Build a bench by the fire', short:'building a bench',  who:'him', act:'build', spot:'logseat',  cost:{ twig:3 },          needs:['bedwater'], mins:60,  green:0, magic:1,
+      blurb:'A plank on two stout legs by the campfire, just long enough for two gnomes of an evening.' },
     { id:'doorstep', name:'Lay a flat-stone doorstep', short:'laying the doorstep', who:'him', act:'dig', spot:'shelter',     cost:{ stone:3 },          needs:['flag:firstpick'], mins:90,  green:0,
       blurb:'So the mud stays outside. Mostly.' },
     { id:'rainbarrel', name:'Scrub the rain barrel', short:'scrubbing the barrel',   who:'either', spot:'barrel',        cost:{ twig:2, stone:1 },  mins:60,  green:0, needs:['flag:firstpick'],
       blurb:'The old barrel by the fire is green with slime. Scrubbed clean, it catches the rain off the roof: a can of water every so often without the walk to the spring. Whoever is free will do it.' },
-    { id:'clothesline', name:'String up a washing line', short:'stringing the line', who:'her', spot:'fire',      cost:{ twig:3, moss:1 },   needs:['flag:firstpick'], mins:60,  green:0,
+    { id:'clothesline', act:'build', name:'String up a washing line', short:'stringing the line', who:'her', spot:'fire',      cost:{ twig:3, moss:1 },   needs:['flag:firstpick'], mins:60,  green:0,
       blurb:'Two tunics, one apron, a very small pair of socks. The sun can do the drying.' },
-    { id:'lantern', name:'Mend the old lantern', short:'mending the lantern',       who:'him', spot:'fire',        cost:{ twig:1, stone:1, light:1 }, needs:['flag:firstpick'], mins:90, green:0,
+    { id:'lantern', act:'build', name:'Mend the old lantern', short:'mending the lantern',       who:'him', spot:'fire',        cost:{ twig:1, stone:1, light:1 }, needs:['flag:firstpick'], mins:90, green:0,
       blurb:'It needs a wisp of caught light, and a gnome who admits he is not good at wiring.' },
     { id:'windowbox', name:'Hang a window box', short:'hanging the window box',        who:'her', act:'water', spot:'shelter',     cost:{ twig:2, moss:2, seed:1 }, mins:90, green:1, needs:['roof'],
       blurb:'A home is not a home until something is flowering by the window.' },
@@ -114,11 +114,11 @@ window.CONTENT = {
       blurb:'Most will be eaten or forgotten. That is how a forest begins.' },
 
     // --- home stage 2: the old stump becomes a proper house (three jobs, each changes the picture) ---
-    { id:'house1', name:'Hollow out the old stump', short:'hollowing the stump', who:'him', act:'dig', spot:'shelter', cost:{ twig:4, stone:4 }, mins:360, green:0, minLevel:3, needs:['roof', 'doorstep'],
+    { id:'house1', name:'Hollow out the old stump', short:'hollowing the stump', who:'him', act:'build', spot:'shelter', cost:{ twig:4, stone:4 }, mins:360, green:0, minLevel:3, needs:['roof', 'doorstep'],
       blurb:'The loggers left the stump; the gnomes will make it a home. Room for a bed, a hearth and, Wendel insists, a workbench.' },
-    { id:'house2', name:'Fit a plank wall and windows', short:'fitting the windows', who:'him', act:'carry', spot:'shelter', cost:{ twig:6, moss:2, light:2 }, mins:360, green:0, minLevel:3, needs:['house1'],
+    { id:'house2', name:'Fit a plank wall and windows', short:'fitting the windows', who:'him', act:'build', spot:'shelter', cost:{ twig:6, moss:2, light:2 }, mins:360, green:0, minLevel:3, needs:['house1'],
       blurb:'Planks across the gap, and two round windows with a wisp of light set in the glass so they never quite go dark.' },
-    { id:'house3', name:'Raise the roof and chimney', short:'raising the roof', who:'her', act:'carry', spot:'shelter', cost:{ twig:8, moss:6, stone:6 }, mins:480, green:0, minLevel:4, needs:['house2'],
+    { id:'house3', name:'Raise the roof and chimney', short:'raising the roof', who:'her', act:'build', spot:'shelter', cost:{ twig:8, moss:6, stone:6 }, mins:480, green:0, minLevel:4, needs:['house2'],
       blurb:'Bark shingles instead of patched canvas, and a stone chimney for a real hearth. After this, it is a house.' },
 
     // --- a warm flame (day 5 onward) ---
@@ -131,6 +131,10 @@ window.CONTENT = {
     // --- night lights: glow-worm lanterns and street lamps ---
     { id:'wormlantern', name:'Hang glow-worm lanterns', short:'hanging the lanterns', who:'her', act:'carry', spot:'shelter', cost:{ twig:2, moss:2, light:1 }, mins:120, green:0, minLevel:2,
       blurb:'Little glass jars with a few sleepy glow-worms and a scrap of moss. Hung by the door, they light the way home.' },
+    { id:'movetoad', name:'Ask the big toadstool to move over', short:'coaxing the toadstool', who:'her', spot:'toadstool', cost:{ light:1, moss:1 }, mins:60, green:0, needs:['tile:0,1'],
+      blurb:'Now the land beyond is open, the big red toadstool stands right in the way. Hazel will ask it nicely, with a little magic, to shuffle over to the edge of the wood.', doneNote:'The toadstool shuffled off to the edge of the wood. Hazel thanked it. It did not say anything back, but it looked pleased.' },
+    { id:'barrow', name:'Make a little wheelbarrow', short:'making a wheelbarrow', who:'him', act:'build', spot:'wheelbarrow', cost:{ twig:3, stone:1 }, mins:90, green:0, needs:['flag:firstpick'],
+      blurb:'A small wheelbarrow for the yard, just for looks. Hazel will fill it with moss and flowers.', doneNote:'The little wheelbarrow is done, and already full of moss.' },
     { id:'wormlamp', name:'Set glow-worm street lamps', short:'setting the lamps', who:'him', act:'carry', spot:'fence', cost:{ twig:4, stone:2, light:2 }, mins:240, green:0, minLevel:3, needs:['wormlantern'],
       blurb:'Four little lamp posts along the yard, each with a jar of worms. Wendel named them all and will not say what the names are.' },
     { id:'leanto',  name:'Raise a spare-room lean-to', short:'raising the lean-to', who:'him', spot:'shelter',     cost:{ twig:8, moss:6, stone:4 }, mins:360, green:0, minLevel:4, needs:['windowbox'],
@@ -145,7 +149,7 @@ window.CONTENT = {
       blurb:'Square by square, of an evening. Wendel holds the wool and talks too much.' },
     { id:'pantry', name:'Fill the pantry for winter', short:'filling the pantry', who:'her', spot:'shelter', cost:{ bread:3, honey:2, seed:3 }, mins:180, green:0, needs:['trade:mabel', 'trade:clem'],
       blurb:'Jars, sacks and one very good cake tin. Let it snow. (It will not snow. But still.)' },
-    { id:'bridge', name:'Build a bridge at the stepping stones', short:'building the bridge', who:'him', act:'carry', cost:{ plank:4, stone:4, twig:4 }, mins:420, green:2, needs:['trade:tobias'], needsTile:'1,-1',
+    { id:'bridge', name:'Build a bridge at the stepping stones', short:'building the bridge', who:'him', act:'build', cost:{ plank:4, stone:4, twig:4 }, mins:420, green:2, needs:['trade:tobias'], needsTile:'1,-1',
       blurb:'Tobias draws it, Wendel builds it, and the far side of the stream can finally be reached with dry feet.' },
 
     // --- a bright fire (day 8 onward) ---
@@ -267,7 +271,7 @@ window.CONTENT = {
     favourEvery: 360,         // minutes between small favours (only one waiting at a time)
     questAfterDays: 1,        // a neighbour's story begins about a day after their trade building is finished
     // where homes go, nearest first: plain healed tiles (not the stream row or the path). A home needs one of these to be green.
-    lots: ['0,1', '-1,0', '-1,1', '2,0', '-2,0', '2,1', '-2,1', '0,2', '-1,2', '0,-2', '-1,-2', '2,-2', '-2,-2', '2,2', '-2,2'],
+    lots: ['-1,0', '-1,1', '2,0', '-2,0', '2,1', '-2,1', '0,2', '-1,2', '0,-2', '-1,-2', '2,-2', '-2,-2', '2,2', '-2,2'],
     order: ['mabel', 'tobias', 'fernsby', 'pebbleworth', 'clem', 'barnaby', 'nettle', 'juniper'],   // who comes next (waved-on travellers go to the back)
   },
   // look: stand-in colouring of Wendel's (base him) or Hazel's (base her) painted walk: hat and coat hues (0-360), grey hair, size.

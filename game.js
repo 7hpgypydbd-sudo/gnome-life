@@ -241,13 +241,13 @@ const G = {
   taskView(d) {
     const s = this.s, tk = s.tasks[d.id], t = now();
     const gate = tk ? '' : this.gateWhy(d);
-    const met = n => n.startsWith('flag:') ? !!s.flags[n.slice(5)] : !!(s.tasks[n] && s.tasks[n].done);   // 'flag:x' = after something happened (e.g. the rabbit's raid)
+    const met = n => n.startsWith('flag:') ? !!s.flags[n.slice(5)] : n.startsWith('tile:') ? !!s.tiles[n.slice(5)] : !!(s.tasks[n] && s.tasks[n].done);   // 'flag:x' = after something happened (e.g. the rabbit's raid)
     const locked = (d.needs || []).some(n => !met(n)) || (d.minLevel && this.magicLevel() < d.minLevel) || !!gate;
     const state = tk ? (tk.done ? 'done' : (tk.endsAt <= t ? 'done' : 'running')) : (locked ? 'locked' : 'ready');
     return { def: d, state, locked, endsAt: tk ? tk.endsAt : 0, startedAt: tk ? tk.startedAt : 0, can: this.can(d.cost), missing: this.missing(d.cost),
-             show: (state !== 'done' || (t - (tk.endsAt || 0)) < 60 * MIN) && !(d.needs || []).some(n => (n.startsWith('trade:') && !this.folkState(n.slice(6))) || (n.startsWith('flag:') && !met(n))),   // village jobs stay hidden until that neighbour lives here
+             show: (state !== 'done' || (t - (tk.endsAt || 0)) < 60 * MIN) && !(d.needs || []).some(n => (n.startsWith('trade:') && !this.folkState(n.slice(6))) || ((n.startsWith('flag:') || n.startsWith('tile:')) && !met(n))),   // village jobs stay hidden until that neighbour lives here
              rank: { running: 0, ready: 1, locked: 2, done: 3 }[state],
-             why: gate ? gate : locked ? (d.minLevel && this.magicLevel() < d.minLevel ? `needs magic level ${d.minLevel}` : `after: ${(d.needs || []).filter(n => !n.startsWith('flag:')).map(n => lc(this.taskDef(n).name)).join(', ')}`) : '' };
+             why: gate ? gate : locked ? (d.minLevel && this.magicLevel() < d.minLevel ? `needs magic level ${d.minLevel}` : `after: ${(d.needs || []).filter(n => !n.startsWith('flag:') && !n.startsWith('tile:')).map(n => lc(this.taskDef(n).name)).join(', ')}`) : '' };
   },
   startTask(id) {
     const d = this.taskDef(id), v = this.taskView(d); if (v.state !== 'ready' || !v.can) return false;
@@ -535,7 +535,7 @@ const G = {
   testFestival(night) {   // test panel: start the festival plans now (ignoring the neighbour count), or jump straight to festival night
     const f = this.s.festival, t = now();
     if (f.stage === 'waiting') { f.stage = 'planning'; this.emit('festival', 'idea'); if (!night) return; }
-    if (!f.tile) { f.tile = this.freeLot() || ['0,1', '-1,0', '2,0'].find(k => !Object.values(this.s.village.folk).some(x => x.tile === k)); if (!this.s.tiles[f.tile] || this.s.tiles[f.tile].state !== 'green') this.s.tiles[f.tile] = { state: 'green', green: 4 }; }
+    if (!f.tile) { f.tile = this.freeLot() || ['-1,0', '2,0', '-1,1'].find(k => !Object.values(this.s.village.folk).some(x => x.tile === k)); if (!this.s.tiles[f.tile] || this.s.tiles[f.tile].state !== 'green') this.s.tiles[f.tile] = { state: 'green', green: 4 }; }
     if (!night) return;
     for (const j of C.festival.jobs) this.s.tasks[j.id] = Object.assign(this.s.tasks[j.id] || {}, { startedAt: t - 1, endsAt: t - 1, done: true }, j.claims ? { tile: f.tile } : {});
     f.stage = 'on'; f.day = dayKey(t); this.emit('festival', 'night');
