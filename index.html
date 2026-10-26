@@ -2093,7 +2093,7 @@ function openSpiritHint() {   // the wood spirit's visit: it thinks the toadstoo
     <p class="lore">It drifts round and round the big toadstool, then settles by your shoulder and speaks in a voice like leaves.</p>
     <p class="lore">"You feel the light you gather, don't you, little spirit? That is your magic. It is not for pushing things about. It is for asking. Ask the toadstool kindly, give it a little light, and it will find its own legs."</p>
     <p class="meta">A new spell is in your magic: <b>Give the toadstool legs</b> (2 light). The wood spirit may come back to teach you more.</p></div>
-    <p style="text-align:center"><button class="act" data-a="openmagic">Open their magic</button></p>`);
+    <p style="text-align:center"><button class="act" data-a="openmagic">Open your magic</button></p>`);
 }
 const TOAD = {};
 function woodPiece(items, n, ux, uy, vb, sc = 1, flip = false) {   // one depth-sorted piece, skipped when it is far off screen
@@ -2501,8 +2501,8 @@ function tap(cx, cy) {
   if (festTile() && (hit(FEST.screen, wx, wy) || hit(FEST.archScreen, wx, wy))) return openFestGreen();
   if (taskProg('feeder') >= 1 && hit(FEEDER.screen, wx, wy)) return openFeeder();
   if (SPIRIT_HINT.screen && hit(SPIRIT_HINT.screen, wx, wy)) return openSpiritHint();
-  if (G.s.tiles['0,1'] && !G.s.flags.toadWalk && TOAD.screen && hit(TOAD.screen, wx, wy)) return openMagic();
-  if (G.s.flags.miceIn && TOAD.screen && hit(TOAD.screen, wx, wy)) return toast('The mouse family\'s toadstool house. Someone has swept the step.');   // the toadstool in the way: the spell that moves it
+  if (G.s.tiles['0,1'] && !G.s.flags.toadWalk && TOAD.screen && hit(TOAD.screen, wx, wy)) return openMagic();   // the toadstool in the way: the spell that moves it
+  if (G.s.flags.miceIn && TOAD.screen && hit(TOAD.screen, wx, wy)) return toast('The mouse family\'s toadstool house. Someone has swept the step.');
   if (hit(SPRING.screen, wx, wy)) { const t = ['spring', 'bedwater'].find(id => !G.done(id)); if (t) return openTasks(t); }
   for (const id in NESTS) if (G.hasNest(id) && hit(NESTS[id].screen, wx, wy)) { const d = G.visitorDef(id); return toast(`The ${d.name.toLowerCase()}'s ${{ nest: 'nest', burrow: 'burrow', leafpile: 'leaf pile', stones: 'hidey-hole' }[d.nest]}. Quiet, someone may be home.`); }
   // props on the home tile (seed bed, tub, task spots)
