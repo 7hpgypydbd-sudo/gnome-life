@@ -31,6 +31,9 @@ A cosy **virtual pet** with a David-the-Gnome feel, using original characters (n
 
 Side mystery (placeholder): a magic staff one gnome finds. **Bryce writes this plot himself; do not invent it.** The save has a `story` hook ready (see below).
 
+
+**Storybook concept (Bryce, 2026-10-26, added on top of everything above, replaces nothing):** the game is now a beautiful storybook picture that you grow by visiting it every day. You use the resources you collect to fill in the decorations and change the landscape. A story unfolds as you go, and the animals bring their own side stories, each of which can be worked out.
+
 ## Decisions (all from Bryce, 2026-10-24)
 - **Art style:** the look of "The Secret World of the Gnomes" book illustrations (Poortvliet): painterly, naturalistic, muted earthy palette, weathered faces, real clothes (red cap, blue tunic, brown trousers, clogs), tiny gnomes in a full-scale woodland. **Never clay or toy-like** (rejected as "for preschoolers").
 - **View:** isometric, fixed three-quarter painted world, FarmVille-style layout with the gnome-book look. Pinch-zoom and drag only, no orbit. Modular ground tiles join into a big map that spreads as land regrows. (The orbiting 3D diorama was judged "wonky"; gnomes looked like cut-outs.)
@@ -199,7 +202,7 @@ Fallback if code blending looks too smudgy: the dual-grid edge pieces (5-6 per p
 
 ## Yard layout plan (AGREED by Bryce 2026-10-26, thread "Plan the yard layout around the final look")
 
-**Bryce's picks:** the couple's garden is the tile on the LEFT (`0,1`), so neighbours start one tile further out. The big toadstool is moved by MAGIC: a spell wakes it, it waddles off on little roots to the garden's far-left corner (G 0.08, 0.88), and a while later a mouse family moves in (tiny door and window in the stem). Lamp spots: Bryce will send numbers from the lamp-spot screenshot when ready; until then use the suggested order at the end.
+**Bryce's picks:** the couple's garden is the tile on the LEFT (`0,1`), so neighbours start one tile further out. The big toadstool is moved by MAGIC: a spell wakes it, it waddles off on little roots to the garden's far-left corner (G 0.08, 0.88), and a while later a mouse family moves in (tiny door and window in the stem). **Lamp posts are PARKED (Bryce, 2026-10-26):** no lamp-post job for now. The spot screenshot and table stay here for when they come back.
 
 Bryce (2026-10-26): "Things need to be spaced and placed with care. Maybe a plan should be formulated around final look. Paths will be needed eventually. More tilled dirt too." This section is the master for WHERE things go in the couple's yard. Later threads place things from here, not ad hoc. Pictures (flat plan view, same diamond orientation as the game, house at the top): `/mnt/project-files/yard-plan/1-now.png`, `2-garden-opens.png`, `3-final-look.png` (drawn by `plan.js` in the same folder; edit its coordinates and re-run to redraw). Numbered lamp-spot screenshot for Bryce: `lamp-spots-numbered.png` (spot numbers -> gx,gy in the table at the end).
 
