@@ -2,7 +2,7 @@
 
 A cosy virtual-pet game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; must run smoothly on a phone. (Earlier working title: "Fairy Garden".)
 
-_Last updated: 2026-10-26 (v44: objects sit in the ground, oval fence, paper-cut pick-ups instead of glows)_
+_Last updated: 2026-10-26 (yard layout plan agreed: zones, garden on the left tile, paths, spacing rules)_
 
 ## Start here, next chat
 
@@ -196,6 +196,55 @@ Bryce's idea: break the ground into smaller, simpler pieces, because the image g
 Fallback if code blending looks too smudgy: the dual-grid edge pieces (5-6 per pair of grounds), which are still small and simple enough for Gemini.
 
 **Rough order when the time comes** (Opus medium for the code, Sonnet for prompts): one test swatch + blend on the home tile with a before/after preview for Bryce; then the swatch set + sticker sheets as one art batch; then curves for path and stream; then convert painted-in details to objects; retire the old big tiles.
+
+## Yard layout plan (AGREED by Bryce 2026-10-26, thread "Plan the yard layout around the final look")
+
+**Bryce's picks:** the couple's garden is the tile on the LEFT (`0,1`), so neighbours start one tile further out. The big toadstool is moved by MAGIC: a spell wakes it, it waddles off on little roots to the garden's far-left corner (G 0.08, 0.88), and a while later a mouse family moves in (tiny door and window in the stem). Lamp spots: Bryce will send numbers from the lamp-spot screenshot when ready; until then use the suggested order at the end.
+
+Bryce (2026-10-26): "Things need to be spaced and placed with care. Maybe a plan should be formulated around final look. Paths will be needed eventually. More tilled dirt too." This section is the master for WHERE things go in the couple's yard. Later threads place things from here, not ad hoc. Pictures (flat plan view, same diamond orientation as the game, house at the top): `/mnt/project-files/yard-plan/1-now.png`, `2-garden-opens.png`, `3-final-look.png` (drawn by `plan.js` in the same folder; edit its coordinates and re-run to redraw). Numbered lamp-spot screenshot for Bryce: `lamp-spots-numbered.png` (spot numbers -> gx,gy in the table at the end).
+
+Coordinates are `gx, gy` on a tile (0..1): gx runs down to the RIGHT corner, gy down to the LEFT corner; (0,0) is the back (top) corner, (1,1) the front (bottom) corner. Garden-tile spots are written `G gx, gy` (tile `0,1`).
+
+### Zones (home tile `0,0`)
+- **Back left, Wendel's work corner:** woodpile 0.12, 0.34 against the tall old tree (0.0, 0.40); later his workshop lean-to 0.15, 0.20 on the house's left side; the (smaller, decoration-only) wheelbarrow 0.26, 0.56.
+- **Back middle, home:** house 0.30, 0.22; door spot 0.36, 0.33; doorstep at the threshold.
+- **Back right, water and washing:** rain barrel 0.43, 0.29 at the house's right corner (it catches the roof's rain); washing line strung 0.44, 0.06 to 0.56, 0.12 between the house and the big old stump; the wash tub (the old "drum", which had no job) 0.50, 0.21 under the line; spring 0.80, 0.16 in the big stump's roots (stone well-head at the final stage, VISION's "well").
+- **Middle, the hearth:** campfire 0.52, 0.48; bench 0.62, 0.40 on the far side, so sitting gnomes face the camera; lantern stump 0.75, 0.50 lighting the way to the spring and the village.
+- **Front, Hazel's growing:** seed bed centred 0.58, 0.74 (oval, fence ring round it, gate at the front); the oak sapling 0.18, 0.80 front left (grows into the shade tree with the bark swing).
+- **Feeding dish:** stage 1 only at 0.86, 0.70 (right front, roomier than now, away from the hearth); it moves to the garden's creature corner when that opens.
+- **Big toadstool** (YARD_WOOD piece 15 at 0.64, 0.99) sits on the path out to the garden; magic moves it at stage 2.
+- Edges stay wild (YARD_WOOD margins), per VISION: more than half of every tile stays wild.
+
+### Growth stages
+1. **Now (one tile):** the zones above, worn tracks for paths, two lamp posts.
+2. **First land opens:** the garden tile joins the yard (see decision). The big toadstool waddles off by magic to G 0.08, 0.88, the feeding dish moves to the creature corner (G 0.78, 0.66) with a birdbath (G 0.90, 0.48), bed 2 (G 0.40, 0.24), compost (G 0.12, 0.12) near the woodpile side, tracks become stepping stones, lamps 3-5.
+3. **Final look:** finished house plus workshop lean-to and spring well-head; bench; grown oak with swing; bed 2 with bean poles; herb corner (G 0.70, 0.26); dew pond (G 0.26, 0.72); hollow-log bee house (G 0.14, 0.42); nest box on a post (G 0.95, 0.30); hedgehog leaf pile (G 0.95, 0.86); berry bush (G 0.52, 0.80); welcome sign where the yard path meets the village path (0.98, 0.62); glow jars along the paths; lamps 6-7.
+
+### Paths
+Worn earth tracks first, stepping stones later (the "Lay a stepping-stone path" job), glow jars last. Routes:
+- door 0.36, 0.34 -> 0.42, 0.46 (hearth, west side) -> 0.40, 0.60 -> 0.44, 0.80 -> round the bed's left -> gate 0.72, 0.90.
+- hearth 0.56, 0.56 -> lantern 0.76, 0.60 -> 1.0, 0.62 -> out to the village path (u 1.5).
+- hearth 0.50, 0.40 -> 0.66, 0.30 -> spring 0.76, 0.22.
+- garden: 0.46, 0.86 -> G 0.46, 0.10 -> G 0.44, 0.36 -> G 0.56, 0.56 -> creature corner G 0.72, 0.62; loop G 0.44, 0.36 -> G 0.30, 0.52 -> pond G 0.26, 0.62.
+Nothing is ever placed on a route.
+
+### Rules of thumb (for every later thread)
+1. **Every object has a job and a zone.** No prop sits in the yard without a purpose (the tub became the wash tub). If a new thing has no zone, add one here first.
+2. **Spacing:** 0.1 of a tile is about 70 world px, a little more than one gnome width. Keep at least **0.08** clear between the edges of any two things a gnome works at, and **0.10** for a path. Big things (house, seed bed, stumps) get **0.12** of clear ground round them.
+3. **Gnome-sized:** props are sized against a gnome (about 120 px tall): a wheelbarrow comes no higher than a gnome's waist, the feeding dish is big enough for a rabbit to eat from, and a barrel is about chest height.
+4. **Keep the front clear.** Nothing tall in the front third of a tile (gx + gy > 1.4): tall things go at the back or the side edges so they never hide the gnomes. Flat things (beds, ponds, paths) go at the front.
+5. **Things belong together:** water things near the spring and rain barrel, wood things in Wendel's corner, growing things at the front and in the garden, creature things in the creature corner, away from the beds (the rabbit rule).
+6. **Paths first.** Draw the route before placing a new thing, and keep the route clear. Gnomes walk the routes and in through gates, never through fences or props.
+7. **Leave the edges wild.** The woodland pieces (YARD_WOOD) stay round the margins; new things never sit on them.
+8. **Grow in place.** A thing that upgrades (shelter -> house, sapling -> oak, log seat -> bench, track -> stones) keeps its spot, so the yard reads as the same place growing up.
+9. **Room for little finds.** Keep a few small nooks (behind the woodpile, under the bench, at the pond's edge) for Easter eggs and hidden finds.
+
+### Handed to the job-mechanics thread
+Lamp posts made by a job, unlocking one by one at Bryce's spots; dirt darkening as it is watered; smaller decoration-only wheelbarrow built from resources; a bigger feeding dish; the rain barrel size; the big toadstool's job; moving objects to the positions above. The garden tile `0,1` comes off the neighbour lot list (`CONTENT.village.lots`) and loses its random woodland corners; if a neighbour already lives there in a save, the yard keeps one tile and that neighbour stays.
+
+### Lamp-spot numbers (from `lamp-spots-numbered.png`, home tile)
+1: 0.20,0.08 · 2: 0.92,0.08 · 3: 0.08,0.20 · 4: 0.56,0.20 · 5: 0.68,0.20 · 6: 0.92,0.20 · 7: 0.56,0.32 · 8: 0.68,0.32 · 9: 0.80,0.32 · 10: 0.92,0.32 · 11: 0.32,0.44 · 12: 0.80,0.44 · 13: 0.92,0.44 · 14: 0.08,0.56 · 15: 0.32,0.56 · 16: 0.44,0.56 · 17: 0.80,0.56 · 18: 0.92,0.56 · 19: 0.08,0.68 · 20: 0.20,0.68 · 21: 0.32,0.68 · 22: 0.80,0.68 · 23: 0.92,0.68 · 24: 0.08,0.80 · 25: 0.32,0.80 · 26: 0.80,0.80 · 27: 0.92,0.80 · 28: 0.08,0.92 · 29: 0.20,0.92 · 30: 0.32,0.92 · 31: 0.44,0.92 · 32: 0.68,0.92 · 33: 0.80,0.92 · 34: 0.92,0.92.
+Suggested order if Bryce doesn't pick: by the door 0.40, 0.38; by the hearth 0.60, 0.58; on the spring path 0.70, 0.27; where the yard meets the village path 0.92, 0.66; at the garden track 0.38, 0.94; then two in the garden (G 0.52, 0.44 and G 0.36, 0.52).
 
 ## What's next (prioritised)
 - **ART DAY 11 (2026-10-26, v45, thread "Paint the visitor portraits and watering can"):** 27 greeting-card scene portraits (animal in front, small painted backdrop showing the land stage it first visits and its time of day; a hidden snail by the cockatoo) cut by `tools/cut_cards.py` into `sprites/portrait-<id>.webp` (incl. `portrait-rabbit`); the card and journal show them as rounded squares. Wendel's watering-can walk (`him-canwalk`) is used on the way back from the spring (carry flag `'can'` in `bedwater` and `rainbarrel`). New 4-frame crafting strips `him-craft` (mallet and peg) and `her-craft` (weaving a willow basket) are packed (`tools/pack_day11.py`) and registered with `ACT_FPS` but NOT yet used by any job: hook them to the crafting/building jobs. Raw sheets in `art-day-11/` (also the plain-background animal portraits `plain-portraits-1/2.jpg`, kept for later). Bryce (2026-10-26) meant the crafting animation as a GENERIC BUILDING animation for constructing things (moss roof, fence): Wendel's `him-craft` hammering suits it; DONE (v46): `him-build` (= him-craft) and `her-build` (Hazel hammering a peg, painted in art-day-12/) are the generic building strips, act name `build`, registered but NOT yet set on any job (moss roof, fence, house jobs should use act:'build'); the basket weaving (`her-craft`) can serve a basket/yarn job. Bee, silvereye and kingfisher cards came out as small full-body figures: redo if they bother Bryce.
