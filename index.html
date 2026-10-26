@@ -1361,7 +1361,7 @@ function clearLeft(gx, gy) {   // each bit of rubbish goes in its turn while Haz
   return left;
 }
 // what grows in the bed: seedlings in three soft curved rows across the dug oval, coming up as the crop grows
-const SEEDLINGS = (() => { const out = []; [-0.32, 0, 0.32].forEach((v, r) => { const n = r === 1 ? 7 : 5; for (let i = 0; i < n; i++) { const u = (i + 0.5) / n * 2 - 1; out.push([u * 0.62 * Math.sqrt(1 - v * v) + (rnd(r * 9 + i) - 0.5) * 0.05, v + u * u * 0.08 + (rnd(r * 9 + i + 50) - 0.5) * 0.05, rnd(r * 9 + i + 99)]); } }); return out.sort((a, b) => a[1] - b[1]); })();
+const SEEDLINGS = (() => { const out = []; [-0.6, -0.3, 0, 0.3, 0.6].forEach((v, r) => { const half = 0.86 * Math.sqrt(1 - v * v), n = Math.max(3, Math.round(half * 9)); for (let i = 0; i < n; i++) { const u = ((i + 0.5) / n * 2 - 1) * half + (r % 2 ? 0.04 : -0.04); out.push([u + (rnd(r * 13 + i) - 0.5) * 0.04, v + (rnd(r * 13 + i + 50) - 0.5) * 0.06, rnd(r * 13 + i + 99)]); } }); return out.sort((a, b) => a[1] - b[1]); })();
 function seedling(x, y, k, ph, now) {   // a little two-leaf sprout, k = 0..1 how grown; it sways a touch
   const h = 4 + 14 * k, sw = Math.sin(now / 900 + ph * 6) * 1.2 * k, tx = x + sw, ty = y - h, L = 3 + 7 * k;
   blob(x, y + 1, 4 + 3 * k, 1.6 + k, 'rgba(60,40,22,0.35)');   // a little shadow and a crumb of earth at its foot
@@ -1376,7 +1376,7 @@ function drawCrop(x, y) {
   const t = G.now(), now = performance.now(), healed = G.landStage().key !== 'barren', W = (healed ? 215 : BED_OVAL.w) / 2, H = W * BED_OVAL.ratio;
   const prog = p.stage === 'planted' ? 0 : p.stage === 'ready' ? 1 : 1 - Math.max(0, p.readyAt - t) / Math.max(1, p.readyAt - (p.wateredAt || p.readyAt - 1));
   for (const [u, v, ph] of SEEDLINGS) {
-    const sx = x + u * W, sy = y + v * H;
+    const sx = x + u * W, sy = y + v * H - u * W * 0.22;   // the painted oval tilts with the slanted view: low at the left, high at the right
     if (p.stage === 'planted') { blob(sx, sy, 3.5, 2, '#4a3620'); blob(sx - 1, sy - 0.6, 1.4, 0.7, 'rgba(160,130,90,0.7)'); continue; }   // little sown mounds
     seedling(sx, sy, Math.min(1, prog * (0.8 + 0.4 * ph)), ph, now);
   }
