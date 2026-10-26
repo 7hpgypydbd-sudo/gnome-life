@@ -176,7 +176,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v33</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v34</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -302,7 +302,7 @@ function routineFor(h) {   // what the couple do at this hour when no job needs 
   if (h >= 19 && h < 22) return 'sit';
   return null;
 }
-const WORKSPOT = { feeder:[0.58,0.54], clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], fence:[0.80,0.74], sapling:[0.28,0.86], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
+const WORKSPOT = { 'job:ruts':[0.86,0.50], feeder:[0.58,0.54], clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], fence:[0.80,0.74], sapling:[0.28,0.86], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
 
 // ---------- loading ----------
 const IM = {};
@@ -432,7 +432,7 @@ class Gnome {
     }
     this.routine = null;
     if (job) {
-      const sp = jobSpot(job) || WORKSPOT[job.def.spot] || SPOTS.fire; this.job = job.id;
+      const sp = jobSpot(job) || WORKSPOT['job:' + job.id] || WORKSPOT[job.def.spot] || SPOTS.fire; this.job = job.id;
       this.plan = job.def.act || SPOT_ACT[job.def.spot] || (job.def.tile ? 'dig' : 'carry');
       this.pace = this.plan === 'carry' ? [[sp[0], sp[1]], [sp[0] - 0.12, sp[1] + 0.06]] : null;
       this.goto(sp[0], sp[1]); this.faceTowards(sp[0], sp[1], null); return;
@@ -1713,6 +1713,8 @@ function footpathLinks() {   // short tracks joining every door into one network
 function drawFootpaths() {
   const src = IM['g-path']; if (!src || !src.width) return; const pat = GR.pathPat || (GR.pathPat = ctx.createPattern(src, 'repeat'));
   ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath(); for (const k of Object.keys(G.s.tiles)) { const [ox, oy] = tileOrigin(k); ctx.moveTo(ox + PLOT.top[0], oy + PLOT.top[1]); ctx.lineTo(ox + PLOT.right[0], oy + PLOT.right[1]); ctx.lineTo(ox + PLOT.bottom[0], oy + PLOT.bottom[1]); ctx.lineTo(ox + PLOT.left[0], oy + PLOT.left[1]); ctx.closePath(); }
+  ctx.clip();   // tracks only run over land that exists, so nothing hangs off the edge of the map
   for (const [[hx, hy], [px, py]] of footpathLinks()) {
     if (Math.hypot(hx - px, hy - py) < 0.08) continue;
     const [x0, y0] = toWorld(hx, hy), [x1, y1] = toWorld(px, py), [cx, cy] = toWorld((hx + px) / 2 + (py - hy) * 0.15, (hy + py) / 2 + (hx - px) * 0.15);   // a gentle bend
