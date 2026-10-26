@@ -451,7 +451,7 @@ const hash = location.hash.slice(1);
 for (const tok of hash.split(/[#&]/)) if (/^(day|night|dawn|dusk|morning|evening)$/.test(tok)) tod = tok;
 if (/reset/.test(hash)) { G.reset(); }
 window.addEventListener('hashchange', () => location.reload());
-if (/test/.test(hash)) window.DBG = { cam, gnomes, greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed() };   // for the preview pictures
+if (/test/.test(hash)) window.DBG = { cam, gnomes, IM, art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed() };   // for the preview pictures
 
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -588,26 +588,61 @@ class Gnome {
     this.screen = { x: wx, y: wy, w: cw * s, h: ch * s };
   }
 }
-function shadow(x, y, rx, ry) {   // soft contact shadow: darkest right under the thing, fading out, nudged away from the light (upper left)
-  ctx.save(); ctx.translate(x + rx * 0.1, y + 2); ctx.scale(rx * 1.25, ry * 1.25);
-  const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
-  g.addColorStop(0, 'rgba(30,20,8,0.42)'); g.addColorStop(0.45, 'rgba(30,20,8,0.26)'); g.addColorStop(1, 'rgba(30,20,8,0)');
+function shadow(x, y, rx, ry) {   // soft contact shadow, two layers: a wide soft one cast away from the light (upper left), and a tight dark one right where the thing meets the earth
+  ctx.save(); ctx.translate(x + rx * 0.14, y + 2); ctx.scale(rx * 1.3, ry * 1.3);
+  let g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+  g.addColorStop(0, 'rgba(30,20,8,0.34)'); g.addColorStop(0.5, 'rgba(30,20,8,0.2)'); g.addColorStop(1, 'rgba(30,20,8,0)');
   ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.translate(x, y + 1); ctx.scale(rx * 0.75, ry * 0.6);
+  g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+  g.addColorStop(0, 'rgba(25,16,6,0.38)'); g.addColorStop(0.6, 'rgba(25,16,6,0.16)'); g.addColorStop(1, 'rgba(25,16,6,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+}
+function lineShadow(A, B, w) {   // a soft shadow along a row of feet (a fence panel): a string of small contact shadows from A to B
+  const n = Math.max(2, Math.round(Math.hypot(B[0] - A[0], B[1] - A[1]) / (w * 1.2)));
+  for (let i = 0; i <= n; i++) { const t = i / n; shadow(A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t, w, w * 0.32); }
 }
 function groundPatch(x, y, rx, ry) {   // a faint patch of darker, trodden earth under a standing thing, so it sits in the ground
   ctx.save(); ctx.translate(x, y); ctx.scale(rx, ry);
   const g = ctx.createRadialGradient(0, 0, 0.2, 0, 0, 1);
-  g.addColorStop(0, 'rgba(70,50,28,0.2)'); g.addColorStop(1, 'rgba(70,50,28,0)');
+  g.addColorStop(0, 'rgba(70,50,28,0.26)'); g.addColorStop(0.6, 'rgba(70,50,28,0.12)'); g.addColorStop(1, 'rgba(70,50,28,0)');
   ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill(); ctx.restore();
 }
 // Bake each standing prop once so it belongs to the ground: a touch of the ground's warm earth over everything, and a soft
 // darkening towards the base where it meets the soil (painted art came on white/magenta, lit as if floating).
+// Then, column by column, the last few pixels where each foot, post or wheel touches down are darkened and softened, so the
+// hard cut edge melts into the contact shadow instead of standing on top of the ground. Only feet near the bottom of the
+// picture count, so hanging washing or lanterns don't get muddy hems.
 function settle(img, flat) {
-  if (!img || !img.width) return img;
+  if (!img || !img.width || img.settled) return img;
   const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const x = c.getContext('2d');
+  c.settled = true;
   x.drawImage(img, 0, 0); x.globalCompositeOperation = 'source-atop';
-  x.fillStyle = 'rgba(150,118,72,0.08)'; x.fillRect(0, 0, c.width, c.height);
-  if (!flat) { const g = x.createLinearGradient(0, c.height, 0, c.height * 0.8); g.addColorStop(0, 'rgba(45,30,16,0.45)'); g.addColorStop(1, 'rgba(45,30,16,0)'); x.fillStyle = g; x.fillRect(0, 0, c.width, c.height); }
+  x.fillStyle = 'rgba(150,118,72,0.1)'; x.fillRect(0, 0, c.width, c.height);
+  if (flat) {   // flat things (stepping stones): the lower rim of each piece darkens, so it reads as set into the earth rather than laid on top
+    x.globalCompositeOperation = 'source-over';
+    try {
+      const W = c.width, H = c.height, d = x.getImageData(0, 0, W, H), px = d.data, rim = Math.max(3, Math.round(H * 0.08));
+      for (let i = 0; i < W; i++) { let gap = rim;
+        for (let j = H - 1; j >= 0; j--) { const o = (j * W + i) * 4; if (px[o + 3] < 60) { gap = 0; continue; } gap++;
+          if (gap <= rim) { const dk = 0.62 + 0.38 * gap / rim; px[o] *= dk; px[o + 1] *= dk; px[o + 2] *= dk * 0.93; } } }
+      x.putImageData(d, 0, 0);
+    } catch (e) {}
+    return c;
+  }
+  const g = x.createLinearGradient(0, c.height, 0, c.height * 0.78); g.addColorStop(0, 'rgba(45,30,16,0.45)'); g.addColorStop(1, 'rgba(45,30,16,0)'); x.fillStyle = g; x.fillRect(0, 0, c.width, c.height);
+  x.globalCompositeOperation = 'source-over';
+  try {
+    const W = c.width, H = c.height, d = x.getImageData(0, 0, W, H), px = d.data, foot = Math.max(6, Math.round(H * 0.07)), low = H * 0.82;
+    let bottom = 0; const bot = new Int32Array(W).fill(-1);
+    for (let i = 0; i < W; i++) for (let j = H - 1; j >= 0; j--) if (px[(j * W + i) * 4 + 3] > 60) { bot[i] = j; if (j > bottom) bottom = j; break; }
+    const floor = Math.min(low, bottom - H * 0.12);   // feet are the columns that reach down near the lowest point of the picture
+    for (let i = 0; i < W; i++) { const b = bot[i]; if (b < floor) continue;
+      for (let j = Math.max(0, b - foot); j <= b; j++) { const k = (j - (b - foot)) / foot, o = (j * W + i) * 4;
+        const dk = 1 - 0.55 * k * k; px[o] *= dk; px[o + 1] *= dk; px[o + 2] *= dk * 0.95;   // into the earth: darker and a touch warmer
+        if (k > 0.55) px[o + 3] *= 1 - (k - 0.55) * 1.4; } }   // and the very edge goes soft
+    x.putImageData(d, 0, 0);
+  } catch (e) {}   // a picture from elsewhere can't be read back; it keeps the gradient only
   return c;
 }
 
@@ -1158,12 +1193,11 @@ function drawProp(p) {
   const img = p.name === 'firewood' ? IM['woodpile-' + Math.max(1, woodStage())] : IM[p.name]; const [x, y] = toWorld(p.gx, p.gy); const s = SPR * p.s;   // the woodpile is painted in three steps, one per lot of wood
   const w = img.width * s, h = img.height * s, a = propAlpha(p), now = performance.now();
   if (a < 1 && BEFORE[p.name] && !drawSlot(BEFORE_ART[p.name], x, y, 1 - a)) BEFORE[p.name](x, y, 1 - a);
-  const tap = p.name === 'seedbed' && (a < 1 || !bedReady()) ? clearingWantsTap() : p.name !== 'lanternstump' && wantsTap(p);
-  if (tap) { if (a >= 1) halo(x, y - h * 0.4, Math.min(Math.max(w, h) * 0.3, 40), now, p.gx * 5); }
+  // no glow on built things or job spots (Bryce: a fence shouldn't glow); only things you pick up glow. The Jobs badge says when there's work.
   if (a <= 0 || p.name === 'fence') return;
   if (p.name === 'seedbed') return drawCrop(x, y);   // no square of tilled earth (Bryce: it spoilt the storybook look); the dug oval is the bed, and seedlings come up in it
   ctx.save(); ctx.globalAlpha = a;
-  if (!p.flat) { groundPatch(x, y, w * 0.7, w * 0.26); shadow(x, y, w * 0.4, w * 0.14); }
+  if (!p.flat) { groundPatch(x, y, w * 0.72, w * 0.28); shadow(x, y, w * 0.48, w * 0.17); }
   const sw = SWAP_ART[p.name], sp = sw && art(sw[0]) ? taskProg(sw[1]) : 0;   // painted "after" picture crossfades in as its job runs
   if (p.name === 'shelter') drawHouse(img, x, y, w, h);
   else if (p.name === 'sapling' && taskProg('sapling') >= 1) { if (!drawSlot('oak-planted', x, y)) drawPlantedOak(x, y, s); }
@@ -1181,6 +1215,15 @@ function clearingWantsTap() { return C.tasks.some(t => t.spot === 'clearing' && 
 function blob(x, y, rx, ry, col) { ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, 7); ctx.fill(); }
 function rnd(i) { const j = Math.sin(i * 12.9898) * 43758.5453; return j - Math.floor(j); }   // fixed pattern, never flickers
 function stone(x, y, r) { blob(x, y + r * 0.25, r * 1.1, r * 0.45, 'rgba(40,30,20,0.25)'); blob(x, y, r, r * 0.6, '#9a958c'); blob(x - r * 0.25, y - r * 0.2, r * 0.5, r * 0.25, 'rgba(225,222,212,0.7)'); ctx.strokeStyle = 'rgba(42,21,16,0.6)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.6, 0, 0, 7); ctx.stroke(); }
+function flatStone(x, y, r, i = 0) {   // a stone set into the earth: a ring of darker trodden soil, a shadowed lower rim, a warm grey face with a soft top light
+  groundPatch(x, y + 1, r * 1.5, r * 0.72);
+  ctx.save(); ctx.translate(x, y); ctx.rotate((rnd(i + 3) - 0.5) * 0.3);
+  ctx.fillStyle = 'rgba(80,64,46,0.45)'; ctx.beginPath(); ctx.ellipse(0, 0, r, r * 0.44, 0, 0, 7); ctx.fill();   // the rim where it meets the soil
+  const g = ctx.createRadialGradient(-r * 0.25, -r * 0.3, r * 0.1, 0, -r * 0.05, r);
+  g.addColorStop(0, '#bdb4a2'); g.addColorStop(0.7, '#a39a88'); g.addColorStop(1, '#948a78');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, -r * 0.06, r * 0.99, r * 0.38, 0, 0, 7); ctx.fill();
+  ctx.restore();
+}
 function stick(x, y, len, ang, col = '#7a5a3a') { ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(42,21,16,0.8)'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(-len / 2, 0); ctx.lineTo(len / 2, 0); ctx.stroke(); ctx.strokeStyle = col; ctx.lineWidth = 3.5; ctx.stroke(); ctx.restore(); }
 // painted pictures that take over from the code below once they exist (see ART_SLOTS)
 const BEFORE_ART = { stonebench:'yard-stones' };
@@ -1317,7 +1360,6 @@ const SPRING_W = 150;   // drawn width of the painted hollow
 function drawSpring(now) {   // the hollow shows once Wendel finds it, then the painted choked picture crossfades into the cleared pool as the stones come out
   const p = springProg(), [x, y] = toWorld(...SPRING.at), clear = sstep(SPRING_FOUND + 0.05, 0.9, p), seen = sstep(SPRING_FOUND - 0.1, SPRING_FOUND, p);
   SPRING.screen = { x, y, w: 80, h: 40 };
-  if (wantsTap({ name: 'spring' })) halo(x, y - 6, 42, now, 1);
   const ch = IM['spring-choked'], cl = IM['spring-clear'], w = SPRING_W, h = w * ch.height / ch.width;
   ctx.save(); ctx.globalAlpha = seen * (1 - clear); if (ctx.globalAlpha > 0) ctx.drawImage(ch, x - w / 2, y - h / 2, w, h);
   ctx.globalAlpha = seen * clear; if (ctx.globalAlpha > 0) ctx.drawImage(cl, x - w / 2, y - h / 2, w, h);
@@ -1354,7 +1396,7 @@ function drawPath(now) {
   const p = taskProg('path'); if (p <= 0) return;
   if (art('stepping-stones')) { const [x, y] = toWorld(0.355, 0.59); drawSlot('stepping-stones', x, y, p, { flat: true }); return; }
   const n = Math.ceil(PATH_STONES.length * p);
-  PATH_STONES.slice(0, n).forEach(([gx, gy], i) => { const [x, y] = toWorld(gx, gy); ctx.save(); ctx.globalAlpha = i < n - 1 || p >= 1 ? 1 : 0.6; blob(x, y + 2, 17, 7, 'rgba(40,30,20,0.25)'); blob(x, y, 16, 7, '#a7a094'); blob(x - 3, y - 2, 8, 3, 'rgba(230,226,215,0.6)'); ctx.restore(); });
+  PATH_STONES.slice(0, n).forEach(([gx, gy], i) => { const [x, y] = toWorld(gx, gy); ctx.save(); ctx.globalAlpha = i < n - 1 || p >= 1 ? 1 : 0.6; flatStone(x, y, 16 + rnd(i) * 3, i); ctx.restore(); });
 }
 // the tidy pile of gathered branches and stones, and the washing line: things that stand up, so they are depth-sorted
 const EXTRAS = [
@@ -1391,9 +1433,9 @@ function drawFencePanel(A, B, flip, a, img = IM['kit-fence-straight-a'], foot = 
   if (!img || !img.width) return;
   const im = flip ? flipped(img) : img, [fa, fb] = flip ? [[img.width - foot[1][0], foot[1][1]], [img.width - foot[0][0], foot[0][1]]] : foot;
   const sx = (B[0] - A[0]) / (fb[0] - fa[0]), sy = sx * up, sh = ((B[1] - A[1]) - sy * (fb[1] - fa[1])) / (fb[0] - fa[0]);
-  ctx.save(); ctx.globalAlpha = a; ctx.transform(sx, sh, 0, sy, A[0] - sx * fa[0], A[1] - sh * fa[0] - sy * fa[1]); ctx.drawImage(im, 0, 0); ctx.restore();
+  ctx.save(); ctx.globalAlpha = a; lineShadow(A, B, Math.abs(B[0] - A[0]) * 0.06 + 4); ctx.transform(sx, sh, 0, sy, A[0] - sx * fa[0], A[1] - sh * fa[0] - sy * fa[1]); ctx.drawImage(im, 0, 0); ctx.restore();
 }
-function fenceCorner(name, x, y, a, foot) { const im = IM['kit-' + name]; if (!im || !im.width) return; const s = 0.27; ctx.save(); ctx.globalAlpha = a; ctx.drawImage(im, x - foot[0] * s, y - foot[1] * s, im.width * s, im.height * s); ctx.restore(); }
+function fenceCorner(name, x, y, a, foot) { const im = IM['kit-' + name]; if (!im || !im.width) return; const s = 0.27; ctx.save(); ctx.globalAlpha = a; shadow(x, y, 9, 3.5); ctx.drawImage(im, x - foot[0] * s, y - foot[1] * s, im.width * s, im.height * s); ctx.restore(); }
 function gateOpen() { return gnomes.some(g => g.screen && Math.hypot(g.gx - BED_FENCE.gate, g.gy - BED_FENCE.gy1) < 0.16); }   // swings open while a gnome is by the gate
 function bedFenceSides() {   // [from grid point, to grid point, flip] in building order: back first, gate side last
   const F = BED_FENCE, m = (F.gx0 + F.gx1) / 2, n = (F.gy0 + F.gy1) / 2, h = F.gateHalf;
@@ -1482,7 +1524,6 @@ function drawDishPart(x, y, a, part) {   // the painted dish, or only its stump 
 }
 function drawFeeder(x, y, a, now) {
   const f = G.s.feeder.food, empty = !f && a >= 1;
-  if (empty && (G.can({ seed: 1 }) || G.can({ berry: 1 }))) halo(x, y - 14, 34, now, 3);
   FEEDER.screen = { x, y, w: 64, h: 40 };
   if (a < 1 && art('feeding-dish')) { drawDishPart(x, y, sstep(0.1, 0.3, a), 'stump'); drawDishPart(x, y, sstep(0.43, 0.63, a)); return; }   // the stump round goes in, then the stone on top
   if (!drawSlot('feeding-dish', x, y, a)) {   // stand-in: a flat stone dish on a short stump
@@ -2767,6 +2808,7 @@ G.onChange((kind, data) => { renderInv(kind === 'inv' && typeof data === 'string
 function start() {
   G.boot();
   for (const p of PROPS) IM[p.name] = settle(IM[p.name], p.flat);
+  for (const k of Object.keys(IM)) if (/^(kit-(stumps-rocks|leftovers|fence|gate|wood)-|woodpile-)/.test(k)) IM[k] = settle(IM[k]);   // painted kit pieces that stand on the ground sit in it too
   document.getElementById('load').remove();
   gnomes.push(new Gnome('him', 0.46, 0.50), new Gnome('her', 0.40, 0.40));
   gnomes[1].wait = 0.5;
