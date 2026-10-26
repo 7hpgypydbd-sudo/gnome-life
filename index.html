@@ -85,7 +85,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v29</small></h1><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="sub"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v30</small></h1><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="sub"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -103,15 +103,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 29;
+const BUILD = 30;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=29"></script>
-<script src="game.js?v=29"></script>
+<script src="content.js?v=30"></script>
+<script src="game.js?v=30"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -231,6 +231,8 @@ const ART_SLOTS = {
   // night lights (docs/ART-BATCH-8.md): glow-worm lanterns and street lamps (the glow itself stays code)
   'worm-lantern':     { w: 24 },              // "Hang glow-worm lanterns": one small hanging lantern, drawn at each hook
   'worm-lamp':        { h: 96 },                // "Set glow-worm street lamps": one lamp post, drawn at each spot
+  'lamp-toadstool':   { h: 54 },                // the same job also sets a few toadstool lamps (a lit window in the stem)
+  'lamp-fireflies':   { w: 112 },               // ...and a string of firefly beads between two posts
   // home stage 2 (docs/ART-BATCH-4.md): the shelter stump turning into a house, one picture per job, each the WHOLE stump
   'house-hollowed':   { w:'like:shelter' },   // "Hollow out the old stump"
   'house-windows':    { w:'like:shelter' },   // "Fit a plank wall and windows"
@@ -989,10 +991,11 @@ const AFTER = {
   },
   lanternstump(at, s, now) {   // mended: a small steady flame, day and night
     if (taskProg('lantern') < 1) return;
-    const [wx, wy] = at(LANTERN[0], LANTERN[1]); glow(wx, wy, 26, 'rgba(255,210,120,1)', 0.55 + 0.1 * Math.sin(now / 300));
+    const [wx, wy] = at(lanternPt()[0], lanternPt()[1]); glow(wx, wy, 26, 'rgba(255,210,120,1)', 0.55 + 0.1 * Math.sin(now / 300));
   },
 };
-const LANTERN = [133, 102];
+const LANTERN_OLD = [133, 102], LANTERN_PAINTED = [130, 87];   // the painted lantern-lit picture is 16 px taller than the old stump, hence the different y
+function lanternPt() { return art('lantern-lit') ? LANTERN_PAINTED : LANTERN_OLD; }
 function drawPlantedOak(x, y, s) {   // "Plant the sapling out": the pot is gone; the oak stands in a mound of earth, a little taller
   const img = IM.sapling, top = 82, k = s * 1.5, w = img.width * k, h = top * k;
   blob(x, y, 26, 9, 'rgba(90,64,40,0.95)'); blob(x - 4, y - 2, 14, 4, 'rgba(140,105,70,0.8)');
@@ -1083,6 +1086,8 @@ function drawOffer(o, now) {
 // ---------- the feeding dish and nests ----------
 const WORM_LANTERNS = [[0.27, 0.40], [0.47, 0.30], [0.66, 0.46]];   // hooks and branches by the door and bench (home tile)
 const WORM_LAMPS = [[0.22, 0.62], [0.58, 0.80], [0.86, 0.60], [0.50, 0.58]];   // lamp posts along the yard
+const TOAD_LAMPS = [[0.36, 0.74], [0.74, 0.34]];   // toadstool lamps (lamp-toadstool), lit with the street lamps
+const FIREFLY_STRINGS = [[0.62, 0.80]];            // firefly strings between two posts (lamp-fireflies), centred here
 const FEEDER = { gx: 0.74, gy: 0.64 };
 function drawFeeder(x, y, a, now) {
   const f = G.s.feeder.food, empty = !f && a >= 1;
@@ -1412,6 +1417,15 @@ function drawWormLight(x, y, lamp, a, now) {   // a glow-worm lantern (hangs) or
   }
   ctx.restore();
 }
+function drawToadLamp(x, y, a) { drawSlot('lamp-toadstool', x, y, a); }
+function drawFireflyString(x, y, a) { drawSlot('lamp-fireflies', x, y, a); }
+function toadGlows(night, now) {   // the toadstool windows and the firefly beads shine once the street lamps are set
+  const pa = taskProg('wormlamp'); if (pa <= 0) return;
+  if (art('lamp-toadstool')) for (const [gx, gy] of TOAD_LAMPS) { const [x, y] = toWorld(gx, gy), sw = 0.9 + 0.1 * Math.sin(now / 500 + x); glow(x + 2, y - 15, 48, 'rgba(255,205,120,1)', 0.55 * night * pa * sw); glow(x + 2, y - 15, 18, 'rgba(255,235,180,1)', 0.35 * night * pa); }
+  const im = art('lamp-fireflies');
+  if (im) { const [w, h] = slotSize('lamp-fireflies', im); for (const [gx, gy] of FIREFLY_STRINGS) { const [x, y] = toWorld(gx, gy);
+    for (const [bx, by] of [[0.32, 0.30], [0.48, 0.38], [0.62, 0.36], [0.77, 0.27], [0.18, 0.22]]) { const sw = 0.75 + 0.25 * Math.sin(now / 420 + bx * 20 + x); glow(x + (bx - 0.5) * w, y - h * (1 - by), 26, 'rgba(210,255,140,1)', 0.45 * night * pa * sw); } } }
+}
 function wormSpots() {   // [x, y, isLamp, progress] of every glow-worm light on the land
   const out = [], la = taskProg('wormlantern'), pa = taskProg('wormlamp');
   if (la > 0) for (const [gx, gy] of WORM_LANTERNS) out.push([...toWorld(gx, gy), false, la]);
@@ -1611,6 +1625,11 @@ function frame(now) {
   for (const id in NESTS) if (G.hasNest(id)) items.push({ d: depthOf(NESTS[id][0], NESTS[id][1]) - 0.05, draw: () => { const [x, y] = toWorld(NESTS[id][0], NESTS[id][1]); drawNest(id, x, y, now); } });
   for (const [gx, gy] of WORM_LANTERNS) { const la = taskProg('wormlantern'); if (la > 0) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); drawWormLight(x, y, false, la, now); } }); }
   for (const [gx, gy] of WORM_LAMPS) { const pa = taskProg('wormlamp'); if (pa > 0) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); drawWormLight(x, y, true, pa, now); } }); }
+  const tp = taskProg('wormlamp');
+  if (tp > 0) {
+    if (art('lamp-toadstool')) for (const [gx, gy] of TOAD_LAMPS) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); drawToadLamp(x, y, tp); } });
+    if (art('lamp-fireflies')) for (const [gx, gy] of FIREFLY_STRINGS) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); drawFireflyString(x, y, tp); } });
+  }
   villageItems(items, now);
   festItems(items, now);
   items.sort((a, b) => a.d - b.d);
@@ -1629,12 +1648,13 @@ function frame(now) {
     const flick = 0.75 + 0.25 * Math.sin(now / 90) * Math.sin(now / 230);
     glow(fx, fy - 30, 150, 'rgba(255,150,60,1)', 0.55 * night * flick);
     const lan = PROPS.find(p => p.name === 'lanternstump'); const [lx, ly] = toWorld(lan.gx, lan.gy);
-    const ls = SPR * lan.s; if (taskProg('lantern') >= 1) glow(lx - IM.lanternstump.width * ls / 2 + LANTERN[0] * ls, ly - IM.lanternstump.height * ls + LANTERN[1] * ls, 110, 'rgba(255,205,110,1)', 0.5 * night * (0.9 + 0.1 * Math.sin(now / 400)));
+    const ls = SPR * lan.s; if (taskProg('lantern') >= 1) glow(lx - IM.lanternstump.width * ls / 2 + lanternPt()[0] * ls, ly - IM.lanternstump.height * ls + lanternPt()[1] * ls, 110, 'rgba(255,205,110,1)', 0.5 * night * (0.9 + 0.1 * Math.sin(now / 400)));
     const sh = PROPS.find(p => p.name === 'shelter'); const [sx, sy] = toWorld(sh.gx, sh.gy);
     glow(sx - 20, sy - 60, 70, 'rgba(255,190,120,1)', 0.35 * night);
     if (taskProg('house2') >= 1) for (const [wx, wy] of houseWindows()) glow(wx, wy, 34, 'rgba(255,200,110,1)', 0.6 * night * (gnomes.some(g => g.inside) ? 1 : 0.5));
     villageGlows(night, now);
     for (const [x, y, lamp, a] of wormSpots()) { const sw = 0.9 + 0.1 * Math.sin(now / 700 + x * 0.1), up = lamp ? 60 : 24; glow(x, y - up, lamp ? 105 : 62, 'rgba(190,255,150,1)', 0.5 * night * a * sw); glow(x, y - up, lamp ? 38 : 22, 'rgba(235,255,200,1)', 0.35 * night * a); }
+    toadGlows(night, now);
     festGlows(night, now);
     for (const o of G.s.offers) if (o.kind === 'light' && o.screen) glow(o.screen.x, o.screen.y - 14, 40, 'rgba(255,240,170,1)', 0.5);
     if (NEWGROUND) { LIT.collect = false; lightLayer(night); }
