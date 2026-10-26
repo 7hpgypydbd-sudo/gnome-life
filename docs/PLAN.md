@@ -2,7 +2,7 @@
 
 A cosy virtual-pet game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; must run smoothly on a phone. (Earlier working title: "Fairy Garden".)
 
-_Last updated: 2026-10-26 (v40: spring, rabbit and fence, livelier jobs; job-mechanics pass under way)_
+_Last updated: 2026-10-26 (v42: painted woodpile, spring and rabbit; job-mechanics pass under way)_
 
 ## Start here, next chat
 
@@ -252,6 +252,7 @@ Fallback if code blending looks too smudgy: the dual-grid edge pieces (5-6 per p
   - Movement: `WORKPATH` entries now return `[gx, gy, act on arrival, carry on the way]`.
   - Version fix: the cache check number `BUILD` in index.html had been left at 32 while `build.txt` moved on, so every open reloaded once; both are now 39 (keep them equal, with the vNN label and the `?v=` on content.js/game.js).
   - Preview for Bryce: `/mnt/project-files/early-game/early-jobs-v39-preview.jpg`. Test hash `#test` now also exposes `window.DBG` (camera) for preview pictures.
+- **v42 (2026-10-26): ART DAY 10 PAINTED AND WIRED** (thread "Paint the woodpile, spring and rabbit"). Painted on the Mac in Gemini (raw sheets on branch `art-day-10-pictures`), cut with `tools/cut_day10.py` into `sprites/woodpile-1..3`, `spring-choked/clear`, `rabbit-dish/nibble/sit/nap/berry`. Woodpile: three painted stages replace the old stack (the painted beetle on the finished pile is Gerald now; the code beetle is gone). Spring: hidden until Wendel finds it (fades in), then the choked hollow crossfades to the cleared pool as the stones come out; code trickle/pool removed. Rabbit: five painted poses (hop uses the low crouch with a bounce; dish = eat, sprouts = nibble, peering = sit up, nap, berry). Hidden snails: middle woodpile, spring stone. Not painted: Wendel carrying the can (`him-carry-can`, still code-drawn/old carry art). Preview: `/mnt/project-files/early-game/art-day-10-preview.jpg`.
 - **v40 (2026-10-26): JOB-MECHANICS PASS, first round** (thread "Work out the mechanics of every job"; Bryce's notes after playing v39).
   - **Labels:** the busy tag over a gnome cut words off the long job name ("out a feeding dish"). Every job now has its own `short` "-ing" name in content.js (`shortName()` just uses it).
   - **Jobs keep the gnome moving:** new `workLoop(g, key, steps)` in index.html: a little round of steps done over and over in real time, whatever the job's length (gnome moves on after staying long enough at each step). `WORKPATH` functions now get the gnome too. If the next step is on the same spot, the gnome just changes action (kneel, then tamp down).
