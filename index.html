@@ -178,7 +178,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v46</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v47</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -196,15 +196,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 44;
+const BUILD = 47;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=44"></script>
-<script src="game.js?v=44"></script>
+<script src="content.js?v=47"></script>
+<script src="game.js?v=47"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -258,7 +258,7 @@ if (NEWGROUND) {
   for (let i = 1; i <= 6; i++) ASSETS['g-st-edge-' + pad2(i)] = `sprites/kit/edge-${pad2(i)}.webp`;
   ASSETS['kit-rut-mud'] = 'sprites/kit/rut-mud.webp'; ASSETS['kit-rut-filled'] = 'sprites/kit/rut-filled.webp';
 }
-const GNOMES = {"him":{"cell":[108,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[144,242]},"water":{"n":4,"cell":[129,245]},"carry":{"n":4,"cell":[140,260]},"eat":{"n":4,"cell":[118,241]},"sit":{"n":4,"cell":[127,208]},"sleep":{"n":4,"cell":[264,85]},"pickup":{"n":4,"cell":[152,243]},"gather":{"n":4,"cell":[173,233]}}},"her":{"cell":[122,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[159,242]},"water":{"n":4,"cell":[148,241]},"carry":{"n":6,"cell":[105,244]},"eat":{"n":4,"cell":[102,244]},"sit":{"n":4,"cell":[119,208]},"sleep":{"n":2,"cell":[264,73]},"pickup":{"n":4,"cell":[161,240]},"gather":{"n":4,"cell":[159,224]}}}};
+const GNOMES = {"him":{"cell":[108,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[144,242]},"water":{"n":4,"cell":[129,245]},"carry":{"n":4,"cell":[140,260]},"eat":{"n":4,"cell":[118,241]},"sit":{"n":4,"cell":[127,208]},"sleep":{"n":4,"cell":[264,85]},"pickup":{"n":4,"cell":[152,243]},"gather":{"n":4,"cell":[173,233]},"canwalk":{"n":4,"cell":[116,242]},"craft":{"n":4,"cell":[115,242]},"build":{"n":4,"cell":[115,242]}}},"her":{"cell":[122,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[159,242]},"water":{"n":4,"cell":[148,241]},"carry":{"n":6,"cell":[105,244]},"eat":{"n":4,"cell":[102,244]},"sit":{"n":4,"cell":[119,208]},"sleep":{"n":2,"cell":[264,73]},"pickup":{"n":4,"cell":[161,240]},"gather":{"n":4,"cell":[159,224]},"craft":{"n":4,"cell":[111,242]},"build":{"n":4,"cell":[114,242]}}}};
 
 // ---------- world helpers ----------
 function tileOrigin(k) { const [tx, ty] = k.split(',').map(Number); return [tx*EX[0] + ty*EY[0], tx*EX[1] + ty*EY[1]]; }
@@ -575,7 +575,7 @@ class Gnome {
     const carrying = this.walking && (this.pace || this.carryWalk) && this.dir === 'side';   // carrying wood: use the carry strip instead of the walk
     const act = this.act || (carrying ? (this.carryWalk === 'can' && this.who === 'him' ? 'canwalk' : 'carry') : null);   // carryWalk 'can': he walks with the watering can
     let img, cw, ch, f, flip;
-    if (act) { const a = this.acts[act]; img = IM[`${this.who}-${act}`]; [cw, ch] = a.cell; f = (carrying ? this.frame : this.aframe) % a.n; flip = this.flip; }
+    if (act) { const a = this.acts[act] || this.acts.carry; img = IM[`${this.who}-${this.acts[act] ? act : 'carry'}`]; [cw, ch] = a.cell; f = (carrying ? this.frame : this.aframe) % a.n; flip = this.flip; }
     else { img = IM[`${this.who}-${this.dir}`]; [cw, ch] = this.cell; f = this.walking ? this.frame : 0; flip = this.dir === 'side' && this.flip; }
     shadow(wx, wy, Math.min(cw, 150) * s * 0.45, Math.min(cw, 150) * s * 0.18);
     ctx.save(); ctx.translate(wx, wy);
