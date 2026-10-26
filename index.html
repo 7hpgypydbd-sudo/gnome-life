@@ -2139,7 +2139,7 @@ function landItems(items, now) {
     // season touches (art day 8): frost, a spider's web, a bare bush and a snowy stone in winter; fallen leaves in autumn; petals and a dandelion clock in spring
     const touch = { winter: [1, 2, 3, 4], autumn: [5, 6, 5, 6], spring: [7, 8, 7], summer: [8] }[se] || [];
     touch.forEach((n, i) => { const gx = 0.14 + 0.72 * rnd(seed + i * 29 + 500), gy = 0.14 + 0.72 * rnd(seed + i * 31 + 600), [ux, uy] = glob(k, gx, gy);
-      if (!openGround(ux, uy) || rnd(seed + i * 37) < 0.3) return; const im = IM['kit-season-' + pad2(n)]; if (!im || !im.width) return;
+      if (!openGround(ux, uy) || onBed(k, gx, gy) || rnd(seed + i * 37) < 0.3) return; const im = IM['kit-season-' + pad2(n)]; if (!im || !im.width) return;
       items.push({ d: depthOf(ux, uy) - (n === 6 || n === 7 ? 0.2 : 0), draw: () => { const [x, y] = toWorld(ux, uy), h = [55, 85, 120, 70, 38, 34, 34, 62][n - 1], w = im.width * h / im.height;
         if (x < vb.x0 || x > vb.x1 || y < vb.y0 + 360 || y > vb.y1 + 400) return; ctx.drawImage(im, x - w / 2, y - h * 0.9, w, h); } }); });
   }
@@ -2952,8 +2952,15 @@ G.onChange((kind, data) => { renderInv(kind === 'inv' && typeof data === 'string
   if (kind === 'favour') { const f = G.folkDef(data); toast(`${f.short[0].toUpperCase() + f.short.slice(1)} could use a small favour.`); } });
 
 // ---------- start ----------
+function onBed(tile, gx, gy) {   // inside the dug seed bed (or its fence ring)? Bryce: nothing should sit in the tilled oval
+  if (tile !== '0,0' || !(G.s && (G.s.tasks.bed || G.s.plots.seedbed.stage || G.s.plots.seedbed.grown))) return false;
+  const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 1.15, H = W * BED_OVAL.ratio;
+  const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1;
+}
 function start() {
+  G.spotTaken = onBed;
   G.boot();
+  for (const o of [...G.s.offers, ...G.s.secrets.out]) for (let n = 0; n < 12 && onBed(o.tile, o.gx, o.gy); n++) { o.gx = 0.1 + Math.random() * 0.8; o.gy = 0.1 + Math.random() * 0.8; }   // anything already lying on the bed moves off it
   for (const p of PROPS) IM[p.name] = settle(IM[p.name], p.flat);
   for (const k of Object.keys(IM)) if (/^(kit-(stumps-rocks|leftovers|fence|gate|wood)-|woodpile-)/.test(k)) IM[k] = settle(IM[k]);   // painted kit pieces that stand on the ground sit in it too
   document.getElementById('load').remove();

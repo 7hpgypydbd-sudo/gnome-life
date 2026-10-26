@@ -158,7 +158,8 @@ const G = {
   spawnSecret() {
     const s = this.s, sc = s.secrets, left = C.secrets.filter(x => !sc.found[x.id] && !sc.out.some(o => o.id === x.id)); if (!left.length) return null;
     const greens = Object.keys(s.tiles).filter(k => s.tiles[k].state === 'green' || k === '0,0'), tile = greens[(Math.random() * greens.length) | 0];
-    const o = { id: left[(Math.random() * left.length) | 0].id, tile, gx: 0.12 + Math.random() * 0.76, gy: 0.12 + Math.random() * 0.76 };
+    let gx, gy, n = 0; do { gx = 0.12 + Math.random() * 0.76; gy = 0.12 + Math.random() * 0.76; } while (this.spotTaken && this.spotTaken(tile, gx, gy) && ++n < 12);
+    const o = { id: left[(Math.random() * left.length) | 0].id, tile, gx, gy };
     sc.out.push(o); this.dirty = true; return o;
   },
   findSecret(id) {
@@ -175,7 +176,8 @@ const G = {
     for (const o of pool) { r -= o.w; if (r <= 0) { kind = o.kind; break; } }
     const tiles = Object.keys(s.tiles).filter(k => s.tiles[k].state !== 'revealed' || Math.random() < 0.3);
     const tile = tiles[(Math.random() * tiles.length) | 0];
-    s.offers.push({ id: Math.random().toString(36).slice(2, 8), kind, tile, gx: 0.1 + Math.random() * 0.8, gy: 0.1 + Math.random() * 0.8, at: t });
+    let gx, gy, n = 0; do { gx = 0.1 + Math.random() * 0.8; gy = 0.1 + Math.random() * 0.8; } while (this.spotTaken && this.spotTaken(tile, gx, gy) && ++n < 12);   // not on the dug seed bed
+    s.offers.push({ id: Math.random().toString(36).slice(2, 8), kind, tile, gx, gy, at: t });
   },
   gather(id) {
     const s = this.s, i = s.offers.findIndex(o => o.id === id); if (i < 0) return null;
