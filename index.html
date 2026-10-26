@@ -178,7 +178,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v49</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v50</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -196,15 +196,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 49;
+const BUILD = 50;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=49"></script>
-<script src="game.js?v=49"></script>
+<script src="content.js?v=50"></script>
+<script src="game.js?v=50"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -468,7 +468,7 @@ const hash = location.hash.slice(1);
 for (const tok of hash.split(/[#&]/)) if (/^(day|night|dawn|dusk|morning|evening)$/.test(tok)) tod = tok;
 if (/reset/.test(hash)) { G.reset(); }
 window.addEventListener('hashchange', () => location.reload());
-if (/test/.test(hash)) window.DBG = { cam, gnomes, IM, art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
+if (/test/.test(hash)) window.DBG = { cam, gnomes, IM, art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spirit: () => openSpiritHint(), spiritAt: () => SPIRIT_HINT.screen, spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
 
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -2062,7 +2062,38 @@ function toadItem(items, now, vb) {   // drawn by hand: while it walks it stands
     ctx.save(); ctx.translate(x, y - up - bob); ctx.rotate(lean); ctx.drawImage(im, -w / 2, -h * 0.94, w, h); ctx.restore();
     if (walking) for (let i = 0; i < 3; i++) twinkle(x + Math.sin(t * 3 + i * 2) * 40, y - 60 - i * 30 + Math.cos(t * 3.5 + i) * 12, 0.5 + 0.5 * Math.sin(t * 5 + i * 2.1));
     else if (p === 0 && G.s.tiles['0,1'] && ((now / 1000) % 3) < 0.6) twinkle(x + w * 0.2, y - h * 0.8, Math.sin(((now / 1000) % 3) / 0.6 * Math.PI));   // a glint: magic could move it
+    if (p >= 1) mouseHouse(x, y, w, h, now);
   } });
+  const spi = art('vis-spirit');   // Bryce: a sprite comes by and hints at the spell; it hovers round the toadstool until it has walked (drawn twice: the painting is very faint, and nothing glows)
+  if (G.s.tiles['0,1'] && !G.s.flags.toadWalk && spi) { const t = now / 1000, sx = ux + 0.02 * Math.cos(t * 0.6), sy = uy + 0.02 * Math.sin(t * 0.6);
+    items.push({ d: depthOf(sx, sy) + 0.02, draw: () => { const [x0, y] = toWorld(sx, sy), x = x0 + 95, hh = 120, ww = spi.width * hh / spi.height, fy = y - 30 - Math.sin(t * 2) * 6;
+      ctx.drawImage(spi, x - ww / 2, fy - hh, ww, hh); ctx.drawImage(spi, x - ww / 2, fy - hh, ww, hh); SPIRIT_HINT.screen = { x, y: fy, w: ww, h: hh }; } }); }
+  else SPIRIT_HINT.screen = null;
+}
+const SPIRIT_HINT = {}, MOUSE_DOOR = 2 * 3600e3, MOUSE_IN = 24 * 3600e3;   // after the walk: a tiny door and window appear, then a mouse family moves in
+function mouseHouse(x, y, w, h, now) {   // the toadstool turns into a mouse house: an arched door in the big stem, a round window, then the family
+  const since = Date.now() - G.s.flags.toadWalk - TOAD_WALK; if (since < MOUSE_DOOR) return;
+  const night = 1 - dayPhase().light, dx = x + w * 0.02, dy = y - 4;
+  ctx.save(); ctx.strokeStyle = 'rgba(42,21,16,0.9)'; ctx.lineWidth = 1.4;
+  ctx.fillStyle = '#6e4a2c'; ctx.beginPath(); ctx.moveTo(dx - 6, dy); ctx.lineTo(dx - 6, dy - 11); ctx.arc(dx, dy - 11, 6, Math.PI, 0); ctx.lineTo(dx + 6, dy); ctx.closePath(); ctx.fill(); ctx.stroke();   // the door
+  ctx.fillStyle = '#d9b54a'; ctx.beginPath(); ctx.arc(dx + 3.5, dy - 7, 1, 0, 7); ctx.fill();   // its knob
+  const wx = dx + 2, wy = y - h * 0.42; ctx.fillStyle = night > 0.3 ? '#ffd98a' : '#5a4630'; ctx.beginPath(); ctx.arc(wx, wy, 4, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(wx - 4, wy); ctx.lineTo(wx + 4, wy); ctx.moveTo(wx, wy - 4); ctx.lineTo(wx, wy + 4); ctx.stroke(); ctx.restore();
+  if (night > 0.3) glow(wx, wy, 26, 'rgba(255,205,120,1)', 0.5 * night);
+  if (since < MOUSE_IN) return;
+  if (!G.s.flags.miceIn) { G.s.flags.miceIn = true; G.note('A mouse family has moved into the old toadstool.'); toast('A mouse family has moved into the toadstool!'); }
+  const im = art('vis-mouse'); if (!im || night > 0.6) return;   // by day the little ones play round the door
+  const t = now / 1000;
+  [[-22, 32, 0], [16, 23, 1.7], [34, 20, 3.1]].forEach(([ox, hh, ph], i) => { const ww = im.width * hh / im.height, hop = Math.max(0, Math.sin(t * 2.2 + ph)) * (i ? 4 : 0), mx = dx + ox + (i ? Math.sin(t * 0.7 + ph) * 6 : 0);
+    ctx.save(); ctx.translate(mx, dy - hop); if (i % 2) ctx.scale(-1, 1); ctx.drawImage(im, -ww / 2, -hh, ww, hh); ctx.restore(); });
+}
+function openSpiritHint() {   // the wood spirit's visit: it thinks the toadstool could do with legs
+  const v = G.visitorDef('spirit'), isNew = v && G.noteVisitor('spirit');
+  openSheet('greet', `<div class="jpage card"><p class="meta" style="margin:0">${isNew ? 'A new friend!' : 'The wood spirit'}</p>${v ? portraitHtml(v, true) : ''}<h2>The wood spirit</h2>
+    <p class="lore">It drifts round and round the big toadstool, then settles by your shoulder and speaks in a voice like leaves.</p>
+    <p class="lore">"You feel the light you gather, don't you, little spirit? That is your magic. It is not for pushing things about. It is for asking. Ask the toadstool kindly, give it a little light, and it will find its own legs."</p>
+    <p class="meta">A new spell is in your magic: <b>Give the toadstool legs</b> (2 light). The wood spirit may come back to teach you more.</p></div>
+    <p style="text-align:center"><button class="act" data-a="openmagic">Open your magic</button></p>`);
 }
 const TOAD = {};
 function woodPiece(items, n, ux, uy, vb, sc = 1, flip = false) {   // one depth-sorted piece, skipped when it is far off screen
@@ -2469,7 +2500,9 @@ function tap(cx, cy) {
   }
   if (festTile() && (hit(FEST.screen, wx, wy) || hit(FEST.archScreen, wx, wy))) return openFestGreen();
   if (taskProg('feeder') >= 1 && hit(FEEDER.screen, wx, wy)) return openFeeder();
+  if (SPIRIT_HINT.screen && hit(SPIRIT_HINT.screen, wx, wy)) return openSpiritHint();
   if (G.s.tiles['0,1'] && !G.s.flags.toadWalk && TOAD.screen && hit(TOAD.screen, wx, wy)) return openMagic();   // the toadstool in the way: the spell that moves it
+  if (G.s.flags.miceIn && TOAD.screen && hit(TOAD.screen, wx, wy)) return toast('The mouse family\'s toadstool house. Someone has swept the step.');
   if (hit(SPRING.screen, wx, wy)) { const t = ['spring', 'bedwater'].find(id => !G.done(id)); if (t) return openTasks(t); }
   for (const id in NESTS) if (G.hasNest(id) && hit(NESTS[id].screen, wx, wy)) { const d = G.visitorDef(id); return toast(`The ${d.name.toLowerCase()}'s ${{ nest: 'nest', burrow: 'burrow', leafpile: 'leaf pile', stones: 'hidey-hole' }[d.nest]}. Quiet, someone may be home.`); }
   // props on the home tile (seed bed, tub, task spots)
@@ -2626,6 +2659,7 @@ sheet.addEventListener('click', e => {
   if (a === 'room') return openRoom();
   if (a === 'plant') { G.plant(); } if (a === 'water') { G.water(); } if (a === 'harvest') { if (G.harvest()) { const sb = PROPS.find(p => p.name === 'seedbed'); const [x, y] = toWorld(sb.gx, sb.gy); float('+2 seed +1 moss', x, y); greenWave = performance.now(); } }
   if (a === 'start') { if (G.startTask(id)) { toast('Set to work.'); for (const g of gnomes) if (g.who === G.taskDef(id).who) { g.walking = false; g.wait = 0.1; } } }
+  if (a === 'openmagic') { openMagic(); return; }
   if (a === 'cast') { if (G.cast(id)) { toast(C.spells[id].name + '.'); if (id === 'legs') { closeSheet(); const [x, y] = toWorld(...TOAD_FROM); cam.x = x; cam.y = y - 40; return; } } }   // watch it walk off
   if (a === 'food') { if (G.putFood(id)) { toast(id === 'seed' ? 'Seed in the dish.' : 'Berries in the dish.'); closeSheet(); return; } }
   if (a === 'help') return doHelp();
