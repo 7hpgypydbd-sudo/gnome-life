@@ -221,7 +221,7 @@ const ASSETS = {
   // map tiles (batch 1 + 2), placed by MAP below. The bends and the fork are in sprites/ but not used: their stream/path ends don't line up.
   'tile-stream':'sprites/tile-stream.webp', 'tile-stream-spring':'sprites/tile-stream-spring.webp', 'tile-crossing':'sprites/tile-crossing.webp', 'tile-path':'sprites/tile-path.webp',
   shelter:'sprites/shelter.webp', campfire:'sprites/campfire.webp', firewood:'sprites/firewood.webp',
-  barrel:'sprites/barrel.webp', seedbed:'sprites/seedbed.webp', stonebench:'sprites/stonebench.webp', logseat:'sprites/kit/stumps-rocks-06.webp',
+  barrel:'sprites/barrel.webp', seedbed:'sprites/seedbed.webp', stonebench:'sprites/stonebench.webp',
   tub:'sprites/tub.webp', lanternstump:'sprites/lanternstump.webp', wheelbarrow:'sprites/wheelbarrow.webp',
   fence:'sprites/fence.webp', sapling:'sprites/sapling.webp',
   'him-side':'sprites/him-side.png','him-front':'sprites/him-front.png','him-back':'sprites/him-back.png',
@@ -281,7 +281,6 @@ const PROPS = [
   { name:'firewood',     gx:0.14, gy:0.40, s:0.9, until:'woodpile' },
   { name:'barrel',       gx:0.40, gy:0.42, s:0.9 },
   { name:'campfire',     gx:0.52, gy:0.44, s:0.9 },
-  { name:'logseat',      gx:0.57, gy:0.41, s:0.95, until:'bench' },   // "Roll a log seat to the fire": a short hollow log beside the campfire (was a big stone bench out by the lantern)
   { name:'lanternstump', gx:0.78, gy:0.50, s:0.9 },
   { name:'seedbed',      gx:0.60, gy:0.70, s:1.0, flat:true, until:'bed' },   // until: hidden until that job is done (fades in while it runs)
   { name:'tub',          gx:0.44, gy:0.76, s:0.85 },
@@ -352,7 +351,7 @@ const WORKPATH = {
     const [x, y] = SPRING.at;
     return workLoop(g, 'spring-dig', () => [[x + 0.05, y + 0.05, 'gather', false, 5], [x + 0.06, y + 0.12, 'pickup', false, 2.5], [x + 0.03, y + 0.07, 'dig', false, 4]]);
   },
-  bench: (p, g) => workLoop(g, 'bench', () => [[0.90, 0.72, 'gather', false, 5], [0.60, 0.44, 'pickup', true, 3], [0.59, 0.43, 'build', false, 4]]),   // he tugs a short log free at the yard edge, rolls it over and beds it in by the fire
+  bench: (p, g) => workLoop(g, 'bench', () => [[0.90, 0.72, 'gather', false, 4], [0.625, 0.395, 'build', true, 7]]),   // fetches wood from the yard edge, then pegs the bench together where it stands   // he tugs a short log free at the yard edge, rolls it over and beds it in by the fire
   roof: (p, g) => workLoop(g, 'roof', c => [[...MOSS_SPOTS[c % MOSS_SPOTS.length], 'pickup', false, 4], [0.30, 0.28, 'pickup', true, 2.5], [0.30, 0.28, 'build', false, 5]]),   // she gathers moss round the yard and presses it onto the low edge of the roof
   rainbarrel: (p, g) => workLoop(g, 'rainbarrel', () => [[0.40, 0.48, 'gather', false, 6], [SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3], [0.41, 0.49, 'water', 'can', 4]]),   // scrub, fetch rinse water from the spring, rinse
   doorstep: () => [0.33, 0.27, 'dig'],   // kneeling by the door, bedding each flat stone in (stones: kneel, not hammer)
@@ -368,7 +367,8 @@ function woodStage() {   // the woodpile grows in 3 steps, one per lot of wood h
 }
 function bedWet() { const p = taskProg('bedwater'); if (p >= 1) return 1; const [i, t] = segOf(p, WATER_TRIPS * 2); return (Math.floor(i / 2) + (i % 2 ? t : 0)) / WATER_TRIPS; }
 function bedReady() { const pl = G.plot(); return G.done('bedwater') || !!(pl.stage || pl.grown); }   // dug and watered (older gardens already planted count)
-const WORKSPOT = { logseat:[0.61,0.45], feeder:[0.63,0.39], clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], fence:[0.80,0.74], sapling:[0.28,0.86], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
+const JOB_FACE = { bench:[0.57, 0.41], lantern:[0.78, 0.50] };   // what a working gnome turns to face (default: the middle of the yard)
+const WORKSPOT = { logseat:[0.625,0.395], feeder:[0.63,0.39], clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], fence:[0.80,0.74], sapling:[0.28,0.86], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
 
 // ---------- loading ----------
 const IM = {};
@@ -388,6 +388,7 @@ const ART_SLOTS = {
   'oak-planted':      { h: 92 },              // "Plant the sapling out" (drawn by height: it is taller than the potted one)
   'barrel-full':      { w:'like:barrel' },    // "Scrub the rain barrel"
   'lantern-lit':      { w:'like:lanternstump' }, // "Mend the old lantern" (the glow stays code)
+  'yard-bench':       { w: 64 },              // "Build a bench by the fire": a plank on two legs (art day 13)
   'washing-line':     { w: 150 },             // "String up a washing line"
   'stick-pile':       { w: 90 },              // "Clear the ground": the gathered pile
   'yard-doorstep':    { w: 70 },              // "Lay a flat-stone doorstep"
@@ -480,8 +481,8 @@ class Gnome {
     this.act = null; this.plan = null; this.routine = null; this.pace = null; this.aframe = 0; this.at = 0;
   }
   goto(x, y) { const r = bedRoute(this.gx, this.gy, x, y); [this.tx, this.ty] = r.shift(); this.route = r; this.walking = true; }   // round the seed bed, in by the gate
-  faceTowards(x, y, propName) {   // action strips face right; flip so the gnome faces the fire (or the middle of the tile)
-    const p = propName && PROPS.find(p => p.name === propName); const [tx, ty] = p ? [p.gx, p.gy] : [0.5, 0.5];
+  faceTowards(x, y, propName) { this.faceTo = Array.isArray(propName) ? propName : null;   // action strips face right; flip so the gnome faces the fire (or the middle of the tile)
+    const p = typeof propName === 'string' && PROPS.find(p => p.name === propName); const [tx, ty] = Array.isArray(propName) ? propName : p ? [p.gx, p.gy] : [0.5, 0.5];   // propName may be a [gx, gy] to look at
     const [ax] = toWorld(x, y), [bx] = toWorld(tx, ty); this.flip = bx < ax;
   }
   pick() {
@@ -505,7 +506,7 @@ class Gnome {
       this.plan = (wp && wp[2]) || job.def.act || SPOT_ACT[job.def.spot] || (job.def.tile ? 'dig' : 'carry'); this.carryWalk = (wp && wp[3]) || false;
       if (WORKPATH[job.id] && this.plan === 'carry') this.plan = 'pickup';   // gathering: she bends down to each piece, painted pick-up strip (art day 9)
       this.pace = this.plan === 'carry' && !WORKPATH[job.id] ? [[sp[0], sp[1]], [sp[0] - 0.12, sp[1] + 0.06]] : null;
-      this.goto(sp[0], sp[1]); this.faceTowards(sp[0], sp[1], null); return;
+      this.goto(sp[0], sp[1]); this.faceTowards(sp[0], sp[1], JOB_FACE[job.id] || null); return;
     }
     this.job = null; this.plan = null; this.act = null; this.carryWalk = false;
     const keys = Object.keys(SPOTS); const [sx, sy] = SPOTS[keys[(Math.random() * keys.length) | 0]];
@@ -545,7 +546,7 @@ class Gnome {
           if (/^(sleep|fest)$/.test(routineFor(dayPhase().h))) { this.pick(); return; }
           if (this.pace) { this.pace.reverse(); const [x, y] = this.pace[0]; this.goto(x, y); this.wait = 0.6; return; }   // carrying: to and fro
           const wp = WORKPATH[this.job];
-          if (wp) { const [x, y, act, carry] = wp(taskProg(this.job), this); if (Math.hypot(x - this.gx, y - this.gy) > 0.04) { this.act = null; if (act) this.plan = act; this.carryWalk = carry || false; this.goto(x, y); this.faceTowards(x, y, null); this.wait = 0.6; return; }
+          if (wp) { const [x, y, act, carry] = wp(taskProg(this.job), this); if (Math.hypot(x - this.gx, y - this.gy) > 0.04) { this.act = null; if (act) this.plan = act; this.carryWalk = carry || false; this.goto(x, y); this.faceTowards(x, y, JOB_FACE[this.job] || null); this.wait = 0.6; return; }
             if (act && this.act !== act) { this.act = this.plan = act; this.aframe = 0; this.at = 0; } }   // a new task on the same spot (kneel, then tamp down)
           this.wait = 1;
         }
@@ -561,6 +562,7 @@ class Gnome {
       this.walking = false; this.frame = 0; this.aframe = 0; this.at = 0;
       if (this.plan === 'dance') { this.plan = null; this.dancing = true; this.speed = 0.055 + Math.random() * 0.01; return; }
       if (this.plan === 'inside') { this.inside = true; this.plan = null; this.act = this.routine; this.aframe = 0; this.wait = 2; return; }
+      if (this.plan && this.faceTo) this.faceTowards(this.gx, this.gy, this.faceTo);   // walking turned him; turn back to the work
       if (this.plan) { this.act = this.plan; this.wait = this.pace ? 0.6 : 2; if (this.pace) this.faceTowards(this.gx, this.gy, 'campfire'); return; }
       this.act = null; this.wait = 2 + Math.random() * 5; this.dir = Math.random() < 0.6 ? 'front' : this.dir; return;
     }
@@ -1421,6 +1423,20 @@ const EXTRAS = [
     ctx.save(); ctx.globalAlpha = a; shadow(x, y, 40, 12);
     for (let i = 0; i < 7; i++) stick(x - 26 + rnd(i + 20) * 52, y - 6 - i * 3, 40 + rnd(i + 21) * 18, -0.35 + rnd(i + 22) * 0.7);
     stone(x + 34, y + 2, 9); stone(x + 46, y - 6, 7); ctx.restore(); } },
+  { gx: 0.57, gy: 0.41, show: () => taskProg('bench'), draw(x, y, a) {   // Bryce: a simple bench, a plank on two legs (legs go in first, then the plank is pegged on)
+    if (a >= 1 && drawSlot('yard-bench', x, y + 2, 1)) return;
+    const [ax, ay] = toWorld(0.57 - 0.03, 0.41 + 0.01), [bx, by] = toWorld(0.57 + 0.03, 0.41 - 0.01), H = 22, legs = Math.min(1, a / 0.4), top = Math.max(0, (a - 0.45) / 0.55);
+    shadow(x, y, 34, 10); ctx.save(); ctx.lineJoin = 'round';
+    for (const [lx, ly] of [[ax + (bx - ax) * 0.15, ay + (by - ay) * 0.15], [ax + (bx - ax) * 0.85, ay + (by - ay) * 0.85]]) {
+      ctx.globalAlpha = legs; ctx.fillStyle = '#7a5a3a'; ctx.strokeStyle = 'rgba(42,21,16,0.85)'; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.rect(lx - 4, ly - H * legs, 8, H * legs); ctx.fill(); ctx.stroke(); }
+    if (top > 0) { ctx.globalAlpha = top; const t = 5, w = 3.5;   // the plank: a thick board seen from slightly above
+      ctx.fillStyle = '#9a7650'; ctx.strokeStyle = 'rgba(42,21,16,0.85)'; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(ax, ay - H - w); ctx.lineTo(bx, by - H - w); ctx.lineTo(bx, by - H + w); ctx.lineTo(ax, ay - H + w); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#6e5034'; ctx.beginPath(); ctx.moveTo(ax, ay - H + w); ctx.lineTo(bx, by - H + w); ctx.lineTo(bx, by - H + w + t); ctx.lineTo(ax, ay - H + w + t); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = 'rgba(60,38,20,0.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(ax + 6, ay - H); ctx.lineTo(bx - 6, by - H); ctx.stroke();   // wood grain
+      ctx.fillStyle = '#5a3c22'; for (const f of [0.15, 0.85]) { ctx.beginPath(); ctx.arc(ax + (bx - ax) * f, ay + (by - ay) * f - H, 1.8, 0, 7); ctx.fill(); } }   // the pegs
+    ctx.restore(); } },
   { gx: 0.44, gy: 0.10, show: () => taskProg('clothesline'),   // comes up as she builds it
     draw(x, y, a, now) {   // up beside the house, on its right (Bryce)
     const [x2, y2] = toWorld(0.54, 0.04), top = 70;
@@ -2631,7 +2647,7 @@ function openPack() {
   for (const [k, r] of Object.entries(C.resources)) { const n = G.s.inv[k] || 0; html += `<div class="${n ? '' : 'zero'}">${iconHtml(k)}<b>${n}</b>${r.name}</div>`; }
   openSheet('pack', html + `</div>`);
 }
-const JOB_PIC = { ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'kit/stumps-rocks-06',
+const JOB_PIC = { ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'yard-bench',
   woodpile: 'firewood', doorstep: 'yard-doorstep', rainbarrel: 'barrel-full', clothesline: 'washing-line', lantern: 'lanternstump', windowbox: 'yard-windowbox', wormlantern: 'worm-lantern',
   wormlamp: 'worm-lamp', house1: 'house-hollowed', house2: 'house-windows', house3: 'house-finished', hedgehoghouse: 'nest-leafpile', nestbox: 'nest-nest', bridge: 'bld-bridge' };
 function jobPic(d) {   // a small painted picture of what the job makes, for the parchment job cards ('' if there is none)

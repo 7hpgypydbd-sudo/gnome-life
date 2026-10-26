@@ -13,3 +13,11 @@ Generate an image: A wide 16:9 picture. Style: traditional children's book illus
 **Check before dropping it in the inbox:** full-size download, solid magenta, four separate frames with gaps, the twig whole in every frame, same gnome size as the walk sheet.
 
 **Where it goes in the game (for the wiring chat):** pack it like `him-build` (art day 12: `tools/pack_*.py`) into `sprites/him-dowse.png` with an act `dowse` (4 frames) in `sprites/gnomes.json`, and RE-PASTE gnomes.json into `const GNOMES` in index.html (see the v47 hotfix lesson). Once `acts.dowse` exists the code twig switches itself off. `ACT_FPS.dowse` is 3.
+
+2. `yard-bench.jpg` (Bryce 2026-10-26: Wendel builds a SIMPLE BENCH by the fire, a plank on two legs, instead of rolling a log; NEW chat; reference: `stonebench.jpg` from `sprites/stonebench.webp` for the slanted view and scale)
+
+```text
+[style line] One simple gnome bench, seen from the same gentle slanted view from above and to the front as the pasted picture: a single thick rough-sawn plank of pale weathered wood laid across two short stout legs made of split log slabs, the plank held on with two round wooden pegs at each end, the bark still on the edges of the legs. Long enough for two small gnomes to sit side by side. Hidden detail: a heart and the letters W + H carved small into the front edge of the plank, and a tiny snail on one leg. No ground, no shadow. Avoid pink and purple.
+```
+
+Where it goes: cut with `tools/cut_kit.py` into `sprites/yard-bench.webp`. It is an art slot already (`ART_SLOTS['yard-bench']`, 64 px wide); once the file exists the finished bench uses it instead of the code-drawn one (the code bench still shows legs-then-plank while it is being built).
