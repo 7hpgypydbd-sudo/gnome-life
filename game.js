@@ -40,6 +40,7 @@ function fresh() {
     events: { lastAt: t, seen: {} },        // gentle random happenings (CONTENT.events)
     story: { chapter: 0, flags: {}, found: [] },   // hook for the side mystery (the staff); Bryce writes the plot
     village: { traveller: null, nextAt: 0, queue: C.village.order.slice(), folk: {}, favour: null, favourAt: t, finds: [] },
+    secrets: { found: {}, out: [], nextAt: t + 30 * MIN },   // little finds (CONTENT.secrets): found id -> time, out = tucked in the land now
     season: '',                              // the season last seen (a new one gets a line in "While you were away")
     festival: { stage: 'waiting', tile: null, at: 0, day: '', years: [] },   // waiting | planning | ready | on | done (see festivalTick)
   };
@@ -117,6 +118,7 @@ const G = {
     }
     this.villageTick(t);
     this.festivalTick(t);
+    this.secretTick(t);
     const E = C.events; if (E && t - s.events.lastAt >= E.every * MIN) this.rollEvent(t);
     // offerings trickle in during a visit too
     if (t - s.lastOfferAt >= C.offerEvery * MIN) { s.lastOfferAt = t; if (s.offers.length < C.offerCap) { this.spawnOffer(t); this.emit('offer'); } }
@@ -140,6 +142,24 @@ const G = {
     for (const k of ev.offer || []) if (s.offers.length < C.offerCap + 3) { this.spawnOffer(t); s.offers[s.offers.length - 1].kind = k; }
     this.note(ev.text); if (!quiet) this.emit('event', ev); else this.dirty = true;
     return ev;
+  },
+
+  // ---- little finds: one tiny painted secret now and then on healed ground, at most two out, until all are found ----
+  secretTick(t) {
+    const sc = this.s.secrets; if (t < sc.nextAt || sc.out.length >= 2 || this.landStage().key === C.landStages[0].key) return;
+    const [lo, hi] = C.secretEvery; sc.nextAt = t + (lo + Math.random() * (hi - lo)) * MIN;
+    this.spawnSecret();
+  },
+  spawnSecret() {
+    const s = this.s, sc = s.secrets, left = C.secrets.filter(x => !sc.found[x.id] && !sc.out.some(o => o.id === x.id)); if (!left.length) return null;
+    const greens = Object.keys(s.tiles).filter(k => s.tiles[k].state === 'green' || k === '0,0'), tile = greens[(Math.random() * greens.length) | 0];
+    const o = { id: left[(Math.random() * left.length) | 0].id, tile, gx: 0.12 + Math.random() * 0.76, gy: 0.12 + Math.random() * 0.76 };
+    sc.out.push(o); this.dirty = true; return o;
+  },
+  findSecret(id) {
+    const sc = this.s.secrets, i = sc.out.findIndex(o => o.id === id); if (i < 0) return null;
+    sc.out.splice(i, 1); sc.found[id] = now(); const d = C.secrets.find(x => x.id === id);
+    this.note(`You found ${d.name}.`); this.emit('secret', d); return d;
   },
 
   // ---- offerings ----

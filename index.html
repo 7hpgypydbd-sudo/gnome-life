@@ -7,6 +7,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1c2418">
 <title>Gnome Life</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap">
 <style>
   :root { --paper:#f3e9d2; --paper2:#e6d9bd; --ink:#2b2418; --ink2:#6b5a44; --green:#5b6b2d; --red:#b14c37; --safe-b: env(safe-area-inset-bottom); }
   html,body { margin:0; height:100%; background:#1c2418; overflow:hidden; overscroll-behavior:none; -webkit-user-select:none; user-select:none; touch-action:none; font-family: Georgia, "Times New Roman", serif; -webkit-tap-highlight-color: transparent; }
@@ -81,11 +83,100 @@
   .pack div.zero { opacity:.45; }
   .pack img { width:40px; height:40px; display:block; margin:0 auto 2px; }
   .pack b { display:block; font-size:19px; color:var(--ink); }
+
+  /* ---------- parchment look (2026-10-26, Bryce chose "torn parchment"): old paper, ragged edges, wax seal, sprigs ---------- */
+  :root { --paper:#f1e5c6; --paper2:#e2d1a8; --ink:#33251a; --ink2:#6a5640; --green:#4d5c27; --red:#8a2f1d; --gold:#b8892f;
+    --fell:"IM Fell English", Georgia, serif; --body:"EB Garamond", Georgia, "Times New Roman", serif;
+    --parch: radial-gradient(ellipse at 50% 0%, rgba(255,250,228,.75), transparent 62%), radial-gradient(ellipse at 50% 112%, rgba(140,95,40,.26), transparent 58%), url(sprites/ui/paper.webp) 0 0 / 256px;
+    --edge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='16' viewBox='0 0 160 16' preserveAspectRatio='none'%3E%3Cpath d='M0 16L0 10.6L4.1 9.3L7.1 11.6L9.6 10.5L15.3 7.6L19.7 11.0L22.4 9.2L27.3 10.3L32.4 3.6L35.7 3.9L40.0 4.9L44.5 7.9L48.4 9.2L51.2 6.8L56.1 9.3L60.1 6.1L63.5 9.6L67.0 12.7L70.2 11.8L75.8 9.5L79.6 5.5L82.2 5.7L87.8 4.1L92.4 7.2L96.9 6.7L100.2 4.4L103.0 6.6L105.5 4.7L109.8 9.3L113.7 11.7L118.5 10.5L123.0 10.1L127.6 8.0L130.3 8.7L134.9 6.4L138.4 9.5L144.4 3.9L149.3 5.9L152.7 4.4L155.3 4.7L160 10.6L160 16Z'/%3E%3C/svg%3E"); --sprig: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='16' viewBox='0 0 150 16'%3E%3Cpath d='M6 8H144' stroke='%234d5c27' stroke-width='1' opacity='.7'/%3E%3Cg fill='%234d5c27'%3E%3Cellipse cx='51' cy='5' rx='6' ry='2.4' transform='rotate(-25 51 5)'/%3E%3Cellipse cx='63' cy='11' rx='6' ry='2.4' transform='rotate(25 63 11)'/%3E%3Cellipse cx='75' cy='4.5' rx='7' ry='2.8' transform='rotate(-15 75 4.5)'/%3E%3Cellipse cx='87' cy='11' rx='6' ry='2.4' transform='rotate(25 87 11)'/%3E%3Cellipse cx='99' cy='5' rx='6' ry='2.4' transform='rotate(-25 99 5)'/%3E%3Ccircle cx='75' cy='8' r='2'/%3E%3C/g%3E%3C/svg%3E"); }
+  html,body { font-family: var(--body); font-variant-numeric: lining-nums; }
+  #sheet, #room .box, #toast, #bubble, #hud .tag { background: var(--parch), var(--paper); background-blend-mode: normal, normal, multiply; color: var(--ink); }
+  #sheet { border-radius:0; padding-top:30px; box-shadow: inset 0 0 34px rgba(130,90,35,.32);
+    -webkit-mask: var(--edge) 0 0 / 160px 16px repeat-x, linear-gradient(#000,#000) 0 15px / 100% calc(100% - 15px) no-repeat;
+            mask: var(--edge) 0 0 / 160px 16px repeat-x, linear-gradient(#000,#000) 0 15px / 100% calc(100% - 15px) no-repeat; }
+  #shade { background: rgba(18,13,6,.42); }
+  #sheet h2, #room h2 { font-family: var(--fell); font-weight:400; font-size:29px; line-height:1.1; letter-spacing:.2px; color:var(--ink); }
+  #sheet h2::after { content:""; display:block; width:150px; height:16px; margin:6px 0 2px; background: var(--sprig) no-repeat; }
+  #sheet h2 small { display:block; margin:3px 0 0; font-family: var(--body); font-style:italic; font-size:15px; color:var(--ink2); }
+  #sheet .jpage h2::after { margin:6px auto 2px; }
+  #sheet h3 { display:flex; align-items:center; gap:10px; margin:18px 0 4px; font-family: var(--fell); font-weight:400; font-variant: small-caps; text-transform:none; letter-spacing:1.4px; font-size:17px; color:var(--green); }
+  #sheet h3::before, #sheet h3::after { content:""; flex:1; height:1px; background: linear-gradient(90deg, transparent, rgba(77,92,39,.55), transparent); }
+  #sheet p { font-size:17px; color:var(--ink2); }
+  .row { border-top:1px dashed rgba(51,37,26,.22); padding:12px 0; }
+  .row.hi { background: rgba(184,137,47,.13); border-top:0; border-radius:6px; }
+  .row .t b, .jrow .t b { font-family: var(--fell); font-weight:400; font-size:20px; }
+  .row .t span, .jrow .t span { font-size:15.5px; }
+  .row .t span.bad { color:var(--red); font-style:italic; }
+  .row .t span.bl { font-style:italic; display:block; margin:1px 0 3px; line-height:1.3; } .row .t .hrs { white-space:nowrap; } .row .t .cost i { margin-right:5px; }
+  .row .jpic { width:58px; height:52px; object-fit:contain; flex:none; filter: drop-shadow(0 1px 1px rgba(40,25,10,.25)); }
+  .row .t .who { background:none; color:var(--green); font-family: var(--fell); font-weight:400; font-size:15px; padding:0; border-radius:0; margin-right:2px; white-space:nowrap; }
+  .who[data-w]::before { content:""; display:inline-block; width:26px; height:26px; margin:-3px 5px 0 0; vertical-align:middle; border-radius:50%; border:1.5px solid var(--gold); background: #f8efd6 center / cover no-repeat; box-shadow:0 1px 2px rgba(0,0,0,.25); }
+  .who[data-w="him"]::before { background-image:url(sprites/face-him.webp); } .who[data-w="her"]::before { background-image:url(sprites/face-her.webp); }
+  .act { font-family: var(--fell); font-weight:400; font-size:18px; letter-spacing:.3px; color:#f6ecd2; border-radius:7px; padding:11px 17px 12px;
+    background: linear-gradient(#5f7031, #45531e);
+    box-shadow: inset 0 1px 0 rgba(255,255,220,.25), inset 0 0 0 3px #45531e, inset 0 0 0 4px rgba(240,225,170,.45), 0 2px 3px rgba(40,25,10,.3); }
+  .act[disabled] { background: rgba(255,250,235,.3); color: rgba(106,86,64,.75); box-shadow: inset 0 0 0 1.5px rgba(106,86,64,.35); }
+  .act.quiet { background: rgba(255,250,235,.55); color: var(--ink); box-shadow: inset 0 0 0 1.5px rgba(51,37,26,.35), 0 1px 2px rgba(40,25,10,.2); }
+  .close { right:12px; top:14px; width:44px; height:44px; border-radius:50%; font-family: var(--fell); font-size:24px; line-height:44px; color:#f2d9c4;
+    background: radial-gradient(circle at 38% 34%, #b8513a, #7b2416 72%); box-shadow: 0 2px 3px rgba(0,0,0,.35), inset 0 -2px 3px rgba(0,0,0,.25), inset 0 0 0 4px rgba(120,30,15,.6); }
+  .prog { height:6px; background: rgba(51,37,26,.12); } .prog i { background: linear-gradient(90deg, #6f8a34, #a7b85a); }
+  .meter i { background: rgba(51,37,26,.12); }
+  .pack { gap:10px; } .pack div { background: rgba(255,250,235,.4); border:1px solid rgba(51,37,26,.13); border-radius:6px; }
+  .pack b { font-family: var(--body); font-weight:600; font-size:22px; }
+  .jcard { background: rgba(255,250,235,.45); border:1px solid rgba(51,37,26,.13); border-radius:6px; box-shadow:none; } .jcard b { font-family: var(--fell); font-weight:400; font-size:15px; }
+  .por { border-color: var(--gold); background: radial-gradient(circle at 50% 40%, #fbf4e2, #e8d8b4); }
+  .jpage .lore { font-family: var(--body); font-size:18px; } .jrow { border-top:1px dashed rgba(51,37,26,.22); }
+  .letter ul.done { margin:-4px 0 10px; padding-left:22px; font-size:17px; color:var(--ink); } .letter ul.done li::marker { content:'❦  '; color:var(--green); }
+  .letter p { font-style:italic; color:var(--ink) !important; } .letter .sign { text-align:right; font-family: var(--fell); font-style:normal; font-size:19px; }
+  .letter .sign img { width:34px; height:34px; border-radius:50%; border:1.5px solid var(--gold); vertical-align:middle; margin-left:6px; }
+  /* the room: a torn sheet of paper */
+  #room .box { border-radius:0; box-shadow: inset 0 0 30px rgba(130,90,35,.32);
+    clip-path: polygon(0 1.2%, 5% .3%, 13% 1%, 24% .1%, 36% .9%, 49% .2%, 61% 1%, 73% .2%, 86% .9%, 94% .1%, 100% .8%, 99.4% 22%, 100% 47%, 99.3% 74%, 100% 99%, 91% 99.7%, 78% 99%, 64% 100%, 50% 99.2%, 35% 99.9%, 21% 99.1%, 8% 99.8%, 0 99.2%, .6% 76%, 0 51%, .7% 26%); }
+  #room canvas { border-radius:4px; } #room p { font-style:italic; color:var(--ink2); }
+  /* toast and speech bubble: scraps of paper */
+  #toast { border-radius:3px; font-family: var(--fell); font-size:17px; box-shadow: 0 3px 10px rgba(0,0,0,.35);
+    clip-path: polygon(0 8%, 6% 0, 30% 5%, 55% 0, 80% 6%, 100% 0, 98% 50%, 100% 94%, 72% 100%, 46% 95%, 20% 100%, 2% 96%, 1% 50%); padding:12px 18px; }
+  #bubble { border-radius:12px; font-family: var(--body); font-style:italic; font-size:17px; box-shadow: 0 2px 8px rgba(0,0,0,.35), inset 0 0 0 1px rgba(51,37,26,.18); }
+  #bubble:after { border-top-color: #efe2c2; }
+  /* the title: a little paper label pinned at the top */
+  #hud .tag { display:inline-block; max-width:80vw; padding:6px 14px 7px; text-shadow:none; box-shadow: 0 2px 6px rgba(0,0,0,.35);
+    clip-path: polygon(0 7%, 3% 0, 40% 4%, 100% 0, 98.5% 50%, 100% 96%, 60% 100%, 2% 98%, .5% 55%); }
+  #hud .tag h1 { font-family: var(--fell); font-weight:400; font-size:23px; color:var(--ink); letter-spacing:.3px; }
+  #hud .tag #sub { font-family: var(--body); font-style:italic; font-size:14.5px; color:var(--ink2); opacity:1; margin-top:0; }
+  #hud .tag #ver { color:var(--ink2); }
+  #hud #busy { display:none; }
+  /* the four buttons: painted medallions on a wooden shelf */
+  #bar { padding: 0 0 0; gap:0; }
+  #btns { gap:0; justify-content:space-around; padding: 22px 8px calc(var(--safe-b) + 8px); margin-top:4px;
+    background: linear-gradient(rgba(0,0,0,0) 0 18px, #6e4c2c 18px, #5a3d22 60%, #4a3119); position:relative; }
+  #btns::before { content:""; position:absolute; left:0; right:0; top:18px; height:3px; background: rgba(255,220,170,.28); }
+  .btn { background:none; box-shadow:none; color:#f2e4c3; font-family: var(--fell); font-weight:400; font-size:15px; letter-spacing:.4px; min-height:0; padding:0 0 2px; max-width:96px; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+  .btn .ic { display:flex; align-items:center; justify-content:center; width:60px; height:60px; margin:-22px auto 2px; border-radius:50%;
+    background: var(--parch), var(--paper); background-blend-mode: normal, normal, multiply; border:2.5px solid var(--gold); box-shadow: 0 3px 6px rgba(0,0,0,.45), inset 0 0 10px rgba(130,90,35,.3); overflow:hidden; text-shadow:none; }
+  .btn .ic img { width:52px; height:52px; border-radius:50%; object-fit:cover; }
+  .btn:active { transform: translateY(1px); box-shadow:none; }
+  .btn .dot { top:-26px; right:8px; border-color:#f2e4c3; font-family: var(--body); font-weight:600; }
+  #load { font-family: var(--fell); font-size:19px; font-style:italic; }
+  /* little finds: pressed into the journal like flowers, held by a strip of tape */
+  .finds { display:grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap:10px 8px; margin:6px 0 12px; }
+  .find { position:relative; height:58px; border:0; padding:6px; font:inherit; display:flex; align-items:center; justify-content:center; border-radius:3px;
+    background: rgba(255,250,232,.55); box-shadow: 0 1px 2px rgba(80,50,20,.25), inset 0 0 0 1px rgba(150,110,60,.18); }
+  .find:nth-child(3n) { transform: rotate(-3deg); } .find:nth-child(3n+1) { transform: rotate(2deg); }
+  .find::before { content:""; position:absolute; top:-5px; left:50%; width:26px; height:10px; margin-left:-13px; background: rgba(220,205,160,.75); transform: rotate(-4deg); box-shadow: 0 1px 1px rgba(0,0,0,.08); }
+  .find img { max-width:100%; max-height:100%; filter: drop-shadow(0 1px 1px rgba(60,40,20,.3)); }
+  .find.unseen { background: rgba(120,90,50,.07); box-shadow: inset 0 0 0 1px rgba(120,90,50,.18); color: rgba(90,65,40,.35); font-family: var(--fell); font-size:22px; }
+  .find.unseen::before { display:none; }
+  .pressed { position:relative; width:150px; height:150px; margin:8px auto 4px; display:flex; align-items:center; justify-content:center; transform: rotate(-2deg);
+    background: rgba(255,250,232,.6); box-shadow: 0 2px 5px rgba(80,50,20,.25), inset 0 0 0 1px rgba(150,110,60,.2); }
+  .pressed::before, .pressed::after { content:""; position:absolute; width:44px; height:14px; background: rgba(220,205,160,.8); }
+  .pressed::before { top:-6px; left:-10px; transform: rotate(-35deg); } .pressed::after { bottom:-6px; right:-10px; transform: rotate(-35deg); }
+  .pressed img { width:108px; height:108px; object-fit:contain; filter: drop-shadow(0 2px 2px rgba(60,40,20,.35)); }
+  .pnote { font-style: italic; font-size: 17px; text-align: center; padding: 0 8px; }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v30</small></h1><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="sub"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v31</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -103,15 +194,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 30;
+const BUILD = 31;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=30"></script>
-<script src="game.js?v=30"></script>
+<script src="content.js?v=31"></script>
+<script src="game.js?v=31"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -151,6 +242,7 @@ if (NEWGROUND) {
   for (const n of GSWATCH) ASSETS['g-' + n] = `sprites/ground/${n}.webp`;
   for (const n of new Set(Object.values(GSTICK).flat())) ASSETS['g-st-' + n] = `sprites/ground/${n}.webp`;
   for (const n of [...kit('marks', 1, 3, 5), ...kit('stumps-rocks', 1, 2, 3, 4, 5, 6, 7, 8, 9, 12), ...kit('leftovers', 1, 2, 3, 4, 5, 9, 11)]) ASSETS['kit-' + n] = `sprites/kit/${n}.webp`;
+  for (const d of C.secrets) ASSETS['kit-secrets-' + d.pic] = `sprites/kit/secrets-${d.pic}.webp`;
 }
 const GNOMES = {"him":{"cell":[108,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[144,242]},"water":{"n":4,"cell":[129,245]},"carry":{"n":4,"cell":[140,260]},"eat":{"n":4,"cell":[118,241]},"sit":{"n":4,"cell":[127,208]},"sleep":{"n":4,"cell":[264,85]}}},"her":{"cell":[122,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[159,242]},"water":{"n":4,"cell":[148,241]},"carry":{"n":6,"cell":[105,244]},"eat":{"n":4,"cell":[102,244]},"sit":{"n":4,"cell":[119,208]},"sleep":{"n":2,"cell":[264,73]}}}};
 
@@ -180,12 +272,12 @@ const PROPS = [
   { name:'seedbed',      gx:0.60, gy:0.70, s:1.0, flat:true, until:'bed' },   // until: hidden until that job is done (fades in while it runs)
   { name:'tub',          gx:0.44, gy:0.76, s:0.85 },
   { name:'wheelbarrow',  gx:0.26, gy:0.62, s:0.9 },
-  { name:'fence',        gx:0.86, gy:0.78, s:0.9 },
-  { name:'sapling',      gx:0.72, gy:0.86, s:0.8 },
+  { name:'fence',        gx:0.75, gy:0.72, s:0.9 },   // only a tap spot now; the fence itself is drawn round the seed bed (BED_FENCE)
+  { name:'sapling',      gx:0.22, gy:0.82, s:0.8 },
 ];
 const SPOTS = {   // places the gnomes like to go (home tile)
   door:[0.36,0.33], fire:[0.46,0.52], bench:[0.62,0.36], bed:[0.56,0.66], barrel:[0.46,0.44],
-  tub:[0.40,0.72], sprout:[0.50,0.52], barrow:[0.32,0.66], lantern:[0.72,0.56], fence:[0.80,0.72]
+  tub:[0.40,0.72], sprout:[0.50,0.52], barrow:[0.32,0.66], lantern:[0.72,0.56], fence:[0.79,0.74]
 };
 // where each gnome eats, sits and sleeps (daily rhythm); [gx, gy, faceTowards]
 const RHYTHM = {
@@ -201,7 +293,7 @@ function routineFor(h) {   // what the couple do at this hour when no job needs 
   if (h >= 19 && h < 22) return 'sit';
   return null;
 }
-const WORKSPOT = { feeder:[0.68,0.62], clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], fence:[0.80,0.74], sapling:[0.66,0.84], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
+const WORKSPOT = { feeder:[0.58,0.54], clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], fence:[0.80,0.74], sapling:[0.28,0.86], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
 
 // ---------- loading ----------
 const IM = {};
@@ -538,21 +630,22 @@ function float(text, x, y) { floaters.push({ text, x, y: y - 40, life: 0 }); }
 const lcName = (t) => t[0].toLowerCase() + t.slice(1);
 function shortName(d) { return (d.short || d.name).replace(/^(Fill|Mend|Plant|Set|Stack|Lay|Scrub|String up|Hang|Start|Scatter|Raise|Dig|Nail up|Build|Coax|Keep|Sow|Line|Carve)\s+(the\s+|a\s+|an\s+)?/i, ''); }
 function rrect(x, y, w, h, r) { r = Math.min(r, h / 2, w / 2); ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+const TAGFONT = '15px "IM Fell English", Georgia, serif';
 function drawBusyTag(g, now) {
   const r = G.running().find(r => r.id === g.job); if (!r) return;
   const sx = (g.screen.x - cam.x) * cam.z + W / 2, sy = (g.screen.y - g.screen.h - cam.y) * cam.z + H / 2 - 14 + Math.sin(now / 600) * 2;
   const label = `${C.names[g.who]} · ${shortName(r.def)}`, left = G.timeLeft(r.endsAt);
-  ctx.save(); ctx.font = 'bold 13px Georgia'; const tw = ctx.measureText(label).width; ctx.font = '12px Georgia'; const lw = ctx.measureText(left).width;
+  ctx.save(); ctx.font = TAGFONT; const tw = ctx.measureText(label).width; ctx.font = 'italic 12px "EB Garamond", Georgia'; const lw = ctx.measureText(left).width;
   const w = Math.max(tw, lw + 60) + 22, h = 44, x = Math.round(Math.max(6, Math.min(W - w - 6, sx - w / 2))), y = Math.round(Math.max(90, sy - h));   // kept on screen even when the gnome has wandered off the edge
-  ctx.globalAlpha = 0.95; ctx.fillStyle = '#f3e9d2'; ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
-  rrect(x, y, w, h, 10); ctx.fill();
+  ctx.globalAlpha = 0.96; ctx.fillStyle = '#f1e5c6'; ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+  rrect(x, y, w, h, 4); ctx.fill(); ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; ctx.strokeStyle = 'rgba(51,37,26,.25)'; ctx.lineWidth = 1; rrect(x + 2.5, y + 2.5, w - 5, h - 5, 3); ctx.stroke();
   if (sx > x + 10 && sx < x + w - 10) { ctx.beginPath(); ctx.moveTo(sx - 6, y + h); ctx.lineTo(sx + 6, y + h); ctx.lineTo(sx, y + h + 7); ctx.closePath(); ctx.fill(); }
   ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-  ctx.fillStyle = '#2b2418'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.font = 'bold 13px Georgia'; ctx.fillText('🔨 ' + label, x + 10, y + 17);
+  ctx.fillStyle = '#33251a'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.font = TAGFONT; ctx.fillText(label, x + 10, y + 18);
   const p = 1 - Math.max(0, r.endsAt - G.now()) / (r.endsAt - r.startedAt), bx = x + 10, by = y + 26, bw = w - 20 - lw - 8;
-  ctx.fillStyle = '#e6d9bd'; rrect(bx, by, bw, 7, 4); ctx.fill();
-  ctx.fillStyle = '#5b6b2d'; rrect(bx, by, Math.max(4, bw * p), 7, 4); ctx.fill();
-  ctx.fillStyle = '#6b5a44'; ctx.font = '12px Georgia'; ctx.textAlign = 'right'; ctx.fillText(left, x + w - 10, y + 34);
+  ctx.fillStyle = 'rgba(51,37,26,.13)'; rrect(bx, by, bw, 6, 3); ctx.fill();
+  ctx.fillStyle = '#6f8a34'; rrect(bx, by, Math.max(4, bw * p), 6, 3); ctx.fill();
+  ctx.fillStyle = '#6a5640'; ctx.font = 'italic 12px "EB Garamond", Georgia'; ctx.textAlign = 'right'; ctx.fillText(left, x + w - 10, y + 34);
   ctx.restore();
 }
 
@@ -587,7 +680,7 @@ function drawTileArt(key, ox, oy) {
 }
 function drawTile(k, tl, now) {
   const [ox, oy] = tileOrigin(k);
-  if (NEWGROUND && drawGroundTile(k, ox, oy, now)) return;
+  if (NEWGROUND) { if (!drawGroundTile(k, ox, oy, now)) { ctx.save(); diamondPath(k); ctx.clip(); ctx.fillStyle = 'rgb(206,204,182)'; ctx.fillRect(ox, oy, PLOT.w, PLOT.h); ctx.restore(); } return; }
   if (k === '0,0') { const key = HOME_TILE[G.landStage().key] || 'plot'; ctx.drawImage(IM[key], ox, oy); if (key === 'plot') drawHomePlot(ox, oy, now); return; }
   if (tl.state === 'green') { drawTileArt(greenArt(k), ox, oy); return; }
   drawTileArt(bareArt(k), ox, oy);
@@ -602,7 +695,7 @@ function drawTile(k, tl, now) {
 // pixel by pixel: each tile says what it is made of, neighbours fade into each other through soft wobbly masks, green
 // spreads in watercolour patches, the stream and path are shapes filled with painted bands, and stickers are scattered on
 // top. Each tile is baked once into its own off-screen picture, a few rows per frame so the game never stutters, and only
-// baked again when it or a neighbour changes. Until a tile is baked the old painted tile shows.
+// baked again when it or a neighbour changes. Until every tile is baked a morning mist hides the land (see drawMorningMist).
 const GS = 0.8;                                        // baked ground resolution: canvas px per world px
 const LEX = Math.hypot(...EX), LEY = Math.hypot(...EY);   // world px per tile step east / south
 const GR = { ready: false, px: {}, noise: null, tiles: {}, sig: {}, queue: [], checkAt: 0, job: null };
@@ -639,7 +732,7 @@ function groundMat(k) {
   let p = 0;
   if (tl.state === 'green') p = 1;
   else if (tl.state === 'regrowing') { const tk = G.s.tasks['regrow:' + k]; p = tk ? Math.round(10 * (1 - Math.max(0, tk.endsAt - G.now()) / (tk.endsAt - tk.startedAt))) / 10 : 0; }
-  return { g: 0.62 * p, kind: 0, wet: WET.has(MAP[k]) ? p : 0, path: MAP[k] === '~tile-path' || MAP[k] === 'tile-crossing' ? p : 0, wash: tl.state === 'revealed' ? 1 : 0 };
+  return { g: 0.8 * p, kind: 0, wet: WET.has(MAP[k]) ? p : 0, path: MAP[k] === '~tile-path' || MAP[k] === 'tile-crossing' ? p : 0, wash: tl.state === 'revealed' ? 1 : 0 };
 }
 // The stream runs along the row behind the home (v = -0.5) from the spring, and the path down the column east of home (u = 1.5);
 // they meet at the stepping stones (1.5, -0.5). The wobble is zero there so the bridge still lands in the right place.
@@ -767,16 +860,65 @@ function groundSig(k) {   // everything a tile's picture depends on (itself and 
   for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const m = groundMat(`${tx + dx},${ty + dy}`); out.push(m ? [m.g, m.kind, m.wet, m.path, m.wash].join() : '-'); }
   return out.join('|') + '|' + season();   // the seasonal stickers change with the season
 }
+// Baked tiles are kept in the browser (IndexedDB) with the signature they were baked for, so the next visit opens with the
+// finished ground at once instead of baking it all again. A tile whose signature has changed is simply baked afresh.
+const GDB = { db: null, loaded: false };
+function gdbOpen(cb) {
+  try { const rq = indexedDB.open('gnomelife-ground', 1); rq.onupgradeneeded = () => rq.result.createObjectStore('tiles');
+    rq.onsuccess = () => { GDB.db = rq.result; cb(); }; rq.onerror = () => cb(); } catch (e) { cb(); }
+}
+function gdbLoad() {   // read every kept tile; use the ones still right for the land as it is now
+  const done = () => { GDB.loaded = true; };
+  gdbOpen(() => {
+    if (!GDB.db) return done();
+    try {
+      const st = GDB.db.transaction('tiles').objectStore('tiles'), rq = st.openCursor(); let pending = 0, ended = false;
+      const fin = () => { if (ended && !pending) done(); };
+      rq.onsuccess = () => { const c = rq.result; if (!c) { ended = true; return fin(); }
+        const k = c.key, rec = c.value;
+        if (rec && rec.blob && G.s.tiles[k] && rec.sig === groundSig(k) && !GR.tiles[k]) {
+          pending++; const url = URL.createObjectURL(rec.blob), im = new Image();
+          im.onload = () => { const cv2 = Object.assign(document.createElement('canvas'), { width: im.width, height: im.height }); cv2.getContext('2d').drawImage(im, 0, 0);
+            if (!GR.tiles[k]) { GR.tiles[k] = cv2; GR.sig[k] = rec.sig; } URL.revokeObjectURL(url); pending--; fin(); };
+          im.onerror = () => { URL.revokeObjectURL(url); pending--; fin(); }; im.src = url;
+        }
+        c.continue(); };
+      rq.onerror = done;
+    } catch (e) { done(); }
+  });
+  setTimeout(done, 2500);   // never wait long on a slow or missing store
+}
+function gdbSave(k, sig) {
+  const cv2 = GR.tiles[k]; if (!GDB.db || !cv2 || !cv2.toBlob) return;
+  cv2.toBlob(b => { if (!b || GR.sig[k] !== sig) return; try { GDB.db.transaction('tiles', 'readwrite').objectStore('tiles').put({ sig, blob: b }, k); } catch (e) {} }, 'image/webp', 0.9);
+}
+function groundMissing() { return Object.keys(G.s.tiles).some(k => !GR.tiles[k]); }
 function groundUpdate() {   // called every frame: notice changed tiles now and then, and bake a little
-  if (!GR.ready) groundPrep();
+  if (!G.s) return;
+  if (!GR.ready) { groundPrep(); gdbLoad(); }
+  if (!GDB.loaded) return;   // wait for the kept tiles before baking any
   const t = performance.now();
   if (t > GR.checkAt) {
     GR.checkAt = t + 500;
     const ks = Object.keys(G.s.tiles).sort((p, q) => { const [a1, b1] = p.split(',').map(Number), [a2, b2] = q.split(',').map(Number); return Math.hypot(a1, b1) - Math.hypot(a2, b2); });
     for (const k of ks) { const sg = groundSig(k); if (GR.sig[k] !== sg && !GR.queue.includes(k)) GR.queue.push(k); }
   }
-  if (!GR.job) { const k = GR.queue.shift(); if (k && G.s.tiles[k]) { GR.sig[k] = groundSig(k); GR.job = bakeGroundTile(k); } }
-  while (GR.job && performance.now() - t < 10) if (GR.job.next().done) GR.job = null;   // about 10 ms of baking per frame
+  if (!GR.job) { const k = GR.queue.shift(); if (k && G.s.tiles[k]) { GR.sig[k] = groundSig(k); GR.job = bakeGroundTile(k); GR.jobKey = k; } }
+  const budget = groundMissing() ? 28 : 10;   // bake harder while the morning mist hides the land; gently once it shows
+  while (GR.job && performance.now() - t < budget) if (GR.job.next().done) { GR.job = null; gdbSave(GR.jobKey, GR.sig[GR.jobKey]); }
+}
+let mistA = 1;
+function drawMorningMist(dt, now) {   // a soft mist over everything while the ground is still being made; it lifts once it is ready
+  mistA = Math.max(0, Math.min(1, mistA + (groundMissing() ? 2 : -0.9) * dt)); if (mistA <= 0) return;
+  ctx.save(); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, `rgba(232,234,222,${0.97 * mistA})`); g.addColorStop(1, `rgba(214,220,204,${0.97 * mistA})`);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.globalAlpha = mistA * 0.5; ctx.fillStyle = 'rgba(255,255,250,1)';
+  for (let i = 0; i < 6; i++) { const x = ((now / 90 * (0.4 + i * 0.13) + i * 173) % (W + 400)) - 200, y = H * (0.15 + 0.14 * i);
+    const r = ctx.createRadialGradient(x, y, 10, x, y, 220); r.addColorStop(0, 'rgba(255,255,250,.55)'); r.addColorStop(1, 'rgba(255,255,250,0)'); ctx.fillStyle = r; ctx.fillRect(x - 220, y - 220, 440, 440); }
+  ctx.globalAlpha = mistA; ctx.fillStyle = 'rgba(80,72,52,.75)'; ctx.font = 'italic 19px "IM Fell English", Georgia, serif'; ctx.textAlign = 'center';
+  ctx.fillText('the morning mist is lifting…', W / 2, H * 0.48);
+  ctx.restore();
 }
 function drawGroundTile(k, ox, oy, now) {
   const cv2 = GR.tiles[k]; if (!cv2) return false;
@@ -816,23 +958,25 @@ function drawHomePlot(ox, oy, now) {   // the bare home tile changes as the ruts
 // The bare home patch on the blended ground, built from the painted kit (sprites/kit, art day 3): two wheel ruts that fill in
 // as Wendel works; branches, brambles and old human leftovers that go as Hazel clears the ground; and stumps, a rock and a log
 // that heal (moss, ferns, a sapling) once the land greens.
-const HOME_RUTS = [[0.37, 0.99, 0.62, -0.04], [0.54, 0.99, 0.79, 0.02]];   // grid: near edge -> far edge
+const HOME_RUTS = [[0.905, 1.12, 0.905, -0.12]];   // grid: near edge -> far edge; one truck rut along the yard's right-hand side, running off both edges
 function drawHomeRuts() {
   const p = taskProg('ruts'), mud = IM['kit-marks-01'], fill = IM['kit-marks-03']; if (!mud || !mud.width) return;
-  for (const [gx0, gy0, gx1, gy1] of HOME_RUTS) for (const t of [0.2, 0.4, 0.6, 0.8]) {
-    const [x, y] = toWorld(gx0 + (gx1 - gx0) * t, gy0 + (gy1 - gy0) * t), w = 250, h = w * mud.height / mud.width;
+  ctx.save(); diamondPath('0,0'); ctx.clip();   // the rut runs right off the patch, so trim it at the edges
+  for (const [gx0, gy0, gx1, gy1] of HOME_RUTS) for (let t = 0; t <= 1.001; t += 1 / 12) {   // pieces overlap well, so no gaps show
+    const [x, y] = toWorld(gx0 + (gx1 - gx0) * t, gy0 + (gy1 - gy0) * t), w = 270, h = w * mud.height / mud.width;
     ctx.save(); ctx.translate(x, y);
     if (p < 1) { ctx.globalAlpha = 1 - p; ctx.drawImage(mud, -w / 2, -h / 2, w, h); }
     if (p > 0) { ctx.globalAlpha = p; ctx.drawImage(fill, -w / 2, -h / 2, w, h); }
     ctx.restore();
   }
+  ctx.restore();
 }
 const HOME_KIT = [   // [piece, healed piece (null: it goes when the job is done), gx, gy, scale, job that clears it]
-  ['stumps-rocks-01', 'stumps-rocks-07', 0.88, 0.20, 0.7], ['stumps-rocks-02', 'stumps-rocks-08', 0.13, 0.84, 0.7],
+  ['stumps-rocks-01', 'stumps-rocks-07', 0.74, 0.13, 0.7], ['stumps-rocks-02', 'stumps-rocks-08', 0.13, 0.84, 0.7],
   ['stumps-rocks-03', 'stumps-rocks-09', 0.07, 0.20, 0.55], ['stumps-rocks-06', 'stumps-rocks-12', 0.30, 0.94, 0.6],
-  ['stumps-rocks-04', null, 0.60, 0.13, 0.6, 'clear'], ['stumps-rocks-05', null, 0.93, 0.62, 0.55, 'clear'],
+  ['stumps-rocks-04', null, 0.60, 0.13, 0.6, 'clear'], ['stumps-rocks-05', null, 0.46, 0.07, 0.55, 'clear'],
   ['leftovers-01', null, 0.22, 0.50, 0.55, 'clear'], ['leftovers-02', null, 0.58, 0.58, 0.45, 'clear'], ['leftovers-03', null, 0.18, 0.74, 0.6, 'clear'],
-  ['leftovers-04', null, 0.84, 0.36, 0.55, 'clear'], ['leftovers-05', null, 0.52, 0.90, 0.5, 'clear'], ['leftovers-09', null, 0.70, 0.60, 0.45, 'clear'],
+  ['leftovers-04', null, 0.70, 0.40, 0.55, 'clear'], ['leftovers-05', null, 0.52, 0.90, 0.5, 'clear'], ['leftovers-09', null, 0.70, 0.60, 0.45, 'clear'],
   ['leftovers-11', null, 0.06, 0.62, 0.5, 'clear'],
 ];
 function taskProg(id) {   // 0 before a job starts, rising to 1 while it runs, 1 once done
@@ -876,7 +1020,7 @@ function drawProp(p) {
   if (a < 1 && BEFORE[p.name] && !drawSlot(BEFORE_ART[p.name], x, y, 1 - a)) BEFORE[p.name](x, y, 1 - a);
   const tap = p.name === 'seedbed' && a < 1 ? clearingWantsTap() : p.name !== 'lanternstump' && wantsTap(p);
   if (tap) { if (a >= 1) halo(x, y - h * 0.4, Math.min(Math.max(w, h) * 0.3, 40), now, p.gx * 5); }
-  if (a <= 0) return;
+  if (a <= 0 || p.name === 'fence') return;
   ctx.save(); ctx.globalAlpha = a;
   if (!p.flat) { groundPatch(x, y, w * 0.7, w * 0.26); shadow(x, y, w * 0.4, w * 0.14); }
   const sw = SWAP_ART[p.name], sp = sw && art(sw[0]) ? taskProg(sw[1]) : 0;   // painted "after" picture crossfades in as its job runs
@@ -1007,9 +1151,9 @@ function drawGroundChanges(now) {
   const c = taskProg('clear') * (art('plot-cleared') ? 1 - taskProg('ruts') : 1); if (c <= 0) return;
   const sb = PROPS.find(p => p.name === 'seedbed'), [x, y] = toWorld(sb.gx, sb.gy);
   const rk = NEWGROUND && IM['kit-marks-05'];
-  if (rk && rk.width) {   // the painted raked patch grows as Hazel clears
-    const w = 340 * Math.min(1, 0.4 + c * 0.6), h = w * rk.height / rk.width;
-    ctx.save(); ctx.globalAlpha = Math.min(1, c * 1.2); ctx.drawImage(rk, x - w / 2, y - h / 2, w, h); ctx.restore();
+  if (rk && rk.width) {   // the painted raked patch grows as Hazel clears; once the land greens, grass creeps back to a soft edge round the bed
+    const healed = G.landStage().key !== 'barren', w = healed ? 215 : 340 * Math.min(1, 0.4 + c * 0.6), h = w * rk.height / rk.width;
+    ctx.save(); ctx.globalAlpha = Math.min(1, c * 1.2) * (healed ? 0.7 : 1); ctx.drawImage(rk, x - w / 2, y - h / 2, w, h); ctx.restore();
     if (c < 1) glow(x, y, 60, 'rgba(230,205,160,1)', 0.2 + 0.1 * Math.sin(now / 300));
     return;
   }
@@ -1050,6 +1194,30 @@ const EXTRAS = [
       const [lx, ly] = sag(t), sw = Math.sin(now / 700 + t * 6) * 2;
       ctx.fillStyle = col; ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(lx - cw / 2, ly); ctx.lineTo(lx + cw / 2, ly); ctx.lineTo(lx + cw / 2 + sw, ly + ch); ctx.lineTo(lx - cw / 2 + sw, ly + ch); ctx.closePath(); ctx.fill(); ctx.stroke(); }); } },
 ];
+// "Fence the seed bed": a low woven fence all round the bed, panels going up one by one while Wendel works, a gate at the front.
+// fence.webp runs along +gx (down to the right); mirrored it runs along +gy (down to the left). FOOT = its two post feet.
+const BED_FENCE = { gx0: 0.47, gx1: 0.735, gy0: 0.575, gy1: 0.825, gate: 0.62 }, FENCE_FOOT = [[15, 150], [190, 225]];
+let fenceFlip = null;
+function drawFencePanel(A, B, flip, a) {   // stretch one panel so its post feet land on world points A (left foot) and B (right foot)
+  const img = IM.fence; if (!img || !img.width) return;
+  if (flip && !fenceFlip) { fenceFlip = Object.assign(document.createElement('canvas'), { width: img.width, height: img.height }); const fx = fenceFlip.getContext('2d'); fx.translate(img.width, 0); fx.scale(-1, 1); fx.drawImage(img, 0, 0); }
+  const im = flip ? fenceFlip : img, [fa, fb] = flip ? [[img.width - FENCE_FOOT[1][0], FENCE_FOOT[1][1]], [img.width - FENCE_FOOT[0][0], FENCE_FOOT[0][1]]] : FENCE_FOOT;
+  const sx = (B[0] - A[0]) / (fb[0] - fa[0]), sy = sx * 0.66, sh = ((B[1] - A[1]) - sy * (fb[1] - fa[1])) / (fb[0] - fa[0]);   // sy < sx: a low fence, knee to waist high on a gnome
+  ctx.save(); ctx.globalAlpha = a; ctx.transform(sx, sh, 0, sy, A[0] - sx * fa[0], A[1] - sh * fa[0] - sy * fa[1]); ctx.drawImage(im, 0, 0); ctx.restore();
+}
+function gatePost(x, y, a) { ctx.save(); ctx.globalAlpha = a; stick(x, y - 20, 40, Math.PI / 2, '#7a5a3a'); blob(x, y - 41, 4, 2.5, '#5a3e26'); ctx.restore(); }
+function bedFenceSides() {   // [from grid point, to grid point, flip] in building order: back first, gate side last
+  const F = BED_FENCE, m = (F.gx0 + F.gx1) / 2, n = (F.gy0 + F.gy1) / 2;
+  return [[[F.gx0, F.gy0], [m, F.gy0], 0], [[m, F.gy0], [F.gx1, F.gy0], 0],                 // back (far) side, along gx
+    [[F.gx0, n], [F.gx0, F.gy0], 1], [[F.gx0, F.gy1], [F.gx0, n], 1],                         // left side, along gy (left foot is the nearer end)
+    [[F.gx1, n], [F.gx1, F.gy0], 1], [[F.gx1, F.gy1], [F.gx1, n], 1],                         // right side
+    [[F.gx0, F.gy1], [F.gate - 0.035, F.gy1], 0], [[F.gate + 0.035, F.gy1], [F.gx1, F.gy1], 0]];   // front side, a gap for the gate
+}
+function bedFenceShown() { return taskProg('fence') > 0 && propAlpha(PROPS.find(p => p.name === 'seedbed')) > 0; }
+bedFenceSides().forEach(([P, Q, flip], i, all) => EXTRAS.push({ gx: (P[0] + Q[0]) / 2, gy: (P[1] + Q[1]) / 2,
+  show: () => bedFenceShown() ? Math.min(1, Math.max(0, taskProg('fence') * all.length - i)) : 0,
+  draw(x, y, al) { drawFencePanel(toWorld(...P), toWorld(...Q), flip, al); } }));
+for (const d of [-0.035, 0.035]) EXTRAS.push({ gx: BED_FENCE.gate + d, gy: BED_FENCE.gy1 + 0.005, show: () => bedFenceShown() ? (taskProg('fence') >= 1 ? 1 : 0) : 0, draw: (x, y, al) => gatePost(x, y, al) });
 if (NEWGROUND) for (const [a, b, gx, gy, sc, job] of HOME_KIT) EXTRAS.push({ gx, gy,
   show: () => G.landStage().key === 'barren' ? 1 - (job ? taskProg(job) : 0) : b ? 1 : 0,
   draw(x, y, al) { const im = IM['kit-' + (G.landStage().key === 'barren' ? a : b)]; if (!im || !im.width) return; const w = im.width * sc, h = im.height * sc;
@@ -1072,6 +1240,7 @@ function wantsTap(p) {   // does this thing have something the player can do rig
   if (p.name === 'seedbed') { const s = G.plot().stage; return s === 'ready' || (!s && G.can(C.crops.sprout.plant)) || (s === 'planted' && G.can({ water: 1 })); }
   return C.tasks.some(t => t.spot === p.name && !G.s.tasks[t.id] && G.taskView(t).state === 'ready' && G.can(t.cost));
 }
+const TRUE_SIZE = { twig: 50, moss: 30, stone: 24, acorn: 22, seed: 18, water: 18, berry: 22, feather: 34, light: 36, bread: 26, plank: 40, honey: 24, yarn: 22 };   // world px; a gnome is about 120
 function drawOffer(o, now) {
   const [x, y] = toWorld(o.gx, o.gy, o.tile); const b = Math.sin(now / 400 + o.gx * 9) * 2;
   const k = Math.max(1, 0.7 / cam.z);            // keep offerings finger-sized when zoomed out
@@ -1079,7 +1248,7 @@ function drawOffer(o, now) {
   shadow(x, y, 9 * k, 4 * k);
   halo(x, y - 18 * k + b, 26 * k, now, o.gx * 7);
   if (o.kind === 'light') { glow(x, y - 14 * k + b, 36 * k, 'rgba(255,240,170,1)', 0.6 + 0.2 * Math.sin(now / 200)); }
-  const img = IM['icon-' + o.kind] || art('icon-' + o.kind), sz = 64 * k;
+  const img = IM['icon-' + o.kind] || art('icon-' + o.kind), sz = (TRUE_SIZE[o.kind] || 30) * k;   // drawn at its real size beside a gnome; the tap box above stays finger-sized
   if (img) { const f = sz / Math.max(img.width, img.height), w = img.width * f, h = img.height * f; ctx.drawImage(img, x - w / 2, y - 8 * k + b - sz * 0.2 - h * 0.6, w, h); }   // keep the painted icon's own shape
   else { ctx.save(); ctx.font = `${Math.round(36 * k)}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(C.resources[o.kind].icon, x, y - 4 * k + b); ctx.restore(); }
 }
@@ -1087,8 +1256,8 @@ function drawOffer(o, now) {
 const WORM_LANTERNS = [[0.27, 0.40], [0.47, 0.30], [0.66, 0.46]];   // hooks and branches by the door and bench (home tile)
 const WORM_LAMPS = [[0.22, 0.62], [0.58, 0.80], [0.86, 0.60], [0.50, 0.58]];   // lamp posts along the yard
 const TOAD_LAMPS = [[0.36, 0.74], [0.74, 0.34]];   // toadstool lamps (lamp-toadstool), lit with the street lamps
-const FIREFLY_STRINGS = [[0.62, 0.80]];            // firefly strings between two posts (lamp-fireflies), centred here
-const FEEDER = { gx: 0.74, gy: 0.64 };
+const FIREFLY_STRINGS = [[0.62, 0.92]];            // firefly strings between two posts (lamp-fireflies), centred here
+const FEEDER = { gx: 0.63, gy: 0.50 };
 function drawFeeder(x, y, a, now) {
   const f = G.s.feeder.food, empty = !f && a >= 1;
   if (empty && (G.can({ seed: 1 }) || G.can({ berry: 1 }))) halo(x, y - 14, 34, now, 3);
@@ -1188,6 +1357,11 @@ const LOT = { home:[0.36, 0.30], build:[0.30, 0.66], spots:[[0.46, 0.42], [0.60,
 const CAMP = { tile:'1,0', gx:0.78, gy:0.62 };
 const BRIDGE = { tile:'1,-1', gx:0.50, gy:0.50 };
 const JARS = [[0.34, 0.18], [0.34, 0.62]];   // glow-jar posts on each path tile (beside the path, which runs down the middle)
+function buildSpot(fid) {   // where a neighbour's trade building stands (home-tile grid): on their own lot, or for the mill, on the stream bank nearest home
+  const f = G.folkDef(fid), fs = G.folkState(fid);
+  if (f.building.site === 'stream') { const tx = Math.min(0, Math.max(-1, +fs.tile.split(',')[0])), u = tx + 0.62; return [u, streamV(u) + 0.13]; }   // never on the spring pool or by the bridge
+  return glob(fs.tile, ...LOT.build);
+}
 const glob = (tile, gx, gy) => { const [tx, ty] = tile.split(',').map(Number); return [tx + gx, ty + gy]; };   // a tile's local spot -> home-tile grid
 // Stand-in neighbours: Wendel's or Hazel's painted walk, recoloured (hat, coat, grey hair) until each neighbour is painted (art slot folk-<id>).
 const TINT = {};
@@ -1377,7 +1551,7 @@ function drawBuilding(fid, x, y, a, now) {
   }
 }
 function drawBridge(x, y, a) {   // over the stepping stones: a low arched plank bridge with rails, running along the path
-  if (drawSlot('bld-bridge', x, y, a)) return;
+  if (drawSlot('bld-bridge', x + 4, y + 34, a)) return;
   ctx.save(); ctx.globalAlpha *= a; shadow(x, y + 4, 90, 24);
   const L = 170, u = [Math.cos(-0.52), Math.sin(-0.52)], n = [Math.cos(0.52) * 22, Math.sin(0.52) * 22], N = 12;
   const P = (t, side, up = 0) => [x + u[0] * L / 2 * t + n[0] * side, y + u[1] * L / 2 * t + n[1] * side - 22 * (1 - t * t) - up];
@@ -1444,6 +1618,48 @@ function drawJars(now) {   // Juniper's glow jars along the village path (art sl
     }
   }
 }
+// Worn footpaths between the doors and the main path, in the painted path colour.
+function footpathLinks() {   // short tracks joining every door into one network: each door links to the nearest of the main path or a door already joined
+  const doors = [[0.40, 0.42]];   // the couple's own yard
+  for (const [fid, fs] of Object.entries(G.s.village.folk)) if (taskProg('home:' + fid) >= 1) doors.push(glob(fs.tile, LOT.home[0] + 0.10, LOT.home[1] + 0.16));
+  const joined = [], links = [], left = doors.slice();
+  while (left.length) {
+    let best = null;
+    for (const d of left) {
+      const pu = pathU(d[1]), cands = [[pu + (d[0] < pu ? -0.05 : 0.05), d[1] + 0.06]].concat(joined);
+      for (const c of cands) { const dist = Math.hypot(c[0] - d[0], c[1] - d[1]); if (!best || dist < best.dist) best = { d, c, dist }; }
+    }
+    left.splice(left.indexOf(best.d), 1); joined.push(best.d); links.push([best.d, best.c]);
+  }
+  return links;
+}
+function drawFootpaths() {
+  const src = IM['g-path']; if (!src || !src.width) return; const pat = GR.pathPat || (GR.pathPat = ctx.createPattern(src, 'repeat'));
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const [[hx, hy], [px, py]] of footpathLinks()) {
+    if (Math.hypot(hx - px, hy - py) < 0.08) continue;
+    const [x0, y0] = toWorld(hx, hy), [x1, y1] = toWorld(px, py), [cx, cy] = toWorld((hx + px) / 2 + (py - hy) * 0.15, (hy + py) / 2 + (hx - px) * 0.15);   // a gentle bend
+    for (const [lw, al] of [[28, 0.25], [18, 0.5], [10, 0.55]]) { ctx.globalAlpha = al; ctx.strokeStyle = pat; ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(cx, cy, x1, y1); ctx.stroke(); }
+  }
+  ctx.restore();
+}
+// A little wild corner round each neighbour's home, from the painted kit (mossy log, fern stump, sapling stump, mossy boulder),
+// so homes sit among things instead of alone on the grass. Bigger woodland pieces come with art day 8.
+const NOOK = [['stumps-rocks-12', 0.10, 0.12, 0.62], ['stumps-rocks-08', 0.64, 0.10, 0.6], ['stumps-rocks-09', 0.08, 0.52, 0.5], ['stumps-rocks-07', 0.70, 0.40, 0.55]];
+function nookItems(items, tile, seed) {
+  NOOK.forEach(([k, gx, gy, sc], i) => { if (rnd(seed * 7 + i) < 0.25) return; const im = IM['kit-' + k]; if (!im || !im.width) return;
+    const [ux, uy] = glob(tile, gx + (rnd(seed + i * 3) - 0.5) * 0.06, gy + (rnd(seed + i * 5) - 0.5) * 0.06);
+    items.push({ d: depthOf(ux, uy), draw: () => { const [x, y] = toWorld(ux, uy), w = im.width * sc, h = im.height * sc; shadow(x, y, w * 0.36, w * 0.1); ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); } }); });
+}
+// the spring: a mossy boulder and a fern stump where the stream wells up, so it starts somewhere
+function springItems(items) {
+  const tl = G.s.tiles['-2,-1']; if (!tl || tl.state !== 'green') return;
+  const u = STREAM_U0, v = streamV(u);
+  for (const [k, du, dv, sc] of [['stumps-rocks-09', -0.13, -0.06, 0.75], ['stumps-rocks-08', -0.10, 0.12, 0.55], ['stumps-rocks-12', 0.05, -0.16, 0.5]]) {
+    const im = IM['kit-' + k]; if (!im || !im.width) continue;
+    items.push({ d: depthOf(u + du, v + dv), draw: () => { const [x, y] = toWorld(u + du, v + dv), w = im.width * sc, h = im.height * sc; shadow(x, y, w * 0.36, w * 0.1); ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); } });
+  }
+}
 // everything of the village that sits on the land, as depth-sorted items for the frame
 function villageItems(items, now) {
   syncFolk();
@@ -1454,14 +1670,16 @@ function villageItems(items, now) {
     const f = G.folkDef(id.slice(5)), [gx, gy] = glob(t.tile, ...LOT.home), a = taskProg(id);
     items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); if (a < 1) { stone(x - 50, y + 4, 9); stone(x - 34, y + 10, 8); stick(x + 40, y + 6, 40, -0.2); } drawFolkHome(f, x, y, Math.max(0.12, a), now); f.screenHome = { x, y, w: 190, h: 190 }; } });
   }
+  if (NEWGROUND) { Object.entries(v.folk).forEach(([fid, fs], i) => { if (taskProg('home:' + fid) >= 1) nookItems(items, fs.tile, i + 3); }); springItems(items); }
   for (const fid of Object.keys(v.folk)) {
     const fs = v.folk[fid], a = taskProg('trade:' + fid), f = G.folkDef(fid); if (a <= 0 || f.building.site === 'path') continue;
-    const [gx, gy] = glob(fs.tile, ...LOT.build);
+    const [gx, gy] = buildSpot(fid);
     items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); drawBuilding(fid, x, y, a, now); } });
   }
   const ba = taskProg('bridge'); if (ba > 0) { const [gx, gy] = glob(BRIDGE.tile, BRIDGE.gx, BRIDGE.gy); items.push({ d: depthOf(gx, gy) - 0.3, draw: () => { const [x, y] = toWorld(gx, gy); drawBridge(x, y, ba); } }); }
   for (const p of folkOnLand) items.push({ d: depthOf(p.gx, p.gy), draw: () => { p.draw(now); if (p.screen && p.i === 0 && (folkNeedsYou(p.f.id) || (p.home.camp && !G.s.tasks['home:' + p.f.id]))) bang(p.screen.x, p.screen.y - p.screen.h - 14, now); } });
   for (const fd of v.finds) items.push({ d: depthOf(...glob(fd.tile, fd.gx, fd.gy)), draw: () => drawFind(fd, now) });
+  for (const o of G.s.secrets.out) items.push({ d: depthOf(...glob(o.tile, o.gx, o.gy)) - 0.01, draw: () => drawSecret(o, now) });
 }
 function drawFind(fd, now) {   // something to spot for a neighbour's story: softly glowing, finger-sized
   const st = G.questStep(fd.folk), it = st && st.find; if (!it) return;
@@ -1469,11 +1687,24 @@ function drawFind(fd, now) {   // something to spot for a neighbour's story: sof
   fd.screen = { x, y, w: 50 * k, h: 50 * k }; shadow(x, y, 10 * k, 4 * k); halo(x, y - 18 * k + b, 30 * k, now, 2);
   if (!drawSlot('find-' + fd.folk, x, y + b, 1, { w: 44 * k })) { ctx.save(); ctx.font = `${Math.round(34 * k)}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(it.icon, x, y + b); ctx.restore(); }
 }
+function secretDef(id) { return C.secrets.find(x => x.id === id); }
+function drawSecret(o, now) {   // a little find: tiny, real size, tucked in the grass; only a glint now and then gives it away
+  const d = secretDef(o.id), im = d && IM['kit-secrets-' + d.pic]; if (!im || !im.width) return;
+  const [x, y] = toWorld(...glob(o.tile, o.gx, o.gy)), f = d.size * 1.25 / im.width, w = im.width * f, h = im.height * f;
+  o.screen = { x, y, w: Math.max(w, 30), h: Math.max(h, 30) };
+  shadow(x, y, w * 0.4, w * 0.12); ctx.drawImage(im, x - w / 2, y - h * 0.85, w, h);
+  const ph = ((now / 1000 + o.gx * 13 + o.gy * 7) % 6) / 6;   // one glint every six seconds, each find out of step
+  if (ph < 0.16) { const a = Math.sin(ph / 0.16 * Math.PI), gx = x + w * 0.18, gy = y - h * 0.6, r = 2 + 3.5 * a;
+    ctx.save(); ctx.globalAlpha = 0.8 * a; ctx.fillStyle = '#fffbe6'; ctx.beginPath();
+    ctx.moveTo(gx, gy - r * 1.6); ctx.lineTo(gx + r * 0.3, gy - r * 0.3); ctx.lineTo(gx + r * 1.6, gy); ctx.lineTo(gx + r * 0.3, gy + r * 0.3);
+    ctx.lineTo(gx, gy + r * 1.6); ctx.lineTo(gx - r * 0.3, gy + r * 0.3); ctx.lineTo(gx - r * 1.6, gy); ctx.lineTo(gx - r * 0.3, gy - r * 0.3); ctx.closePath(); ctx.fill();
+    ctx.restore(); glow(gx, gy, 12 + 8 * a, 'rgba(255,245,200,1)', 0.5 * a); }
+}
 function villageGlows(night, now) {   // after the night tint: lit windows, the camp fire, the oven, the glow jars
   const v = G.s.village, fl = 0.8 + 0.2 * Math.sin(now / 90) * Math.sin(now / 230);
   for (const [fid, fs] of Object.entries(v.folk)) {
     const [x, y] = toWorld(...glob(fs.tile, ...LOT.home)), [wx, wy] = HOME_WIN[G.folkDef(fid).home]; glow(x + wx * 1.3, y + wy * 1.3, 60, 'rgba(255,190,110,1)', 0.45 * night);
-    if (fid === 'mabel' && taskProg('trade:mabel') >= 1) { const [bx, by] = toWorld(...glob(fs.tile, ...LOT.build)); glow(bx + 6, by - 22, 44, 'rgba(255,150,60,1)', 0.55 * night * fl); }
+    if (fid === 'mabel' && taskProg('trade:mabel') >= 1) { const [bx, by] = toWorld(...buildSpot(fid)); glow(bx + 6, by - 22, 44, 'rgba(255,150,60,1)', 0.55 * night * fl); }
   }
   if (v.traveller) { const [x, y] = toWorld(...glob(CAMP.tile, CAMP.gx, CAMP.gy)); glow(x, y - 20, 50, 'rgba(255,190,110,1)', 0.3 * night); glow(x + 56, y + 10, 70, 'rgba(255,150,60,1)', 0.5 * night * fl); }
   if (taskProg('trade:juniper') >= 1) for (const k of ['1,-2', '1,0', '1,1', '1,2']) if (G.s.tiles[k]) for (const [gx, gy] of JARS) { const [x, y] = toWorld(...glob(k, gx, gy)); glow(x + 10, y - 36, 50, 'rgba(255,235,160,1)', 0.55 * night); }
@@ -1584,6 +1815,7 @@ function jobSpot(job) {
   if (d.at === 'home') return null;
   const tk = G.s.tasks[job.id], fs = G.folkState(d.folk), tile = d.home ? tk && tk.tile : fs && fs.tile; if (!tile) return null;
   if (d.folk === 'juniper' && job.id.startsWith('trade:')) return glob('1,0', 0.30, 0.40);
+  if (!d.home && G.folkDef(d.folk).building.site === 'stream' && job.id.startsWith('trade:')) { const [bx, by] = buildSpot(d.folk); return [bx - 0.12, by + 0.06]; }
   return glob(tile, ...(d.home ? [LOT.home[0] + 0.16, LOT.home[1] + 0.2] : [LOT.build[0] - 0.12, LOT.build[1] + 0.06]));
 }
 
@@ -1611,6 +1843,7 @@ function frame(now) {
   const tiles = Object.entries(G.s.tiles).sort((a, b) => depthOf(0, 0, a[0]) - depthOf(0, 0, b[0]));
   for (const [k, tl] of tiles) drawTile(k, tl, now);
   drawGroundChanges(now);
+  if (NEWGROUND) drawFootpaths();
   drawJars(now);
   drawFestGround();
 
@@ -1663,6 +1896,7 @@ function frame(now) {
   if (ph.warm > 0) { ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = `rgba(255,170,90,${0.28 * ph.warm})`; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); ctx.restore(); }
   ctx.restore();
 
+  if (NEWGROUND) drawMorningMist(dt, now);
   // screen-space overlays: "busy" tags over working gnomes, and tap ripples
   for (const g of gnomes) if (g.job && g.screen) drawBusyTag(g, now);
   for (let i = ripples.length - 1; i >= 0; i--) {
@@ -1739,7 +1973,8 @@ function tap(cx, cy) {
   const wx = (cx - W / 2) / cam.z + cam.x, wy = (cy - H / 2) / cam.z + cam.y;
   if (testPeek(cx, cy)) return;
   ripples.push({ x: cx, y: cy, t: 0 });
-  // offerings first (small, on top)
+  // little finds and offerings first (small, on top)
+  for (const o of [...G.s.secrets.out]) if (hit(o.screen, wx, wy)) { const d = G.findSecret(o.id); if (d) { float('✦ a little find', o.screen.x, o.screen.y); return openSecret(d.id, true); } }
   for (const o of [...G.s.offers].reverse()) if (hit(o.screen, wx, wy)) { G.gather(o.id); float(`+1 ${C.resources[o.kind].name}`, o.screen.x, o.screen.y); return; }
   for (const fd of G.s.village.finds) if (hit(fd.screen, wx, wy)) { const st = G.questStep(fd.folk), f = G.folkDef(fd.folk); G.found(fd.id); float('✓ found', fd.screen.x, fd.screen.y); toast(`You found ${st.find.name}.`); return openFolk(f.id); }
   for (const p of [...folkOnLand].reverse()) if (hit(p.screen, wx, wy)) return G.folkState(p.f.id) ? openFolk(p.f.id) : openTraveller();
@@ -1925,6 +2160,8 @@ sheet.addEventListener('click', e => {
   if (a === 'tfinish') { G.finishAll(); toast('Every job finished.'); }
   if (a === 'tpack') { G.fillPack(); toast('Pack filled up.'); }
   if (a === 'tvisit') { closeSheet(); spawnVisitor(); return; }
+  if (a === 'tsecret') { closeSheet(); const o = G.spawnSecret(); if (o) { const [x, y] = toWorld(...glob(o.tile, o.gx, o.gy)); cam.x = x; cam.y = y; } else toast('Every little find has been found.'); return; }
+  if (a === 'secret') return openSecret(id);
   if (a === 'ttrav') { G.callTraveller(); toast(G.s.village.traveller ? 'A traveller is camped by the path.' : 'No one left on the road.'); }
   if (a === 'reset') { if (confirm('Start the garden over? This wipes your save.')) G.reset(); return; }
   refreshSheet();
@@ -1935,7 +2172,7 @@ function openTest() {
   openSheet('test', `<h2>Test panel</h2><p>For trying things out. Tap one, then close this and have a look.</p>
   <h3>Jump ahead in time</h3><p><button class="act" data-a="tskip" data-n="1">+1 day</button> <button class="act" data-a="tskip" data-n="3">+3 days</button> <button class="act" data-a="tskip" data-n="7">+1 week</button></p>
   <h3>Speed things up</h3><p><button class="act" data-a="tfinish">Finish every job now</button></p><p><button class="act" data-a="tpack">Fill my pack (20 of everything)</button></p>
-  <h3>Call someone</h3><p><button class="act" data-a="tvisit">A creature visits</button> <button class="act" data-a="ttrav">A traveller arrives</button></p>
+  <h3>Call someone</h3><p><button class="act" data-a="tvisit">A creature visits</button> <button class="act" data-a="ttrav">A traveller arrives</button> <button class="act" data-a="tsecret">Hide a little find</button></p>
   <h3>Seasons</h3><p>${['spring', 'summer', 'autumn', 'winter'].map(k => `<button class="act${season() === k ? '' : ' quiet'}" data-a="tseason" data-id="${k}">${C.seasons[k].name}</button>`).join(' ')} <button class="act quiet" data-a="tseason" data-id="">The phone's own</button></p>
   <h3>The festival</h3><p><button class="act" data-a="tfest" data-n="0">Start the festival plans now</button> <button class="act" data-a="tfest" data-n="1">Festival night now</button></p>
   <p class="meta">A normal play-through order: fill the pack, start jobs in the Jobs list, tap "Finish every job now", repeat. "+1 day" brings the daily things back.</p>
@@ -1952,11 +2189,18 @@ function openSeedbed() {
   else body = `<div class="row"><div class="t"><b>Ready to pick</b><span>Gives ${costHtml(c.harvest)} and a little more green</span></div><button class="act" data-a="harvest">Pick</button></div>`;
   openSheet('seedbed', `<h2>The seed bed<small>${p.grown} grown so far</small></h2>${body}`);
 }
-function hours(mins) { const h = mins / 60 * G.taskSpeed(); return h < 1 ? `${Math.round(h * 60)} minutes` : h < 1.75 ? 'about an hour' : `about ${Math.round(h)} hours`; }
+function hours(mins) { const h = mins / 60 * G.taskSpeed(); return h < 1 ? `${Math.round(h * 60)} minutes` : h < 1.75 ? '1 hour' : `${Math.round(h)} hours`; }
 function openPack() {
   let html = `<h2>Your pack<small>things gathered from the land</small></h2><p>Tap the softly glowing things on the ground to pick things up. Jobs use them.</p><div class="pack">`;
   for (const [k, r] of Object.entries(C.resources)) { const n = G.s.inv[k] || 0; html += `<div class="${n ? '' : 'zero'}">${iconHtml(k)}<b>${n}</b>${r.name}</div>`; }
   openSheet('pack', html + `</div>`);
+}
+const JOB_PIC = { ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'stonebench',
+  woodpile: 'firewood', doorstep: 'yard-doorstep', rainbarrel: 'barrel-full', clothesline: 'washing-line', lantern: 'lanternstump', windowbox: 'yard-windowbox', wormlantern: 'worm-lantern',
+  wormlamp: 'worm-lamp', house1: 'house-hollowed', house2: 'house-windows', house3: 'house-finished', hedgehoghouse: 'nest-leafpile', nestbox: 'nest-nest', bridge: 'bld-bridge' };
+function jobPic(d) {   // a small painted picture of what the job makes, for the parchment job cards ('' if there is none)
+  const [kind, f] = d.id.split(':'), k = JOB_PIC[d.id] || (kind === 'home' ? 'home-' + f : kind === 'trade' ? 'bld-' + f : kind === 'quest' ? 'folk-' + f : kind === 'regrow' ? 'sapling' : '');
+  return k ? `<img class="jpic" src="sprites/${k}.webp" alt="" onerror="this.remove()">` : '';
 }
 function openTasks(focus = '') {
   const list = G.taskList(); let html = `<h2>Jobs<small>give the materials; they do the work</small></h2>`;
@@ -1966,13 +2210,13 @@ function openTasks(focus = '') {
     const rows = list.filter(v => v.state === state); if (!rows.length) continue;
     html += `<h3>${title}</h3>`;
     for (const v of rows) {
-      const d = v.def, who = `<span class="who">${C.names[d.who]}</span>`;
+      const d = v.def, who = `<span class="who" data-w="${d.who}">${C.names[d.who]}</span>`;
       let right = '', sub = '';
       if (state === 'running') { const pr = 1 - Math.max(0, v.endsAt - G.now()) / (v.endsAt - v.startedAt); sub = `${who} is on it · ${G.timeLeft(v.endsAt)} to go<div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div>`; if (d.tile && G.magicInfo().spells.includes('wake')) right = `<button class="act" data-a="cast" data-id="wake" ${G.canCast('wake').ok ? '' : 'disabled'}>Wake ✨4</button>`; }
       else if (state === 'done') sub = `${who} finished this.`;
       else if (state === 'locked') sub = `${who} · <span class="bad">${v.why}</span>`;
-      else { sub = (Object.keys(d.cost).length ? `${who} needs <span class="cost">${costHtml(d.cost)}</span>` : `${who} needs nothing but time`) + ` · ${hours(d.mins)}` + (v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`); right = `<button class="act" data-a="start" data-id="${d.id}" ${v.can ? '' : 'disabled'}>Start</button>`; }
-      html += `<div class="row${d.id === focus ? ' hi' : ''}"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>${sub}</span></div>${right}</div>`;
+      else { sub = `${who} · ` + (Object.keys(d.cost).length ? `<span class="cost">${costHtml(d.cost)}</span>` : `no materials`) + ` · <span class="hrs">${hours(d.mins)}</span>` + (v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`); right = `<button class="act" data-a="start" data-id="${d.id}" ${v.can ? '' : 'disabled'}>Start</button>`; }
+      html += `<div class="row${d.id === focus ? ' hi' : ''}">${jobPic(d)}<div class="t"><b>${d.name}</b><span class="bl">${d.blurb}</span><span>${sub}</span></div>${right}</div>`;
     }
   }
   if (C.tasks.some(t => t.id === focus && t.spot === 'shelter')) html = html.replace('</h2>', `</h2><p><button class="act quiet" data-a="room">Look inside the home</button></p>`);
@@ -2003,9 +2247,18 @@ function openJournal() {
   let html = `<h2>Field journal<small>${seen} of ${C.visitors.length} met${regs ? ` · ${regs} regular${regs > 1 ? 's' : ''}` : ''}</small></h2><p>Tap a visitor in the garden to note it down; a soft glow means someone new. Tap a page to read it.</p>${G.s.festival.stage !== 'waiting' ? `<p><button class="act quiet" data-a="festgreen">🎉 ${C.festival.name}</button></p>` : ''}${neighboursHtml()}<div class="jgrid">`;
   for (const v of C.visitors) { const m = G.met(v.id); html += `<button class="jcard${m ? '' : ' unseen'}" data-a="${m ? 'entry' : ''}" data-id="${v.id}">${portraitHtml(v)}<b>${m ? v.name : '?'}</b>${G.hasNest(v.id) ? '<i>lives here</i>' : G.isRegular(v.id) ? '<i>regular</i>' : ''}</button>`; }
   html += `</div>`;
+  const nf = Object.keys(G.s.secrets.found).length;
+  html += `<h3>Little finds</h3><p>${nf ? `${nf} of ${C.secrets.length} pressed between the pages.` : 'Tiny things hide in the healed grass. Watch for a glint.'}</p><div class="finds">`;
+  for (const d of C.secrets) { const f = G.s.secrets.found[d.id]; html += f ? `<button class="find" data-a="secret" data-id="${d.id}"><img src="sprites/kit/secrets-${d.pic}.webp" alt=""></button>` : `<span class="find unseen">?</span>`; }
+  html += `</div>`;
   const log = [...G.s.log].reverse().slice(0, 8);
   if (log.length) html += `<h3>Lately</h3>` + log.map(l => `<p style="margin:2px 0">${l.text}</p>`).join('');
   openSheet('journal', html); btnAlert('bJournal', false);
+}
+function openSecret(id, fresh) {   // one little find, pressed into the journal
+  const d = secretDef(id), nf = Object.keys(G.s.secrets.found).length, name = d.name.replace(/^(a|an) /, ''), title = name[0].toUpperCase() + name.slice(1);
+  openSheet('secret', `<div class="pressed"><img src="sprites/kit/secrets-${d.pic}.webp" alt=""></div><h2>${fresh ? 'A little find!' : title}<small>${fresh ? `${title} · ` : ''}${nf} of ${C.secrets.length} little finds</small></h2><p class="pnote">${d.note}</p>
+  <p><button class="act" data-a="journal">${fresh ? 'Press it in the journal' : 'Back to the journal'}</button></p>`);
 }
 function openEntry(id) {
   const v = G.visitorDef(id), e = G.s.journal[id];
@@ -2045,9 +2298,9 @@ function openTraveller() {
   const tr = G.s.village.traveller; if (!tr) return;
   const f = G.folkDef(tr.id), v = G.taskView(G.taskDef('home:' + f.id)), d = v.def;
   let html = `<div class="jpage">${folkPor(f, true)}<h2>${f.name}</h2><p class="meta">${f.trade}, camped by the path</p><p class="lore">${f.intro}</p></div><h3>Will they stay?</h3>`;
-  if (v.state === 'running') html += `<div class="row"><div class="t"><b>${d.name}</b><span><span class="who">${C.names[d.who]}</span> is on it · ${G.timeLeft(v.endsAt)} to go</span></div></div>`;
+  if (v.state === 'running') html += `<div class="row"><div class="t"><b>${d.name}</b><span><span class="who" data-w="${d.who}">${C.names[d.who]}</span> is on it · ${G.timeLeft(v.endsAt)} to go</span></div></div>`;
   else {
-    html += `<div class="row"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>` + (v.locked ? `<span class="bad">${v.why}</span>` : `<span class="who">${C.names[d.who]}</span> needs <span class="cost">${costHtml(d.cost)}</span> · ${hours(d.mins)}` + (v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`)) + `</span></div><button class="act" data-a="start" data-id="${d.id}" ${v.state === 'ready' && v.can ? '' : 'disabled'}>Build</button></div>`;
+    html += `<div class="row"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>` + (v.locked ? `<span class="bad">${v.why}</span>` : `<span class="who" data-w="${d.who}">${C.names[d.who]}</span> needs <span class="cost">${costHtml(d.cost)}</span> · ${hours(d.mins)}` + (v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`)) + `</span></div><button class="act" data-a="start" data-id="${d.id}" ${v.state === 'ready' && v.can ? '' : 'disabled'}>Build</button></div>`;
     html += `<p style="margin-top:12px">Not the right neighbour? <button class="act quiet" data-a="wave">Wave them on</button><br><small>They will go on along the road, and someone else will come by in a day or so.</small></p>`;
   }
   openSheet('traveller', html);
@@ -2058,7 +2311,7 @@ function folkStory(fid) {   // the story part of a neighbour's page, in words, w
   if (!st) return taskProg('trade:' + fid) >= 1 ? `<p><small>${f.short[0].toUpperCase() + f.short.slice(1)} will have a story for you before long.</small></p>` : '';
   let btn = '';
   if (st.give) btn = `<span class="cost">${costHtml(st.give)}</span><br>` + (G.can(st.give) ? `<button class="act" data-a="qgive" data-id="${fid}">Give</button>` : `<span class="bad">You are short ${G.missing(st.give).join(', ')}.</span>`);
-  else if (st.job) { const v = G.taskView(G.taskDef(`quest:${fid}:${fs.q}`)); btn = v.state === 'running' ? `<span><span class="who">${C.names[st.job.who]}</span> is on it · ${G.timeLeft(v.endsAt)} to go</span>` : `<span class="who">${C.names[st.job.who]}</span> needs <span class="cost">${costHtml(st.job.cost)}</span> · ${hours(st.job.mins)}<br>` + (v.can ? `<button class="act" data-a="start" data-id="${v.def.id}">${st.job.name}</button>` : `<span class="bad">You are short ${v.missing.join(', ')}.</span>`); }
+  else if (st.job) { const v = G.taskView(G.taskDef(`quest:${fid}:${fs.q}`)); btn = v.state === 'running' ? `<span><span class="who" data-w="${st.job.who}">${C.names[st.job.who]}</span> is on it · ${G.timeLeft(v.endsAt)} to go</span>` : `<span class="who" data-w="${st.job.who}">${C.names[st.job.who]}</span> needs <span class="cost">${costHtml(st.job.cost)}</span> · ${hours(st.job.mins)}<br>` + (v.can ? `<button class="act" data-a="start" data-id="${v.def.id}">${st.job.name}</button>` : `<span class="bad">You are short ${v.missing.join(', ')}.</span>`); }
   else if (st.find) btn = `<span>Look for <b>${st.find.name}</b> on the land${st.find.hours ? ' (after dark)' : ''}. It will glow softly.</span>`;
   else if (st.wait) btn = `<span>Come back in ${G.timeLeft(fs.waitUntil)}.</span>`;
   return `<h3>${f.quest.name} · part ${fs.q + 1} of ${f.quest.steps.length}</h3><p class="lore" style="text-align:left;margin:4px 0 8px">${st.say}</p><p>${btn}</p>`;
@@ -2070,7 +2323,7 @@ function openFolk(fid) {
   const fv = G.s.village.favour;
   if (fv && fv.folk === fid) { const ask = f.favours[fv.i]; html += `<h3>A small favour</h3><div class="row"><div class="t"><b>"${ask.ask}"</b><span class="cost">${costHtml(ask.cost)}</span>${G.can(ask.cost) ? '' : `<br><span class="bad">You are short ${G.missing(ask.cost).join(', ')}.</span>`}</div><button class="act" data-a="favour" ${G.can(ask.cost) ? '' : 'disabled'}>Help</button></div>`; }
   const tv = G.taskView(G.taskDef('trade:' + fid)), b = tv.def;
-  if (tv.state !== 'done') html += `<h3>${b.name}</h3><div class="row"><div class="t"><span>${b.blurb}</span><br><span>` + (tv.state === 'running' ? `<span class="who">${C.names[b.who]}</span> is on it · ${G.timeLeft(tv.endsAt)} to go` : `<span class="who">${C.names[b.who]}</span> needs <span class="cost">${costHtml(b.cost)}</span> · ${hours(b.mins)}` + (tv.can ? '' : `<br><span class="bad">You are short ${tv.missing.join(', ')}.</span>`)) + `</span></div>${tv.state === 'ready' ? `<button class="act" data-a="start" data-id="${b.id}" ${tv.can ? '' : 'disabled'}>Start</button>` : ''}</div>`;
+  if (tv.state !== 'done') html += `<h3>${b.name}</h3><div class="row"><div class="t"><span>${b.blurb}</span><br><span>` + (tv.state === 'running' ? `<span class="who" data-w="${b.who}">${C.names[b.who]}</span> is on it · ${G.timeLeft(tv.endsAt)} to go` : `<span class="who" data-w="${b.who}">${C.names[b.who]}</span> needs <span class="cost">${costHtml(b.cost)}</span> · ${hours(b.mins)}` + (tv.can ? '' : `<br><span class="bad">You are short ${tv.missing.join(', ')}.</span>`)) + `</span></div>${tv.state === 'ready' ? `<button class="act" data-a="start" data-id="${b.id}" ${tv.can ? '' : 'disabled'}>Start</button>` : ''}</div>`;
   else html += `<p><small>${b.giftText.replace(/\.$/, '')}: every day.</small></p>`;
   html += folkStory(fid);
   openSheet('folk:' + fid, html);
@@ -2120,7 +2373,7 @@ function openFestGreen() {   // tap the green (or the festival button in the jou
   const F = C.festival, f = G.s.festival; let html = `<h2>${F.name}</h2>`;
   if (f.stage === 'planning') {
     html += `<p>Getting the green ready. Every job here brings the night a little closer. <button class="act quiet" data-a="fest" data-id="secret">The secret</button></p>`;
-    for (const j of F.jobs) { const v = G.taskView(G.taskDef(j.id)); html += `<p style="margin:3px 0">${v.state === 'done' ? '✓' : v.state === 'running' ? '⏳' : '○'} ${j.name} <span class="who">${C.names[j.who]}</span>${v.state === 'running' ? ` · ${G.timeLeft(v.endsAt)} to go` : ''}</p>`; }
+    for (const j of F.jobs) { const v = G.taskView(G.taskDef(j.id)); html += `<p style="margin:3px 0">${v.state === 'done' ? '✓' : v.state === 'running' ? '⏳' : '○'} ${j.name} <span class="who" data-w="${j.who}">${C.names[j.who]}</span>${v.state === 'running' ? ` · ${G.timeLeft(v.endsAt)} to go` : ''}</p>`; }
     html += `<p style="margin-top:10px"><button class="act" data-a="jobs" data-id="">Open Jobs</button></p>`;
   } else if (f.stage === 'ready') html += `<p>Everything is ready: the table, the bunting, the lanterns, the arch and the feast. The festival is ${dayKeyOf(f.at) === dayKeyOf(G.now()) ? 'tonight' : 'tomorrow evening'}, from five o'clock. Nobody has told Wendel and Hazel. Nobody.</p>`;
   else if (f.stage === 'on') html += `<p>It's festival night!</p><p><button class="act" data-a="fest" data-id="night:0">Join in</button></p>`;
@@ -2138,16 +2391,16 @@ function neighboursHtml() {   // the journal's neighbours section
 function openAway(r) {
   const mins = Math.round(r.gone / 60000); if (mins < 10 && !r.finished.length && !r.ate && !r.season) return r.traveller ? openStory(r.traveller, 'arrived') : undefined;
   const gone = mins < 60 ? `${mins} minutes` : mins < 60 * 36 ? `${Math.round(mins / 60)} hours` : `${Math.round(mins / 1440)} days`;
-  let html = `<h2>While you were away<small>${gone}</small></h2>`;
+  let html = `<h2>While you were away<small>${gone}</small></h2><div class="letter"><p>Dear friend,</p>`;
   if (r.season) html += `<p><b>${C.seasons[r.season].name}.</b> ${C.seasons[r.season].arrive.replace(/^\w+\. /, '')}</p>`;
   if (r.event) html += `<p>${r.event}</p>`;
   if (r.ate) html += `<p>The ${r.ate.toLowerCase()} came by and emptied the feeding dish.</p>`;
   if (r.traveller) { const f = G.folkDef(r.traveller); html += `<p>A traveller has camped by the path: <b>${f.name}</b>, ${f.trade}. Tap their tent to meet them.</p>`; }
-  if (r.newDay) html += `<p>A new day. Their magic has grown a little: ${G.magicInfo().name}.</p>`;
+  if (r.newDay) html += `<p>A new day, and the magic has grown a little: ${G.magicInfo().name}.</p>`;
   if (r.offered) html += `<p>The land has left ${r.offered} thing${r.offered > 1 ? 's' : ''} for you to gather.</p>`;
-  for (const f of r.finished) html += `<p>✓ ${f}</p>`;
+  if (r.finished.length) html += `<p>Finished while you were gone:</p><ul class="done">${r.finished.map(f => `<li>${f}</li>`).join('')}</ul>`;
   if (!r.offered && !r.finished.length && !r.newDay) html += `<p>Quiet. The fire kept going.</p>`;
-  openSheet('away', html + `<p style="margin-top:10px"><button class="act" data-a="close">Have a look</button></p>`);
+  openSheet('away', html + `<p class="sign">Love, ${C.names.her}<img src="sprites/face-her.webp" alt=""></p></div><p style="margin-top:10px"><button class="act" data-a="close">Have a look</button></p>`);
 }
 $('bPack').onclick = openPack; $('bTasks').onclick = () => openTasks(); $('bMagic').onclick = openMagic; $('bJournal').onclick = openJournal;
 G.onChange((kind, data) => { renderInv(kind === 'inv' && typeof data === 'string' ? data : null); renderHud(); if (kind === 'task' && data && data.done) { toast('Finished: ' + lcName(G.taskDef(data.id).name) + '.'); } if (kind === 'event') toast(data.text); if (kind === 'land') toast(`The home patch is now ${data.name}.`);
