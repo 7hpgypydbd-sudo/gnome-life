@@ -350,7 +350,7 @@ window.CONTENT = {
       build:{ cost:{ twig:8, stone:8, moss:4 }, mins:480, who:'him', blurb:'A tall stump home with a crooked chimney. Barnaby ducks to get in; he does not seem to mind.' },
       movedIn:'Barnaby moved into his stump and slept for most of a day. When he woke, he and Wendel sat on the doorstep and drew mill wheels in the dirt with sticks until it was dark, and Hazel brought them both soup.',
       sayings:['Mm.', 'Water does the work. A miller just listens.', 'Wendel\'s a good lad. Asks a lot.', 'Hazel makes a fine soup. Don\'t tell Mabel I said so.', 'A full sack for winter is the best sound there is.'],
-      building:{ name:'Build Barnaby\'s little water mill', short:'building the mill', who:'him', act:'carry', cost:{ twig:8, stone:8, water:3 }, mins:420,
+      building:{ site:'stream', name:'Build Barnaby\'s little water mill', short:'building the mill', who:'him', act:'carry', cost:{ twig:8, stone:8, water:3 }, mins:420,
         blurb:'A little mill house with a turning water wheel. After this, sacks of seed for sowing.', gift:{ seed:2 }, giftText:'A little sack of seed by Barnaby\'s door.' },
       favours:[ { ask:'Mm. Wheel\'s squeaking. 2 moss?', cost:{ moss:2 }, thanks:'Mm. Better.' },
                 { ask:'Need a plank for the sluice. Just 1.', cost:{ plank:1 }, thanks:'That\'ll hold.' },

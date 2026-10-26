@@ -716,7 +716,7 @@ function groundMat(k) {
   let p = 0;
   if (tl.state === 'green') p = 1;
   else if (tl.state === 'regrowing') { const tk = G.s.tasks['regrow:' + k]; p = tk ? Math.round(10 * (1 - Math.max(0, tk.endsAt - G.now()) / (tk.endsAt - tk.startedAt))) / 10 : 0; }
-  return { g: 0.62 * p, kind: 0, wet: WET.has(MAP[k]) ? p : 0, path: MAP[k] === '~tile-path' || MAP[k] === 'tile-crossing' ? p : 0, wash: tl.state === 'revealed' ? 1 : 0 };
+  return { g: 0.8 * p, kind: 0, wet: WET.has(MAP[k]) ? p : 0, path: MAP[k] === '~tile-path' || MAP[k] === 'tile-crossing' ? p : 0, wash: tl.state === 'revealed' ? 1 : 0 };
 }
 // The stream runs along the row behind the home (v = -0.5) from the spring, and the path down the column east of home (u = 1.5);
 // they meet at the stepping stones (1.5, -0.5). The wobble is zero there so the bridge still lands in the right place.
@@ -1341,6 +1341,11 @@ const LOT = { home:[0.36, 0.30], build:[0.30, 0.66], spots:[[0.46, 0.42], [0.60,
 const CAMP = { tile:'1,0', gx:0.78, gy:0.62 };
 const BRIDGE = { tile:'1,-1', gx:0.50, gy:0.50 };
 const JARS = [[0.34, 0.18], [0.34, 0.62]];   // glow-jar posts on each path tile (beside the path, which runs down the middle)
+function buildSpot(fid) {   // where a neighbour's trade building stands (home-tile grid): on their own lot, or for the mill, on the stream bank nearest home
+  const f = G.folkDef(fid), fs = G.folkState(fid);
+  if (f.building.site === 'stream') { const tx = Math.min(0, Math.max(-1, +fs.tile.split(',')[0])), u = tx + 0.62; return [u, streamV(u) + 0.13]; }   // never on the spring pool or by the bridge
+  return glob(fs.tile, ...LOT.build);
+}
 const glob = (tile, gx, gy) => { const [tx, ty] = tile.split(',').map(Number); return [tx + gx, ty + gy]; };   // a tile's local spot -> home-tile grid
 // Stand-in neighbours: Wendel's or Hazel's painted walk, recoloured (hat, coat, grey hair) until each neighbour is painted (art slot folk-<id>).
 const TINT = {};
@@ -1530,7 +1535,7 @@ function drawBuilding(fid, x, y, a, now) {
   }
 }
 function drawBridge(x, y, a) {   // over the stepping stones: a low arched plank bridge with rails, running along the path
-  if (drawSlot('bld-bridge', x, y, a)) return;
+  if (drawSlot('bld-bridge', x + 4, y + 34, a)) return;
   ctx.save(); ctx.globalAlpha *= a; shadow(x, y + 4, 90, 24);
   const L = 170, u = [Math.cos(-0.52), Math.sin(-0.52)], n = [Math.cos(0.52) * 22, Math.sin(0.52) * 22], N = 12;
   const P = (t, side, up = 0) => [x + u[0] * L / 2 * t + n[0] * side, y + u[1] * L / 2 * t + n[1] * side - 22 * (1 - t * t) - up];
@@ -1597,6 +1602,48 @@ function drawJars(now) {   // Juniper's glow jars along the village path (art sl
     }
   }
 }
+// Worn footpaths between the doors and the main path, in the painted path colour.
+function footpathLinks() {   // short tracks joining every door into one network: each door links to the nearest of the main path or a door already joined
+  const doors = [[0.40, 0.42]];   // the couple's own yard
+  for (const [fid, fs] of Object.entries(G.s.village.folk)) if (taskProg('home:' + fid) >= 1) doors.push(glob(fs.tile, LOT.home[0] + 0.10, LOT.home[1] + 0.16));
+  const joined = [], links = [], left = doors.slice();
+  while (left.length) {
+    let best = null;
+    for (const d of left) {
+      const pu = pathU(d[1]), cands = [[pu + (d[0] < pu ? -0.05 : 0.05), d[1] + 0.06]].concat(joined);
+      for (const c of cands) { const dist = Math.hypot(c[0] - d[0], c[1] - d[1]); if (!best || dist < best.dist) best = { d, c, dist }; }
+    }
+    left.splice(left.indexOf(best.d), 1); joined.push(best.d); links.push([best.d, best.c]);
+  }
+  return links;
+}
+function drawFootpaths() {
+  const src = IM['g-path']; if (!src || !src.width) return; const pat = GR.pathPat || (GR.pathPat = ctx.createPattern(src, 'repeat'));
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const [[hx, hy], [px, py]] of footpathLinks()) {
+    if (Math.hypot(hx - px, hy - py) < 0.08) continue;
+    const [x0, y0] = toWorld(hx, hy), [x1, y1] = toWorld(px, py), [cx, cy] = toWorld((hx + px) / 2 + (py - hy) * 0.15, (hy + py) / 2 + (hx - px) * 0.15);   // a gentle bend
+    for (const [lw, al] of [[28, 0.25], [18, 0.5], [10, 0.55]]) { ctx.globalAlpha = al; ctx.strokeStyle = pat; ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(cx, cy, x1, y1); ctx.stroke(); }
+  }
+  ctx.restore();
+}
+// A little wild corner round each neighbour's home, from the painted kit (mossy log, fern stump, sapling stump, mossy boulder),
+// so homes sit among things instead of alone on the grass. Bigger woodland pieces come with art day 8.
+const NOOK = [['stumps-rocks-12', 0.10, 0.12, 0.62], ['stumps-rocks-08', 0.64, 0.10, 0.6], ['stumps-rocks-09', 0.08, 0.52, 0.5], ['stumps-rocks-07', 0.70, 0.40, 0.55]];
+function nookItems(items, tile, seed) {
+  NOOK.forEach(([k, gx, gy, sc], i) => { if (rnd(seed * 7 + i) < 0.25) return; const im = IM['kit-' + k]; if (!im || !im.width) return;
+    const [ux, uy] = glob(tile, gx + (rnd(seed + i * 3) - 0.5) * 0.06, gy + (rnd(seed + i * 5) - 0.5) * 0.06);
+    items.push({ d: depthOf(ux, uy), draw: () => { const [x, y] = toWorld(ux, uy), w = im.width * sc, h = im.height * sc; shadow(x, y, w * 0.36, w * 0.1); ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); } }); });
+}
+// the spring: a mossy boulder and a fern stump where the stream wells up, so it starts somewhere
+function springItems(items) {
+  const tl = G.s.tiles['-2,-1']; if (!tl || tl.state !== 'green') return;
+  const u = STREAM_U0, v = streamV(u);
+  for (const [k, du, dv, sc] of [['stumps-rocks-09', -0.13, -0.06, 0.75], ['stumps-rocks-08', -0.10, 0.12, 0.55], ['stumps-rocks-12', 0.05, -0.16, 0.5]]) {
+    const im = IM['kit-' + k]; if (!im || !im.width) continue;
+    items.push({ d: depthOf(u + du, v + dv), draw: () => { const [x, y] = toWorld(u + du, v + dv), w = im.width * sc, h = im.height * sc; shadow(x, y, w * 0.36, w * 0.1); ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); } });
+  }
+}
 // everything of the village that sits on the land, as depth-sorted items for the frame
 function villageItems(items, now) {
   syncFolk();
@@ -1607,9 +1654,10 @@ function villageItems(items, now) {
     const f = G.folkDef(id.slice(5)), [gx, gy] = glob(t.tile, ...LOT.home), a = taskProg(id);
     items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); if (a < 1) { stone(x - 50, y + 4, 9); stone(x - 34, y + 10, 8); stick(x + 40, y + 6, 40, -0.2); } drawFolkHome(f, x, y, Math.max(0.12, a), now); f.screenHome = { x, y, w: 190, h: 190 }; } });
   }
+  if (NEWGROUND) { Object.entries(v.folk).forEach(([fid, fs], i) => { if (taskProg('home:' + fid) >= 1) nookItems(items, fs.tile, i + 3); }); springItems(items); }
   for (const fid of Object.keys(v.folk)) {
     const fs = v.folk[fid], a = taskProg('trade:' + fid), f = G.folkDef(fid); if (a <= 0 || f.building.site === 'path') continue;
-    const [gx, gy] = glob(fs.tile, ...LOT.build);
+    const [gx, gy] = buildSpot(fid);
     items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); drawBuilding(fid, x, y, a, now); } });
   }
   const ba = taskProg('bridge'); if (ba > 0) { const [gx, gy] = glob(BRIDGE.tile, BRIDGE.gx, BRIDGE.gy); items.push({ d: depthOf(gx, gy) - 0.3, draw: () => { const [x, y] = toWorld(gx, gy); drawBridge(x, y, ba); } }); }
@@ -1626,7 +1674,7 @@ function villageGlows(night, now) {   // after the night tint: lit windows, the 
   const v = G.s.village, fl = 0.8 + 0.2 * Math.sin(now / 90) * Math.sin(now / 230);
   for (const [fid, fs] of Object.entries(v.folk)) {
     const [x, y] = toWorld(...glob(fs.tile, ...LOT.home)), [wx, wy] = HOME_WIN[G.folkDef(fid).home]; glow(x + wx * 1.3, y + wy * 1.3, 60, 'rgba(255,190,110,1)', 0.45 * night);
-    if (fid === 'mabel' && taskProg('trade:mabel') >= 1) { const [bx, by] = toWorld(...glob(fs.tile, ...LOT.build)); glow(bx + 6, by - 22, 44, 'rgba(255,150,60,1)', 0.55 * night * fl); }
+    if (fid === 'mabel' && taskProg('trade:mabel') >= 1) { const [bx, by] = toWorld(...buildSpot(fid)); glow(bx + 6, by - 22, 44, 'rgba(255,150,60,1)', 0.55 * night * fl); }
   }
   if (v.traveller) { const [x, y] = toWorld(...glob(CAMP.tile, CAMP.gx, CAMP.gy)); glow(x, y - 20, 50, 'rgba(255,190,110,1)', 0.3 * night); glow(x + 56, y + 10, 70, 'rgba(255,150,60,1)', 0.5 * night * fl); }
   if (taskProg('trade:juniper') >= 1) for (const k of ['1,-2', '1,0', '1,1', '1,2']) if (G.s.tiles[k]) for (const [gx, gy] of JARS) { const [x, y] = toWorld(...glob(k, gx, gy)); glow(x + 10, y - 36, 50, 'rgba(255,235,160,1)', 0.55 * night); }
@@ -1737,6 +1785,7 @@ function jobSpot(job) {
   if (d.at === 'home') return null;
   const tk = G.s.tasks[job.id], fs = G.folkState(d.folk), tile = d.home ? tk && tk.tile : fs && fs.tile; if (!tile) return null;
   if (d.folk === 'juniper' && job.id.startsWith('trade:')) return glob('1,0', 0.30, 0.40);
+  if (!d.home && G.folkDef(d.folk).building.site === 'stream' && job.id.startsWith('trade:')) { const [bx, by] = buildSpot(d.folk); return [bx - 0.12, by + 0.06]; }
   return glob(tile, ...(d.home ? [LOT.home[0] + 0.16, LOT.home[1] + 0.2] : [LOT.build[0] - 0.12, LOT.build[1] + 0.06]));
 }
 
@@ -1764,6 +1813,7 @@ function frame(now) {
   const tiles = Object.entries(G.s.tiles).sort((a, b) => depthOf(0, 0, a[0]) - depthOf(0, 0, b[0]));
   for (const [k, tl] of tiles) drawTile(k, tl, now);
   drawGroundChanges(now);
+  if (NEWGROUND) drawFootpaths();
   drawJars(now);
   drawFestGround();
 
