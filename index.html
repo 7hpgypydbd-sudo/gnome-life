@@ -1491,6 +1491,7 @@ function drawCrop(x, y) {
     seedling(sx, sy, Math.min(1, prog * (0.8 + 0.4 * ph)), ph, now);
   }
   if (p.stage === 'planted') glow(x, y - 10, 40, 'rgba(120,170,255,1)', 0.16 + 0.08 * Math.sin(t / 300));
+  if (p.name === 'barrel' && a >= 1 && G.barrelFull()) { const ph = ((now / 1000) % 3) / 3; if (ph < 0.22) twinkle(x - w * 0.1, y - h * 0.9, Math.sin(ph / 0.22 * Math.PI)); }   // rainwater to draw: a glint on the water, not a glow
   if (p.stage === 'ready') glow(x, y - 10, 70, 'rgba(255,240,160,1)', 0.3 + 0.15 * Math.sin(t / 250));
 }
 function wantsTap(p) {   // does this thing have something the player can do right now?
