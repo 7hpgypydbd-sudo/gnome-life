@@ -61,6 +61,8 @@ const G = {
     if (!this.s) { this.s = fresh(); this.startingGifts(); }
     for (const [k, v] of Object.entries(fresh())) if (!(k in this.s)) this.s[k] = v;   // older saves gain new fields
     const gully = this.s.tasks.ruts; if (gully && !gully.done) gully.endsAt = Math.min(gully.endsAt, now());   // the gully job is retired: one still running just finishes
+    const tk = this.s.tasks; if (tk.bedwater && !tk.spring) tk.spring = { startedAt: tk.bedwater.startedAt, endsAt: tk.bedwater.startedAt, done: true };   // watered before the spring job existed: the spring counts as found
+    if (tk.fence) this.s.flags.rabbit = true;   // fenced before the rabbit's raid existed
     this.away = this.catchUp();
     this.save();
     return this.s;
@@ -91,6 +93,7 @@ const G = {
     // timers that finished while away are reported (they resolve lazily in tick)
     for (const [id, tk] of Object.entries(s.tasks)) if (!tk.done && tk.endsAt <= t) report.finished.push(this.taskDef(id).name);
     const p = s.plots.seedbed; if (p.stage === 'growing' && p.readyAt <= t) report.finished.push('the sprout is ready');
+    if (gone >= 60 * MIN && !s.flags.rabbit && s.feeder.food && p.stage === 'growing') { this.rabbitRaid(); report.rabbit = C.rabbit.away; }   // the rabbit came while you were away
     if (gone >= 60 * MIN) { const ate = this.awayEater(); if (ate) report.ate = ate; }
     const had = s.village.traveller && s.village.traveller.id;
     this.tick();
@@ -114,7 +117,7 @@ const G = {
       if (d.folk) this.villageDone(id, d, tk);
       if (id === 'bridge') { for (const k of ['1,-1', '0,-1', '2,-1', '-1,-1']) if (s.tiles[k] && s.tiles[k].state === 'green') this.reveal(k); this.note('The bridge is up. The far side of the stream is reachable at last.'); }
       if (d.give) this.give(d.give);
-      this.note(`${C.names[d.who]} finished: ${lc(d.name)}.`);
+      this.note(`${C.names[d.who]} finished: ${lc(d.name)}.`); if (d.doneNote) this.note(d.doneNote);
       this.emit('task', { id, done: true });
     }
     this.villageTick(t);
@@ -199,9 +202,10 @@ const G = {
   },
   harvest() {
     const p = this.plot(); if (p.stage !== 'ready') return false;
-    const c = C.crops[p.crop]; this.give(c.harvest); this.addGreen(c.green); p.grown++;
-    p.crop = null; p.stage = null; p.readyAt = 0;
-    this.note(`Picked ${c.name}. The bed is clear again, and the ground remembers a little more of how to grow.`); this.emit('plot', p); return true;
+    const c = C.crops[p.crop], got = Object.assign({}, c.harvest), nib = p.nibbled && got.seed > 1; if (nib) got.seed--;   // the rabbit had a few
+    this.give(got); this.addGreen(c.green); p.grown++;
+    p.crop = null; p.stage = null; p.readyAt = 0; p.nibbled = false;
+    this.note(`Picked ${c.name}${nib ? ' (what the rabbit left)' : ''}. The bed is clear again, and the ground remembers a little more of how to grow.`); this.emit('plot', p); return true;
   },
 
   // ---- tasks ----
@@ -230,12 +234,13 @@ const G = {
   taskView(d) {
     const s = this.s, tk = s.tasks[d.id], t = now();
     const gate = tk ? '' : this.gateWhy(d);
-    const locked = (d.needs || []).some(n => !(s.tasks[n] && s.tasks[n].done)) || (d.minLevel && this.magicLevel() < d.minLevel) || !!gate;
+    const met = n => n.startsWith('flag:') ? !!s.flags[n.slice(5)] : !!(s.tasks[n] && s.tasks[n].done);   // 'flag:x' = after something happened (e.g. the rabbit's raid)
+    const locked = (d.needs || []).some(n => !met(n)) || (d.minLevel && this.magicLevel() < d.minLevel) || !!gate;
     const state = tk ? (tk.done ? 'done' : (tk.endsAt <= t ? 'done' : 'running')) : (locked ? 'locked' : 'ready');
     return { def: d, state, locked, endsAt: tk ? tk.endsAt : 0, startedAt: tk ? tk.startedAt : 0, can: this.can(d.cost), missing: this.missing(d.cost),
-             show: (state !== 'done' || (t - (tk.endsAt || 0)) < 60 * MIN) && !(d.needs || []).some(n => n.startsWith('trade:') && !this.folkState(n.slice(6))),   // village jobs stay hidden until that neighbour lives here
+             show: (state !== 'done' || (t - (tk.endsAt || 0)) < 60 * MIN) && !(d.needs || []).some(n => (n.startsWith('trade:') && !this.folkState(n.slice(6))) || (n.startsWith('flag:') && !met(n))),   // village jobs stay hidden until that neighbour lives here
              rank: { running: 0, ready: 1, locked: 2, done: 3 }[state],
-             why: gate ? gate : locked ? (d.minLevel && this.magicLevel() < d.minLevel ? `needs magic level ${d.minLevel}` : `after: ${(d.needs || []).map(n => lc(this.taskDef(n).name)).join(', ')}`) : '' };
+             why: gate ? gate : locked ? (d.minLevel && this.magicLevel() < d.minLevel ? `needs magic level ${d.minLevel}` : `after: ${(d.needs || []).filter(n => !n.startsWith('flag:')).map(n => lc(this.taskDef(n).name)).join(', ')}`) : '' };
   },
   startTask(id) {
     const d = this.taskDef(id), v = this.taskView(d); if (v.state !== 'ready' || !v.can) return false;
@@ -314,6 +319,19 @@ const G = {
     const f = this.s.feeder; if (!this.dishBuilt() || f.food || !this.can({ [kind]: 1 })) return false;
     this.pay({ [kind]: 1 }); f.food = kind; f.at = now();
     this.note(`${kind === 'seed' ? 'Seed' : 'Berries'} in the feeding dish. Now, who will come?`); this.emit('feeder', f); return true;
+  },
+  // ---- the rabbit: a cheeky regular, never a real loss ----
+  // The first time there is food in the dish while the seedlings are up, a rabbit eats the lot and then nibbles a few sprouts.
+  // Only then is "Fence the seed bed" offered. index.html plays the raid when you are watching; catchUp() settles it when you were away.
+  rabbitDue() {
+    const s = this.s, t = now(); if (s.flags.rabbit || !s.feeder.food || this.plot().stage !== 'growing') { s.rabbitAt = 0; return false; }
+    if (!s.rabbitAt) s.rabbitAt = t + C.rabbit.after * MIN; return t >= s.rabbitAt;
+  },
+  rabbitAte() { this.s.feeder.food = null; this.note(C.rabbit.dish); this.emit('feeder', this.s.feeder); },
+  rabbitRaid() {
+    const s = this.s; if (s.flags.rabbit) return; if (s.feeder.food) s.feeder.food = null;
+    if (this.plot().stage === 'growing') this.plot().nibbled = true;
+    s.flags.rabbit = true; this.note(C.rabbit.raid); this.emit('rabbit'); this.emit('plot', this.plot());
   },
   wantsFood(id) { const d = this.visitorDef(id), f = this.s.feeder.food; return !!(f && d && (d.eats || []).includes(f)); },
   feed(id) {   // a visitor empties the dish; returns what changed: 'regular' or 'nest' when it crosses a line, else true
