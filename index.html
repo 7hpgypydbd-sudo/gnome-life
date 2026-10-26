@@ -176,7 +176,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v36</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v37</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -440,7 +440,8 @@ class Gnome {
     if (job) {
       const sp = jobSpot(job) || (WORKPATH[job.id] && WORKPATH[job.id](taskProg(job.id))) || WORKSPOT['job:' + job.id] || WORKSPOT[job.def.spot] || SPOTS.fire; this.job = job.id;
       this.plan = job.def.act || SPOT_ACT[job.def.spot] || (job.def.tile ? 'dig' : 'carry');
-      this.pace = this.plan === 'carry' ? [[sp[0], sp[1]], [sp[0] - 0.12, sp[1] + 0.06]] : null;
+      if (WORKPATH[job.id] && this.plan === 'carry') this.plan = 'dig';   // gathering: she crouches to the ground at each piece (stand-in until there is a painted pick-up strip)
+      this.pace = this.plan === 'carry' && !WORKPATH[job.id] ? [[sp[0], sp[1]], [sp[0] - 0.12, sp[1] + 0.06]] : null;
       this.goto(sp[0], sp[1]); this.faceTowards(sp[0], sp[1], null); return;
     }
     this.job = null; this.plan = null; this.act = null;
