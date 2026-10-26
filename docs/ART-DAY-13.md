@@ -21,3 +21,13 @@ Generate an image: A wide 16:9 picture. Style: traditional children's book illus
 ```
 
 Where it goes: cut with `tools/cut_kit.py` into `sprites/yard-bench.webp`. It is an art slot already (`ART_SLOTS['yard-bench']`, 64 px wide); once the file exists the finished bench uses it instead of the code-drawn one (the code bench still shows legs-then-plank while it is being built).
+
+3. `bench-couple.jpg` (Bryce 2026-10-26: once the plank bench is painted and in the game, we need a picture of Wendel and Hazel sitting together on it, to see how it looks. Paint it AFTER `yard-bench`, in a NEW chat. References, pasted in this order: `yard-bench.jpg` (the finished painted bench), `sprites/him-sit.png`, `sprites/her-sit.png`)
+
+```text
+[style line] The same bench as the first pasted picture, seen from the same gentle slanted view from above and to the front, with the two gnomes from the other pasted pictures sitting on it side by side for a quiet evening: Wendel on the left in his red cap and blue-grey tunic, leaning back a little with his pipe, and Hazel on the right in her green cap, plaits and apron, knitting, her shoulder against his. Match their faces, clothes and size exactly to the pasted pictures, and the bench exactly to the first picture (the carved heart and W + H on the front edge still showing between their feet). Their feet dangle a little above the ground. Plain daylight colours, NOT lit by the fire: no orange glow, no warm light on their faces (the game adds the firelight at night). Hidden detail: a tiny snail on the end of the bench beside Hazel. No ground, no shadow. Avoid pink and purple.
+```
+
+**Check:** full-size download, solid magenta, both gnomes whole, same bench, nothing glowing.
+
+Where it goes: cut with `tools/cut_kit.py` into `sprites/bench-couple.webp` (make it an art slot like `yard-bench`, same width so it lines up). The wiring chat then shows it instead of the bench + the two separate sitting gnomes whenever both sit on the bench of an evening.
