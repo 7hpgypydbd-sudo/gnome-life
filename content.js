@@ -496,4 +496,32 @@ window.CONTENT = {
       { id:'wash',      weight:2, text:'Washing day. Two tunics, one apron, a very small pair of socks. Dry by noon.', hours:[8,12], task:'clothesline' },
     ],
   },
+  // little finds: tiny painted secrets tucked into the healed land now and then (sprites/kit/secrets-*). Tap one to press it into the journal.
+  // size = how wide it is drawn on the land (a gnome is about 120). Nothing here is part of the story.
+  secretEvery: [180, 360],   // minutes between new ones (random in this range); at most two are out at once
+  secrets: [
+    { id:'clover',   pic:'nature-01',    size:20, name:'a four-leaf clover', note:'Hazel says it\'s luck. Wendel says it\'s just a clover that tried harder. They pressed it anyway.' },
+    { id:'cicada',   pic:'nature-02',    size:16, name:'an empty cicada shell', note:'Still hanging on to its grass stem. The cicada climbed out and flew off singing. Summer\'s coming.' },
+    { id:'ring',     pic:'nature-03',    size:34, name:'a fairy ring', note:'A circle of tiny white mushrooms, overnight. Wendel walked all the way round it, just in case.' },
+    { id:'heart',    pic:'nature-05',    size:18, name:'a heart-shaped pebble', note:'Grey and smooth and very nearly a heart. It went straight into Hazel\'s apron pocket.' },
+    { id:'holed',    pic:'nature-06',    size:20, name:'a stone with a hole', note:'Look through the hole with one eye closed and the valley looks a little more magic. It works.' },
+    { id:'egg',      pic:'nature-07',    size:16, name:'a speckled eggshell', note:'Half a pale blue shell. Somebody small hatched nearby and is already peeping for breakfast.' },
+    { id:'snail',    pic:'nature-08',    size:15, name:'an empty snail shell', note:'The snail moved out. Wendel thinks it would make a fine ear trumpet. Hazel thinks not.' },
+    { id:'cockatoo', pic:'nature-09',    size:34, name:'a black cockatoo feather', note:'Long and black with a band of yellow. The cockatoos flew over yesterday, wailing like old gates.' },
+    { id:'chrysalis',pic:'nature-10',    size:28, name:'a green chrysalis', note:'Hanging very still from a twig, flecked with gold. Hazel has been checking on it every morning.' },
+    { id:'bluefeather', pic:'nature-11', size:14, name:'a little blue feather', note:'Blue as the sky after rain. A fairy-wren must have dropped it showing off.' },
+    { id:'bower',    pic:'nature-12',    size:16, name:'a bowerbird\'s treasures', note:'Blue feather, blue berry, blue shard, laid out just so. Best not to tell the bowerbird.' },
+    { id:'thimble',  pic:'treasures-01', size:13, name:'a brass thimble', note:'Far too big for a gnome finger. Hazel uses it as a cup for the sugar.' },
+    { id:'mitten',   pic:'treasures-02', size:18, name:'a red mitten', note:'A big folk\'s mitten, lost in some long-ago winter. It makes a very warm sleeping bag.' },
+    { id:'carved',   pic:'treasures-03', size:20, name:'a carved wooden heart', note:'Somebody carved this a long time ago and gave it to somebody. Wendel hung it over the door.' },
+    { id:'pipe',     pic:'treasures-04', size:24, name:'Wendel\'s pipe', note:'There it is! He\'s been looking for it for days. He swears he left it on the table.' },
+    { id:'grassring',pic:'treasures-05', size:16, name:'a ring of plaited grass', note:'Plaited by hand, just the size of Hazel\'s finger. Wendel went very pink and said nothing.' },
+    { id:'letter',   pic:'treasures-06', size:18, name:'a note sealed with red wax', note:'Hazel\'s name on the front, in Wendel\'s loopy writing. Best tuck it on her pillow and say nothing.' },
+    { id:'top',      pic:'treasures-07', size:13, name:'a wooden spinning top', note:'It still spins. Wendel timed it: forty-one heartbeats. He wants a rematch.' },
+    { id:'teacup',   pic:'treasures-08', size:18, name:'an acorn-cup teacup', note:'A teacup made from an acorn cup, saucer and all. Exactly the right size for one sip of tea.' },
+    { id:'yarn',     pic:'treasures-09', size:24, name:'a hank of green yarn', note:'Enough for a scarf, or two hats, or one very long sock. Hazel has plans.' },
+    { id:'flowerstone', pic:'treasures-10', size:15, name:'a painted pebble', note:'Someone painted a yellow flower on it. It sits on the windowsill now, where the real ones can see it.' },
+    { id:'bell',     pic:'treasures-11', size:12, name:'a tiny brass bell', note:'Ting! Wendel tied it to the gate so you can hear who\'s coming.' },
+    { id:'button',   pic:'treasures-12', size:14, name:'a wooden button', note:'A big round button with four holes. Hazel says a table. Wendel says a wheel. It\'s still being argued about.' },
+  ],
 };
