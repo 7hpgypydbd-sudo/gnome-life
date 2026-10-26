@@ -2,7 +2,7 @@
 
 A cosy virtual-pet game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; must run smoothly on a phone. (Earlier working title: "Fairy Garden".)
 
-_Last updated: 2026-10-26 (v39: early jobs rebuilt: clear, woodpile, dig the bed, water it)_
+_Last updated: 2026-10-26 (v40: spring, rabbit and fence, livelier jobs; job-mechanics pass under way)_
 
 ## Start here, next chat
 
@@ -123,6 +123,13 @@ The full question set lives in `docs/VISION-QUESTIONS.md`. Answers are recorded 
 
 ## Open questions for Bryce (do not assume)
 - The staff mystery itself (Bryce writes it).
+
+## Story questions for the top-down story review (collected during the job-mechanics pass, 2026-10-26)
+Bryce wants a top-down review of the whole story once every job's mechanics are settled. Questions gathered so far:
+- **The spring and the stream.** Wendel's spring (v40) is the first water back in the valley. Should healing the stream tiles behind the home follow on from it (the spring's trickle runs off toward the dry creek), rather than only from "Coax the land next door"?
+- **Who choked the spring?** The loggers' rubbish (from Clear the ground) is the natural answer; is that the story, or something else?
+- **The rabbit.** A cheeky regular, never a villain. Does it get a name, a journal page, a place in a neighbour's story (e.g. it turns up in someone's carrot patch), or a soft ending (it moves into a burrow nearby and becomes part of the family's life)?
+- **Why each early job matters to the couple.** Woodpile (warmth for the first nights), spring (water), seed bed (food), dish (making friends). Does the story say anything about their first days here, e.g. a journal page "Our first week"?
 
 ## Roadmap after the seed-bed chain (agreed by Bryce 2026-10-25)
 Another thread is building step 0. Each later step is its own new chat. Models follow Bryce's cap: Sonnet for routine, Opus medium preferred, Opus high at most, no Fable.
@@ -245,3 +252,12 @@ Fallback if code blending looks too smudgy: the dual-grid edge pieces (5-6 per p
   - Movement: `WORKPATH` entries now return `[gx, gy, act on arrival, carry on the way]`.
   - Version fix: the cache check number `BUILD` in index.html had been left at 32 while `build.txt` moved on, so every open reloaded once; both are now 39 (keep them equal, with the vNN label and the `?v=` on content.js/game.js).
   - Preview for Bryce: `/mnt/project-files/early-game/early-jobs-v39-preview.jpg`. Test hash `#test` now also exposes `window.DBG` (camera) for preview pictures.
+- **v40 (2026-10-26): JOB-MECHANICS PASS, first round** (thread "Work out the mechanics of every job"; Bryce's notes after playing v39).
+  - **Labels:** the busy tag over a gnome cut words off the long job name ("out a feeding dish"). Every job now has its own `short` "-ing" name in content.js (`shortName()` just uses it).
+  - **Jobs keep the gnome moving:** new `workLoop(g, key, steps)` in index.html: a little round of steps done over and over in real time, whatever the job's length (gnome moves on after staying long enough at each step). `WORKPATH` functions now get the gnome too. If the next step is on the same spot, the gnome just changes action (kneel, then tamp down).
+    - **Gather the fallen wood:** Wendel wanders the yard picking up odd sticks (`TWIG_SPOTS`), tugs at the current fallen-wood lot, carries the armful back to the pile; the lots still go and the pile still grows by progress.
+    - **Set out a feeding dish:** Hazel fetches a short stump round lying in the yard (the dish picture's stump, `DISH_FETCH[0]`), then a flat stone by the big rocks, then seed from the house; she kneels and tamps at the dish. The dish appears in steps: stump first (`drawDishPart`, clipped lower 56% of the painting), then the stone top.
+  - **NEW JOB "Look for water"** (id `spring`, Wendel, free, 60 min, gives 1 dew + 1 green, needs `woodpile`; Bryce chose Wendel over Hazel divining). Bryce: Wendel was fetching water where there was none (the old creek point was ON the big stump) and looked like he was gathering wood. Now he walks the yard kneeling and poking (`SPRING_LOOK`) until `SPRING_FOUND` (40%), then at the spring by the big stump's roots (`SPRING.at`) pulls the choking stones out one by one onto a little heap; the ground darkens, a pool rises and a trickle runs off the back edge toward the dry creek; a leaf turns slowly on the finished pool. Code stand-in (`drawSpring`); painted prompt in docs/ART-DAY-10.md. Tap the spring for its jobs. Journal line on finishing (`doneNote`, new optional task field).
+  - **Fetch water for the seed bed** now needs `bed` + `spring`; Wendel goes to and fro (fill the can at the pool, water a different bit of the bed). Old saves that already watered get the spring marked found.
+  - **THE RABBIT** (Bryce: cheeky recurring minor foil; it's a comfy game). First visit (`G.rabbitDue()`, game.js): food in the dish AND seedlings growing, 2 content-minutes later. It hops in, eats the whole dish (`rabbitAte`), hops into the bed and **nibbles a few sprouts** (Bryce's choice; `plot.nibbled`: some seedlings drawn as stalks, the next pick gives 1 seed fewer), Wendel: "Oi! Shoo, you rascal!" (`rabbitRaid`, sets `flags.rabbit`). If you were away 1 h+, it happens off-screen and the "While you were away" letter says so. **"Fence the seed bed" only appears after the raid** (`needs:['bed','flag:rabbit']`; new `flag:` needs in game.js hide the job until the flag is set). Once fenced, it pops back every 12-22 min of daytime play (`rabbitVisit`): nose to the fence, asleep by the woodpile, or pinching a berry from the dish. Size: about gnome height (`RABBIT_SIZE`). Code-drawn stand-in (`drawRabbit`); painted 5-pose prompt in docs/ART-DAY-10.md. Texts in `CONTENT.rabbit`.
+  - Preview for Bryce: `/mnt/project-files/early-game/mechanics-v40-preview.jpg`. `#test` now also exposes `DBG.gnomes`, `DBG.rabbit()`, `DBG.rabbitVisit()`.
