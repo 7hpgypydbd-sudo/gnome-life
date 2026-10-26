@@ -1255,8 +1255,8 @@ const AFTER = {
       ctx.restore();
     }
     if (taskProg('doorstep') >= 1 && art('yard-doorstep')) {   // turned to lie along the door's bottom edge (the threshold slopes down to the right); the painted step is mirrored
-      const im = art('yard-doorstep'), [w, h] = slotSize('yard-doorstep', im), [ax, ay] = at(130, 380), [bx, by] = at(198, 410), [wx, wy] = at(160, 413);
-      ctx.save(); ctx.translate(wx, wy); ctx.rotate(Math.atan2(by - ay, bx - ax) - 0.2); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, -h / 2, w, h); ctx.restore(); }
+      const im = art('yard-doorstep'), [w, h] = slotSize('yard-doorstep', im), [ax, ay] = at(130, 380), [bx, by] = at(198, 410), [wx, wy] = at(168, 412);
+      ctx.save(); ctx.translate(wx, wy); ctx.rotate(Math.atan2(by - ay, bx - ax) - 0.05); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, -h / 2, w, h); ctx.restore(); }
     else if (taskProg('doorstep') >= 1) { for (const [px, py, r] of [[150, 430, 20], [196, 442, 22], [242, 432, 18]]) { const [wx, wy] = at(px, py); ctx.save(); ctx.globalAlpha = 0.95; blob(wx, wy + 2, r * s * 1.6, r * s * 0.7, 'rgba(40,30,20,0.25)'); blob(wx, wy, r * s * 1.5, r * s * 0.6, '#a7a094'); blob(wx - 3, wy - 2, r * s * 0.8, r * s * 0.25, 'rgba(230,226,215,0.6)'); ctx.restore(); } }
     if (taskProg('windowbox') >= 1 && art('yard-windowbox')) { const [wx, wy] = at(177, 366); drawSlot('yard-windowbox', wx, wy); }
     else if (taskProg('windowbox') >= 1) {   // a little box of flowers under the round window
