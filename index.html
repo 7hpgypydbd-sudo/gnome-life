@@ -664,7 +664,7 @@ function drawTileArt(key, ox, oy) {
 }
 function drawTile(k, tl, now) {
   const [ox, oy] = tileOrigin(k);
-  if (NEWGROUND && drawGroundTile(k, ox, oy, now)) return;
+  if (NEWGROUND) { if (!drawGroundTile(k, ox, oy, now)) { ctx.save(); diamondPath(k); ctx.clip(); ctx.fillStyle = 'rgb(206,204,182)'; ctx.fillRect(ox, oy, PLOT.w, PLOT.h); ctx.restore(); } return; }
   if (k === '0,0') { const key = HOME_TILE[G.landStage().key] || 'plot'; ctx.drawImage(IM[key], ox, oy); if (key === 'plot') drawHomePlot(ox, oy, now); return; }
   if (tl.state === 'green') { drawTileArt(greenArt(k), ox, oy); return; }
   drawTileArt(bareArt(k), ox, oy);
@@ -679,7 +679,7 @@ function drawTile(k, tl, now) {
 // pixel by pixel: each tile says what it is made of, neighbours fade into each other through soft wobbly masks, green
 // spreads in watercolour patches, the stream and path are shapes filled with painted bands, and stickers are scattered on
 // top. Each tile is baked once into its own off-screen picture, a few rows per frame so the game never stutters, and only
-// baked again when it or a neighbour changes. Until a tile is baked the old painted tile shows.
+// baked again when it or a neighbour changes. Until every tile is baked a morning mist hides the land (see drawMorningMist).
 const GS = 0.8;                                        // baked ground resolution: canvas px per world px
 const LEX = Math.hypot(...EX), LEY = Math.hypot(...EY);   // world px per tile step east / south
 const GR = { ready: false, px: {}, noise: null, tiles: {}, sig: {}, queue: [], checkAt: 0, job: null };
@@ -844,16 +844,65 @@ function groundSig(k) {   // everything a tile's picture depends on (itself and 
   for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const m = groundMat(`${tx + dx},${ty + dy}`); out.push(m ? [m.g, m.kind, m.wet, m.path, m.wash].join() : '-'); }
   return out.join('|') + '|' + season();   // the seasonal stickers change with the season
 }
+// Baked tiles are kept in the browser (IndexedDB) with the signature they were baked for, so the next visit opens with the
+// finished ground at once instead of baking it all again. A tile whose signature has changed is simply baked afresh.
+const GDB = { db: null, loaded: false };
+function gdbOpen(cb) {
+  try { const rq = indexedDB.open('gnomelife-ground', 1); rq.onupgradeneeded = () => rq.result.createObjectStore('tiles');
+    rq.onsuccess = () => { GDB.db = rq.result; cb(); }; rq.onerror = () => cb(); } catch (e) { cb(); }
+}
+function gdbLoad() {   // read every kept tile; use the ones still right for the land as it is now
+  const done = () => { GDB.loaded = true; };
+  gdbOpen(() => {
+    if (!GDB.db) return done();
+    try {
+      const st = GDB.db.transaction('tiles').objectStore('tiles'), rq = st.openCursor(); let pending = 0, ended = false;
+      const fin = () => { if (ended && !pending) done(); };
+      rq.onsuccess = () => { const c = rq.result; if (!c) { ended = true; return fin(); }
+        const k = c.key, rec = c.value;
+        if (rec && rec.blob && G.s.tiles[k] && rec.sig === groundSig(k) && !GR.tiles[k]) {
+          pending++; const url = URL.createObjectURL(rec.blob), im = new Image();
+          im.onload = () => { const cv2 = Object.assign(document.createElement('canvas'), { width: im.width, height: im.height }); cv2.getContext('2d').drawImage(im, 0, 0);
+            if (!GR.tiles[k]) { GR.tiles[k] = cv2; GR.sig[k] = rec.sig; } URL.revokeObjectURL(url); pending--; fin(); };
+          im.onerror = () => { URL.revokeObjectURL(url); pending--; fin(); }; im.src = url;
+        }
+        c.continue(); };
+      rq.onerror = done;
+    } catch (e) { done(); }
+  });
+  setTimeout(done, 2500);   // never wait long on a slow or missing store
+}
+function gdbSave(k, sig) {
+  const cv2 = GR.tiles[k]; if (!GDB.db || !cv2 || !cv2.toBlob) return;
+  cv2.toBlob(b => { if (!b || GR.sig[k] !== sig) return; try { GDB.db.transaction('tiles', 'readwrite').objectStore('tiles').put({ sig, blob: b }, k); } catch (e) {} }, 'image/webp', 0.9);
+}
+function groundMissing() { return Object.keys(G.s.tiles).some(k => !GR.tiles[k]); }
 function groundUpdate() {   // called every frame: notice changed tiles now and then, and bake a little
-  if (!GR.ready) groundPrep();
+  if (!G.s) return;
+  if (!GR.ready) { groundPrep(); gdbLoad(); }
+  if (!GDB.loaded) return;   // wait for the kept tiles before baking any
   const t = performance.now();
   if (t > GR.checkAt) {
     GR.checkAt = t + 500;
     const ks = Object.keys(G.s.tiles).sort((p, q) => { const [a1, b1] = p.split(',').map(Number), [a2, b2] = q.split(',').map(Number); return Math.hypot(a1, b1) - Math.hypot(a2, b2); });
     for (const k of ks) { const sg = groundSig(k); if (GR.sig[k] !== sg && !GR.queue.includes(k)) GR.queue.push(k); }
   }
-  if (!GR.job) { const k = GR.queue.shift(); if (k && G.s.tiles[k]) { GR.sig[k] = groundSig(k); GR.job = bakeGroundTile(k); } }
-  while (GR.job && performance.now() - t < 10) if (GR.job.next().done) GR.job = null;   // about 10 ms of baking per frame
+  if (!GR.job) { const k = GR.queue.shift(); if (k && G.s.tiles[k]) { GR.sig[k] = groundSig(k); GR.job = bakeGroundTile(k); GR.jobKey = k; } }
+  const budget = groundMissing() ? 28 : 10;   // bake harder while the morning mist hides the land; gently once it shows
+  while (GR.job && performance.now() - t < budget) if (GR.job.next().done) { GR.job = null; gdbSave(GR.jobKey, GR.sig[GR.jobKey]); }
+}
+let mistA = 1;
+function drawMorningMist(dt, now) {   // a soft mist over everything while the ground is still being made; it lifts once it is ready
+  mistA = Math.max(0, Math.min(1, mistA + (groundMissing() ? 2 : -0.9) * dt)); if (mistA <= 0) return;
+  ctx.save(); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, `rgba(232,234,222,${0.97 * mistA})`); g.addColorStop(1, `rgba(214,220,204,${0.97 * mistA})`);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.globalAlpha = mistA * 0.5; ctx.fillStyle = 'rgba(255,255,250,1)';
+  for (let i = 0; i < 6; i++) { const x = ((now / 90 * (0.4 + i * 0.13) + i * 173) % (W + 400)) - 200, y = H * (0.15 + 0.14 * i);
+    const r = ctx.createRadialGradient(x, y, 10, x, y, 220); r.addColorStop(0, 'rgba(255,255,250,.55)'); r.addColorStop(1, 'rgba(255,255,250,0)'); ctx.fillStyle = r; ctx.fillRect(x - 220, y - 220, 440, 440); }
+  ctx.globalAlpha = mistA; ctx.fillStyle = 'rgba(80,72,52,.75)'; ctx.font = 'italic 19px "IM Fell English", Georgia, serif'; ctx.textAlign = 'center';
+  ctx.fillText('the morning mist is lifting…', W / 2, H * 0.48);
+  ctx.restore();
 }
 function drawGroundTile(k, ox, oy, now) {
   const cv2 = GR.tiles[k]; if (!cv2) return false;
@@ -1740,6 +1789,7 @@ function frame(now) {
   if (ph.warm > 0) { ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = `rgba(255,170,90,${0.28 * ph.warm})`; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); ctx.restore(); }
   ctx.restore();
 
+  if (NEWGROUND) drawMorningMist(dt, now);
   // screen-space overlays: "busy" tags over working gnomes, and tap ripples
   for (const g of gnomes) if (g.job && g.screen) drawBusyTag(g, now);
   for (let i = ripples.length - 1; i >= 0; i--) {
