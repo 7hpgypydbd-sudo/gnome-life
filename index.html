@@ -298,7 +298,7 @@ const RHYTHM = {
   him: { eat:[0.40,0.56,'campfire'], sit:[0.38,0.60,'campfire'], sleep:[0.24,0.40,null] },
   her: { eat:[0.60,0.38,'campfire'], sit:[0.62,0.42,'campfire'], sleep:[0.52,0.24,null] },
 };
-const ACT_FPS = { canwalk:9, craft:4, build:4, pickup:3, gather:3, dig:4, water:3, carry:9, eat:2.5, sit:1.6, sleep:0.7 };
+const ACT_FPS = { dowse:3, canwalk:9, craft:4, build:4, pickup:3, gather:3, dig:4, water:3, carry:9, eat:2.5, sit:1.6, sleep:0.7 };
 const SPOT_ACT = { feeder:'carry', wheelbarrow:'dig', seedbed:'water', sapling:'water', shelter:'carry', fence:'carry', stonebench:'carry', fire:'carry' };
 function routineFor(h) {   // what the couple do at this hour when no job needs them
   if (G.festivalOn()) return 'fest';   // festival evening: they dance on the green (beats jobs and bedtime)
@@ -348,13 +348,17 @@ const WORKPATH = {
   },
   bed: p => { const d = bedDig(p), f = fromWorld(d.cx + (d.x - d.cx) * 0.8, d.y + 2); return [f.gx, f.gy, 'dig']; },   // standing just inside the bed at the digging edge
   spring: (p, g) => {   // he walks the yard kneeling to feel the ground; then, at the old stump, pulls the choking stones out one by one
-    if (p < SPRING_FOUND) return workLoop(g, 'spring-look', c => { const n = SPRING_LOOK.length, a = SPRING_LOOK[(c * 2) % n], b = SPRING_LOOK[(c * 2 + 1) % n]; return [[...a, 'pickup', false, 4], [...b, 'dig', false, 4]]; });
+    if (p < SPRING_FOUND) return workLoop(g, 'spring-look', c => { const n = SPRING_LOOK.length, a = SPRING_LOOK[(c * 2) % n], b = SPRING_LOOK[(c * 2 + 1) % n]; return [[...a, 'dowse', false, 4], [...b, 'dowse', false, 3], [...b, 'pickup', false, 2]]; });   // dowsing: the forked twig held out, kneeling now and then to feel the ground
     const [x, y] = SPRING.at;
     return workLoop(g, 'spring-dig', () => [[x + 0.05, y + 0.05, 'gather', false, 5], [x + 0.06, y + 0.12, 'pickup', false, 2.5], [x + 0.03, y + 0.07, 'dig', false, 4]]);
   },
   bench: (p, g) => workLoop(g, 'bench', () => [[0.90, 0.72, 'gather', false, 5], [0.60, 0.44, 'pickup', true, 3], [0.59, 0.43, 'build', false, 4]]),   // he tugs a short log free at the yard edge, rolls it over and beds it in by the fire
-  roof: (p, g) => workLoop(g, 'roof', c => [[...MOSS_SPOTS[c % MOSS_SPOTS.length], 'pickup', false, 4], [0.41, 0.35, 'pickup', true, 2.5], [0.41, 0.35, 'build', false, 5]]),   // she gathers moss round the yard and presses it onto the low edge of the roof
+  roof: (p, g) => workLoop(g, 'roof', c => [[...MOSS_SPOTS[c % MOSS_SPOTS.length], 'pickup', false, 4], [0.30, 0.28, 'pickup', true, 2.5], [0.30, 0.28, 'build', false, 5]]),   // she gathers moss round the yard and presses it onto the low edge of the roof
   rainbarrel: (p, g) => workLoop(g, 'rainbarrel', () => [[0.40, 0.48, 'gather', false, 6], [SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3], [0.41, 0.49, 'water', 'can', 4]]),   // scrub, fetch rinse water from the spring, rinse
+  doorstep: () => [0.33, 0.27, 'dig'],   // kneeling by the door, bedding each flat stone in (stones: kneel, not hammer)
+  clothesline: p => p < 0.5 ? [0.47, 0.14, 'build'] : [0.57, 0.08, 'build'],   // one post, then the other
+  lantern: () => [0.74, 0.54, 'build'],   // at the old lantern stump
+  path: p => { const i = Math.min(PATH_STONES.length - 1, Math.floor(p * PATH_STONES.length)), [x, y] = PATH_STONES[i]; return [x + 0.04, y + 0.01, 'dig']; },   // stone by stone down from the door, kneeling
   fence: p => { const f = bedFrame(), a = Math.PI / 2 + (0.5 + p * (FENCE_N - 0.5)) * 2 * Math.PI / FENCE_N; return [...fromRing(Math.cos(a) * 1.18, Math.sin(a) * 1.18, f), 'build']; },   // round the ring panel by panel, gate last
   bedwater: (p, g) => workLoop(g, 'bedwater', c => [[SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3], [0.50 + (c % 3) * 0.05, 0.60 + (c % 2) * 0.05, 'water', 'can', 5]]),   // to and fro: fill the can at the spring pool, water a different bit of the bed each time
 };
@@ -515,7 +519,7 @@ class Gnome {
   }
   update(dt) {
     if (this.sayT > 0) this.sayT -= dt;
-    if (this.act) { this.at += dt; const n = this.acts[this.act].n, fps = ACT_FPS[this.act]; if (this.at > 1 / fps) { this.at -= 1 / fps; this.aframe = (this.aframe + 1) % n; } }
+    if (this.act) { this.at += dt; const n = (this.acts[this.act] || this.acts.carry).n, fps = ACT_FPS[this.act]; if (this.at > 1 / fps) { this.at -= 1 / fps; this.aframe = (this.aframe + 1) % n; } }
     if (this.dancing) {   // festival night: the two of them turn slowly round each other on the green (stand-in until a painted dance exists)
       if (routineFor(dayPhase().h) !== 'fest') { this.dancing = false; this.walking = false; this.routine = null; this.wait = 0; this.pick(); return; }
       const [cx, cy] = festSpot('dance'), a = performance.now() / 1000 * 0.75 + (this.who === 'her' ? Math.PI : 0);
@@ -577,12 +581,20 @@ class Gnome {
     const carrying = this.walking && (this.pace || this.carryWalk) && this.dir === 'side';   // carrying wood: use the carry strip instead of the walk
     const act = this.act || (carrying ? (this.carryWalk === 'can' && this.who === 'him' ? 'canwalk' : 'carry') : null);   // carryWalk 'can': he walks with the watering can
     let img, cw, ch, f, flip;
-    if (act) { const a = this.acts[act] || this.acts.carry; img = IM[`${this.who}-${this.acts[act] ? act : 'carry'}`]; [cw, ch] = a.cell; f = (carrying ? this.frame : this.aframe) % a.n; flip = this.flip; }
+    const twig = this.job === 'spring' && taskProg('spring') < SPRING_FOUND && (act === 'dowse' || (!act && this.dir === 'side'));   // Look for water: a dowsing twig (code stand-in until him-dowse is painted)
+    if (act === 'dowse' && !this.acts.dowse) { img = IM[`${this.who}-side`]; [cw, ch] = this.cell; f = 0; flip = this.flip; }
+    else if (act) { const a = this.acts[act] || this.acts.carry; img = IM[`${this.who}-${this.acts[act] ? act : 'carry'}`]; [cw, ch] = a.cell; f = (carrying ? this.frame : this.aframe) % a.n; flip = this.flip; }
     else { img = IM[`${this.who}-${this.dir}`]; [cw, ch] = this.cell; f = this.walking ? this.frame : 0; flip = this.dir === 'side' && this.flip; }
     shadow(wx, wy, Math.min(cw, 150) * s * 0.45, Math.min(cw, 150) * s * 0.18);
     ctx.save(); ctx.translate(wx, wy);
     if (flip) ctx.scale(-1, 1);
     ctx.drawImage(img, f * cw, 0, cw, ch, -cw * s / 2, -ch * s, cw * s, ch * s);
+    if (twig && !this.acts.dowse) {   // a forked hazel twig held out in both hands; it twitches, and dips hard as he nears the spring
+      const near = Math.max(0, 1 - Math.hypot(this.gx - SPRING.at[0], this.gy - SPRING.at[1]) / 0.25), t = now / 1000;
+      const dip = 0.12 + 0.1 * Math.sin(t * 2.3) + near * (0.35 + 0.25 * Math.sin(t * 7)), hx = cw * s * 0.16, hy = -ch * s * 0.44, L = cw * s * 0.5;
+      ctx.translate(hx, hy); ctx.rotate(dip); ctx.lineCap = 'round';
+      const sp = L * 0.12; for (const [w, c] of [[3.2, 'rgba(42,21,16,0.85)'], [1.6, '#9a7a50']]) { ctx.lineWidth = w; ctx.strokeStyle = c; ctx.beginPath(); ctx.moveTo(-L * 0.1, -sp); ctx.lineTo(L * 0.3, 0); ctx.moveTo(-L * 0.1, sp); ctx.lineTo(L * 0.3, 0); ctx.lineTo(L * 0.85, 0); ctx.stroke(); }
+    }
     ctx.restore();
     // Wendel's pipe: a soft curl of smoke on the frames where the pipe is at his lips (the painted smoke was stripped)
     if (act === 'sit' && this.who === 'him' && (f === 1 || f === 2) && Math.random() < 0.25) {
@@ -1301,9 +1313,9 @@ const AFTER = {
       for (let i = 0; i < n; i++) { const [wx, wy] = at(100 + rnd(i) * 200, 188 + rnd(i + 40) * 104); blob(wx, wy, (7 + rnd(i + 7) * 9) * s, (5 + rnd(i + 8) * 5) * s, ['rgba(92,116,48,0.85)', 'rgba(118,140,62,0.8)', 'rgba(74,96,40,0.85)', 'rgba(140,160,80,0.7)'][i % 4]); }
       ctx.restore();
     }
-    if (taskProg('doorstep') >= 1 && art('yard-doorstep')) {   // turned to lie along the door's bottom edge (the threshold slopes down to the right); the painted step is mirrored
+    if (taskProg('doorstep') > 0 && art('yard-doorstep')) {   // turned to lie along the door's bottom edge (the threshold slopes down to the right); the painted step is mirrored
       const im = art('yard-doorstep'), [w, h] = slotSize('yard-doorstep', im), [ax, ay] = at(130, 380), [bx, by] = at(198, 410), [wx, wy] = at(161, 407);
-      ctx.save(); ctx.translate(wx, wy); ctx.rotate(Math.atan2(by - ay, bx - ax) - 0.32); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, -h / 2, w, h); ctx.restore(); }
+      ctx.save(); ctx.globalAlpha = Math.min(1, taskProg('doorstep') * 1.5); ctx.translate(wx, wy); ctx.rotate(Math.atan2(by - ay, bx - ax) - 0.32); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, -h / 2, w, h); ctx.restore(); }
     else if (taskProg('doorstep') >= 1) { for (const [px, py, r] of [[150, 430, 20], [196, 442, 22], [242, 432, 18]]) { const [wx, wy] = at(px, py); ctx.save(); ctx.globalAlpha = 0.95; blob(wx, wy + 2, r * s * 1.6, r * s * 0.7, 'rgba(40,30,20,0.25)'); blob(wx, wy, r * s * 1.5, r * s * 0.6, '#a7a094'); blob(wx - 3, wy - 2, r * s * 0.8, r * s * 0.25, 'rgba(230,226,215,0.6)'); ctx.restore(); } }
     if (taskProg('windowbox') >= 1 && art('yard-windowbox')) { const [wx, wy] = at(177, 366); drawSlot('yard-windowbox', wx, wy); }
     else if (taskProg('windowbox') >= 1) {   // a little box of flowers under the round window
@@ -1409,7 +1421,8 @@ const EXTRAS = [
     ctx.save(); ctx.globalAlpha = a; shadow(x, y, 40, 12);
     for (let i = 0; i < 7; i++) stick(x - 26 + rnd(i + 20) * 52, y - 6 - i * 3, 40 + rnd(i + 21) * 18, -0.35 + rnd(i + 22) * 0.7);
     stone(x + 34, y + 2, 9); stone(x + 46, y - 6, 7); ctx.restore(); } },
-  { gx: 0.44, gy: 0.10, show: () => taskProg('clothesline') >= 1 ? 1 : 0, draw(x, y, a, now) {   // up beside the house, on its right (Bryce)
+  { gx: 0.44, gy: 0.10, show: () => taskProg('clothesline'),   // comes up as she builds it
+    draw(x, y, a, now) {   // up beside the house, on its right (Bryce)
     const [x2, y2] = toWorld(0.54, 0.04), top = 70;
     if (drawSlot('washing-line', (x + x2) / 2, (y + y2) / 2 + 4, a)) return;
     stick(x, y - top / 2, top, Math.PI / 2); stick(x2, y2 - top / 2, top, Math.PI / 2);
