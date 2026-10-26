@@ -178,7 +178,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v47</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v48</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -196,15 +196,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 47;
+const BUILD = 48;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=47"></script>
-<script src="game.js?v=47"></script>
+<script src="content.js?v=48"></script>
+<script src="game.js?v=48"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -352,9 +352,10 @@ const WORKPATH = {
     const [x, y] = SPRING.at;
     return workLoop(g, 'spring-dig', () => [[x + 0.05, y + 0.05, 'gather', false, 5], [x + 0.06, y + 0.12, 'pickup', false, 2.5], [x + 0.03, y + 0.07, 'dig', false, 4]]);
   },
-  bench: (p, g) => workLoop(g, 'bench', () => [[0.90, 0.72, 'gather', false, 5], [0.65, 0.50, 'pickup', true, 3], [0.64, 0.48, 'dig', false, 4]]),   // he tugs a short log free at the yard edge, rolls it over and beds it in by the fire
-  roof: (p, g) => workLoop(g, 'roof', c => [[...MOSS_SPOTS[c % MOSS_SPOTS.length], 'pickup', false, 4], [0.41, 0.35, 'pickup', true, 2.5], [0.41, 0.35, 'gather', false, 5]]),   // she gathers moss round the yard and presses it onto the low edge of the roof
+  bench: (p, g) => workLoop(g, 'bench', () => [[0.90, 0.72, 'gather', false, 5], [0.60, 0.44, 'pickup', true, 3], [0.59, 0.43, 'build', false, 4]]),   // he tugs a short log free at the yard edge, rolls it over and beds it in by the fire
+  roof: (p, g) => workLoop(g, 'roof', c => [[...MOSS_SPOTS[c % MOSS_SPOTS.length], 'pickup', false, 4], [0.41, 0.35, 'pickup', true, 2.5], [0.41, 0.35, 'build', false, 5]]),   // she gathers moss round the yard and presses it onto the low edge of the roof
   rainbarrel: (p, g) => workLoop(g, 'rainbarrel', () => [[0.40, 0.48, 'gather', false, 6], [SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3], [0.41, 0.49, 'water', 'can', 4]]),   // scrub, fetch rinse water from the spring, rinse
+  fence: p => { const f = bedFrame(), a = Math.PI / 2 + (0.5 + p * (FENCE_N - 0.5)) * 2 * Math.PI / FENCE_N; return [...fromRing(Math.cos(a) * 1.18, Math.sin(a) * 1.18, f), 'build']; },   // round the ring panel by panel, gate last
   bedwater: (p, g) => workLoop(g, 'bedwater', c => [[SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3], [0.50 + (c % 3) * 0.05, 0.60 + (c % 2) * 0.05, 'water', 'can', 5]]),   // to and fro: fill the can at the spring pool, water a different bit of the bed each time
 };
 function woodTaken(i) { const [k, t] = segOf(taskProg('woodpile'), WOOD_ITEMS.length); return taskProg('woodpile') >= 1 || k > i ? 1 : k < i ? 0 : sstep(0.25, 0.6, t); }   // 0..1: how much of that lot Wendel has picked up
@@ -453,7 +454,7 @@ const hash = location.hash.slice(1);
 for (const tok of hash.split(/[#&]/)) if (/^(day|night|dawn|dusk|morning|evening)$/.test(tok)) tod = tok;
 if (/reset/.test(hash)) { G.reset(); }
 window.addEventListener('hashchange', () => location.reload());
-if (/test/.test(hash)) window.DBG = { cam, gnomes, IM, art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
+if (/test/.test(hash)) window.DBG = { cam, gnomes, IM, art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
 
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -474,7 +475,7 @@ class Gnome {
     this.say = null; this.sayT = 0; this.job = null; this.bob = 0;
     this.act = null; this.plan = null; this.routine = null; this.pace = null; this.aframe = 0; this.at = 0;
   }
-  goto(x, y) { this.tx = x; this.ty = y; this.walking = true; }
+  goto(x, y) { const r = bedRoute(this.gx, this.gy, x, y); [this.tx, this.ty] = r.shift(); this.route = r; this.walking = true; }   // round the seed bed, in by the gate
   faceTowards(x, y, propName) {   // action strips face right; flip so the gnome faces the fire (or the middle of the tile)
     const p = propName && PROPS.find(p => p.name === propName); const [tx, ty] = p ? [p.gx, p.gy] : [0.5, 0.5];
     const [ax] = toWorld(x, y), [bx] = toWorld(tx, ty); this.flip = bx < ax;
@@ -551,6 +552,7 @@ class Gnome {
       return;
     }
     const dx = this.tx - this.gx, dy = this.ty - this.gy, d = Math.hypot(dx, dy);
+    if (d < 0.004 && this.route && this.route.length) { [this.tx, this.ty] = this.route.shift(); return; }   // a bend on the way round the seed bed
     if (d < 0.004) {
       this.walking = false; this.frame = 0; this.aframe = 0; this.at = 0;
       if (this.plan === 'dance') { this.plan = null; this.dancing = true; this.speed = 0.055 + Math.random() * 0.01; return; }
@@ -1443,6 +1445,26 @@ function bedRing(th, big) {   // a point on the fence ring, world px
 const FENCE_SEGS = Array.from({ length: FENCE_N }, (_, k) => { const a0 = Math.PI / 2 + (k + 0.5) * 2 * Math.PI / FENCE_N, a1 = a0 + 2 * Math.PI / FENCE_N;
   const m = bedRing((a0 + a1) / 2, true), g = fromWorld(m[0], m[1]); return { a0, a1, gx: g.gx, gy: g.gy, gate: k === FENCE_N - 1 }; });
 const FENCE_GATE = FENCE_SEGS.find(f => f.gate);
+// Walking round the seed bed (once it is dug the gnomes no longer tramp over the crops; once fenced they go in and out by the
+// gate). Points are measured in "ring units": 1 is the fence ring, so r < 1 is inside the bed.
+function bedFrame() {   // the same ring the fence stands on
+  const sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = (G.landStage().key !== 'barren' ? 215 : BED_OVAL.w) / 2 * 0.95; return { cx, cy: cy + 12, W, H: W * BED_OVAL.ratio }; }
+function toRing(gx, gy, f) { const [x, y] = toWorld(gx, gy), u = (x - f.cx) / f.W, v = (y - f.cy + u * f.W * 0.22) / f.H; return [u, v]; }
+function fromRing(u, v, f) { const g = fromWorld(f.cx + u * f.W, f.cy + v * f.H - u * f.W * 0.22), [i, j] = g.tile.split(',').map(Number); return [g.gx + i, g.gy + j]; }
+function bedRoute(ax, ay, bx, by) {
+  if (taskProg('bed') < 1) return [[bx, by]];
+  const f = bedFrame(), A = toRing(ax, ay, f), B = toRing(bx, by, f), rad = q => Math.hypot(q[0], q[1]);
+  const fenced = taskProg('fence') >= 1, ga = (FENCE_GATE.a0 + FENCE_GATE.a1) / 2, gate = fromRing(Math.cos(ga) * 1.2, Math.sin(ga) * 1.2, f);
+  const aIn = rad(A) < 1, bIn = rad(B) < 1;
+  if (aIn && bIn) return [[bx, by]];
+  if (aIn || bIn) return fenced ? (aIn ? [gate, ...bedRoute(gate[0], gate[1], bx, by)] : [...bedRoute(ax, ay, gate[0], gate[1]), [bx, by]]) : [[bx, by]];
+  let hit = false; for (let i = 1; i < 20; i++) { const t = i / 20; if (rad([A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t]) < 1.08) { hit = true; break; } }
+  if (!hit) return [[bx, by]];
+  let a0 = Math.atan2(A[1], A[0]), a1 = Math.atan2(B[1], B[0]), da = a1 - a0; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
+  const out = [], n = Math.max(1, Math.ceil(Math.abs(da) / 0.9));   // bends a little way outside the ring, every ~50 degrees
+  for (let k = 1; k <= n; k++) { const a = a0 + da * (k - 0.5) / n; out.push(fromRing(Math.cos(a) * 1.25, Math.sin(a) * 1.25, f)); }
+  return [...out, [bx, by]];
+}
 function drawFenceSeg(A, B, a, img = IM['kit-fence-straight-a'], foot = FENCE_FOOT) {   // fit one panel between two post feet, at the shared height
   if (!img || !img.width) return;
   if (A[0] > B[0]) [A, B] = [B, A];
@@ -2592,7 +2614,7 @@ function landNote() {   // why growing things matters: every harvest (and most j
 }
 function hours(mins) { const h = mins / 60 * G.taskSpeed(); return h < 1 ? `${Math.round(h * 60)} minutes` : h < 1.75 ? '1 hour' : `${Math.round(h)} hours`; }
 function openPack() {
-  let html = `<h2>Your pack<small>things gathered from the land</small></h2><p>Tap the softly glowing things on the ground to pick things up. Jobs use them.</p><div class="pack">`;
+  let html = `<h2>Your pack<small>things gathered from the land</small></h2><p>Tap the little things lying about on the ground to pick them up. Jobs use them.</p><div class="pack">`;
   for (const [k, r] of Object.entries(C.resources)) { const n = G.s.inv[k] || 0; html += `<div class="${n ? '' : 'zero'}">${iconHtml(k)}<b>${n}</b>${r.name}</div>`; }
   openSheet('pack', html + `</div>`);
 }
@@ -2645,7 +2667,7 @@ function journalFoot(v) {   // what you know about a creature's feeding, nest an
 }
 function openJournal() {
   const seen = C.visitors.filter(v => G.met(v.id)).length, regs = C.visitors.filter(v => G.isRegular(v.id)).length;
-  let html = `<h2>Field journal<small>${seen} of ${C.visitors.length} met${regs ? ` · ${regs} regular${regs > 1 ? 's' : ''}` : ''}</small></h2><p>Tap a visitor in the garden to note it down; a soft glow means someone new. Tap a page to read it.</p>${G.s.festival.stage !== 'waiting' ? `<p><button class="act quiet" data-a="festgreen">🎉 ${C.festival.name}</button></p>` : ''}${neighboursHtml()}<div class="jgrid">`;
+  let html = `<h2>Field journal<small>${seen} of ${C.visitors.length} met${regs ? ` · ${regs} regular${regs > 1 ? 's' : ''}` : ''}</small></h2><p>Tap a visitor in the garden to note it down; a little twinkle over its head means someone new. Tap a page to read it.</p>${G.s.festival.stage !== 'waiting' ? `<p><button class="act quiet" data-a="festgreen">🎉 ${C.festival.name}</button></p>` : ''}${neighboursHtml()}<div class="jgrid">`;
   for (const v of C.visitors) { const m = G.met(v.id); html += `<button class="jcard${m ? '' : ' unseen'}" data-a="${m ? 'entry' : ''}" data-id="${v.id}">${portraitHtml(v)}<b>${m ? v.name : '?'}</b>${G.hasNest(v.id) ? '<i>lives here</i>' : G.isRegular(v.id) ? '<i>regular</i>' : ''}</button>`; }
   html += `</div>`;
   const nf = Object.keys(G.s.secrets.found).length;
@@ -2845,7 +2867,7 @@ function start() {
   festCheck();
   if (!G.s.flags.welcomed) {
     G.s.flags.welcomed = true; G.save();
-    openSheet('welcome', `<h2>Welcome to the garden</h2><p>Wendel and Hazel, two young gnomes, newly married, have left their old home and come to make a new one here, in a clearing the loggers left bare. Nothing grows here any more.</p><p>But gnomes have a gift: wherever they live and tend and grow things, the land slowly remembers how to be alive. Water, seedlings, saplings, flowers: every living thing they grow brings a little more green back, and the creatures with it.</p><p>You are their unseen helper spirit. Help them settle in, and the valley will come back to life around them.</p><h3>How it works</h3><p>✨ <b>Touch the softly glowing things.</b> Things lying on the ground go into your pack (🧺 Pack).</p><p>🔨 <b>A soft glow behind their belongings means a job you can start.</b> Give the materials and a gnome gets to work while you go about your day.</p><p>Come back whenever you like: the land leaves something new for you each time.</p><p style="margin-top:12px"><button class="act" data-a="close">Let's begin</button></p>`);
+    openSheet('welcome', `<h2>Welcome to the garden</h2><p>Wendel and Hazel, two young gnomes, newly married, have left their old home and come to make a new one here, in a clearing the loggers left bare. Nothing grows here any more.</p><p>But gnomes have a gift: wherever they live and tend and grow things, the land slowly remembers how to be alive. Water, seedlings, saplings, flowers: every living thing they grow brings a little more green back, and the creatures with it.</p><p>You are their unseen helper spirit. Help them settle in, and the valley will come back to life around them.</p><h3>How it works</h3><p>✨ <b>Tap the little things lying about</b> (twigs, stones, seeds: they catch the light now and then). They go into your pack (🧺 Pack).</p><p>🔨 <b>A dot on the Jobs button means a job is ready to start.</b> Give the materials and a gnome gets to work while you go about your day.</p><p>Come back whenever you like: the land leaves something new for you each time.</p><p style="margin-top:12px"><button class="act" data-a="close">Let's begin</button></p>`);
   }
 }
 })();
