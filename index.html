@@ -200,7 +200,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v52</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v53</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -219,15 +219,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 52;
+const BUILD = 53;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=52"></script>
-<script src="game.js?v=52"></script>
+<script src="content.js?v=53"></script>
+<script src="game.js?v=53"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -495,7 +495,7 @@ const hash = location.hash.slice(1);
 for (const tok of hash.split(/[#&]/)) if (/^(day|night|dawn|dusk|morning|evening)$/.test(tok)) tod = tok;
 if (/reset/.test(hash)) { G.reset(); }
 window.addEventListener('hashchange', () => location.reload());
-if (/test/.test(hash)) window.DBG = { cam, gnomes, IM, art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spirit: n => openLesson(n || 3), get allDone() { return ALLDONE; }, groundReady: () => !NEWGROUND || !groundMissing(), spiritAt: () => SPIRIT_HINT.screen, spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
+if (/test/.test(hash)) window.DBG = { cam, gnomes, IM, dishFill: f => startDishFill(f), art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spirit: n => openLesson(n || 3), get allDone() { return ALLDONE; }, groundReady: () => !NEWGROUND || !groundMissing(), spiritAt: () => SPIRIT_HINT.screen, spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
 
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -575,6 +575,11 @@ class Gnome {
     }
     if (!this.walking) {
       this.wait -= dt;
+      if (this.errand === 'dish') {   // kneeling at the feeding dish, tipping the food in a little at a time
+        const e = DISH_FILL; if (!e || e.g !== this || !G.s.feeder.food) { this.errand = null; this.act = null; this.wait = 0.5; return; }
+        e.p = Math.min(1, e.p + dt / 3); if (e.p >= 1) { DISH_FILL = null; this.errand = null; this.act = null; this.plan = null; this.wait = 1.5; this.dir = 'front'; }
+        return;
+      }
       if (this.job) {
         this.bob += dt * 6; const still = G.running().some(r => r.id === this.job);
         if (!still) { this.job = null; this.act = null; this.pace = null; this.wait = 0.5; return; }
@@ -596,6 +601,7 @@ class Gnome {
     if (d < 0.004 && this.route && this.route.length) { [this.tx, this.ty] = this.route.shift(); return; }   // a bend on the way round the seed bed
     if (d < 0.004) {
       this.walking = false; this.frame = 0; this.aframe = 0; this.at = 0;
+      if (this.errand === 'dish') { this.faceTowards(this.gx, this.gy, [FEEDER.gx, FEEDER.gy]); this.act = 'pickup'; this.aframe = 1; this.at = -99; return; }   // bent over the dish (held on the reaching-down frame)
       if (this.plan === 'dance') { this.plan = null; this.dancing = true; this.speed = 0.055 + Math.random() * 0.01; return; }
       if (this.plan === 'inside') { this.inside = true; this.plan = null; this.act = this.routine; this.aframe = 0; this.wait = 2; return; }
       if (this.plan && this.faceTo) this.faceTowards(this.gx, this.gy, this.faceTo);   // walking turned him; turn back to the work
@@ -1625,8 +1631,19 @@ function drawDishPart(x, y, a, part) {   // the painted dish, or only its stump 
   if (part !== 'stump') return drawSlot('feeding-dish', x, y, a);
   const [, h] = slotSize('feeding-dish', img); ctx.save(); ctx.beginPath(); ctx.rect(x - 60, y - h * 0.56, 120, h * 0.56 + 20); ctx.clip(); drawSlot('feeding-dish', x, y, a); ctx.restore(); return true;
 }
+// Bryce: putting food out is not magic; a gnome walks over and tips it into the dish (whoever is free). The dish fills as they tip it in.
+let DISH_FILL = null;   // { food, g, p: 0..1 tipped in so far }
+function dishSpot() { return [FEEDER.gx - 0.045, FEEDER.gy + 0.015]; }
+function startDishFill(food) {
+  const free = gnomes.filter(g => !g.inside && !g.dancing && !(g.job && G.running().some(r => r.id === g.job))), pool = free.length ? free : [];
+  const g = pool[(Math.random() * pool.length) | 0]; if (!g) { DISH_FILL = null; return null; }
+  DISH_FILL = { food, g, p: 0 }; g.errand = 'dish'; g.job = null; g.routine = null; g.act = null; g.pace = null;
+  const [x, y] = dishSpot(); g.plan = 'pickup'; g.carryWalk = g.who === 'her';   // Hazel carries her basket; Wendel's carry strip is firewood, so he just walks
+  g.goto(x, y); g.faceTowards(x, y, [FEEDER.gx, FEEDER.gy]); return g;
+}
+function dishFood() { const f = G.s.feeder.food; if (!f) { DISH_FILL = null; return [null, 0]; } return [f, DISH_FILL && DISH_FILL.food === f ? DISH_FILL.p : 1]; }   // what shows in the dish, and how much of it
 function drawFeeder(x, y, a, now) {
-  const f = G.s.feeder.food, empty = !f && a >= 1;
+  const [f, fp] = dishFood(), empty = !f && a >= 1;
   FEEDER.screen = { x, y, w: 64, h: 40 };
   if (a < 1 && art('feeding-dish')) { drawDishPart(x, y, sstep(0.1, 0.3, a), 'stump'); drawDishPart(x, y, sstep(0.43, 0.63, a)); return; }   // the stump round goes in, then the stone on top
   if (!drawSlot('feeding-dish', x, y, a)) {   // stand-in: a flat stone dish on a short stump
@@ -1637,7 +1654,10 @@ function drawFeeder(x, y, a, now) {
     blob(x, y - 19, 19, 5, '#6d675d'); ctx.restore();
   }
   if (!f || a < 1) return;
-  for (let i = 0; i < 9; i++) { const fx = x - 12 + rnd(i + 50) * 24, fy = y - 20 + rnd(i + 60) * 5; f === 'seed' ? blob(fx, fy, 2.4, 1.6, i % 2 ? '#c9a46a' : '#a88450') : blob(fx, fy - 1, 3.2, 3.2, i % 3 ? '#5a3d78' : '#7a4c8a'); }
+  const painted = !!art('feeding-dish'), cx = x + (painted ? 1 : 0), cy = painted ? y - 56 : y - 18, rx = painted ? 15 : 12, ry = painted ? 4 : 2.5, n = f === 'seed' ? 22 : 12;   // heaped in the bowl (painted dish: bowl hollow is 82% of the way up)
+  for (let i = 0; i < Math.round(n * fp); i++) { const r = Math.sqrt(rnd(i + 50)), t = rnd(i + 60) * 6.283, fx = cx + Math.cos(t) * r * rx, fy = cy + Math.sin(t) * r * ry - (1 - r) * 2;
+    if (f === 'seed') blob(fx, fy, 1.8, 1.2, ['#c9a46a', '#a88450', '#d8bc84'][i % 3]);
+    else { blob(fx, fy, 3, 3, ['#4a2c5e', '#6a3a7a', '#8a2a3a'][i % 3]); blob(fx - 1, fy - 1, 0.9, 0.9, 'rgba(255,240,240,0.7)'); } }
 }
 // where each nesting creature settles once it has been fed on enough days (code stand-ins until nest-<kind> is painted)
 const NESTS = { robin:[0.92, 0.64], wren:[0.66, 0.94], mouse:[0.16, 0.66], hedgehog:[0.96, 0.82], bluetongue:[0.10, 0.30], bandicoot:[0.40, 0.92] };
@@ -2850,7 +2870,7 @@ sheet.addEventListener('click', e => {
   if (a === 'start') { if (G.startTask(id)) { toast('Set to work.'); for (const g of gnomes) if (g.who === G.taskDef(id).who) { g.walking = false; g.wait = 0.1; } } }
   if (a === 'openmagic') { openMagic(); return; }
   if (a === 'cast') { if (G.cast(id)) { toast(C.spells[id].name + '.'); if (id === 'legs') { closeSheet(); const [x, y] = toWorld(...TOAD_FROM); cam.x = x; cam.y = y - 40; return; } } }   // watch it walk off
-  if (a === 'food') { if (G.putFood(id)) { toast(id === 'seed' ? 'Seed in the dish.' : 'Berries in the dish.'); closeSheet(); return; } }
+  if (a === 'food') { if (G.putFood(id)) { const g = startDishFill(id); toast(g ? `${g.who === 'her' ? 'Hazel' : 'Wendel'} takes the ${id === 'seed' ? 'seed' : 'berries'} over to the dish.` : id === 'seed' ? 'Seed in the dish.' : 'Berries in the dish.'); closeSheet(); return; } }
   if (a === 'help') return doHelp();
   if (a === 'folk') return openFolk(id);
   if (a === 'traveller') return openTraveller();
