@@ -184,7 +184,7 @@ window.CONTENT = {
   visitors: [
     { id:'robin',    name:'Robin',       hours:[6,18],  weight:4, h:44, faces:'L', icon:'🐦', speed:0.25, eats:['seed'], nest:'nest',
       note:'Hops after the digging, hoping for worms.' },
-    { id:'mouse',    name:'Field mouse', hours:[0,24],  weight:3, h:30, faces:'L', icon:'🐭', speed:0.06, eats:['seed'], nest:'burrow',
+    { id:'mouse',    name:'Field mouse', hours:[0,24],  weight:3, h:80, faces:'L', icon:'🐭', speed:0.06, eats:['seed'], nest:'burrow',
       note:'Keeps a close eye on the seed bed.',
       trouble:{ text:'has got its head stuck in an old loggers\' bottle.', act:'Tip the bottle', thanks:'Out it popped, whiskers first, and sat washing its face as if nothing had happened.' } },
     { id:'hedgehog', name:'Hedgehog',    hours:[17,24], weight:3, h:50, faces:'R', icon:'🦔', speed:0.05, eats:['berry'], nest:'leafpile',
