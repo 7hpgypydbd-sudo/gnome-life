@@ -1585,7 +1585,7 @@ function updateRabbit(dt) {
   if (d <= sp) { r.gx = st[0]; r.gy = st[1]; r.hop = 0; if (st[2]) { r.act = st[2]; r.t = st[3]; if (r.say) { toast(r.say); r.say = null; } } else r.i++; return; }
   r.gx += dx / d * sp; r.gy += dy / d * sp;
 }
-const RABBIT_PIX = 0.65, RABBIT_POSE = { eat: 'dish', nibble: 'nibble', berry: 'berry', sniff: 'sit', nap: 'nap' };   // painted poses (art day 10); hopping uses the low crouch
+const RABBIT_PIX = 0.75, RABBIT_POSE = { eat: 'dish', nibble: 'nibble', berry: 'berry', sniff: 'sit', nap: 'nap' };   // painted poses (art day 10); hopping uses the low crouch
 function drawRabbit(now) {
   const r = RABBIT.on; if (!r) return;
   let [x, y] = toWorld(r.gx, r.gy); const up = r.act ? 0 : Math.abs(Math.sin(r.hop * Math.PI / 2)) * 12, nap = r.act === 'nap', bob = r.act === 'eat' || r.act === 'nibble' ? Math.abs(Math.sin(now / 160)) * 1.5 : r.act === 'sniff' ? Math.sin(now / 90) * 0.5 : 0;
