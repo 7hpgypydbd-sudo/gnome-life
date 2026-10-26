@@ -7,6 +7,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1c2418">
 <title>Gnome Life</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap">
 <style>
   :root { --paper:#f3e9d2; --paper2:#e6d9bd; --ink:#2b2418; --ink2:#6b5a44; --green:#5b6b2d; --red:#b14c37; --safe-b: env(safe-area-inset-bottom); }
   html,body { margin:0; height:100%; background:#1c2418; overflow:hidden; overscroll-behavior:none; -webkit-user-select:none; user-select:none; touch-action:none; font-family: Georgia, "Times New Roman", serif; -webkit-tap-highlight-color: transparent; }
@@ -81,11 +83,85 @@
   .pack div.zero { opacity:.45; }
   .pack img { width:40px; height:40px; display:block; margin:0 auto 2px; }
   .pack b { display:block; font-size:19px; color:var(--ink); }
+
+  /* ---------- parchment look (2026-10-26, Bryce chose "torn parchment"): old paper, ragged edges, wax seal, sprigs ---------- */
+  :root { --paper:#f1e5c6; --paper2:#e2d1a8; --ink:#33251a; --ink2:#6a5640; --green:#4d5c27; --red:#8a2f1d; --gold:#b8892f;
+    --fell:"IM Fell English", Georgia, serif; --body:"EB Garamond", Georgia, "Times New Roman", serif;
+    --parch: radial-gradient(ellipse at 50% 0%, rgba(255,250,228,.75), transparent 62%), radial-gradient(ellipse at 50% 112%, rgba(140,95,40,.26), transparent 58%), url(sprites/ui/paper.webp) 0 0 / 256px;
+    --edge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='16' viewBox='0 0 160 16' preserveAspectRatio='none'%3E%3Cpath d='M0 16L0 10.6L4.1 9.3L7.1 11.6L9.6 10.5L15.3 7.6L19.7 11.0L22.4 9.2L27.3 10.3L32.4 3.6L35.7 3.9L40.0 4.9L44.5 7.9L48.4 9.2L51.2 6.8L56.1 9.3L60.1 6.1L63.5 9.6L67.0 12.7L70.2 11.8L75.8 9.5L79.6 5.5L82.2 5.7L87.8 4.1L92.4 7.2L96.9 6.7L100.2 4.4L103.0 6.6L105.5 4.7L109.8 9.3L113.7 11.7L118.5 10.5L123.0 10.1L127.6 8.0L130.3 8.7L134.9 6.4L138.4 9.5L144.4 3.9L149.3 5.9L152.7 4.4L155.3 4.7L160 10.6L160 16Z'/%3E%3C/svg%3E"); --sprig: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='16' viewBox='0 0 150 16'%3E%3Cpath d='M6 8H144' stroke='%234d5c27' stroke-width='1' opacity='.7'/%3E%3Cg fill='%234d5c27'%3E%3Cellipse cx='51' cy='5' rx='6' ry='2.4' transform='rotate(-25 51 5)'/%3E%3Cellipse cx='63' cy='11' rx='6' ry='2.4' transform='rotate(25 63 11)'/%3E%3Cellipse cx='75' cy='4.5' rx='7' ry='2.8' transform='rotate(-15 75 4.5)'/%3E%3Cellipse cx='87' cy='11' rx='6' ry='2.4' transform='rotate(25 87 11)'/%3E%3Cellipse cx='99' cy='5' rx='6' ry='2.4' transform='rotate(-25 99 5)'/%3E%3Ccircle cx='75' cy='8' r='2'/%3E%3C/g%3E%3C/svg%3E"); }
+  html,body { font-family: var(--body); font-variant-numeric: lining-nums; }
+  #sheet, #room .box, #toast, #bubble, #hud .tag { background: var(--parch), var(--paper); background-blend-mode: normal, normal, multiply; color: var(--ink); }
+  #sheet { border-radius:0; padding-top:30px; box-shadow: inset 0 0 34px rgba(130,90,35,.32);
+    -webkit-mask: var(--edge) 0 0 / 160px 16px repeat-x, linear-gradient(#000,#000) 0 15px / 100% calc(100% - 15px) no-repeat;
+            mask: var(--edge) 0 0 / 160px 16px repeat-x, linear-gradient(#000,#000) 0 15px / 100% calc(100% - 15px) no-repeat; }
+  #shade { background: rgba(18,13,6,.42); }
+  #sheet h2, #room h2 { font-family: var(--fell); font-weight:400; font-size:29px; line-height:1.1; letter-spacing:.2px; color:var(--ink); }
+  #sheet h2::after { content:""; display:block; width:150px; height:16px; margin:6px 0 2px; background: var(--sprig) no-repeat; }
+  #sheet h2 small { display:block; margin:3px 0 0; font-family: var(--body); font-style:italic; font-size:15px; color:var(--ink2); }
+  #sheet .jpage h2::after { margin:6px auto 2px; }
+  #sheet h3 { display:flex; align-items:center; gap:10px; margin:18px 0 4px; font-family: var(--fell); font-weight:400; font-variant: small-caps; text-transform:none; letter-spacing:1.4px; font-size:17px; color:var(--green); }
+  #sheet h3::before, #sheet h3::after { content:""; flex:1; height:1px; background: linear-gradient(90deg, transparent, rgba(77,92,39,.55), transparent); }
+  #sheet p { font-size:17px; color:var(--ink2); }
+  .row { border-top:1px dashed rgba(51,37,26,.22); padding:12px 0; }
+  .row.hi { background: rgba(184,137,47,.13); border-top:0; border-radius:6px; }
+  .row .t b, .jrow .t b { font-family: var(--fell); font-weight:400; font-size:20px; }
+  .row .t span, .jrow .t span { font-size:15.5px; }
+  .row .t span.bad { color:var(--red); font-style:italic; }
+  .row .t span.bl { font-style:italic; display:block; margin:1px 0 3px; line-height:1.3; } .row .t .hrs { white-space:nowrap; } .row .t .cost i { margin-right:5px; }
+  .row .jpic { width:58px; height:52px; object-fit:contain; flex:none; filter: drop-shadow(0 1px 1px rgba(40,25,10,.25)); }
+  .row .t .who { background:none; color:var(--green); font-family: var(--fell); font-weight:400; font-size:15px; padding:0; border-radius:0; margin-right:2px; white-space:nowrap; }
+  .who[data-w]::before { content:""; display:inline-block; width:26px; height:26px; margin:-3px 5px 0 0; vertical-align:middle; border-radius:50%; border:1.5px solid var(--gold); background: #f8efd6 center / cover no-repeat; box-shadow:0 1px 2px rgba(0,0,0,.25); }
+  .who[data-w="him"]::before { background-image:url(sprites/face-him.webp); } .who[data-w="her"]::before { background-image:url(sprites/face-her.webp); }
+  .act { font-family: var(--fell); font-weight:400; font-size:18px; letter-spacing:.3px; color:#f6ecd2; border-radius:7px; padding:11px 17px 12px;
+    background: linear-gradient(#5f7031, #45531e);
+    box-shadow: inset 0 1px 0 rgba(255,255,220,.25), inset 0 0 0 3px #45531e, inset 0 0 0 4px rgba(240,225,170,.45), 0 2px 3px rgba(40,25,10,.3); }
+  .act[disabled] { background: rgba(255,250,235,.3); color: rgba(106,86,64,.75); box-shadow: inset 0 0 0 1.5px rgba(106,86,64,.35); }
+  .act.quiet { background: rgba(255,250,235,.55); color: var(--ink); box-shadow: inset 0 0 0 1.5px rgba(51,37,26,.35), 0 1px 2px rgba(40,25,10,.2); }
+  .close { right:12px; top:14px; width:44px; height:44px; border-radius:50%; font-family: var(--fell); font-size:24px; line-height:44px; color:#f2d9c4;
+    background: radial-gradient(circle at 38% 34%, #b8513a, #7b2416 72%); box-shadow: 0 2px 3px rgba(0,0,0,.35), inset 0 -2px 3px rgba(0,0,0,.25), inset 0 0 0 4px rgba(120,30,15,.6); }
+  .prog { height:6px; background: rgba(51,37,26,.12); } .prog i { background: linear-gradient(90deg, #6f8a34, #a7b85a); }
+  .meter i { background: rgba(51,37,26,.12); }
+  .pack { gap:10px; } .pack div { background: rgba(255,250,235,.4); border:1px solid rgba(51,37,26,.13); border-radius:6px; }
+  .pack b { font-family: var(--body); font-weight:600; font-size:22px; }
+  .jcard { background: rgba(255,250,235,.45); border:1px solid rgba(51,37,26,.13); border-radius:6px; box-shadow:none; } .jcard b { font-family: var(--fell); font-weight:400; font-size:15px; }
+  .por { border-color: var(--gold); background: radial-gradient(circle at 50% 40%, #fbf4e2, #e8d8b4); }
+  .jpage .lore { font-family: var(--body); font-size:18px; } .jrow { border-top:1px dashed rgba(51,37,26,.22); }
+  .letter ul.done { margin:-4px 0 10px; padding-left:22px; font-size:17px; color:var(--ink); } .letter ul.done li::marker { content:'❦  '; color:var(--green); }
+  .letter p { font-style:italic; color:var(--ink) !important; } .letter .sign { text-align:right; font-family: var(--fell); font-style:normal; font-size:19px; }
+  .letter .sign img { width:34px; height:34px; border-radius:50%; border:1.5px solid var(--gold); vertical-align:middle; margin-left:6px; }
+  /* the room: a torn sheet of paper */
+  #room .box { border-radius:0; box-shadow: inset 0 0 30px rgba(130,90,35,.32);
+    clip-path: polygon(0 1.2%, 5% .3%, 13% 1%, 24% .1%, 36% .9%, 49% .2%, 61% 1%, 73% .2%, 86% .9%, 94% .1%, 100% .8%, 99.4% 22%, 100% 47%, 99.3% 74%, 100% 99%, 91% 99.7%, 78% 99%, 64% 100%, 50% 99.2%, 35% 99.9%, 21% 99.1%, 8% 99.8%, 0 99.2%, .6% 76%, 0 51%, .7% 26%); }
+  #room canvas { border-radius:4px; } #room p { font-style:italic; color:var(--ink2); }
+  /* toast and speech bubble: scraps of paper */
+  #toast { border-radius:3px; font-family: var(--fell); font-size:17px; box-shadow: 0 3px 10px rgba(0,0,0,.35);
+    clip-path: polygon(0 8%, 6% 0, 30% 5%, 55% 0, 80% 6%, 100% 0, 98% 50%, 100% 94%, 72% 100%, 46% 95%, 20% 100%, 2% 96%, 1% 50%); padding:12px 18px; }
+  #bubble { border-radius:12px; font-family: var(--body); font-style:italic; font-size:17px; box-shadow: 0 2px 8px rgba(0,0,0,.35), inset 0 0 0 1px rgba(51,37,26,.18); }
+  #bubble:after { border-top-color: #efe2c2; }
+  /* the title: a little paper label pinned at the top */
+  #hud .tag { display:inline-block; max-width:80vw; padding:6px 14px 7px; text-shadow:none; box-shadow: 0 2px 6px rgba(0,0,0,.35);
+    clip-path: polygon(0 7%, 3% 0, 40% 4%, 100% 0, 98.5% 50%, 100% 96%, 60% 100%, 2% 98%, .5% 55%); }
+  #hud .tag h1 { font-family: var(--fell); font-weight:400; font-size:23px; color:var(--ink); letter-spacing:.3px; }
+  #hud .tag #sub { font-family: var(--body); font-style:italic; font-size:14.5px; color:var(--ink2); opacity:1; margin-top:0; }
+  #hud .tag #ver { color:var(--ink2); }
+  #hud #busy { display:none; }
+  /* the four buttons: painted medallions on a wooden shelf */
+  #bar { padding: 0 0 0; gap:0; }
+  #btns { gap:0; justify-content:space-around; padding: 22px 8px calc(var(--safe-b) + 8px); margin-top:4px;
+    background: linear-gradient(rgba(0,0,0,0) 0 18px, #6e4c2c 18px, #5a3d22 60%, #4a3119); position:relative; }
+  #btns::before { content:""; position:absolute; left:0; right:0; top:18px; height:3px; background: rgba(255,220,170,.28); }
+  .btn { background:none; box-shadow:none; color:#f2e4c3; font-family: var(--fell); font-weight:400; font-size:15px; letter-spacing:.4px; min-height:0; padding:0 0 2px; max-width:96px; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+  .btn .ic { display:flex; align-items:center; justify-content:center; width:60px; height:60px; margin:-22px auto 2px; border-radius:50%;
+    background: var(--parch), var(--paper); background-blend-mode: normal, normal, multiply; border:2.5px solid var(--gold); box-shadow: 0 3px 6px rgba(0,0,0,.45), inset 0 0 10px rgba(130,90,35,.3); overflow:hidden; text-shadow:none; }
+  .btn .ic img { width:52px; height:52px; border-radius:50%; object-fit:cover; }
+  .btn:active { transform: translateY(1px); box-shadow:none; }
+  .btn .dot { top:-26px; right:8px; border-color:#f2e4c3; font-family: var(--body); font-weight:600; }
+  #load { font-family: var(--fell); font-size:19px; font-style:italic; }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v30</small></h1><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="sub"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v31</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -103,15 +179,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 30;
+const BUILD = 31;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=30"></script>
-<script src="game.js?v=30"></script>
+<script src="content.js?v=31"></script>
+<script src="game.js?v=31"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -538,21 +614,22 @@ function float(text, x, y) { floaters.push({ text, x, y: y - 40, life: 0 }); }
 const lcName = (t) => t[0].toLowerCase() + t.slice(1);
 function shortName(d) { return (d.short || d.name).replace(/^(Fill|Mend|Plant|Set|Stack|Lay|Scrub|String up|Hang|Start|Scatter|Raise|Dig|Nail up|Build|Coax|Keep|Sow|Line|Carve)\s+(the\s+|a\s+|an\s+)?/i, ''); }
 function rrect(x, y, w, h, r) { r = Math.min(r, h / 2, w / 2); ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+const TAGFONT = '15px "IM Fell English", Georgia, serif';
 function drawBusyTag(g, now) {
   const r = G.running().find(r => r.id === g.job); if (!r) return;
   const sx = (g.screen.x - cam.x) * cam.z + W / 2, sy = (g.screen.y - g.screen.h - cam.y) * cam.z + H / 2 - 14 + Math.sin(now / 600) * 2;
   const label = `${C.names[g.who]} · ${shortName(r.def)}`, left = G.timeLeft(r.endsAt);
-  ctx.save(); ctx.font = 'bold 13px Georgia'; const tw = ctx.measureText(label).width; ctx.font = '12px Georgia'; const lw = ctx.measureText(left).width;
+  ctx.save(); ctx.font = TAGFONT; const tw = ctx.measureText(label).width; ctx.font = 'italic 12px "EB Garamond", Georgia'; const lw = ctx.measureText(left).width;
   const w = Math.max(tw, lw + 60) + 22, h = 44, x = Math.round(Math.max(6, Math.min(W - w - 6, sx - w / 2))), y = Math.round(Math.max(90, sy - h));   // kept on screen even when the gnome has wandered off the edge
-  ctx.globalAlpha = 0.95; ctx.fillStyle = '#f3e9d2'; ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
-  rrect(x, y, w, h, 10); ctx.fill();
+  ctx.globalAlpha = 0.96; ctx.fillStyle = '#f1e5c6'; ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+  rrect(x, y, w, h, 4); ctx.fill(); ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; ctx.strokeStyle = 'rgba(51,37,26,.25)'; ctx.lineWidth = 1; rrect(x + 2.5, y + 2.5, w - 5, h - 5, 3); ctx.stroke();
   if (sx > x + 10 && sx < x + w - 10) { ctx.beginPath(); ctx.moveTo(sx - 6, y + h); ctx.lineTo(sx + 6, y + h); ctx.lineTo(sx, y + h + 7); ctx.closePath(); ctx.fill(); }
   ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-  ctx.fillStyle = '#2b2418'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.font = 'bold 13px Georgia'; ctx.fillText('🔨 ' + label, x + 10, y + 17);
+  ctx.fillStyle = '#33251a'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.font = TAGFONT; ctx.fillText(label, x + 10, y + 18);
   const p = 1 - Math.max(0, r.endsAt - G.now()) / (r.endsAt - r.startedAt), bx = x + 10, by = y + 26, bw = w - 20 - lw - 8;
-  ctx.fillStyle = '#e6d9bd'; rrect(bx, by, bw, 7, 4); ctx.fill();
-  ctx.fillStyle = '#5b6b2d'; rrect(bx, by, Math.max(4, bw * p), 7, 4); ctx.fill();
-  ctx.fillStyle = '#6b5a44'; ctx.font = '12px Georgia'; ctx.textAlign = 'right'; ctx.fillText(left, x + w - 10, y + 34);
+  ctx.fillStyle = 'rgba(51,37,26,.13)'; rrect(bx, by, bw, 6, 3); ctx.fill();
+  ctx.fillStyle = '#6f8a34'; rrect(bx, by, Math.max(4, bw * p), 6, 3); ctx.fill();
+  ctx.fillStyle = '#6a5640'; ctx.font = 'italic 12px "EB Garamond", Georgia'; ctx.textAlign = 'right'; ctx.fillText(left, x + w - 10, y + 34);
   ctx.restore();
 }
 
@@ -1952,11 +2029,18 @@ function openSeedbed() {
   else body = `<div class="row"><div class="t"><b>Ready to pick</b><span>Gives ${costHtml(c.harvest)} and a little more green</span></div><button class="act" data-a="harvest">Pick</button></div>`;
   openSheet('seedbed', `<h2>The seed bed<small>${p.grown} grown so far</small></h2>${body}`);
 }
-function hours(mins) { const h = mins / 60 * G.taskSpeed(); return h < 1 ? `${Math.round(h * 60)} minutes` : h < 1.75 ? 'about an hour' : `about ${Math.round(h)} hours`; }
+function hours(mins) { const h = mins / 60 * G.taskSpeed(); return h < 1 ? `${Math.round(h * 60)} minutes` : h < 1.75 ? '1 hour' : `${Math.round(h)} hours`; }
 function openPack() {
   let html = `<h2>Your pack<small>things gathered from the land</small></h2><p>Tap the softly glowing things on the ground to pick things up. Jobs use them.</p><div class="pack">`;
   for (const [k, r] of Object.entries(C.resources)) { const n = G.s.inv[k] || 0; html += `<div class="${n ? '' : 'zero'}">${iconHtml(k)}<b>${n}</b>${r.name}</div>`; }
   openSheet('pack', html + `</div>`);
+}
+const JOB_PIC = { ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'stonebench',
+  woodpile: 'firewood', doorstep: 'yard-doorstep', rainbarrel: 'barrel-full', clothesline: 'washing-line', lantern: 'lanternstump', windowbox: 'yard-windowbox', wormlantern: 'worm-lantern',
+  wormlamp: 'worm-lamp', house1: 'house-hollowed', house2: 'house-windows', house3: 'house-finished', hedgehoghouse: 'nest-leafpile', nestbox: 'nest-nest', bridge: 'bld-bridge' };
+function jobPic(d) {   // a small painted picture of what the job makes, for the parchment job cards ('' if there is none)
+  const [kind, f] = d.id.split(':'), k = JOB_PIC[d.id] || (kind === 'home' ? 'home-' + f : kind === 'trade' ? 'bld-' + f : kind === 'quest' ? 'folk-' + f : kind === 'regrow' ? 'sapling' : '');
+  return k ? `<img class="jpic" src="sprites/${k}.webp" alt="" onerror="this.remove()">` : '';
 }
 function openTasks(focus = '') {
   const list = G.taskList(); let html = `<h2>Jobs<small>give the materials; they do the work</small></h2>`;
@@ -1966,13 +2050,13 @@ function openTasks(focus = '') {
     const rows = list.filter(v => v.state === state); if (!rows.length) continue;
     html += `<h3>${title}</h3>`;
     for (const v of rows) {
-      const d = v.def, who = `<span class="who">${C.names[d.who]}</span>`;
+      const d = v.def, who = `<span class="who" data-w="${d.who}">${C.names[d.who]}</span>`;
       let right = '', sub = '';
       if (state === 'running') { const pr = 1 - Math.max(0, v.endsAt - G.now()) / (v.endsAt - v.startedAt); sub = `${who} is on it · ${G.timeLeft(v.endsAt)} to go<div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div>`; if (d.tile && G.magicInfo().spells.includes('wake')) right = `<button class="act" data-a="cast" data-id="wake" ${G.canCast('wake').ok ? '' : 'disabled'}>Wake ✨4</button>`; }
       else if (state === 'done') sub = `${who} finished this.`;
       else if (state === 'locked') sub = `${who} · <span class="bad">${v.why}</span>`;
-      else { sub = (Object.keys(d.cost).length ? `${who} needs <span class="cost">${costHtml(d.cost)}</span>` : `${who} needs nothing but time`) + ` · ${hours(d.mins)}` + (v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`); right = `<button class="act" data-a="start" data-id="${d.id}" ${v.can ? '' : 'disabled'}>Start</button>`; }
-      html += `<div class="row${d.id === focus ? ' hi' : ''}"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>${sub}</span></div>${right}</div>`;
+      else { sub = `${who} · ` + (Object.keys(d.cost).length ? `<span class="cost">${costHtml(d.cost)}</span>` : `no materials`) + ` · <span class="hrs">${hours(d.mins)}</span>` + (v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`); right = `<button class="act" data-a="start" data-id="${d.id}" ${v.can ? '' : 'disabled'}>Start</button>`; }
+      html += `<div class="row${d.id === focus ? ' hi' : ''}">${jobPic(d)}<div class="t"><b>${d.name}</b><span class="bl">${d.blurb}</span><span>${sub}</span></div>${right}</div>`;
     }
   }
   if (C.tasks.some(t => t.id === focus && t.spot === 'shelter')) html = html.replace('</h2>', `</h2><p><button class="act quiet" data-a="room">Look inside the home</button></p>`);
@@ -2045,9 +2129,9 @@ function openTraveller() {
   const tr = G.s.village.traveller; if (!tr) return;
   const f = G.folkDef(tr.id), v = G.taskView(G.taskDef('home:' + f.id)), d = v.def;
   let html = `<div class="jpage">${folkPor(f, true)}<h2>${f.name}</h2><p class="meta">${f.trade}, camped by the path</p><p class="lore">${f.intro}</p></div><h3>Will they stay?</h3>`;
-  if (v.state === 'running') html += `<div class="row"><div class="t"><b>${d.name}</b><span><span class="who">${C.names[d.who]}</span> is on it · ${G.timeLeft(v.endsAt)} to go</span></div></div>`;
+  if (v.state === 'running') html += `<div class="row"><div class="t"><b>${d.name}</b><span><span class="who" data-w="${d.who}">${C.names[d.who]}</span> is on it · ${G.timeLeft(v.endsAt)} to go</span></div></div>`;
   else {
-    html += `<div class="row"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>` + (v.locked ? `<span class="bad">${v.why}</span>` : `<span class="who">${C.names[d.who]}</span> needs <span class="cost">${costHtml(d.cost)}</span> · ${hours(d.mins)}` + (v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`)) + `</span></div><button class="act" data-a="start" data-id="${d.id}" ${v.state === 'ready' && v.can ? '' : 'disabled'}>Build</button></div>`;
+    html += `<div class="row"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>` + (v.locked ? `<span class="bad">${v.why}</span>` : `<span class="who" data-w="${d.who}">${C.names[d.who]}</span> needs <span class="cost">${costHtml(d.cost)}</span> · ${hours(d.mins)}` + (v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`)) + `</span></div><button class="act" data-a="start" data-id="${d.id}" ${v.state === 'ready' && v.can ? '' : 'disabled'}>Build</button></div>`;
     html += `<p style="margin-top:12px">Not the right neighbour? <button class="act quiet" data-a="wave">Wave them on</button><br><small>They will go on along the road, and someone else will come by in a day or so.</small></p>`;
   }
   openSheet('traveller', html);
@@ -2058,7 +2142,7 @@ function folkStory(fid) {   // the story part of a neighbour's page, in words, w
   if (!st) return taskProg('trade:' + fid) >= 1 ? `<p><small>${f.short[0].toUpperCase() + f.short.slice(1)} will have a story for you before long.</small></p>` : '';
   let btn = '';
   if (st.give) btn = `<span class="cost">${costHtml(st.give)}</span><br>` + (G.can(st.give) ? `<button class="act" data-a="qgive" data-id="${fid}">Give</button>` : `<span class="bad">You are short ${G.missing(st.give).join(', ')}.</span>`);
-  else if (st.job) { const v = G.taskView(G.taskDef(`quest:${fid}:${fs.q}`)); btn = v.state === 'running' ? `<span><span class="who">${C.names[st.job.who]}</span> is on it · ${G.timeLeft(v.endsAt)} to go</span>` : `<span class="who">${C.names[st.job.who]}</span> needs <span class="cost">${costHtml(st.job.cost)}</span> · ${hours(st.job.mins)}<br>` + (v.can ? `<button class="act" data-a="start" data-id="${v.def.id}">${st.job.name}</button>` : `<span class="bad">You are short ${v.missing.join(', ')}.</span>`); }
+  else if (st.job) { const v = G.taskView(G.taskDef(`quest:${fid}:${fs.q}`)); btn = v.state === 'running' ? `<span><span class="who" data-w="${st.job.who}">${C.names[st.job.who]}</span> is on it · ${G.timeLeft(v.endsAt)} to go</span>` : `<span class="who" data-w="${st.job.who}">${C.names[st.job.who]}</span> needs <span class="cost">${costHtml(st.job.cost)}</span> · ${hours(st.job.mins)}<br>` + (v.can ? `<button class="act" data-a="start" data-id="${v.def.id}">${st.job.name}</button>` : `<span class="bad">You are short ${v.missing.join(', ')}.</span>`); }
   else if (st.find) btn = `<span>Look for <b>${st.find.name}</b> on the land${st.find.hours ? ' (after dark)' : ''}. It will glow softly.</span>`;
   else if (st.wait) btn = `<span>Come back in ${G.timeLeft(fs.waitUntil)}.</span>`;
   return `<h3>${f.quest.name} · part ${fs.q + 1} of ${f.quest.steps.length}</h3><p class="lore" style="text-align:left;margin:4px 0 8px">${st.say}</p><p>${btn}</p>`;
@@ -2070,7 +2154,7 @@ function openFolk(fid) {
   const fv = G.s.village.favour;
   if (fv && fv.folk === fid) { const ask = f.favours[fv.i]; html += `<h3>A small favour</h3><div class="row"><div class="t"><b>"${ask.ask}"</b><span class="cost">${costHtml(ask.cost)}</span>${G.can(ask.cost) ? '' : `<br><span class="bad">You are short ${G.missing(ask.cost).join(', ')}.</span>`}</div><button class="act" data-a="favour" ${G.can(ask.cost) ? '' : 'disabled'}>Help</button></div>`; }
   const tv = G.taskView(G.taskDef('trade:' + fid)), b = tv.def;
-  if (tv.state !== 'done') html += `<h3>${b.name}</h3><div class="row"><div class="t"><span>${b.blurb}</span><br><span>` + (tv.state === 'running' ? `<span class="who">${C.names[b.who]}</span> is on it · ${G.timeLeft(tv.endsAt)} to go` : `<span class="who">${C.names[b.who]}</span> needs <span class="cost">${costHtml(b.cost)}</span> · ${hours(b.mins)}` + (tv.can ? '' : `<br><span class="bad">You are short ${tv.missing.join(', ')}.</span>`)) + `</span></div>${tv.state === 'ready' ? `<button class="act" data-a="start" data-id="${b.id}" ${tv.can ? '' : 'disabled'}>Start</button>` : ''}</div>`;
+  if (tv.state !== 'done') html += `<h3>${b.name}</h3><div class="row"><div class="t"><span>${b.blurb}</span><br><span>` + (tv.state === 'running' ? `<span class="who" data-w="${b.who}">${C.names[b.who]}</span> is on it · ${G.timeLeft(tv.endsAt)} to go` : `<span class="who" data-w="${b.who}">${C.names[b.who]}</span> needs <span class="cost">${costHtml(b.cost)}</span> · ${hours(b.mins)}` + (tv.can ? '' : `<br><span class="bad">You are short ${tv.missing.join(', ')}.</span>`)) + `</span></div>${tv.state === 'ready' ? `<button class="act" data-a="start" data-id="${b.id}" ${tv.can ? '' : 'disabled'}>Start</button>` : ''}</div>`;
   else html += `<p><small>${b.giftText.replace(/\.$/, '')}: every day.</small></p>`;
   html += folkStory(fid);
   openSheet('folk:' + fid, html);
@@ -2120,7 +2204,7 @@ function openFestGreen() {   // tap the green (or the festival button in the jou
   const F = C.festival, f = G.s.festival; let html = `<h2>${F.name}</h2>`;
   if (f.stage === 'planning') {
     html += `<p>Getting the green ready. Every job here brings the night a little closer. <button class="act quiet" data-a="fest" data-id="secret">The secret</button></p>`;
-    for (const j of F.jobs) { const v = G.taskView(G.taskDef(j.id)); html += `<p style="margin:3px 0">${v.state === 'done' ? '✓' : v.state === 'running' ? '⏳' : '○'} ${j.name} <span class="who">${C.names[j.who]}</span>${v.state === 'running' ? ` · ${G.timeLeft(v.endsAt)} to go` : ''}</p>`; }
+    for (const j of F.jobs) { const v = G.taskView(G.taskDef(j.id)); html += `<p style="margin:3px 0">${v.state === 'done' ? '✓' : v.state === 'running' ? '⏳' : '○'} ${j.name} <span class="who" data-w="${j.who}">${C.names[j.who]}</span>${v.state === 'running' ? ` · ${G.timeLeft(v.endsAt)} to go` : ''}</p>`; }
     html += `<p style="margin-top:10px"><button class="act" data-a="jobs" data-id="">Open Jobs</button></p>`;
   } else if (f.stage === 'ready') html += `<p>Everything is ready: the table, the bunting, the lanterns, the arch and the feast. The festival is ${dayKeyOf(f.at) === dayKeyOf(G.now()) ? 'tonight' : 'tomorrow evening'}, from five o'clock. Nobody has told Wendel and Hazel. Nobody.</p>`;
   else if (f.stage === 'on') html += `<p>It's festival night!</p><p><button class="act" data-a="fest" data-id="night:0">Join in</button></p>`;
@@ -2138,16 +2222,16 @@ function neighboursHtml() {   // the journal's neighbours section
 function openAway(r) {
   const mins = Math.round(r.gone / 60000); if (mins < 10 && !r.finished.length && !r.ate && !r.season) return r.traveller ? openStory(r.traveller, 'arrived') : undefined;
   const gone = mins < 60 ? `${mins} minutes` : mins < 60 * 36 ? `${Math.round(mins / 60)} hours` : `${Math.round(mins / 1440)} days`;
-  let html = `<h2>While you were away<small>${gone}</small></h2>`;
+  let html = `<h2>While you were away<small>${gone}</small></h2><div class="letter"><p>Dear friend,</p>`;
   if (r.season) html += `<p><b>${C.seasons[r.season].name}.</b> ${C.seasons[r.season].arrive.replace(/^\w+\. /, '')}</p>`;
   if (r.event) html += `<p>${r.event}</p>`;
   if (r.ate) html += `<p>The ${r.ate.toLowerCase()} came by and emptied the feeding dish.</p>`;
   if (r.traveller) { const f = G.folkDef(r.traveller); html += `<p>A traveller has camped by the path: <b>${f.name}</b>, ${f.trade}. Tap their tent to meet them.</p>`; }
-  if (r.newDay) html += `<p>A new day. Their magic has grown a little: ${G.magicInfo().name}.</p>`;
+  if (r.newDay) html += `<p>A new day, and the magic has grown a little: ${G.magicInfo().name}.</p>`;
   if (r.offered) html += `<p>The land has left ${r.offered} thing${r.offered > 1 ? 's' : ''} for you to gather.</p>`;
-  for (const f of r.finished) html += `<p>✓ ${f}</p>`;
+  if (r.finished.length) html += `<p>Finished while you were gone:</p><ul class="done">${r.finished.map(f => `<li>${f}</li>`).join('')}</ul>`;
   if (!r.offered && !r.finished.length && !r.newDay) html += `<p>Quiet. The fire kept going.</p>`;
-  openSheet('away', html + `<p style="margin-top:10px"><button class="act" data-a="close">Have a look</button></p>`);
+  openSheet('away', html + `<p class="sign">Love, ${C.names.her}<img src="sprites/face-her.webp" alt=""></p></div><p style="margin-top:10px"><button class="act" data-a="close">Have a look</button></p>`);
 }
 $('bPack').onclick = openPack; $('bTasks').onclick = () => openTasks(); $('bMagic').onclick = openMagic; $('bJournal').onclick = openJournal;
 G.onChange((kind, data) => { renderInv(kind === 'inv' && typeof data === 'string' ? data : null); renderHud(); if (kind === 'task' && data && data.done) { toast('Finished: ' + lcName(G.taskDef(data.id).name) + '.'); } if (kind === 'event') toast(data.text); if (kind === 'land') toast(`The home patch is now ${data.name}.`);
