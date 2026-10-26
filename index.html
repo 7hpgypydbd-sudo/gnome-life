@@ -176,7 +176,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v37</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v38</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -225,7 +225,7 @@ const ASSETS = {
   'him-side':'sprites/him-side.png','him-front':'sprites/him-front.png','him-back':'sprites/him-back.png',
   'her-side':'sprites/her-side.png','her-front':'sprites/her-front.png','her-back':'sprites/her-back.png',
   'him-dig':'sprites/him-dig.png','him-water':'sprites/him-water.png','him-carry':'sprites/him-carry.png','him-eat':'sprites/him-eat.png','him-sit':'sprites/him-sit.png','him-sleep':'sprites/him-sleep.png',
-  'her-dig':'sprites/her-dig.png','her-water':'sprites/her-water.png','her-carry':'sprites/her-carry.png','her-eat':'sprites/her-eat.png','her-sit':'sprites/her-sit.png','her-sleep':'sprites/her-sleep.png',
+  'her-pickup':'sprites/her-pickup.png','her-gather':'sprites/her-gather.png','him-pickup':'sprites/him-pickup.png','him-gather':'sprites/him-gather.png','her-dig':'sprites/her-dig.png','her-water':'sprites/her-water.png','her-carry':'sprites/her-carry.png','her-eat':'sprites/her-eat.png','her-sit':'sprites/her-sit.png','her-sleep':'sprites/her-sleep.png',
   'icon-twig':'sprites/icon-twig.webp','icon-moss':'sprites/icon-moss.webp','icon-stone':'sprites/icon-stone.webp','icon-acorn':'sprites/icon-acorn.webp','icon-seed':'sprites/icon-seed.webp',
   'icon-water':'sprites/icon-water.webp','icon-light':'sprites/icon-light.webp','icon-berry':'sprites/icon-berry.webp','icon-feather':'sprites/icon-feather.webp',
 };
@@ -253,7 +253,7 @@ if (NEWGROUND) {
   for (let i = 1; i <= 6; i++) ASSETS['g-st-edge-' + pad2(i)] = `sprites/kit/edge-${pad2(i)}.webp`;
   ASSETS['kit-rut-mud'] = 'sprites/kit/rut-mud.webp'; ASSETS['kit-rut-filled'] = 'sprites/kit/rut-filled.webp';
 }
-const GNOMES = {"him":{"cell":[108,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[144,242]},"water":{"n":4,"cell":[129,245]},"carry":{"n":4,"cell":[140,260]},"eat":{"n":4,"cell":[118,241]},"sit":{"n":4,"cell":[127,208]},"sleep":{"n":4,"cell":[264,85]}}},"her":{"cell":[122,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[159,242]},"water":{"n":4,"cell":[148,241]},"carry":{"n":6,"cell":[105,244]},"eat":{"n":4,"cell":[102,244]},"sit":{"n":4,"cell":[119,208]},"sleep":{"n":2,"cell":[264,73]}}}};
+const GNOMES = {"him":{"cell":[108,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[144,242]},"water":{"n":4,"cell":[129,245]},"carry":{"n":4,"cell":[140,260]},"eat":{"n":4,"cell":[118,241]},"sit":{"n":4,"cell":[127,208]},"sleep":{"n":4,"cell":[264,85]},"pickup":{"n":4,"cell":[152,243]},"gather":{"n":4,"cell":[173,233]}}},"her":{"cell":[122,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[159,242]},"water":{"n":4,"cell":[148,241]},"carry":{"n":6,"cell":[105,244]},"eat":{"n":4,"cell":[102,244]},"sit":{"n":4,"cell":[119,208]},"sleep":{"n":2,"cell":[264,73]},"pickup":{"n":4,"cell":[161,240]},"gather":{"n":4,"cell":[159,224]}}}};
 
 // ---------- world helpers ----------
 function tileOrigin(k) { const [tx, ty] = k.split(',').map(Number); return [tx*EX[0] + ty*EY[0], tx*EX[1] + ty*EY[1]]; }
@@ -293,7 +293,7 @@ const RHYTHM = {
   him: { eat:[0.40,0.56,'campfire'], sit:[0.38,0.60,'campfire'], sleep:[0.24,0.40,null] },
   her: { eat:[0.60,0.38,'campfire'], sit:[0.62,0.42,'campfire'], sleep:[0.52,0.24,null] },
 };
-const ACT_FPS = { dig:4, water:3, carry:9, eat:2.5, sit:1.6, sleep:0.7 };
+const ACT_FPS = { pickup:3, gather:3, dig:4, water:3, carry:9, eat:2.5, sit:1.6, sleep:0.7 };
 const SPOT_ACT = { feeder:'carry', wheelbarrow:'dig', seedbed:'water', sapling:'water', shelter:'carry', fence:'carry', stonebench:'carry', fire:'carry' };
 function routineFor(h) {   // what the couple do at this hour when no job needs them
   if (G.festivalOn()) return 'fest';   // festival evening: they dance on the green (beats jobs and bedtime)
@@ -440,7 +440,7 @@ class Gnome {
     if (job) {
       const sp = jobSpot(job) || (WORKPATH[job.id] && WORKPATH[job.id](taskProg(job.id))) || WORKSPOT['job:' + job.id] || WORKSPOT[job.def.spot] || SPOTS.fire; this.job = job.id;
       this.plan = job.def.act || SPOT_ACT[job.def.spot] || (job.def.tile ? 'dig' : 'carry');
-      if (WORKPATH[job.id] && this.plan === 'carry') this.plan = 'dig';   // gathering: she crouches to the ground at each piece (stand-in until there is a painted pick-up strip)
+      if (WORKPATH[job.id] && this.plan === 'carry') this.plan = 'pickup';   // gathering: she bends down to each piece, painted pick-up strip (art day 9)
       this.pace = this.plan === 'carry' && !WORKPATH[job.id] ? [[sp[0], sp[1]], [sp[0] - 0.12, sp[1] + 0.06]] : null;
       this.goto(sp[0], sp[1]); this.faceTowards(sp[0], sp[1], null); return;
     }
@@ -1048,7 +1048,7 @@ function drawHomeRuts() {
   const [x, y] = toWorld(...HOME_RUTS), w = 860, h = w * mud.height / mud.width;   // one long painted piece (art day 8), no repeats
   ctx.translate(x, y);
   if (p < 1) { ctx.globalAlpha = 1 - p; ctx.drawImage(mud, -w / 2, -h / 2, w, h); }
-  if (p > 0) { ctx.globalAlpha = p; ctx.drawImage(fill, -w / 2, -h / 2, w, h); }
+  if (p > 0) { ctx.globalAlpha = p; ctx.drawImage(fill, -w / 2, -h / 2, w, h); }   // the level dirt with grass creeping back fades in as he fills the gully
   ctx.restore();
 }
 const HOME_KIT = [   // [piece, healed piece (null: it goes when the job is done), gx, gy, scale, job that clears it]

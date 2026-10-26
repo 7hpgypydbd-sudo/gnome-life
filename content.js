@@ -47,8 +47,8 @@ window.CONTENT = {
   // act: which painted action loop plays while working (dig, water, carry); if missing, the spot decides (wheelbarrow dig, seed bed and sapling water, otherwise carry).
   tasks: [
     // --- first days ---
-    { id:'ruts',    name:'Fill the wheel rut',         who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:3, twig:2 }, mins:120, green:1, magic:2,
-      blurb:'The loggers\' truck left a deep rut along the yard. Stones and twigs will pack it into a good firm track.' },
+    { id:'ruts',    name:'Fill the washed-out gully',   who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:3, twig:2 }, mins:120, green:1, magic:2,
+      blurb:'Storm water has carved a muddy gully across the yard. Wendel will fill it with stones and twigs and level the ground, so the grass can creep back.' },
     { id:'clear',   name:'Clear the ground',           who:'her', act:'carry', spot:'clearing', cost:{}, give:{ twig:3, stone:2 }, mins:90, green:0, magic:1,
       blurb:'Snapped branches and loggers\' rubbish everywhere. Hazel rakes a clean patch, and keeps the good sticks and stones.' },
     { id:'bed',     name:'Dig a seed bed',             who:'her', act:'dig', spot:'clearing', cost:{ twig:2 },  mins:120, green:1, magic:1,
@@ -448,7 +448,7 @@ window.CONTENT = {
   story: { beats: [ /* { id:'staff-found', when:{ landStage:'green' }, text:'...', sets:'staffFound' } */ ] },
 
   lines: {
-    him: ["Bare as a baker's elbow. We'll fix that.", "Did you see? A sprout. Right in the middle.", "Mind the ruts, love.", "Kettle's on.", "Tomorrow we dig the bed properly.", "I remember when all this was ferns.",
+    him: ["Bare as a baker's elbow. We'll fix that.", "Did you see? A sprout. Right in the middle.", "Mind the gully, love.", "Kettle's on.", "Tomorrow we dig the bed properly.", "I remember when all this was ferns.",
           "Our own front door. Well, our own front hole.", "She said yes. I still can't quite believe it.", "I've measured twice and I'm still wrong. Don't tell her.", "Did you know worms are basically farmers?",
           "Every stump was once a tree that had a view.", "I'm going to build her a garden bench. I haven't told her.", "One acorn, one oak. That's the maths.", "Look at that moss. Doing it all without being asked.",
           "Marriage tip: never say 'just a quick job'.", "The soil's coming back. Smell that? That's life.", "We're not saving the world. We're saving this corner of it.", "I think the fence is leaning on me.",
