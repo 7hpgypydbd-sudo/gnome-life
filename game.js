@@ -282,8 +282,9 @@ const G = {
   magicLevel() { const d = this.s.days.length; let L = 1; C.magicLevels.forEach((m, i) => { if (d >= m.days) L = i + 1; }); return L; },
   magicInfo() { const L = this.magicLevel(), m = C.magicLevels[L - 1], next = C.magicLevels[L]; return { level: L, name: m.name, days: this.s.days.length, nextDays: next ? next.days : null, spells: C.magicLevels.slice(0, L).map(x => x.unlock).filter(Boolean) }; },
   canCast(id) {
-    const sp = C.spells[id]; if (!this.magicInfo().spells.includes(id)) return { ok: false, why: 'not yet learned' };
+    const sp = C.spells[id]; if (!(sp.special ? this.s.tiles['0,1'] : this.magicInfo().spells.includes(id))) return { ok: false, why: 'not yet learned' };   // special spells come with what they are for, not with days
     if (!this.can(sp.cost)) return { ok: false, why: `needs ${this.missing(sp.cost).join(', ')}` };
+    if (id === 'legs' && this.s.flags.toadWalk) return { ok: false, why: 'it has already walked off' };
     if (id === 'coax' && this.plot().stage !== 'growing') return { ok: false, why: 'nothing is growing' };
     if (id === 'rain' && this.plot().stage !== 'planted') return { ok: false, why: 'nothing is waiting for water' };
     if (id === 'wake' && !this.running().some(r => r.def.tile)) return { ok: false, why: 'no patch is regrowing' };
@@ -293,6 +294,7 @@ const G = {
     if (!this.canCast(id).ok) return false; this.pay(C.spells[id].cost); const t = now();
     if (id === 'coax') { this.plot().readyAt = t; this.note('A warm glow, and the sprout unfurls.'); }
     if (id === 'rain') { const p = this.plot(); p.stage = 'growing'; p.readyAt = t + this.dur(C.crops[p.crop].grow); this.give({ water: 2 }); this.note('Soft rain falls on the bed and beads on the stones.'); }
+    if (id === 'legs') { this.s.flags.toadWalk = t; this.note('The big toadstool shivered, sprouted little root legs and walked off to the far corner of the garden.'); }
     if (id === 'wake') { for (const r of this.running()) if (r.def.tile) this.s.tasks[r.id].endsAt = t + (r.endsAt - t) / 2; this.note('The ground stirs under the mist.'); }
     this.s.spellsUsed[id] = dayKey(t); this.emit('spell', id); this.tick(); return true;
   },

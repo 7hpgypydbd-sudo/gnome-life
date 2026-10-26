@@ -178,7 +178,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v48</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v49</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="bar">
@@ -196,15 +196,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 48;
+const BUILD = 49;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=48"></script>
-<script src="game.js?v=48"></script>
+<script src="content.js?v=49"></script>
+<script src="game.js?v=49"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -359,7 +359,6 @@ const WORKPATH = {
   clothesline: p => p < 0.5 ? [0.48, 0.16, 'build'] : [0.58, 0.10, 'build'],   // one post, then the other
   lantern: () => [0.71, 0.54, 'build'],   // at the old lantern stump
   path: p => { const i = Math.min(PATH_STONES.length - 1, Math.floor(p * PATH_STONES.length)), [x, y] = PATH_STONES[i]; return [x + 0.04, y + 0.01, 'dig']; },   // stone by stone down from the door, kneeling
-  movetoad: p => { const [x, y] = toadAt(0); return [x - 0.06, y + 0.03, 'pickup']; },   // she walks beside it, bending to talk it along
   fence: p => { const f = bedFrame(), a = Math.PI / 2 + (0.5 + p * (FENCE_N - 0.5)) * 2 * Math.PI / FENCE_N; return [...fromRing(Math.cos(a) * 1.18, Math.sin(a) * 1.18, f), 'build']; },   // round the ring panel by panel, gate last
   bedwater: (p, g) => workLoop(g, 'bedwater', c => [[SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3], [...wetPatchAt(Math.min(WET_PATCHES.length - 1, Math.floor(bedWet() * WET_PATCHES.length)), 0.75), 'water', 'can', 5]]),   // to and fro: fill the can at the spring pool, water a different bit of the bed each time
 };
@@ -378,7 +377,7 @@ function wetPatchAt(k) { const [x, y] = wetPatchXY(k), g = fromWorld(x, y + 14),
 function bedReady() { const pl = G.plot(); return G.done('bedwater') || !!(pl.stage || pl.grown); }   // dug and watered (older gardens already planted count)
 const BENCH = [0.62, 0.40];   // the plank bench, on the far side of the fire so sitting gnomes face you (yard layout plan)
 const JOB_FACE = { bench:[0.62, 0.40], lantern:[0.75, 0.50] };   // what a working gnome turns to face (default: the middle of the yard)
-const WORKSPOT = { toadstool:[0.58, 1.02], logseat:[0.675,0.395], feeder:[0.82,0.66], clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], fence:[0.80,0.74], sapling:[0.24,0.84], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
+const WORKSPOT = { logseat:[0.675,0.395], feeder:[0.82,0.66], clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], fence:[0.80,0.74], sapling:[0.24,0.84], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
 
 // ---------- loading ----------
 const IM = {};
@@ -2045,10 +2044,27 @@ const WOOD_PLANTS = [1, 2, 4, 5, 6, 7, 8, 9, 10, 1, 5, 9], WOOD_LOW = [2, 4, 6, 
 // the yard: [piece, gx, gy, land stage it appears with (1 green, 2 meadow, 3 wood)]; kept to the margins so the yard stays open
 const YARD_WOOD = [[11, 0.0, 0.40, 1], [12, 0.58, 0.0, 1], [1, 0.02, 0.45, 1], [3, 0.03, 0.66, 2], [13, 0.0, 0.86, 1], [4, 0.10, 0.97, 1], [7, 0.34, 0.99, 2], [15, 0.64, 0.99, 1], [16, 0.97, 0.88, 2],
   [5, 0.97, 0.62, 1], [9, 0.93, 0.42, 2], [8, 0.86, 0.02, 2], [14, 0.60, 0.01, 1], [17, 0.46, 0.0, 3], [2, 0.08, 0.06, 2], [6, 0.12, 0.90, 3], [18, 0.97, 0.30, 3]];
-// the big red toadstool at the yard's front edge: in the way once the land beyond opens, so Hazel coaxes it (a little magic) over to the edge of the wood
-const TOAD_FROM = [0.64, 0.99], TOAD_TO = [0.08, 1.88];   // to the garden's far-left corner (G 0.08, 0.88; yard layout plan)
-function toadAt(now) { const p = taskProg('movetoad'), e = p * p * (3 - 2 * p), hop = p > 0 && p < 1 ? Math.abs(Math.sin(now / 260)) * 0.008 : 0;   // it shuffles along in little hops
-  return [TOAD_FROM[0] + (TOAD_TO[0] - TOAD_FROM[0]) * e, TOAD_FROM[1] + (TOAD_TO[1] - TOAD_FROM[1]) * e - hop]; }
+// the big red toadstool at the yard's front edge: in the way once the garden opens, so you cast "Give the toadstool legs" (Bryce) and it walks off on little root legs
+const TOAD_FROM = [0.64, 0.99], TOAD_TO = [0.24, 1.78];   // to the garden's far-left corner (yard layout plan's G 0.08, 0.88, a step in from the wood's edge so it stands clear)
+const TOAD_WALK = 45000;   // ms the walk takes, so you can watch it go
+function toadProg() { const t = G.s.flags.toadWalk; return t ? Math.min(1, (Date.now() - t) / TOAD_WALK) : 0; }
+function toadAt() { const p = toadProg(); return [TOAD_FROM[0] + (TOAD_TO[0] - TOAD_FROM[0]) * p, TOAD_FROM[1] + (TOAD_TO[1] - TOAD_FROM[1]) * p]; }
+function toadItem(items, now, vb) {   // drawn by hand: while it walks it stands up on wiggling root legs and bobs along
+  const im = IM['kit-wood-15']; if (!im || !im.width) return; const [ux, uy] = toadAt(), p = toadProg(), walking = p > 0 && p < 1;
+  items.push({ d: depthOf(ux, uy), draw: () => { const [x, y] = toWorld(ux, uy), h = WOOD[15], w = im.width * h / im.height, t = now / 1000;
+    if (x < vb.x0 - w || x > vb.x1 + w || y < vb.y0 || y - h > vb.y1) return;
+    const up = walking ? Math.min(1, p * 20, (1 - p) * 20) * 16 : 0, bob = walking ? Math.abs(Math.sin(t * 6)) * 5 : 0, lean = walking ? Math.sin(t * 6) * 0.05 : 0;
+    shadow(x, y, w * 0.3, w * 0.07); TOAD.screen = { x, y: y - up - bob, w, h };
+    if (up > 0) { ctx.save(); ctx.lineCap = 'round';   // root legs: four little brown roots stepping in turn
+      for (let i = 0; i < 4; i++) { const lx = x + (i - 1.5) * w * 0.14, ph = t * 6 + i * Math.PI / 2, fx = lx + Math.sin(ph) * 7, fy = y - Math.max(0, Math.cos(ph)) * 6;
+        for (const [lw, c] of [[5, 'rgba(42,21,16,0.85)'], [3, '#8a6a44']]) { ctx.lineWidth = lw; ctx.strokeStyle = c; ctx.beginPath(); ctx.moveTo(lx, y - up - bob + 4); ctx.quadraticCurveTo((lx + fx) / 2 + 4, y - up / 2, fx, fy); ctx.stroke(); } }
+      ctx.restore(); }
+    ctx.save(); ctx.translate(x, y - up - bob); ctx.rotate(lean); ctx.drawImage(im, -w / 2, -h * 0.94, w, h); ctx.restore();
+    if (walking) for (let i = 0; i < 3; i++) twinkle(x + Math.sin(t * 3 + i * 2) * 40, y - 60 - i * 30 + Math.cos(t * 3.5 + i) * 12, 0.5 + 0.5 * Math.sin(t * 5 + i * 2.1));
+    else if (p === 0 && G.s.tiles['0,1'] && ((now / 1000) % 3) < 0.6) twinkle(x + w * 0.2, y - h * 0.8, Math.sin(((now / 1000) % 3) / 0.6 * Math.PI));   // a glint: magic could move it
+  } });
+}
+const TOAD = {};
 function woodPiece(items, n, ux, uy, vb, sc = 1, flip = false) {   // one depth-sorted piece, skipped when it is far off screen
   const im = IM['kit-wood-' + pad2(n)]; if (!im || !im.width) return;
   items.push({ d: depthOf(ux, uy), draw: () => { const [x, y] = toWorld(ux, uy), h = WOOD[n] * sc, w = im.width * h / im.height;
@@ -2065,7 +2081,7 @@ function landItems(items, now) {
     const home = k === '0,0', tl = G.s.tiles[k], [tx, ty] = k.split(',').map(Number);
     if (home ? lvl < 1 : tl.state !== 'green') continue;
     const seed = tx * 31 + ty * 17 + 5;
-    if (home) { for (const [n, gx, gy, st] of YARD_WOOD) if (lvl >= st) { if (n === 15) { const [x, y] = toadAt(now), p = taskProg('movetoad'); woodPiece(items, n, x, y, vb); if (p > 0 && p < 1) items.push({ d: depthOf(x, y) + 0.01, draw: () => { const [wx, wy] = toWorld(x, y); for (let i = 0; i < 3; i++) twinkle(wx + Math.sin(now / 300 + i * 2) * 40, wy - 60 - i * 30 + Math.cos(now / 350 + i) * 12, 0.5 + 0.5 * Math.sin(now / 200 + i * 2.1)); } }); } else woodPiece(items, n, gx, gy, vb); } }
+    if (home) { for (const [n, gx, gy, st] of YARD_WOOD) if (lvl >= st) { if (n === 15) { toadItem(items, now, vb); } else woodPiece(items, n, gx, gy, vb); } }
     else {
       if (k !== '0,1') for (let c = 0; c < 2; c++) {   // two little woodland corners (not on the couple's garden tile) on the tile, away from the stream, the path and the homes
         const [gx, gy] = [[0.14, 0.84], [0.84, 0.16], [0.52, 0.92], [0.9, 0.62], [0.2, 0.2], [0.08, 0.5]][Math.floor(rnd(seed + c * 9) * 6)], [ux, uy] = glob(k, gx, gy);
@@ -2453,6 +2469,7 @@ function tap(cx, cy) {
   }
   if (festTile() && (hit(FEST.screen, wx, wy) || hit(FEST.archScreen, wx, wy))) return openFestGreen();
   if (taskProg('feeder') >= 1 && hit(FEEDER.screen, wx, wy)) return openFeeder();
+  if (G.s.tiles['0,1'] && !G.s.flags.toadWalk && TOAD.screen && hit(TOAD.screen, wx, wy)) return openMagic();   // the toadstool in the way: the spell that moves it
   if (hit(SPRING.screen, wx, wy)) { const t = ['spring', 'bedwater'].find(id => !G.done(id)); if (t) return openTasks(t); }
   for (const id in NESTS) if (G.hasNest(id) && hit(NESTS[id].screen, wx, wy)) { const d = G.visitorDef(id); return toast(`The ${d.name.toLowerCase()}'s ${{ nest: 'nest', burrow: 'burrow', leafpile: 'leaf pile', stones: 'hidey-hole' }[d.nest]}. Quiet, someone may be home.`); }
   // props on the home tile (seed bed, tub, task spots)
@@ -2609,7 +2626,7 @@ sheet.addEventListener('click', e => {
   if (a === 'room') return openRoom();
   if (a === 'plant') { G.plant(); } if (a === 'water') { G.water(); } if (a === 'harvest') { if (G.harvest()) { const sb = PROPS.find(p => p.name === 'seedbed'); const [x, y] = toWorld(sb.gx, sb.gy); float('+2 seed +1 moss', x, y); greenWave = performance.now(); } }
   if (a === 'start') { if (G.startTask(id)) { toast('Set to work.'); for (const g of gnomes) if (g.who === G.taskDef(id).who) { g.walking = false; g.wait = 0.1; } } }
-  if (a === 'cast') { if (G.cast(id)) toast(C.spells[id].name + '.'); }
+  if (a === 'cast') { if (G.cast(id)) { toast(C.spells[id].name + '.'); if (id === 'legs') { closeSheet(); const [x, y] = toWorld(...TOAD_FROM); cam.x = x; cam.y = y - 40; return; } } }   // watch it walk off
   if (a === 'food') { if (G.putFood(id)) { toast(id === 'seed' ? 'Seed in the dish.' : 'Berries in the dish.'); closeSheet(); return; } }
   if (a === 'help') return doHelp();
   if (a === 'folk') return openFolk(id);
@@ -2670,7 +2687,7 @@ function openPack() {
   for (const [k, r] of Object.entries(C.resources)) { const n = G.s.inv[k] || 0; html += `<div class="${n ? '' : 'zero'}">${iconHtml(k)}<b>${n}</b>${r.name}</div>`; }
   openSheet('pack', html + `</div>`);
 }
-const JOB_PIC = { ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'yard-bench', barrow: 'wheelbarrow', movetoad: 'kit/wood-15',
+const JOB_PIC = { ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'yard-bench', barrow: 'wheelbarrow',
   woodpile: 'firewood', doorstep: 'yard-doorstep', rainbarrel: 'barrel-full', clothesline: 'washing-line', lantern: 'lanternstump', windowbox: 'yard-windowbox', wormlantern: 'worm-lantern',
   wormlamp: 'worm-lamp', house1: 'house-hollowed', house2: 'house-windows', house3: 'house-finished', hedgehoghouse: 'nest-leafpile', nestbox: 'nest-nest', bridge: 'bld-bridge' };
 function jobPic(d) {   // a small painted picture of what the job makes, for the parchment job cards ('' if there is none)
@@ -2700,7 +2717,8 @@ function openTasks(focus = '') {
 function openMagic() {
   const m = G.magicInfo(); let html = `<h2>Their magic<small>${m.name}</small></h2><div class="meter">${C.magicLevels.map((_, i) => `<i class="${i < m.level ? 'on' : ''}"></i>`).join('')}</div><p>It grows a little with every day you visit. Day ${m.days}${m.nextDays ? `; it will grow again on day ${m.nextDays}` : ''}. Spells burn ✨ light, which the land offers at night.</p>`;
   for (const [id, sp] of Object.entries(C.spells)) {
-    const known = m.spells.includes(id), c = G.canCast(id);
+    if (sp.special && (!G.s.tiles['0,1'] || G.s.flags.toadWalk)) continue;   // the toadstool spell shows only while it is needed
+    const known = sp.special || m.spells.includes(id), c = G.canCast(id);
     html += `<div class="row"><div class="t"><b>${sp.name} <span class="cost">${costHtml(sp.cost)}</span></b><span>${sp.blurb}</span>${known ? (c.ok ? '' : `<br><span class="bad">${c.why}</span>`) : `<br><span class="bad">not yet; comes with more days</span>`}</div>${known ? `<button class="act" data-a="cast" data-id="${id}" ${c.ok ? '' : 'disabled'}>Cast</button>` : ''}</div>`;
   }
   html += `<p style="margin-top:14px;font-size:12px">Save v${G.s.v} · ${new Date(G.s.created).toLocaleDateString()} · <a href="#" data-a="reset" style="color:var(--red)">start over</a></p>`;
