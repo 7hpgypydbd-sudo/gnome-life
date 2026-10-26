@@ -131,8 +131,6 @@ window.CONTENT = {
     // --- night lights: glow-worm lanterns and street lamps ---
     { id:'wormlantern', name:'Hang glow-worm lanterns', short:'hanging the lanterns', who:'her', act:'carry', spot:'shelter', cost:{ twig:2, moss:2, light:1 }, mins:120, green:0, minLevel:2,
       blurb:'Little glass jars with a few sleepy glow-worms and a scrap of moss. Hung by the door, they light the way home.' },
-    { id:'movetoad', name:'Ask the big toadstool to move over', short:'coaxing the toadstool', who:'her', spot:'toadstool', cost:{ light:1, moss:1 }, mins:60, green:0, needs:['tile:0,1'],
-      blurb:'Now the land beyond is open, the big red toadstool stands right in the way. Hazel will ask it nicely, with a little magic, to shuffle over to the edge of the wood.', doneNote:'The toadstool shuffled off to the edge of the wood. Hazel thanked it. It did not say anything back, but it looked pleased.' },
     { id:'barrow', name:'Make a little wheelbarrow', short:'making a wheelbarrow', who:'him', act:'build', spot:'wheelbarrow', cost:{ twig:3, stone:1 }, mins:90, green:0, needs:['flag:firstpick'],
       blurb:'A small wheelbarrow for the yard, just for looks. Hazel will fill it with moss and flowers.', doneNote:'The little wheelbarrow is done, and already full of moss.' },
     { id:'wormlamp', name:'Set glow-worm street lamps', short:'setting the lamps', who:'him', act:'carry', spot:'fence', cost:{ twig:4, stone:2, light:2 }, mins:240, green:0, minLevel:3, needs:['wormlantern'],
@@ -188,6 +186,7 @@ window.CONTENT = {
     coax: { name:'Coax a sprout',  cost:{ light:2 }, blurb:'Finish whatever is growing in the bed, right now.' },
     rain: { name:'Call soft rain', cost:{ light:3 }, blurb:'Waters every planted bed and leaves dew on the ground.' },
     wake: { name:'Wake the land',  cost:{ light:4 }, blurb:'Halves the time left on a regrowing patch.' },
+    legs: { name:'Give the toadstool legs', cost:{ light:2 }, blurb:'The big red toadstool is in the way of the garden. A little magic and it sprouts root legs and walks off to the garden\'s far corner.', special:true },   // only shown while the toadstool still blocks the open garden
   },
 
   // Visitors for the journal. hours: [from,to) 24h; stage: min land stage key; task: only after that task is done.
