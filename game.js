@@ -201,7 +201,7 @@ const G = {
     const p = this.plot(); if (p.stage !== 'ready') return false;
     const c = C.crops[p.crop]; this.give(c.harvest); this.addGreen(c.green); p.grown++;
     p.crop = null; p.stage = null; p.readyAt = 0;
-    this.note(`Picked ${c.name}. The bed is clear again.`); this.emit('plot', p); return true;
+    this.note(`Picked ${c.name}. The bed is clear again, and the ground remembers a little more of how to grow.`); this.emit('plot', p); return true;
   },
 
   // ---- tasks ----

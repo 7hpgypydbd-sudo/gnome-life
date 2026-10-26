@@ -410,7 +410,7 @@ const hash = location.hash.slice(1);
 for (const tok of hash.split(/[#&]/)) if (/^(day|night|dawn|dusk|morning|evening)$/.test(tok)) tod = tok;
 if (/reset/.test(hash)) { G.reset(); }
 window.addEventListener('hashchange', () => location.reload());
-if (/test/.test(hash)) window.DBG = { cam, toWorld, taskProg: id => taskProg(id) };   // for the preview pictures
+if (/test/.test(hash)) window.DBG = { cam, toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed() };   // for the preview pictures
 
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -1268,9 +1268,18 @@ function bedClip(d, done) {   // the part already dug, spadeful by spadeful: who
     for (let x = a, k = 0; x <= b + 0.1; x += 18, k++) { const rr = R * (0.85 + 0.3 * rnd(r * 40 + k)); ctx.moveTo(x + rr, y); ctx.arc(x, y + (rnd(r * 40 + k + 7) - 0.5) * 8, rr, 0, 7); }
   }
 }
-let wetOval = null;   // the painted oval darkened once, for the watered soil
+let wetOval = null;
+let greenWave = 0;   // when the bed was last picked: a ripple of green runs out from it across the yard (the land waking a little)
+function drawGreenWave(now) {
+  const t = Math.max(0, (now - greenWave) / 3200); if (!greenWave || t >= 1) return;
+  const sb = PROPS.find(q => q.name === 'seedbed'), [x, y] = toWorld(sb.gx, sb.gy), r = 80 + 760 * Math.sqrt(t), a = 0.7 * (1 - t);
+  ctx.save(); diamondPath('0,0'); ctx.clip(); ctx.translate(x, y); ctx.scale(1, 0.56);
+  const g = ctx.createRadialGradient(0, 0, r * 0.55, 0, 0, r);
+  g.addColorStop(0, 'rgba(160,200,90,0)'); g.addColorStop(0.7, `rgba(160,200,90,${a})`); g.addColorStop(1, 'rgba(160,200,90,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill(); ctx.restore();
+}   // the painted oval darkened once, for the watered soil
 function drawGroundChanges(now) {
-  drawPath(now);
+  drawPath(now); drawGreenWave(now);
   const pl = G.plot(), b = pl.stage || pl.grown ? 1 : taskProg('bed'); if (b <= 0) return;
   const d = bedDig(b), rk = IM['kit-marks-05']; if (!rk || !rk.width) return;
   const healed = G.landStage().key !== 'barren', w = healed ? 215 : d.W, h = w * rk.height / rk.width;   // once the land greens, grass creeps back to a soft edge round the bed
@@ -2352,7 +2361,7 @@ sheet.addEventListener('click', e => {
   const b = e.target.closest('[data-a]'); if (!b) return; const a = b.dataset.a, id = b.dataset.id;
   if (a === 'close') return closeSheet();
   if (a === 'room') return openRoom();
-  if (a === 'plant') { G.plant(); } if (a === 'water') { G.water(); } if (a === 'harvest') { if (G.harvest()) { const sb = PROPS.find(p => p.name === 'seedbed'); const [x, y] = toWorld(sb.gx, sb.gy); float('+2 seed +1 moss', x, y); } }
+  if (a === 'plant') { G.plant(); } if (a === 'water') { G.water(); } if (a === 'harvest') { if (G.harvest()) { const sb = PROPS.find(p => p.name === 'seedbed'); const [x, y] = toWorld(sb.gx, sb.gy); float('+2 seed +1 moss', x, y); greenWave = performance.now(); } }
   if (a === 'start') { if (G.startTask(id)) { toast('Set to work.'); for (const g of gnomes) if (g.who === G.taskDef(id).who) { g.walking = false; g.wait = 0.1; } } }
   if (a === 'cast') { if (G.cast(id)) toast(C.spells[id].name + '.'); }
   if (a === 'food') { if (G.putFood(id)) { toast(id === 'seed' ? 'Seed in the dish.' : 'Berries in the dish.'); closeSheet(); return; } }
@@ -2402,7 +2411,11 @@ function openSeedbed() {
   else if (p.stage === 'planted') body = `<div class="row"><div class="t"><b>It wants water</b><span>Costs ${costHtml({ water: 1 })} dew, gathered from the ground</span></div><button class="act" data-a="water" ${G.can({ water: 1 }) ? '' : 'disabled'}>Water</button></div>`;
   else if (p.stage === 'growing') { const tot = p.readyAt - p.wateredAt, pr = 1 - Math.max(0, p.readyAt - G.now()) / tot; body = `<div class="row"><div class="t"><b>Growing</b><span>ready in ${G.timeLeft(p.readyAt)}</span><div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div></div>${G.magicInfo().spells.includes('coax') ? `<button class="act" data-a="cast" data-id="coax" ${G.canCast('coax').ok ? '' : 'disabled'}>Coax ✨2</button>` : ''}</div>`; }
   else body = `<div class="row"><div class="t"><b>Ready to pick</b><span>Gives ${costHtml(c.harvest)} and a little more green</span></div><button class="act" data-a="harvest">Pick</button></div>`;
-  openSheet('seedbed', `<h2>The seed bed<small>${p.grown} grown so far</small></h2>${body}`);
+  openSheet('seedbed', `<h2>The seed bed<small>${p.grown} grown so far</small></h2>${body}${landNote()}`);
+}
+function landNote() {   // why growing things matters: every harvest (and most jobs) wakes the land a little, towards the next stage
+  const g = G.s.tiles['0,0'].green, st = G.landStage(), next = C.landStages.find(s => s.at > g);
+  return `<p>Everything that grows here wakes the land a little. The yard is <b>${st.name}</b>` + (next ? `; ${next.at - g} more and it will be <b>${next.name}</b> (${next.sub}).</p>` : `, as green as it gets.</p>`);
 }
 function hours(mins) { const h = mins / 60 * G.taskSpeed(); return h < 1 ? `${Math.round(h * 60)} minutes` : h < 1.75 ? '1 hour' : `${Math.round(h)} hours`; }
 function openPack() {
