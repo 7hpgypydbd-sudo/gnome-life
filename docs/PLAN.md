@@ -2,7 +2,7 @@
 
 A cosy virtual-pet game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; must run smoothly on a phone. (Earlier working title: "Fairy Garden".)
 
-_Last updated: 2026-10-26 (v42: painted woodpile, spring and rabbit; job-mechanics pass under way)_
+_Last updated: 2026-10-26 (v43: round 2 of job notes: greeting cards, slow greening, staged jobs, log seat, rain barrel)_
 
 ## Start here, next chat
 
@@ -262,3 +262,16 @@ Fallback if code blending looks too smudgy: the dual-grid edge pieces (5-6 per p
   - **Fetch water for the seed bed** now needs `bed` + `spring`; Wendel goes to and fro (fill the can at the pool, water a different bit of the bed). Old saves that already watered get the spring marked found.
   - **THE RABBIT** (Bryce: cheeky recurring minor foil; it's a comfy game). First visit (`G.rabbitDue()`, game.js): food in the dish AND seedlings growing, 2 content-minutes later. It hops in, eats the whole dish (`rabbitAte`), hops into the bed and **nibbles a few sprouts** (Bryce's choice; `plot.nibbled`: some seedlings drawn as stalks, the next pick gives 1 seed fewer), Wendel: "Oi! Shoo, you rascal!" (`rabbitRaid`, sets `flags.rabbit`). If you were away 1 h+, it happens off-screen and the "While you were away" letter says so. **"Fence the seed bed" only appears after the raid** (`needs:['bed','flag:rabbit']`; new `flag:` needs in game.js hide the job until the flag is set). Once fenced, it pops back every 12-22 min of daytime play (`rabbitVisit`): nose to the fence, asleep by the woodpile, or pinching a berry from the dish. Size: about gnome height (`RABBIT_SIZE`). Code-drawn stand-in (`drawRabbit`); painted 5-pose prompt in docs/ART-DAY-10.md. Texts in `CONTENT.rabbit`.
   - Preview for Bryce: `/mnt/project-files/early-game/mechanics-v40-preview.jpg`. `#test` now also exposes `DBG.gnomes`, `DBG.rabbit()`, `DBG.rabbitVisit()`.
+
+- **v43 (2026-10-26): JOB-MECHANICS PASS, round 2** (Bryce's notes after starting a fresh garden).
+  - **Creature greeting card:** tapping a visitor opens `openGreeting()`: portrait (uses `sprites/portrait-<id>.webp` when painted, else the garden painting), name, note, feeding info, "Its story is still to be written". Painted keepsake portraits are being made in a separate Mac thread.
+  - **Menus scroll with a finger:** the page-wide `touchmove` block now lets the parchment sheet scroll when it is taller than the screen.
+  - **Doorstep** moved to sit across the threshold (`at(160, 414)` in the shelter picture). **Hazel digs the bed** standing just inside it at the digging edge.
+  - **Greening (Bryce's lore):** growing living things brings the land back; finding water a tiny bit, each crop more, saplings/flowers/trees more. Building and tidying jobs now give **no** green (`green:0` on bed, bedwater, roof, fence, bench, doorstep, barrel, line, lantern, path, lamps, house stages, lean-to, sign, etc.); spring 1, each crop 1, planting jobs 1-3. The home ground now greens **point by point** (`groundMat`: g = (points/12)^1.3, in 0.05 steps) instead of jumping to lush at 4 points. Each new land stage opens a **"The land is waking" card** (`openLand`, text in `landStages[].explain`).
+  - **Welcome** now says who the gnomes are (newly married, left their old home), the logged clearing, and that wherever gnomes live and grow things the land remembers how to be alive.
+  - **Staged jobs:** at the start only Clear the ground (Hazel) and Gather the fallen wood (Wendel, now free from the start; three fallen branches, Hazel's stick pile stays by the house as kindling). Clear opens Dig a seed bed + Feeding dish; wood opens Look for water; bed + spring open Fetch water; watering opens Moss roof + Log seat; **the first crop picked** (`flags.firstpick`) opens the doorstep, rain barrel, washing line, lantern and the sapling.
+  - **Work rounds** (`workLoop`) for the moss roof (Hazel gathers moss at mossy roots and rocks, presses it on by the door), the log seat (Wendel tugs a short log free, rolls it over, beds it in) and the rain barrel (scrub, fetch rinse water from the spring, rinse).
+  - **"Roll a log seat to the fire"** replaces "Set the bench by the fire": prop `logseat` (painted hollow log `kit/stumps-rocks-06`) right beside the campfire; the big stone bench out by the lantern is gone.
+  - **Rain barrel:** `who:'either'` (new: whichever gnome is free takes it; `G.eitherWho`, stored as `tasks[id].who`). Once scrubbed it fills with rain every 6 h (`CONTENT.barrel`); tap the barrel (it glows when full) for 2 dew.
+  - **Still to do (art):** hammering/crafting work strips for both gnomes (Bryce: no sexist split of work). Passed to the coordinator for a Mac painting session.
+  - Preview: `/mnt/project-files/early-game/round2-v43-preview.jpg`.
