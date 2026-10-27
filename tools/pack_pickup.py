@@ -69,7 +69,7 @@ for who in ('her', 'him'):
         cw = max(im.width for im in ims) + 4; ch = max(im.height for im in ims) + 2
         strip = Image.new('RGBA', (cw * len(ims), ch))
         for i, im in enumerate(ims): strip.paste(im, (i * cw + (cw - im.width) // 2, ch - im.height), im)
-        strip.save(f'{OUT}/{who}-{act}.png', optimize=True)
+        strip.save(f'{OUT}/{who}-{act}.webp', lossless=True, exact=True, method=6)
         atlas[who]['acts'][act] = {'n': len(ims), 'cell': [cw, ch]}
         print(who, act, len(ims), cw, ch)
 json.dump(atlas, open(f'{OUT}/gnomes.json', 'w'), indent=1)

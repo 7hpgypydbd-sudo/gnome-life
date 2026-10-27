@@ -96,14 +96,14 @@ def page(name, out):
     im = load(name); im = im.resize((1200, round(im.height * 1200 / im.width)), Image.LANCZOS); im.save(os.path.join(SPR, out + '.webp'), quality=82); print(out, im.size)
 
 
-def pack_strip(frames, who, act, atlas):   # frames: list of RGBA arrays -> sprites/<who>-<act>.png (4 cells side by side), each gnome 240 px tall
+def pack_strip(frames, who, act, atlas):   # frames: list of RGBA arrays -> sprites/<who>-<act>.webp (4 cells side by side), each gnome 240 px tall
     ims = [Image.fromarray(crop_alpha(f)) for f in frames]
     s = TARGET_H / max(i.height for i in ims)
     ims = [i.resize((round(i.width * s), round(i.height * s)), Image.LANCZOS) for i in ims]
     cw = max(i.width for i in ims) + 4; ch = max(i.height for i in ims) + 2
     strip = Image.new('RGBA', (cw * len(ims), ch))
     for i, f in enumerate(ims): strip.paste(f, (i * cw + (cw - f.width) // 2, ch - f.height), f)
-    strip.save(os.path.join(SPR, f'{who}-{act}.png'), optimize=True)
+    strip.save(os.path.join(SPR, f'{who}-{act}.webp'), lossless=True, exact=True, method=6)
     atlas[who]['acts'][act] = {'n': len(ims), 'cell': [cw, ch]}; print(who, act, cw, ch)
 
 
@@ -112,7 +112,7 @@ def sit_strip(frames, out, h=240):   # a sitting loop: equal cells, feet on the 
     ims = [i.resize((round(i.width * s), round(i.height * s)), Image.LANCZOS) for i in ims]
     cw = max(i.width for i in ims) + 4; strip = Image.new('RGBA', (cw * len(ims), h))
     for i, f in enumerate(ims): strip.paste(f, (i * cw + (cw - f.width) // 2, h - f.height), f)
-    strip.save(os.path.join(SPR, out + '.png'), optimize=True); print(out, strip.size)
+    strip.save(os.path.join(SPR, out + '.webp'), lossless=True, exact=True, method=6); print(out, strip.size)
 
 
 def unstump(f):   # Wendel's dish-fill frames come with their own stump and bowl: keep only him (the game has its own dish)

@@ -210,7 +210,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v68</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v69</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -230,16 +230,16 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 68;
+const BUILD = 69;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=68"></script>
-<script src="game.js?v=68"></script>
-<script src="walk.js?v=68"></script>
+<script src="content.js?v=69"></script>
+<script src="game.js?v=69"></script>
+<script src="walk.js?v=69"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -259,10 +259,10 @@ const ASSETS = {
   barrel:'sprites/barrel.webp', seedbed:'sprites/seedbed.webp', stonebench:'sprites/stonebench.webp',
   tub:'sprites/tub.webp', lanternstump:'sprites/lanternstump.webp', wheelbarrow:'sprites/wheelbarrow.webp',
   fence:'sprites/fence.webp', sapling:'sprites/sapling.webp',
-  'him-side':'sprites/him-side.png','him-front':'sprites/him-front.png','him-back':'sprites/him-back.png',
-  'her-side':'sprites/her-side.png','her-front':'sprites/her-front.png','her-back':'sprites/her-back.png',
-  'him-dig':'sprites/him-dig.png','him-water':'sprites/him-water.png','him-carry':'sprites/him-carry.png','him-eat':'sprites/him-eat.png','him-canwalk':'sprites/him-canwalk.png','him-craft':'sprites/him-craft.png','her-craft':'sprites/her-craft.png','him-build':'sprites/him-build.png','her-build':'sprites/her-build.png','him-dowse':'sprites/him-dowse.png','her-fill':'sprites/her-fill.png','him-fill':'sprites/him-fill.png','her-toss':'sprites/her-toss.png','him-toss':'sprites/him-toss.png','her-potwalk':'sprites/her-potwalk.png','him-sit':'sprites/him-sit.png','him-sleep':'sprites/him-sleep.png',
-  'her-pickup':'sprites/her-pickup.png','her-gather':'sprites/her-gather.png','him-pickup':'sprites/him-pickup.png','him-gather':'sprites/him-gather.png','her-dig':'sprites/her-dig.png','her-water':'sprites/her-water.png','her-carry':'sprites/her-carry.png','her-eat':'sprites/her-eat.png','her-sit':'sprites/her-sit.png','her-sleep':'sprites/her-sleep.png',
+  'him-side':'sprites/him-side.webp','him-front':'sprites/him-front.webp','him-back':'sprites/him-back.webp',
+  'her-side':'sprites/her-side.webp','her-front':'sprites/her-front.webp','her-back':'sprites/her-back.webp',
+  'him-dig':'sprites/him-dig.webp','him-water':'sprites/him-water.webp','him-carry':'sprites/him-carry.webp','him-eat':'sprites/him-eat.webp','him-canwalk':'sprites/him-canwalk.webp','him-craft':'sprites/him-craft.webp','her-craft':'sprites/her-craft.webp','him-build':'sprites/him-build.webp','her-build':'sprites/her-build.webp','him-dowse':'sprites/him-dowse.webp','her-fill':'sprites/her-fill.webp','him-fill':'sprites/him-fill.webp','her-toss':'sprites/her-toss.webp','him-toss':'sprites/him-toss.webp','her-potwalk':'sprites/her-potwalk.webp','him-sit':'sprites/him-sit.webp','him-sleep':'sprites/him-sleep.webp',
+  'her-pickup':'sprites/her-pickup.webp','her-gather':'sprites/her-gather.webp','him-pickup':'sprites/him-pickup.webp','him-gather':'sprites/him-gather.webp','her-dig':'sprites/her-dig.webp','her-water':'sprites/her-water.webp','her-carry':'sprites/her-carry.webp','her-eat':'sprites/her-eat.webp','her-sit':'sprites/her-sit.webp','her-sleep':'sprites/her-sleep.webp',
   'icon-twig':'sprites/icon-twig.webp','icon-moss':'sprites/icon-moss.webp','icon-stone':'sprites/icon-stone.webp','icon-acorn':'sprites/icon-acorn.webp','icon-seed':'sprites/icon-seed.webp',
   'woodpile-1':'sprites/woodpile-1.webp','woodpile-2':'sprites/woodpile-2.webp','woodpile-3':'sprites/woodpile-3.webp',   // art day 10, cut by tools/cut_day10.py
   'spring-choked':'sprites/spring-choked.webp','spring-clear':'sprites/spring-clear.webp',
@@ -271,6 +271,7 @@ const ASSETS = {
 };
 // The blended ground and the night light layer (on since 2026-10-25; #oldground shows the old big tiles to compare). See docs/GRAPHICS-RETHINK.md.
 const NEWGROUND = !/oldground/.test(location.hash);
+if (NEWGROUND) for (const k of Object.keys(ASSETS)) if (k === 'plot' || k.startsWith('tile-')) delete ASSETS[k];   // the old big tiles are only for #oldground: 2.8 MB not downloaded (phone review, v69)
 // the painted ground kit (art days 1-2, cut by tools/make_kit.py): nine swatches, and sheets of twelve stickers (<sheet>-01..12)
 const GSWATCH = ['dirt', 'drygrass', 'grass', 'meadow', 'moss', 'path', 'pebbles', 'water'];
 const kit = (sheet, ...ns) => ns.map(n => `${sheet}-${String(n).padStart(2, '0')}`);
@@ -444,7 +445,7 @@ const BENCH_SEAT = { her: [0.602, 0.406], him: [0.638, 0.394] };   // on the pla
 // Painted sitting loops (art day 14, 4 frames in a row, no seat painted): drop the file in and it is used, no code change.
 // h = drawn height in world pixels (tune to the bench); dy lifts the picture so the invisible seat meets the plank.
 // 'both' (painted, art day 14) is the couple on their own bench, facing you, so it replaces the plain bench while they sit (benchHasCouple)
-const SIT_ART = { her: { src:'sprites/sit-her.png', n:4, h:96, dy:0 }, him: { src:'sprites/sit-him.png', n:4, h:96, dy:0 }, both: { src:'sprites/sit-couple.png', n:4, h:94, dy:0 } };
+const SIT_ART = { her: { src:'sprites/sit-her.webp', n:4, h:96, dy:0 }, him: { src:'sprites/sit-him.webp', n:4, h:96, dy:0 }, both: { src:'sprites/sit-couple.webp', n:4, h:94, dy:0 } };
 const FIRE_AT = [0.52, 0.48], SITPIC = {};
 // Until then the old sit poses stand in: each comes with its own log or stump, so on the bench the picture is cut off just under
 // the thighs (cut = that row of the 208-high pose) and set on the plank, and the bench is drawn in front, hiding the cut.
@@ -544,6 +545,10 @@ const ART = {};   // name -> loaded Image, only for slots whose file exists
 function art(k) { return ART[k] || null; }
 function loadArtSlots() {   // after the game starts, so missing files never slow the first picture
   for (const k of Object.keys(ART_SLOTS)) {
+    // the big story paintings and journal portraits are only ever shown as pictures in a page, never drawn in the garden, so
+    // here we only ask whether each one exists; the phone fetches it the first time its page opens (about 8 MB not downloaded up front)
+    if (/^(story|page|portrait)-/.test(k)) { if (k === 'page-1-1' && !G.s.flags.welcomed) new Image().src = 'sprites/page-1-1.webp';   // a first visit opens page one at once
+      fetch(`sprites/${k}.webp`, { method: 'HEAD' }).then(r => { if (r.ok) ART[k] = { shownInPages: true }; }).catch(() => {}); continue; }
     const im = new Image(); im.onload = () => { ART[k] = /^(btn|plot|room|vis|portrait|folk|face|story|page|icon|find|gift)-/.test(k) ? im : settle(im, k === 'stepping-stones'); if (k.startsWith('btn-')) paintButton(k); }; im.src = `sprites/${k}.webp`;
   }
 }
@@ -807,25 +812,33 @@ Gnome.prototype.choreProg = function (steps) {   // 0..1 through the first `step
   const c = this.chore; if (!c) return 1; const n = steps || c.steps.length;
   return Math.min(1, (c.i + (this.walking ? 0 : Math.min(1, c.t / c.steps[c.i][4]))) / n);
 };
+// Soft round shadows and patches are drawn from small ready-made discs instead of a fresh gradient each time (a grown garden
+// drew over 160 a frame): the same look for a fraction of the work. Anything wholly off the screen is skipped. (Phone review, v69)
+const DISC = {};
+function disc(key, r0, stops) {   // a unit disc (drawn at -1,-1,2,2) holding one radial gradient
+  if (DISC[key]) return DISC[key]; const S = 256, c = Object.assign(document.createElement('canvas'), { width: S, height: S }), x = c.getContext('2d');
+  const g = x.createRadialGradient(S / 2, S / 2, r0 * S / 2, S / 2, S / 2, S / 2); for (const [t, col] of stops) g.addColorStop(t, col);
+  x.fillStyle = g; x.beginPath(); x.arc(S / 2, S / 2, S / 2, 0, Math.PI * 2); x.fill(); return DISC[key] = c;
+}
+function offScreen(x, y, rx, ry) {   // is a box of half-size rx, ry around (x, y), under the current transform, wholly off the canvas?
+  const m = ctx.getTransform(), sx = m.a * x + m.c * y + m.e, sy = m.b * x + m.d * y + m.f, ex = Math.abs(m.a * rx) + Math.abs(m.c * ry), ey = Math.abs(m.b * rx) + Math.abs(m.d * ry);
+  return sx + ex < 0 || sx - ex > cv.width || sy + ey < 0 || sy - ey > cv.height;
+}
 function shadow(x, y, rx, ry) {   // soft contact shadow, two layers: a wide soft one cast away from the light (upper left), and a tight dark one right where the thing meets the earth
+  if (offScreen(x + rx * 0.14, y + 2, rx * 1.3 + 1, ry * 1.3 + 1)) return;
   ctx.save(); ctx.translate(x + rx * 0.14, y + 2); ctx.scale(rx * 1.3, ry * 1.3);
-  let g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
-  g.addColorStop(0, 'rgba(30,20,8,0.34)'); g.addColorStop(0.5, 'rgba(30,20,8,0.2)'); g.addColorStop(1, 'rgba(30,20,8,0)');
-  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  ctx.drawImage(disc('cast', 0, [[0, 'rgba(30,20,8,0.34)'], [0.5, 'rgba(30,20,8,0.2)'], [1, 'rgba(30,20,8,0)']]), -1, -1, 2, 2); ctx.restore();
   ctx.save(); ctx.translate(x, y + 1); ctx.scale(rx * 0.75, ry * 0.6);
-  g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
-  g.addColorStop(0, 'rgba(25,16,6,0.38)'); g.addColorStop(0.6, 'rgba(25,16,6,0.16)'); g.addColorStop(1, 'rgba(25,16,6,0)');
-  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  ctx.drawImage(disc('contact', 0, [[0, 'rgba(25,16,6,0.38)'], [0.6, 'rgba(25,16,6,0.16)'], [1, 'rgba(25,16,6,0)']]), -1, -1, 2, 2); ctx.restore();
 }
 function lineShadow(A, B, w) {   // a soft shadow along a row of feet (a fence panel): a string of small contact shadows from A to B
   const n = Math.max(2, Math.round(Math.hypot(B[0] - A[0], B[1] - A[1]) / (w * 1.2)));
   for (let i = 0; i <= n; i++) { const t = i / n; shadow(A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t, w, w * 0.32); }
 }
 function groundPatch(x, y, rx, ry) {   // a faint patch of darker, trodden earth under a standing thing, so it sits in the ground
+  if (offScreen(x, y, rx, ry)) return;
   ctx.save(); ctx.translate(x, y); ctx.scale(rx, ry);
-  const g = ctx.createRadialGradient(0, 0, 0.2, 0, 0, 1);
-  g.addColorStop(0, 'rgba(70,50,28,0.26)'); g.addColorStop(0.6, 'rgba(70,50,28,0.12)'); g.addColorStop(1, 'rgba(70,50,28,0)');
-  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  ctx.drawImage(disc('patch', 0.2, [[0, 'rgba(70,50,28,0.26)'], [0.6, 'rgba(70,50,28,0.12)'], [1, 'rgba(70,50,28,0)']]), -1, -1, 2, 2); ctx.restore();
 }
 // Bake each standing prop once so it belongs to the ground: a touch of the ground's warm earth over everything, and a soft
 // darkening towards the base where it meets the soil (painted art came on white/magenta, lit as if floating).
@@ -1066,6 +1079,7 @@ function drawTileArt(key, ox, oy) {
 }
 function drawTile(k, tl, now) {
   const [ox, oy] = tileOrigin(k);
+  if (offScreen(ox + PLOT.w / 2, oy + PLOT.h / 2, PLOT.w / 2, PLOT.h / 2)) return;   // off the screen: nothing to draw (most of a grown map, zoomed in)
   if (NEWGROUND) { if (!drawGroundTile(k, ox, oy, now)) { ctx.save(); diamondPath(k); ctx.clip(); ctx.fillStyle = 'rgb(206,204,182)'; ctx.fillRect(ox, oy, PLOT.w, PLOT.h); ctx.restore(); } return; }
   if (k === '0,0') { const key = HOME_TILE[G.landStage().key] || 'plot'; ctx.drawImage(IM[key], ox, oy); if (key === 'plot') drawHomePlot(ox, oy, now); return; }
   if (tl.state === 'green') { drawTileArt(greenArt(k), ox, oy); return; }
@@ -1509,14 +1523,18 @@ function clearingWantsTap() { return C.tasks.some(t => t.spot === 'clearing' && 
 function blob(x, y, rx, ry, col) { ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, 7); ctx.fill(); }
 function rnd(i) { const j = Math.sin(i * 12.9898) * 43758.5453; return j - Math.floor(j); }   // fixed pattern, never flickers
 function stone(x, y, r) { blob(x, y + r * 0.25, r * 1.1, r * 0.45, 'rgba(40,30,20,0.25)'); blob(x, y, r, r * 0.6, '#9a958c'); blob(x - r * 0.25, y - r * 0.2, r * 0.5, r * 0.25, 'rgba(225,222,212,0.7)'); ctx.strokeStyle = 'rgba(42,21,16,0.6)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.6, 0, 0, 7); ctx.stroke(); }
+let FLATSTONE = null;
 function flatStone(x, y, r, i = 0) {   // a stone set into the earth: a ring of darker trodden soil, a shadowed lower rim, a warm grey face with a soft top light
   groundPatch(x, y + 1, r * 1.5, r * 0.72);
-  ctx.save(); ctx.translate(x, y); ctx.rotate((rnd(i + 3) - 0.5) * 0.3);
-  ctx.fillStyle = 'rgba(80,64,46,0.45)'; ctx.beginPath(); ctx.ellipse(0, 0, r, r * 0.44, 0, 0, 7); ctx.fill();   // the rim where it meets the soil
-  const g = ctx.createRadialGradient(-r * 0.25, -r * 0.3, r * 0.1, 0, -r * 0.05, r);
-  g.addColorStop(0, '#bdb4a2'); g.addColorStop(0.7, '#a39a88'); g.addColorStop(1, '#948a78');
-  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, -r * 0.06, r * 0.99, r * 0.38, 0, 0, 7); ctx.fill();
-  ctx.restore();
+  if (offScreen(x, y, r, r)) return;
+  if (!FLATSTONE) {   // every stone is the same picture at a different size and tilt, so it is painted once (r = 160, sharp at full zoom) and reused
+    const R = 160, c = Object.assign(document.createElement('canvas'), { width: R * 2, height: R }), x2 = c.getContext('2d'); x2.setTransform(R, 0, 0, R, R, R / 2);
+    x2.fillStyle = 'rgba(80,64,46,0.45)'; x2.beginPath(); x2.ellipse(0, 0, 1, 0.44, 0, 0, 7); x2.fill();   // the rim where it meets the soil
+    const g = x2.createRadialGradient(-0.25, -0.3, 0.1, 0, -0.05, 1);
+    g.addColorStop(0, '#bdb4a2'); g.addColorStop(0.7, '#a39a88'); g.addColorStop(1, '#948a78');
+    x2.fillStyle = g; x2.beginPath(); x2.ellipse(0, -0.06, 0.99, 0.38, 0, 0, 7); x2.fill(); FLATSTONE = c;
+  }
+  ctx.save(); ctx.translate(x, y); ctx.rotate((rnd(i + 3) - 0.5) * 0.3); ctx.drawImage(FLATSTONE, -r, -r / 2, r * 2, r); ctx.restore();
 }
 function stick(x, y, len, ang, col = '#7a5a3a') { ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(42,21,16,0.8)'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(-len / 2, 0); ctx.lineTo(len / 2, 0); ctx.stroke(); ctx.strokeStyle = col; ctx.lineWidth = 3.5; ctx.stroke(); ctx.restore(); }
 // painted pictures that take over from the code below once they exist (see ART_SLOTS)
@@ -3621,8 +3639,14 @@ function jobSpot(job) {
 }
 
 // ---------- main frame ----------
-let last = performance.now(), tickAcc = 0;
+let last = performance.now(), tickAcc = 0, lastDraw = 0, liveUntil = 0;
+// Battery (phone review, v69): drawing the whole garden 60 times a second was the biggest drain. The garden is drawn every
+// frame only while a finger is on the screen (and a moment after), the camera glides, or the morning mist is lifting; the rest
+// of the time every other frame (30 a second), which looks the same for slow, cosy movement. A phone in Low Power Mode is at
+// 30 already, so nothing is skipped there. While the room is open the garden behind it is not drawn at all.
 function frame(now) {
+  if (!(ptrs.size || ALLDONE.ease || now < liveUntil || mistA > 0) && now - lastDraw < 25) { requestAnimationFrame(frame); return; }
+  lastDraw = now;
   const dt = Math.min(0.05, (now - last) / 1000); last = now; feederSpot(); saplingSpot();
   const ph = dayPhase();
   tickAcc += dt; if (tickAcc > 0.5) { tickAcc = 0; G.tick(); cardCheck(); allDoneCheck(now); }
@@ -3632,6 +3656,7 @@ function frame(now) {
   for (const p of folkOnLand) p.update(dt);
   spawnParticles(dt, ph); updateParticles(dt);
   if (NEWGROUND) groundUpdate();
+  if (roomOn) { drawRoom(now, dt); requestAnimationFrame(frame); return; }   // the garden is hidden behind the room
 
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ctx.fillStyle = `rgb(${Math.round(28 + 30*ph.light + 40*ph.warm)},${Math.round(36 + 34*ph.light + 10*ph.warm)},${Math.round(24 + 30*ph.light)})`;
@@ -3719,7 +3744,6 @@ function frame(now) {
     const sx = (g.screen.x - cam.x) * cam.z + W / 2, sy = (g.screen.y - g.screen.h - cam.y) * cam.z + H / 2;
     bubble.style.left = sx + 'px'; bubble.style.top = (sy - 10) + 'px'; bubble.style.opacity = 1;
   } else bubble.style.opacity = 0;
-  if (roomOn) drawRoom(now);
   requestAnimationFrame(frame);
 }
 
@@ -3730,7 +3754,7 @@ function frame(now) {
 const TAP_SLOP = 16, TAP_MS = 700;
 const ptrs = new Map(); let pinch0 = null; let gesture = null;   // gesture: { x0, y0, t0, dragging, tapOK }
 cv.addEventListener('pointerdown', e => {
-  cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); ALLDONE.ease = null;
+  cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); ALLDONE.ease = null; liveUntil = performance.now() + 1500;
   if (ptrs.size === 1) gesture = { x0: e.clientX, y0: e.clientY, t0: performance.now(), dragging: false, tapOK: true };
   else { gesture && (gesture.tapOK = false); if (ptrs.size === 2) { pinch0 = pinchInfo(); pinch0.wx = (pinch0.cx - W / 2) / cam.z + cam.x; pinch0.wy = (pinch0.cy - H / 2) / cam.z + cam.y; } }
 });
@@ -3750,6 +3774,7 @@ cv.addEventListener('pointermove', e => {
   clampCam();
 });
 const up = e => {
+  liveUntil = performance.now() + 1500;   // smooth for the tap ripple and the camera settling
   if (ptrs.size === 1 && gesture && gesture.tapOK && e.type === 'pointerup' && performance.now() - gesture.t0 < TAP_MS) tap(e.clientX, e.clientY);
   ptrs.delete(e.pointerId); pinch0 = null; if (ptrs.size === 0) gesture = null; else if (gesture) gesture.tapOK = false;
 };
@@ -3881,7 +3906,7 @@ function roomGnome(g, x, y, flip) {
   rx.save(); rx.translate(x, y); if (flip) rx.scale(-1, 1); rx.drawImage(img, f * cw, 0, cw, ch, -cw * RS / 2, -ch * RS, cw * RS, ch * RS); rx.restore();
   g.room = { x, y: y - ch * RS / 2, r: Math.max(cw, ch) * RS / 2 };
 }
-function drawRoom(now) {
+function drawRoom(now, dt) {
   const stage = homeStage(), R = ROOMS[stage], ph = dayPhase();
   if (art(R.slot)) rx.drawImage(art(R.slot), 0, 0, 1000, 1000); else (stage === 2 ? roomStump : roomShelter)(ph, now);
   const inside = gnomes.filter(g => g.inside);
@@ -3892,7 +3917,7 @@ function drawRoom(now) {
   const [lx, ly, lr] = R.light, fl = 0.85 + 0.15 * Math.sin(now / 110) * Math.sin(now / 260);
   const gr = rx.createRadialGradient(lx, ly, 0, lx, ly, lr * 1.6); gr.addColorStop(0, 'rgba(255,170,80,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
   rx.save(); rx.globalCompositeOperation = 'lighter'; rx.globalAlpha = (0.18 + 0.4 * dark) * fl; rx.fillStyle = gr; rx.fillRect(0, 0, 1000, 1000); rx.restore();
-  if (roomSayT > 0 && (roomSayT -= 1 / 60) <= 0) roomCaption();
+  if (roomSayT > 0 && (roomSayT -= dt) <= 0) roomCaption();
 }
 function doing(g) {   // where a gnome is when not indoors, in words
   const r = G.running().find(r => r.def.who === g.who), rt = routineFor(dayPhase().h), n = C.names[g.who];
