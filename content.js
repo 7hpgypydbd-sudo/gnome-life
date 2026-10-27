@@ -103,8 +103,8 @@ window.CONTENT = {
       blurb:'For the beans, which have strong opinions about climbing.' },
     { id:'clothesline', act:'build', name:'String up a washing line', short:'stringing the line', who:'her', spot:'fire',      cost:{ twig:3, moss:1 },   needs:['page:2.1'], mins:60,  green:0,
       blurb:'Two tunics, one apron, a very small pair of socks. The sun can do the drying.' },
-    { id:'stump', name:'Dig out the old stump', short:'digging out the stump', who:'either', act:'dig', spot:'lanternstump', cost:{}, give:{ twig:3 }, mins:60, green:0,
-      needs:['woodpile', 'page:2.1'], blurb:'An old loggers\' stump, right where the fire wants room. Whoever is free digs round the roots, rocks it loose and chops it up for the woodpile.',
+    { id:'stump', name:'Dig out the old stump', short:'digging out the stump', spine:true, who:'either', act:'dig', spot:'lanternstump', cost:{}, give:{ twig:3 }, mins:60, green:0,
+      needs:['woodpile', 'clear'], blurb:'An old loggers\' stump, right where the fire wants room. Whoever is free digs round the roots, rocks it loose and chops it up for the woodpile.',
       doneNote:'The old stump is gone, chopped and stacked on the woodpile. There is room round the fire now.' },
     { id:'rainbarrel', name:'Scrub the rain barrel', short:'scrubbing the barrel',   who:'either', spot:'barrel',        cost:{ twig:2, stone:1 },  mins:60,  green:0, needs:['roof'],   // after the roof: it catches the rain off it (Bryce: why have a barrel at all?)
       blurb:'The old barrel by the fire is green with slime. Scrubbed clean, it catches the rain off the roof: a can of water every so often without the walk to the spring. Whoever is free will do it.' },
