@@ -123,6 +123,7 @@ const G = {
       if (tk.done || tk.endsAt > t) continue;
       tk.done = true; const d = this.taskDef(id);
       if (d.healTile) this.healDone(d);
+      else if (d.farm) this.farmDone(d, tk);
       else if (d.tile) { const tl = s.tiles[d.tile]; tl.state = 'green'; tl.green = 4; this.reveal(d.tile); this.note(`The land next door has greened.`); }
       else this.addGreen(d.green, d.make === 'garden' ? 'garden' : 'yard');
       if (d.folk) this.villageDone(id, d, tk);
@@ -134,6 +135,7 @@ const G = {
     this.storyTick(t);
     this.moveInTick(t);
     this.healTick(t);
+    this.farmTick(t);
     this.villageTick(t);
     this.festivalTick(t);
     this.secretTick(t);
@@ -243,6 +245,7 @@ const G = {
   // ---- tasks ----
   taskDef(id) {
     if (id.startsWith('heal:')) return this.healDef(id);
+    if (id.startsWith('farm:')) return this.farmTask(id);
     if (id.startsWith('regrow:')) { const tile = id.slice(7); return Object.assign({ id, tile }, C.regrow, { name: `${C.regrow.name} (${this.tileName(tile)})` }); }
     if (id.startsWith('fest:')) { const j = C.festival.jobs.find(j => j.id === id); return j && Object.assign({ festival: true }, j, { cost: this.festCost(j) }); }
     const [kind, fid, step] = id.split(':'), f = this.folkDef(fid);
@@ -262,6 +265,9 @@ const G = {
     for (const d of C.tasks) if (!d.retired) out.push(this.taskView(this.taskDef(d.id)));
     for (const [k, tl] of Object.entries(s.tiles)) if (!tl.kind && (tl.state === 'revealed' || tl.state === 'regrowing')) out.push(this.taskView(this.taskDef('regrow:' + k)));   // an older garden half-way through the old job
     for (const k of this.healTiles()) { const i = this.healAt(k); if (i > 0) out.push(this.taskView(this.taskDef(`heal:${k}:${i - 1}`))); if (this.healOpen(k)) out.push(this.taskView(this.taskDef(`heal:${k}:${i}`))); }   // one job at a time on each patch: the next one, and the one just finished
+    for (const fid of this.farms()) { const n = this.farmSteps(fid).length, i = this.farmAt(fid);   // a farm, like a patch: the next job and the one just finished, then picking once it has grown
+      if (i > 0) out.push(this.taskView(this.taskDef(`farm:${fid}:${i - 1}`))); if (i < n) out.push(this.taskView(this.taskDef(`farm:${fid}:${i}`)));
+      if (this.farmGrown(fid)) out.push(this.taskView(this.taskDef(`farm:${fid}:pick`))); }
     const v = s.village;
     if (v.traveller) out.push(this.taskView(this.taskDef('home:' + v.traveller.id)));
     for (const [fid, fs] of Object.entries(v.folk)) {
@@ -285,7 +291,7 @@ const G = {
   startTask(id) {
     const d = this.taskDef(id), v = this.taskView(d); if (v.state !== 'ready' || !v.can) return false;
     this.pay(d.cost); const t = now();
-    this.s.tasks[id] = { startedAt: t, endsAt: t + this.dur(d.mins), done: false }; if (d.healTile || C.tasks.some(x => x.id === id && x.who === 'either')) this.s.tasks[id].who = d.who;
+    this.s.tasks[id] = { startedAt: t, endsAt: t + this.dur(d.mins), done: false }; if (d.healTile || d.farm || C.tasks.some(x => x.id === id && x.who === 'either')) this.s.tasks[id].who = d.who;
     if (d.home || d.claims) this.s.tasks[id].tile = this.freeLot();
     if (d.claims) this.s.festival.tile = this.s.tasks[id].tile;
     if (d.tile) this.s.tiles[d.tile].state = 'regrowing';
@@ -366,8 +372,9 @@ const G = {
     if (!n) return; const tl = this.s.tiles[k], before = this.landStage(k).key; tl.green += n; const st = this.landStage(k);
     if (st.key === before) return;
     if (tl.state !== 'green') { tl.state = 'green'; this.reveal(k); }
-    this.note(`${cap(C.heal.kinds[tl.kind].patch)} is now ${st.name}.`); this.s.pages.cards.push({ k: 'tland', tile: k, key: st.key }); this.emit('land', st);
+    this.note(`${cap(this.patchName(k))} is now ${st.name}.`); this.s.pages.cards.push({ k: 'tland', tile: k, key: st.key }); this.emit('land', st);
   },
+  patchName(k) { const fid = this.farmOn(k); if (fid) return C.farms.list[fid].patch; const tl = this.s.tiles[k]; return tl && tl.kind ? C.heal.kinds[tl.kind].patch : 'the patch next door'; },
   healDone(d) {
     if (d.once) this.s.flags[d.once] = true;
     this.tileGreen(d.healTile, d.green);
@@ -396,6 +403,61 @@ const G = {
     const tl = this.s.tiles[k]; if (!tl.kind) return []; const [x, y] = k.split(',').map(Number), N = C.heal.treeNames, out = [];
     this.healSteps(k).forEach((st, i) => { if (st.tree && this.healStepDone(k, i)) for (let n = 0; n < (st.green >= 4 ? 2 : 1); n++) out.push(N[Math.abs(x * 5 + y * 11 + i * 3 + n * 7) % N.length]); });
     return out;
+  },
+
+  // ---- the neighbours' farms (CONTENT.farms; docs/PLAN.md "Neighbour farms") ----
+  // A neighbour's farm opens on their lot once their trade building is up. Jobs are 'farm:<id>:<step>' and 'farm:<id>:pick'.
+  // Its green goes onto that lot's own tile (tileGreen), so the lot keeps going through the land stages after first green.
+  // Life events (step.later) are kept in village.folk[id].ev; the picking comes back pickEvery minutes after the last one.
+  farms() { return this.settled().filter(fid => C.farms.list[fid] && this.done('trade:' + fid) && this.s.tiles[this.folkState(fid).tile]); },
+  farmOn(k) { return this.farms().find(fid => this.folkState(fid).tile === k) || null; },
+  farmSteps(fid) { return C.farms.list[fid].steps; },
+  farmAt(fid) { const n = this.farmSteps(fid).length; let i = 0; while (i < n && this.done(`farm:${fid}:${i}`)) i++; return i; },
+  farmEv(fid, name) { const fs = this.folkState(fid); return fs && fs.ev ? fs.ev[name] || 0 : 0; },   // when that bit of growing happened (0: not yet)
+  farmGrown(fid) { return !!this.farmEv(fid, 'grown'); },
+  farmTask(id) {
+    const [, fid, i] = id.split(':'), F = C.farms.list[fid], fs = this.folkState(fid); if (!F || !fs) return null;
+    const st = i === 'pick' ? F.pick : F.steps[+i]; if (!st) return null;
+    const d = Object.assign({}, st, { id, farm: fid, farmTile: fs.tile, step: i === 'pick' ? 'pick' : +i, stepId: i === 'pick' ? 'pick' : st.id, green: st.green || 0, who: 'either', where: cap(F.patch) });
+    d.who = this.eitherWho(d); return d;
+  },
+  farmDone(d, tk) {
+    const fs = this.folkState(d.farm), F = C.farms.list[d.farm];
+    if (d.stepId === 'pick') { fs.picked = tk.endsAt; fs.picks = (fs.picks || 0) + 1; this.note(F.pick.thanks); return; }
+    this.tileGreen(d.farmTile, d.green);
+  },
+  farmTick(t) {
+    for (const fid of this.farms()) {
+      const fs = this.folkState(fid), ev = fs.ev || (fs.ev = {});
+      this.farmSteps(fid).forEach((st, i) => { const tk = this.s.tasks[`farm:${fid}:${i}`]; if (!st.later || !tk || !tk.done) return;
+        for (const l of st.later) { if (l.ev in ev || t < tk.endsAt + l.after * MIN) continue; ev[l.ev] = t; if (l.note) this.note(l.note); this.tileGreen(fs.tile, l.green); this.emit('farmev', { folk: fid, ev: l.ev }); } });
+      const pid = `farm:${fid}:pick`, pk = this.s.tasks[pid];   // picked: it can be picked again a day later
+      if (pk && pk.done && t >= pk.endsAt + C.farms.pickEvery * MIN) { delete this.s.tasks[pid]; this.note(`${cap(C.farms.list[fid].patch)} is ready to pick again.`); this.dirty = true; }
+    }
+  },
+  farmRipe(fid) {   // 0..1: how far the farm has grown back since the last picking (1: ready, or never picked)
+    const fs = this.folkState(fid), tk = this.s.tasks[`farm:${fid}:pick`];
+    if (tk && !tk.done && tk.endsAt > now()) return 1 - (now() - tk.startedAt) / (tk.endsAt - tk.startedAt);
+    if (!tk) return 1; return Math.min(1, (now() - tk.endsAt) / (C.farms.pickEvery * MIN));
+  },
+  swapOpen(fid) { const fs = this.folkState(fid); return this.farmGrown(fid) && fs.swapDay !== dayKey(now()); },
+  swap(fid) {   // the pantry swap: once a day at each grown farm
+    const sw = C.farms.list[fid].swap, fs = this.folkState(fid); if (!this.swapOpen(fid) || !this.can(sw.give)) return false;
+    this.pay(sw.give); this.give(sw.get); fs.swapDay = dayKey(now()); this.note(sw.text); this.emit('inv'); return true;
+  },
+  // ---- the platypus (docs/ANIMALS.md section 8): it glides past at dawn on the last stretch of the creek to heal, once every
+  // stretch is healed. Never moves in. The first dawn after, it always comes; after that about one dawn in four.
+  creekTiles() { return [-2, -1, 0, 1, 2].map(x => `${x},-1`); },
+  creekHealed() { return this.creekTiles().every(k => { const tl = this.s.tiles[k]; return tl && tl.kind === 'creek' && this.healAt(k) >= this.healSteps(k).length; }); },
+  platypusTile() {   // the stretch that finished healing last
+    let best = null, at = -1; for (const k of this.creekTiles()) { if (!this.s.tiles[k] || !this.s.tiles[k].kind) continue; const n = this.healSteps(k).length, tk = this.s.tasks[`heal:${k}:${n - 1}`], e = tk ? tk.endsAt : 0; if (e > at) { at = e; best = k; } }
+    return best;
+  },
+  platypusDay(t = now()) {   // is this a dawn the platypus might come? (the first after the creek healed, then about one in four)
+    if (!this.creekHealed() && !/platypus/.test(location.hash)) return false;
+    const f = this.s.flags, dk = dayKey(t), h = new Date(t).getHours(); if (/platypus/.test(location.hash)) return true;
+    if (!f.platypusFirst && h >= 4 && h < 9) { f.platypusFirst = dk; this.dirty = true; } if (f.platypusFirst === dk) return true;
+    let hsh = 7; for (const ch of dk) hsh = (hsh * 31 + ch.charCodeAt(0)) % 1000003; return hsh % 4 === 0;
   },
 
   // ---- magic ----
@@ -518,6 +580,7 @@ const G = {
     if (d.claims && !this.s.tasks[d.id] && !this.freeLot()) return 'needs a healed patch with no home on it';
     if (d.healTile) { const w = this.healWait(d.healTile, d.step); if (w > now()) return `the tree seedlings are still growing (ready in ${this.timeLeft(w)})`;
       if (d.needsFlow && !this.canFlow(d.healTile)) return 'the water cannot reach this stretch yet: clear the creek next to it first'; }
+    if (d.farm && d.hours && !this.inHours(d.hours, new Date(now()).getHours())) return d.hoursWhy || 'not at this time of day';
     if (d.needsTile && !(this.s.tiles[d.needsTile] && this.s.tiles[d.needsTile].state === 'green')) return 'after the stepping-stone patch of the stream heals';
     return '';
   },
