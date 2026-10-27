@@ -20,6 +20,11 @@ window.CONTENT = {
     plank: { name:'plank', icon:'🪵' },
     honey: { name:'honey', icon:'🍯' },
     yarn:  { name:'yarn',  icon:'🧶' },
+    // from the seed bed (pantry: shown on their own shelf in the pack; never offered by the land)
+    carrot:  { name:'carrot',  icon:'🥕', pantry:true },
+    lettuce: { name:'lettuce', icon:'🥬', pantry:true },
+    bean:    { name:'beans',   icon:'🫛', pantry:true },
+    pumpkin: { name:'pumpkin', icon:'🎃', pantry:true },
   },
 
   // What the land offers while you are away. One every offerEvery minutes, at most offerCap lying about.
@@ -36,10 +41,20 @@ window.CONTENT = {
     { kind:'feather', day:1, night:1 },  // dropped by passing birds
   ],
 
-  // Crops for the seed bed. plant costs, water starts the clock, harvest gives.
+  // Crops for the seed bed (Hazel's mother's seed tin, docs/STORY.md page 1.4). One crop fills the whole bed.
+  // plant: what sowing costs; water: dew to start it growing; grow: minutes from watering to ready; harvest: what picking gives
+  // (into the pantry, plus seed back); green: how much life it gives back to the land; needs: when it can be sown
+  // (flag:x, a finished job id, or grown:n = after n harvests). free: the first sowing costs nothing (Wendel's one pumpkin seed).
+  // look: how index.html draws it (drawCrop). Order here is the order in the seed bed menu.
   crops: {
-    sprout: { name:'a sprout', plant:{ seed:1 }, grow:180, harvest:{ seed:2, moss:1 }, green:1,
-              stages:['planted','growing','ready'] },
+    carrot:  { name:'carrots', look:'carrot', plant:{ seed:1 }, water:1, grow:180, harvest:{ carrot:3, seed:2 }, green:1,
+               blurb:'Feathery tops and orange shoulders. The first thing from the tin, and the quickest to trust.' },
+    lettuce: { name:'lettuces', look:'lettuce', plant:{ seed:1 }, water:1, grow:120, harvest:{ lettuce:2, seed:1 }, green:1, needs:['flag:firstpick'],
+               blurb:'A pinch of lettuce seed. Up fast, soft green rosettes, and the rabbit has opinions about them.' },
+    bean:    { name:'beans', look:'bean', plant:{ seed:2 }, water:1, grow:480, harvest:{ bean:4, seed:2 }, green:2, needs:['beanpoles'],
+               lock:'Needs the bean poles first', blurb:'They climb the poles all day and hang their pods by evening. Pick them young.' },
+    pumpkin: { name:'a pumpkin', look:'pumpkin', plant:{ seed:2 }, free:'pumpkin', water:2, grow:1440, harvest:{ pumpkin:1, seed:4 }, green:3, needs:['grown:3'],
+               lock:'After three harvests', blurb:'Wendel\'s one enormous seed, saved "for something special". A whole day and night to swell, and it takes the whole bed.' },
   },
 
   // Gnome tasks: you give the materials, a gnome does it over real time.
@@ -92,11 +107,11 @@ window.CONTENT = {
     // --- a glow (day 2 onward) ---
     { id:'herbs',   name:'Plant a herb corner', short:'planting herbs',        who:'her', act:'water', spot:'seedbed',     cost:{ seed:2, water:2, moss:1 }, mins:180, green:1, minLevel:2, needs:['bed'],
       blurb:'Thyme, mint and the one parsley that will not die. Good for tea and for bees.' },
-    { id:'compost', name:'Start a compost heap', short:'starting the compost',       who:'him', act:'dig', spot:'wheelbarrow', cost:{ twig:2, moss:3, water:1 }, mins:180, green:0, minLevel:2,
+    { id:'compost', name:'Start a compost heap', short:'starting the compost',       who:'him', act:'dig', spot:'wheelbarrow', cost:{ twig:2, moss:3, water:1, carrot:1 }, mins:180, green:0, minLevel:2,
       blurb:'Peelings, leaves and patience. Dug into the seed bed, it makes the soil rich: one extra seed every harvest.' },
     { id:'birdbath', name:'Set a stone birdbath', short:'setting the birdbath',      who:'him', act:'water', spot:'stonebench',  cost:{ stone:4, water:2 }, mins:120, green:0, minLevel:2,
       blurb:'A hollow stone full of dew. Somebody small will want a wash.' },
-    { id:'beanpoles', name:'Raise the bean poles', short:'raising bean poles',     who:'him', act:'dig', spot:'seedbed',     cost:{ twig:5 },           mins:120, green:0, minLevel:2, needs:['bed'],
+    { id:'beanpoles', name:'Raise the bean poles', short:'raising bean poles',     who:'him', act:'build', spot:'seedbed',     cost:{ twig:5 },           mins:120, green:0, minLevel:2, needs:['bed', 'flag:firstpick'],
       blurb:'For the beans, which have strong opinions about climbing.' },
     { id:'path',    name:'Lay a stepping-stone path', short:'laying the path',  who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:6 },          mins:240, green:0, minLevel:2, needs:['doorstep'],
       blurb:'From the doorstep to the fire, so the grass can grow where the feet used to go.' },
@@ -224,7 +239,7 @@ window.CONTENT = {
       blurb:'In his workshop: real planks, a vice, and a drawer for the things he swears he will tidy away.' },
     { id:'quilt', name:'Knit a winter quilt', short:'knitting the quilt', who:'her', act:'sit', spot:'shelter', cost:{ yarn:4, moss:2 }, mins:300, green:0, needs:['trade:nettle'],
       blurb:'Square by square, of an evening. Wendel holds the wool and talks too much.' },
-    { id:'pantry', name:'Fill the pantry for winter', short:'filling the pantry', who:'her', spot:'shelter', cost:{ bread:3, honey:2, seed:3 }, mins:180, green:0, needs:['trade:mabel', 'trade:clem'],
+    { id:'pantry', name:'Fill the pantry for winter', short:'filling the pantry', who:'her', spot:'shelter', cost:{ bread:2, honey:1, carrot:3, bean:3 }, mins:180, green:0, needs:['trade:mabel', 'trade:clem'],
       blurb:'Jars, sacks and one very good cake tin. Let it snow. (It will not snow. But still.)' },
     { id:'bridge', name:'Build a bridge at the stepping stones', short:'building the bridge', who:'him', act:'build', cost:{ plank:4, stone:4, twig:4 }, mins:420, green:0, needs:['trade:tobias'], needsTile:'1,-1',
       blurb:'Tobias draws it, Wendel builds it, and the far side of the stream can finally be reached with dry feet.' },
@@ -364,7 +379,8 @@ window.CONTENT = {
         blurb:'A round clay oven beside her door, with a stone floor and a little chimney. After this, there is bread.', gift:{ bread:1 }, giftText:'A warm loaf on Mabel\'s step, wrapped in a cloth.' },
       favours:[ { ask:'The oven is hungry this morning. Could you spare 3 twigs?', cost:{ twig:3 }, thanks:'Bless you. The first bun out is yours.' },
                 { ask:'I\'m trying a seed loaf. Have you 2 seeds to spare?', cost:{ seed:2 }, thanks:'There. It will be lumpy and wonderful.' },
-                { ask:'A drop of honey would make this cake sing. Just 1?', cost:{ honey:1 }, thanks:'Oh, that\'s the stuff. Come by later.' } ],
+                { ask:'A drop of honey would make this cake sing. Just 1?', cost:{ honey:1 }, thanks:'Oh, that\'s the stuff. Come by later.' },
+                { ask:'Carrot cake today, if your bed can spare 3 carrots. Crooked ones are fine. Crooked ones are better.', cost:{ carrot:3 }, thanks:'You\'ll get the first slice, dear. The crooked bit.' } ],
       quest:{ name:'The forgotten anniversary', steps:[
         { say:'Mabel pulls you aside. "It is Wendel and Hazel\'s first anniversary this week. Hazel mentioned it, very lightly. Wendel has not mentioned it at all. I think the dear man has forgotten." A cake would help. She needs 3 seeds and 2 berries.', give:{ seed:3, berry:2 } },
         { say:'"Now the hard part," says Mabel. "Hazel\'s mother wrote her a honey-seed cake recipe on the back of a letter, and it blew away on the road here. She has never said, but she misses it." Look for a scrap of paper caught somewhere on the land.', find:{ name:'a scrap of old letter', icon:'📜' } },
@@ -399,7 +415,8 @@ window.CONTENT = {
         blurb:'Rowan has found water. A ring of stones, a little roof and a bucket on a rope. After this, nobody carries dew in their hat.', gift:{ water:2, feather:1 }, giftText:'A bucket of well water by the roots, and a feather the twins found.', site:'well' },
       favours:[ { ask:'The twins want a picnic. Could you spare 2 berries?', cost:{ berry:2 }, thanks:'They\'ve eaten them already. Thank you anyway!' },
                 { ask:'Posy has built a tiny house for a beetle. It needs 2 twigs for a roof.', cost:{ twig:2 }, thanks:'The beetle has moved in. Posy is unbearable about it.' },
-                { ask:'Rowan has worn through his socks again. A bit of yarn? Just 1.', cost:{ yarn:1 }, thanks:'Ivy says she\'ll darn them. Ivy says that every time.' } ],
+                { ask:'Rowan has worn through his socks again. A bit of yarn? Just 1.', cost:{ yarn:1 }, thanks:'Ivy says she\'ll darn them. Ivy says that every time.' },
+                { ask:'The twins will eat anything in a sandwich. 2 lettuces?', cost:{ lettuce:2 }, thanks:'They picked the lettuce out. They ate the bread. It\'s a start.' } ],
       quest:{ name:'Hide and seek', steps:[
         { say:'Ivy and Rowan need an afternoon to dig, and Hazel offers to mind the twins. "How hard can it be?" says Wendel. The twins vanish almost at once. Look for Pip somewhere on the land.', find:{ name:'Pip, hiding', icon:'🧒' } },
         { say:'One found. Posy is better at hiding. Look again; she likes high places.', find:{ name:'Posy, up a stump', icon:'👧' } },
@@ -417,7 +434,8 @@ window.CONTENT = {
         blurb:'A little ring of young fruit trees from their cuttings, staked and mulched. After this, there is fruit.', gift:{ berry:2 }, giftText:'A basket of windfall fruit by the Pebbleworths\' door.' },
       favours:[ { ask:'Bert\'s knees are complaining. Could you spare 2 moss for a cushion?', cost:{ moss:2 }, thanks:'He says thank you. He says it from the cushion.' },
                 { ask:'The young trees are thirsty. 3 dew, dear?', cost:{ water:3 }, thanks:'Listen to them drink.' },
-                { ask:'Mags wants a loaf, and Bert wants to be the one who brings it. Just 1?', cost:{ bread:1 }, thanks:'Bert is very pleased with himself.' } ],
+                { ask:'Mags wants a loaf, and Bert wants to be the one who brings it. Just 1?', cost:{ bread:1 }, thanks:'Bert is very pleased with himself.' },
+                { ask:'Bean soup for Bert\'s knees. Mags swears by it. 3 beans?', cost:{ bean:3 }, thanks:'Bert says his knees feel better already. He hasn\'t had the soup yet.' } ],
       quest:{ name:'A star for Hazel', steps:[
         { say:'Bert tells Wendel that, as a young gnome, he named a star for Mags and has shown it to her every anniversary since. Wendel has gone very thoughtful. He wants to do the same for Hazel, and Bert says they will need to chart the sky properly, with good quills: 3 feathers.', give:{ feather:3 } },
         { say:'They must sit up through the night to find the right star: one that rises over the stump house.', job:{ name:'Sit up for the stars with Bert', short:'watching the stars', who:'him', act:'sit', mins:240, cost:{ light:1 } } },
@@ -451,7 +469,8 @@ window.CONTENT = {
         blurb:'A little mill house with a turning water wheel. After this, sacks of seed for sowing.', gift:{ seed:2 }, giftText:'A little sack of seed by Barnaby\'s door.' },
       favours:[ { ask:'Mm. Wheel\'s squeaking. 2 moss?', cost:{ moss:2 }, thanks:'Mm. Better.' },
                 { ask:'Need a plank for the sluice. Just 1.', cost:{ plank:1 }, thanks:'That\'ll hold.' },
-                { ask:'Stones for the mill race. 3, if you have them.', cost:{ stone:3 }, thanks:'Good stones. Thank you.' } ],
+                { ask:'Stones for the mill race. 3, if you have them.', cost:{ stone:3 }, thanks:'Good stones. Thank you.' },
+                { ask:'Mm. Carrots. 2.', cost:{ carrot:2 }, thanks:'Mm. For the horse. (There is no horse.)' } ],
       quest:{ name:'Winter stores', steps:[
         { say:'The nights are drawing in, and Hazel has started counting the pantry jars twice a day. Wendel has noticed, and is worried that she is worried. Barnaby says, "Mm. Mill\'s stuck. Fix it, and there\'ll be plenty." The wheel is jammed with river stones.', job:{ name:'Free the jammed mill wheel', short:'freeing the wheel', who:'him', act:'dig', mins:240, cost:{ twig:2 } } },
         { say:'The wheel turns again, but the mill race needs shoring up before the winter rains: 4 stones and 2 twigs.', give:{ stone:4, twig:2 } },
@@ -524,7 +543,7 @@ window.CONTENT = {
         blurb:'Paper lanterns on poles round the green, each with a wisp of light inside, so the dancing can go on after dark.' },
       { id:'fest:arch', name:'Weave a flower arch', short:'weaving the arch', who:'her', act:'carry', cost:{ seed:4, moss:4, berry:2 }, mins:360, green:0, needs:['fest:green'], spot:'arch',
         blurb:'An arch of willow woven with wattle and paper daisies, for the way onto the green. (You know what it is really for.)' },
-      { id:'fest:feast', name:'Help bake the festival feast', short:'baking the feast', who:'him', act:'carry', cost:{ bread:3, honey:2, berry:4 }, alt:{ seed:4, berry:6, water:2 }, mins:300, green:0, needs:['fest:table'], spot:'table',
+      { id:'fest:feast', name:'Help bake the festival feast', short:'baking the feast', who:'him', act:'carry', cost:{ bread:3, honey:2, pumpkin:1, bean:2 }, alt:{ seed:4, berry:6, water:2 }, mins:300, green:0, needs:['fest:table'], spot:'table',
         blurb:'Loaves, honey cakes, berry tarts and one enormous pie. Wendel is in charge of tasting.' },
     ],
     idea: { title:'A festival?', text:'The neighbours came up the path together this morning, which has never happened before, and stood in a row outside the stump house looking pleased with themselves. "The valley is green again," said {who}. "Every patch of it. That deserves a festival." Wendel was delighted. Hazel was already making a list. A Greening Festival, then: a mown green, a long table, bunting, lanterns, a flower arch and a feast.' },

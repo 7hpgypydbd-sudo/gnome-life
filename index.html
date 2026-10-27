@@ -200,7 +200,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v55</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v56</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -219,15 +219,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 55;
+const BUILD = 56;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=55"></script>
-<script src="game.js?v=55"></script>
+<script src="content.js?v=56"></script>
+<script src="game.js?v=56"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -1642,23 +1642,109 @@ function seedling(x, y, k, ph, now) {   // a little two-leaf sprout, k = 0..1 ho
   if (k > 0.6) blob(0, -2, 2.4 * k, 3 * k, '#a3b066');   // a new leaf opening in the middle
   ctx.restore();
 }
-function drawCrop(x, y) {
-  const p = G.plot(); if (!p.stage) return;
-  const t = G.now(), now = performance.now(), healed = G.landStage().key !== 'barren', W = (healed ? 215 : BED_OVAL.w) / 2, H = W * BED_OVAL.ratio;
-  const prog = p.stage === 'planted' ? 0 : p.stage === 'ready' ? 1 : 1 - Math.max(0, p.readyAt - t) / Math.max(1, p.readyAt - (p.wateredAt || p.readyAt - 1));
-  for (const [u, v, ph] of SEEDLINGS) {
-    const sx = x + u * W, sy = y + v * H - u * W * 0.22;   // the painted oval tilts with the slanted view: low at the left, high at the right
-    if (p.stage === 'planted') { blob(sx, sy, 3.5, 2, '#4a3620'); blob(sx - 1, sy - 0.6, 1.4, 0.7, 'rgba(160,130,90,0.7)'); continue; }   // little sown mounds
-    if (p.nibbled && u > 0.15 && v > -0.35 && ph < 0.75) { ctx.strokeStyle = '#6f8a34'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + 0.5, sy - 4); ctx.stroke(); blob(sx + 0.5, sy - 4, 1.4, 1, '#cfe0a0'); continue; }   // nibbled down to a stalk (the rabbit started at the near right)
-    seedling(sx, sy, Math.min(1, prog * (0.8 + 0.4 * ph)), ph, now);
+// --- the real crops (CONTENT.crops, look:) as tidy code stand-ins until the crops art day paints them (docs/PLAN.md art list) ---
+// every plant starts as the same two-leaf sprout; past k 0.3 it turns into its own crop. k = 0..1 how grown, ph = its own wobble.
+function leafy(x, y, rx, ry, ang, col) { ctx.save(); ctx.translate(x, y); ctx.rotate(ang); blob(0, 0, rx, ry, col); ctx.strokeStyle = 'rgba(42,40,16,0.4)'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, 7); ctx.moveTo(-rx * 0.8, 0); ctx.lineTo(rx * 0.8, 0); ctx.stroke(); ctx.restore(); }
+function carrotPlant(x, y, k, ph, now) {   // feathery tops; orange shoulders show at the soil when they are nearly ready
+  const h = 8 + 18 * k, sw = Math.sin(now / 1000 + ph * 6) * 1.6 * k;
+  blob(x, y + 1, 5 + 3 * k, 2 + k, 'rgba(60,40,22,0.35)');
+  if (k > 0.7) { const r = 1.5 + 2.6 * (k - 0.7) / 0.3; ctx.fillStyle = '#d9792a'; ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.8, 0, Math.PI, 0); ctx.fill(); blob(x - r * 0.35, y - r * 0.45, r * 0.35, r * 0.15, '#f0a45a'); }   // just the top of the carrot, the rest is in the soil
+  ctx.lineCap = 'round';
+  for (let i = -2; i <= 2; i++) {   // five fronds fanning out, each a stem with soft little leaflets
+    const tx = x + i * (2.4 + 2.6 * k) + sw * (1 - Math.abs(i) * 0.2), ty = y - h * (1 - Math.abs(i) * 0.14) + (i === 0 ? 0 : rnd(ph * 50 + i) * 3);
+    ctx.strokeStyle = '#5f7a2e'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(x, y - 1); ctx.quadraticCurveTo(x + i * 0.8, y - h * 0.5, tx, ty); ctx.stroke();
+    for (let j = 0; j < 4; j++) { const f = 0.45 + j * 0.17, lx = x + (tx - x) * f, ly = y - 1 + (ty - y + 1) * f, L = (1.2 + 1.8 * k) * (1.1 - j * 0.15), col = (i + j) % 2 ? '#7d9a3c' : '#93b04c';
+      for (const d of [-1, 1]) { ctx.strokeStyle = col; ctx.lineWidth = 0.9 + 0.5 * k; ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + d * L * 1.3, ly - L * 0.9); ctx.stroke(); blob(lx + d * L * 1.2, ly - L * 0.85, L * 0.4, L * 0.28, col); } }
+    blob(tx, ty - 0.5, 0.8 + 0.8 * k, 0.8 + 0.6 * k, '#9ab852');
   }
-  if (p.stage === 'planted') glow(x, y - 10, 40, 'rgba(120,170,255,1)', 0.16 + 0.08 * Math.sin(t / 300));
+}
+function lettucePlant(x, y, k, ph) {   // a soft round rosette, darker outside, pale and crinkled in the middle
+  const r = 3 + 9 * k;
+  blob(x, y + 1, r * 1.1, r * 0.45, 'rgba(60,40,22,0.35)');
+  for (let i = 0; i < 7; i++) { const a = i / 7 * Math.PI * 2 + ph * 3, lx = x + Math.cos(a) * r * 0.55, ly = y - r * 0.35 + Math.sin(a) * r * 0.25; leafy(lx, ly, r * 0.55, r * 0.38, a, i % 2 ? '#6f9a3a' : '#7fab44'); }
+  for (let i = 0; i < 4; i++) { const a = i / 4 * Math.PI * 2 + ph * 5; leafy(x + Math.cos(a) * r * 0.2, y - r * 0.55 + Math.sin(a) * r * 0.1, r * 0.35, r * 0.28, a, '#b6d06a'); }
+  blob(x, y - r * 0.62, r * 0.22, r * 0.16, '#d6e59a');
+}
+function beanPlant(x, y, k, ph, now) {   // a twining stem with heart leaves; pods hang once they are nearly ready
+  const h = 8 + 22 * k, sw = Math.sin(now / 1100 + ph * 6) * 1.4 * k;
+  blob(x, y + 1, 5 + 3 * k, 2 + k, 'rgba(60,40,22,0.35)');
+  ctx.strokeStyle = '#4f6a2a'; ctx.lineWidth = 1.3; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x, y);
+  for (let i = 1; i <= 6; i++) ctx.lineTo(x + Math.sin(i * 1.3 + ph * 4) * 2.2 + sw * i / 6, y - h * i / 6); ctx.stroke();
+  for (let i = 1; i <= 4; i++) { const ly = y - h * (0.25 + i * 0.17), d = i % 2 ? 1 : -1; leafy(x + d * (2.5 + 2 * k) + sw * i / 4, ly, 2 + 3 * k, 1.6 + 2.2 * k, d * 0.5, d > 0 ? '#6c8f36' : '#7da140'); }
+  if (k > 0.8) for (const d of [-1, 1]) { const px = x + d * 3, py = y - h * (d > 0 ? 0.55 : 0.4); ctx.strokeStyle = '#4f6a2a'; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(px, py); ctx.quadraticCurveTo(px + d * 1.5, py + 5, px + d * 0.5, py + 10); ctx.stroke(); ctx.strokeStyle = '#9cc05a'; ctx.lineWidth = 1.6; ctx.stroke(); }   // two slim pods
+  ctx.strokeStyle = '#7a9a3a'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(x + sw, y - h); ctx.quadraticCurveTo(x + 3 + sw, y - h - 2, x + 2 + sw, y - h - 3.5); ctx.stroke();   // a curly tendril reaching for something to climb
+}
+// bean poles (job "Raise the bean poles"): three little stick wigwams along the back of the bed; beans climb them as they grow
+const BEAN_POLES = [[-0.45, -0.42], [0.02, -0.5], [0.48, -0.4]];
+function drawBeanPoles(x, y, W, H, vine, built = 1) {
+  for (const [i, [u, v]] of BEAN_POLES.entries()) {
+    if (built * 3 < i + 0.6) continue;   // Wendel puts them up one by one
+    const bx = x + u * W, by = y + v * H - u * W * 0.22, top = by - 46;
+    blob(bx, by + 2, 13, 4, 'rgba(60,40,22,0.3)');
+    ctx.lineCap = 'round';
+    for (const d of [-9, -3, 4, 10]) { ctx.strokeStyle = 'rgba(42,21,16,0.75)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(bx + d, by + (d > 0 ? 1 : -1)); ctx.lineTo(bx + d * 0.08, top); ctx.stroke(); ctx.strokeStyle = '#8a6a44'; ctx.lineWidth = 1.7; ctx.stroke(); }
+    ctx.strokeStyle = '#c9b48a'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(bx - 2, top + 5); ctx.lineTo(bx + 2, top + 7); ctx.stroke();   // tied at the top with twine
+    if (vine > 0) {   // the bean vine winds up the poles
+      const reach = by - (by - top - 4) * vine;
+      ctx.strokeStyle = '#557530'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(bx - 8, by);
+      for (let yy = by; yy >= reach; yy -= 3) { const f = (by - yy) / (by - top), half = 9 * (1 - f * 0.9); ctx.lineTo(bx + Math.sin(yy * 0.35) * half, yy); }
+      ctx.stroke();
+      for (let yy = by - 6; yy >= reach; yy -= 7) { const f = (by - yy) / (by - top), half = 9 * (1 - f * 0.9), s2 = Math.sin(yy * 0.9); leafy(bx + s2 * half, yy, 3.4, 2.6, s2, s2 > 0 ? '#6c8f36' : '#7da140'); }
+      if (vine >= 0.95) for (const [dx, dy] of [[-6, 14], [5, 20], [-3, 28]]) { ctx.strokeStyle = '#8db04a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(bx + dx, top + dy); ctx.quadraticCurveTo(bx + dx + 2, top + dy + 5, bx + dx + 0.5, top + dy + 9); ctx.stroke(); }
+    }
+  }
+}
+function drawPumpkin(x, y, W, H, prog, now) {   // one plant: the vine wanders over the whole bed, a few yellow flowers, then one big pumpkin swelling in the middle
+  const vine = Math.min(1, prog / 0.45);
+  ctx.strokeStyle = '#557530'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+  for (let a = 0; a < 5; a++) {   // five runners out from the middle
+    const ang = a / 5 * Math.PI * 2 + 0.4, ex = x + Math.cos(ang) * W * 0.68 * vine, ey = y + Math.sin(ang) * H * 0.62 * vine - (Math.cos(ang) * W * 0.68 * vine) * 0.22;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo((x + ex) / 2 + Math.sin(a * 2) * 14, (y + ey) / 2 + Math.cos(a * 3) * 6, ex, ey); ctx.stroke();
+    for (let i = 1; i <= 3; i++) { const f = i / 3.4, lx = x + (ex - x) * f, ly = y + (ey - y) * f; if (f * 0.45 > prog) continue;
+      const r = 4 + 6 * Math.min(1, prog * 1.6), col = i % 2 ? '#5f8a34' : '#6f9a3a'; blob(lx, ly + 1, r * 1.2, r * 0.4, 'rgba(40,30,15,0.3)');
+      for (const [dx, dy, sc] of [[-0.55, -0.35, 0.62], [0.55, -0.35, 0.62], [0, -0.75, 0.7], [0, -0.3, 0.75]]) blob(lx + dx * r, ly + dy * r, r * sc, r * sc * 0.72, col);   // a big lobed leaf
+      ctx.strokeStyle = 'rgba(200,220,150,0.45)'; ctx.lineWidth = 0.7; ctx.beginPath(); for (const dx of [-0.6, 0, 0.6]) { ctx.moveTo(lx, ly - r * 0.25); ctx.lineTo(lx + dx * r, ly - r * 0.8); } ctx.stroke();
+      if (prog > 0.3 && prog < 0.75 && i === 2) { blob(lx + 4, ly - r - 2, 3.2, 2.4, '#f2c43a'); blob(lx + 4, ly - r - 2.4, 1.2, 1, '#d79a1e'); } }   // a yellow flower
+  }
+  const g = Math.max(0, Math.min(1, (prog - 0.35) / 0.65)); if (g <= 0) return;
+  const rx = 4 + 32 * g, ry = 3 + 24 * g, col = g < 0.7 ? `rgb(${120 + 100 * g / 0.7},${150 - 10 * g},${60 - 20 * g})` : `rgb(${220 + 10 * (g - 0.7) / 0.3},${140 - 20 * (g - 0.7) / 0.3},40)`;
+  blob(x + 2, y + 3, rx * 1.1, ry * 0.35, 'rgba(60,40,22,0.4)');
+  for (const [dx, sc] of [[-0.55, 0.6], [0.55, 0.6], [-0.25, 0.85], [0.25, 0.85], [0, 1]]) blob(x + dx * rx, y - ry, rx * 0.5 * sc + rx * 0.12, ry, col);   // ribbed lobes
+  ctx.strokeStyle = 'rgba(90,50,20,0.35)'; ctx.lineWidth = 1;
+  for (const dx of [-0.5, -0.18, 0.18, 0.5]) { ctx.beginPath(); ctx.moveTo(x + dx * rx * 0.6, y - ry * 1.9); ctx.quadraticCurveTo(x + dx * rx * 1.3, y - ry, x + dx * rx * 0.6, y - ry * 0.05); ctx.stroke(); }
+  blob(x - rx * 0.35, y - ry * 1.45, rx * 0.18, ry * 0.12, 'rgba(255,240,200,0.35)');   // a soft shine
+  ctx.strokeStyle = '#5a4424'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y - ry * 1.85); ctx.quadraticCurveTo(x + 2, y - ry * 2.1, x + 5, y - ry * 2.15); ctx.stroke();   // the stalk
+}
+function snail(x, y, now) {   // a very small snail on its rounds (every painting hides one, and so does the lettuce)
+  const sx = x + Math.sin(now / 9000) * 4;
+  blob(sx + 1, y, 4, 1.4, '#c9b79a'); blob(sx + 4.5, y - 1.2, 1.3, 1.1, '#c9b79a');
+  ctx.strokeStyle = '#a89676'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(sx + 4.8, y - 2); ctx.lineTo(sx + 5.6, y - 3.6); ctx.stroke();
+  blob(sx - 0.5, y - 2.6, 2.8, 2.6, '#9a6a3c'); ctx.strokeStyle = '#6a4424'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.arc(sx - 0.5, y - 2.6, 1.4, 0, 5.5); ctx.stroke();
+}
+function cropProg(p) { return p.stage === 'planted' ? 0 : p.stage === 'ready' ? 1 : 1 - Math.max(0, p.readyAt - G.now()) / Math.max(1, p.readyAt - (p.wateredAt || p.readyAt - 1)); }
+function drawCrop(x, y) {
+  const p = G.plot(), t = G.now(), now = performance.now(), healed = G.landStage().key !== 'barren', W = (healed ? 215 : BED_OVAL.w) / 2, H = W * BED_OVAL.ratio;
+  const prog = p.stage ? cropProg(p) : 0, look = p.crop && C.crops[p.crop] ? C.crops[p.crop].look : 'carrot';
+  const bp = taskProg('beanpoles'); if (bp > 0) drawBeanPoles(x, y, W, H, p.stage && look === 'bean' ? Math.max(0, (prog - 0.2) / 0.8) : 0, bp);
+  if (!p.stage) return;
+  if (look === 'pumpkin' && p.stage !== 'planted') { if (prog < 0.12) seedling(x, y, prog / 0.12, 0.3, now); else drawPumpkin(x, y, W * 0.95, H, prog, now); }
+  else for (const [u, v, ph] of SEEDLINGS) {
+    const sx = x + u * W, sy = y + v * H - u * W * 0.22;   // the painted oval tilts with the slanted view: low at the left, high at the right
+    if (p.stage === 'planted') { if (look === 'pumpkin') continue; blob(sx, sy, 3.5, 2, '#4a3620'); blob(sx - 1, sy - 0.6, 1.4, 0.7, 'rgba(160,130,90,0.7)'); continue; }   // little sown mounds
+    if (p.nibbled && u > 0.15 && v > -0.35 && ph < 0.75) { ctx.strokeStyle = '#6f8a34'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + 0.5, sy - 4); ctx.stroke(); blob(sx + 0.5, sy - 4, 1.4, 1, '#cfe0a0'); continue; }   // nibbled down to a stalk (the rabbit started at the near right)
+    const k = Math.min(1, prog * (0.8 + 0.4 * ph));
+    if (k < 0.3) { seedling(sx, sy, k / 0.3 * 0.7, ph, now); continue; }   // every crop comes up as the same little sprout
+    const kk = (k - 0.3) / 0.7;
+    if (look === 'carrot') carrotPlant(sx, sy, kk, ph, now); else if (look === 'lettuce') lettucePlant(sx, sy, kk, ph); else beanPlant(sx, sy, kk, ph, now);
+  }
+  if (p.stage === 'planted' && look === 'pumpkin') { blob(x, y, 7, 3.5, '#4a3620'); blob(x - 1.5, y - 1, 2.4, 1.1, 'rgba(160,130,90,0.7)'); }   // one solemn mound in the middle
+  if (look === 'lettuce' && prog > 0.85) { const [u, v] = SEEDLINGS[Math.floor(SEEDLINGS.length * 0.62)]; snail(x + u * W + 2, y + v * H - u * W * 0.22 - 9, now); }
   if (p.name === 'barrel' && a >= 1 && G.barrelFull()) { const ph = ((now / 1000) % 3) / 3; if (ph < 0.22) twinkle(x - w * 0.1, y - h * 0.9, Math.sin(ph / 0.22 * Math.PI)); }   // rainwater to draw: a glint on the water, not a glow
-  if (p.stage === 'ready') glow(x, y - 10, 70, 'rgba(255,240,160,1)', 0.3 + 0.15 * Math.sin(t / 250));
+  if (p.stage === 'ready') { const ph = ((now / 1000) % 2.8) / 2.8; if (ph < 0.22) twinkle(x + 18, y - (look === 'pumpkin' ? 58 : 30), Math.sin(ph / 0.22 * Math.PI)); }   // ready to pick: a glint, not a glow (nothing glows)
 }
 function wantsTap(p) {   // does this thing have something the player can do right now?
   if (p.name === 'barrel' && G.barrelFull()) return true;   // rainwater to draw
-  if (p.name === 'seedbed') { const s = G.plot().stage; if (!bedReady()) return false; return s === 'ready' || (!s && G.can(C.crops.sprout.plant)) || (s === 'planted' && G.can({ water: 1 })); }
+  if (p.name === 'seedbed') { const s = G.plot().stage; if (!bedReady()) return false; return s === 'ready' || (!s && G.canSow()) || (s === 'planted' && G.can(G.waterCost())); }
   return C.tasks.some(t => t.spot === p.name && !t.retired && !G.s.tasks[t.id] && G.taskView(t).state === 'ready' && G.can(t.cost));
 }
 const TRUE_SIZE = { twig: 50, moss: 30, stone: 24, acorn: 22, seed: 18, water: 18, berry: 22, feather: 34, light: 36, bread: 26, plank: 40, honey: 24, yarn: 22 };   // world px; a gnome is about 120
@@ -2927,7 +3013,7 @@ sheet.addEventListener('click', e => {
   const b = e.target.closest('[data-a]'); if (!b) return; const a = b.dataset.a, id = b.dataset.id;
   if (a === 'close') return closeSheet();
   if (a === 'room') return openRoom();
-  if (a === 'plant') { G.plant(); } if (a === 'water') { G.water(); } if (a === 'harvest') { if (G.harvest()) { const sb = PROPS.find(p => p.name === 'seedbed'); const [x, y] = toWorld(sb.gx, sb.gy); float('+2 seed +1 moss', x, y); greenWave = performance.now(); } }
+  if (a === 'plant') { G.plant(id); } if (a === 'water') { G.water(); } if (a === 'harvest') { const got = G.harvest(); if (got) { const sb = PROPS.find(p => p.name === 'seedbed'); const [x, y] = toWorld(sb.gx, sb.gy); float(Object.entries(got).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(' '), x, y); greenWave = performance.now(); } }
   if (a === 'start') { if (G.startTask(id)) { toast('Set to work.'); for (const g of gnomes) if (g.who === G.taskDef(id).who) { g.walking = false; g.wait = 0.1; } } }
   if (a === 'openmagic') { openMagic(); return; }
   if (a === 'cast') { if (G.cast(id)) { toast(C.spells[id].name + '.'); if (id === 'legs') { closeSheet(); const [x, y] = toWorld(...TOAD_FROM); cam.x = x; cam.y = y - 40; return; } } }   // watch it walk off
@@ -2977,22 +3063,34 @@ let titleTaps = 0, titleTapAt = 0;
 function testPeek(x, y) { if (x < 200 && y < 80 + 20) { const n = performance.now(); titleTaps = n - titleTapAt < 900 ? titleTaps + 1 : 1; titleTapAt = n; if (titleTaps >= 5) { titleTaps = 0; openTest(); return true; } } return false; }
 function refreshSheet() { if (sheetKind === 'test') return; if (sheetKind && sheetKind.startsWith('folk:')) openFolk(sheetKind.slice(5)); else if (sheetKind === 'traveller') G.s.village.traveller ? openTraveller() : closeSheet(); else if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); else if (sheetKind === 'fest') openFestGreen(); renderInv(); renderHud(); }
 function openSeedbed() {
-  const p = G.plot(), c = C.crops.sprout; let body = '';
-  if (!p.stage) body = `<div class="row"><div class="t"><b>Plant a seed</b><span>Costs ${costHtml(c.plant)} · ready about ${Math.round(c.grow / 60)} hours after watering</span></div><button class="act" data-a="plant" ${G.can(c.plant) ? '' : 'disabled'}>Plant</button></div>` + (G.can(c.plant) ? '' : `<p>No seeds. The land offers one now and then; look for a seed on the ground.</p>`);
-  else if (p.stage === 'planted') body = `<div class="row"><div class="t"><b>It wants water</b><span>Costs ${costHtml({ water: 1 })} dew, gathered from the ground</span></div><button class="act" data-a="water" ${G.can({ water: 1 }) ? '' : 'disabled'}>Water</button></div>`;
-  else if (p.stage === 'growing') { const tot = p.readyAt - p.wateredAt, pr = 1 - Math.max(0, p.readyAt - G.now()) / tot; body = `<div class="row"><div class="t"><b>Growing</b><span>ready in ${G.timeLeft(p.readyAt)}</span><div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div></div>${G.magicInfo().spells.includes('coax') ? `<button class="act" data-a="cast" data-id="coax" ${G.canCast('coax').ok ? '' : 'disabled'}>Coax ✨2</button>` : ''}</div>`; }
-  else body = `<div class="row"><div class="t"><b>Ready to pick</b><span>Gives ${costHtml(c.harvest)} and a little more green</span></div><button class="act" data-a="harvest">Pick</button></div>`;
+  const p = G.plot(), c = C.crops[p.crop]; let body = '';
+  const stageName = pr => pr < 0.25 ? 'Just up' : pr < 0.6 ? 'Leafing out' : pr < 0.9 ? 'Filling out' : 'Nearly there';
+  if (!p.stage) {
+    body = `<p>What shall Hazel sow? One crop fills the whole bed.</p>`;
+    for (const [id, k] of Object.entries(C.crops)) {
+      const open = G.cropOpen(id), cost = G.cropCost(id), first = k.free && !Object.keys(cost).length;
+      if (!open && !k.lock) continue;   // lettuces just turn up after the first picking
+      body += `<div class="row"><div class="t"><b>${cap(k.name.replace(/^a /, ''))}</b><span>${open ? `${first ? 'Wendel\'s special seed, free' : `Costs ${costHtml(cost)}`} · ready ${k.grow >= 1200 ? "a day and a night" : "about " + hours(k.grow)} after watering · gives ${costHtml(k.harvest)}` : k.lock}</span><span style="display:block;font-style:italic">${k.blurb}</span></div>${open ? `<button class="act" data-a="plant" data-id="${id}" ${G.can(cost) ? '' : 'disabled'}>Sow</button>` : ''}</div>`;
+    }
+    if (!G.canSow()) body += `<p>No seeds. The land offers one now and then, and every picking gives some back.</p>`;
+  }
+  else if (p.stage === 'planted') body = `<div class="row"><div class="t"><b>${cap(c.name.replace(/^a /, ''))} sown. ${c.water > 1 ? 'They want a good drink' : 'They want water'}</b><span>Costs ${costHtml(G.waterCost())} dew, gathered from the ground</span></div><button class="act" data-a="water" ${G.can(G.waterCost()) ? '' : 'disabled'}>Water</button></div>`;
+  else if (p.stage === 'growing') { const pr = cropProg(p); body = `<div class="row"><div class="t"><b>${cap(c.name.replace(/^a /, ''))}: ${stageName(pr).toLowerCase()}</b><span>ready in ${G.timeLeft(p.readyAt)}</span><div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div></div>${G.magicInfo().spells.includes('coax') ? `<button class="act" data-a="cast" data-id="coax" ${G.canCast('coax').ok ? '' : 'disabled'}>Coax ✨2</button>` : ''}</div>`; }
+  else body = `<div class="row"><div class="t"><b>${cap(c.name.replace(/^a /, 'the '))} ${p.crop === 'pumpkin' ? 'is' : 'are'} ready to pick</b><span>Gives ${costHtml(c.harvest)} and a little more green</span></div><button class="act" data-a="harvest">Pick</button></div>`;
   openSheet('seedbed', `<h2>The seed bed<small>${p.grown} grown so far</small></h2>${body}${landNote()}`);
 }
 function landNote() {   // why growing things matters: every harvest (and most jobs) wakes the land a little, towards the next stage
   const g = G.s.tiles['0,0'].green, st = G.landStage(), next = C.landStages.find(s => s.at > g);
   return `<p>Everything that grows here wakes the land a little. The yard is <b>${st.name}</b>` + (next ? `; ${next.at - g} more and it will be <b>${next.name}</b> (${next.sub}).</p>` : `, as green as it gets.</p>`);
 }
+function cap(t) { return t[0].toUpperCase() + t.slice(1); }
 function hours(mins) { const h = mins / 60 * G.taskSpeed(); return h < 1 ? `${Math.round(h * 60)} minutes` : h < 1.75 ? '1 hour' : `${Math.round(h)} hours`; }
 function openPack() {
   let html = `<h2>Your pack<small>things gathered from the land</small></h2><p>Tap the little things lying about on the ground to pick them up. Jobs use them.</p><div class="pack">`;
-  for (const [k, r] of Object.entries(C.resources)) { const n = G.s.inv[k] || 0; html += `<div class="${n ? '' : 'zero'}">${iconHtml(k)}<b>${n}</b>${r.name}</div>`; }
-  openSheet('pack', html + `</div>`);
+  const cell = ([k, r]) => { const n = G.s.inv[k] || 0; return `<div class="${n ? '' : 'zero'}">${iconHtml(k)}<b>${n}</b>${r.name}</div>`; }, all = Object.entries(C.resources);
+  html += all.filter(([, r]) => !r.pantry).map(cell).join('') + `</div>`;
+  if (G.s.plots.seedbed.grown) html += `<h3>The pantry</h3><p>From the seed bed. Neighbours ask for these, and some jobs need them.</p><div class="pack">${all.filter(([, r]) => r.pantry).map(cell).join('')}</div>`;   // after the first picking
+  openSheet('pack', html);
 }
 const JOB_PIC = { ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'yard-bench', barrow: 'wheelbarrow',
   woodpile: 'firewood', doorstep: 'yard-doorstep', rainbarrel: 'barrel-full', clothesline: 'washing-line', lantern: 'lanternstump', stump: 'lanternstump', windowbox: 'yard-windowbox', wormlantern: 'worm-lantern',
@@ -3152,7 +3250,7 @@ const ALLDONE = { done: false, on: false, at: 0, ease: null };
 function allDoneCheck(now) {
   if (ALLDONE.done || sheetKind || roomOn || G.s.pages.cards.length || now - ALLDONE.at < 25000 || G.s.offers.length || (visitor && visitor.trouble)) return;
   const run = G.running(), both = ['him', 'her'].every(w => run.some(r => r.def.who === w)), p = G.plot();
-  const more = G.taskList().some(v => v.state === 'ready' && v.can) || p.stage === 'ready' || (p.stage === 'planted' && G.can({ water: 1 })) || (!p.stage && bedReady() && G.can(C.crops.sprout.plant));
+  const more = G.taskList().some(v => v.state === 'ready' && v.can) || p.stage === 'ready' || (p.stage === 'planted' && G.can(G.waterCost())) || (!p.stage && bedReady() && G.canSow());
   if (!both && more) return;
   ALLDONE.done = true; ALLDONE.on = true;
   const h = dayPhase().h, A = C.story.allDone, first = run.length ? Math.min(...run.map(r => r.endsAt)) : 0;
