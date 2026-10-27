@@ -204,7 +204,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v65</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v66</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -223,16 +223,16 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 65;
+const BUILD = 66;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=65"></script>
-<script src="game.js?v=65"></script>
-<script src="walk.js?v=65"></script>
+<script src="content.js?v=66"></script>
+<script src="game.js?v=66"></script>
+<script src="walk.js?v=66"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -254,7 +254,7 @@ const ASSETS = {
   fence:'sprites/fence.webp', sapling:'sprites/sapling.webp',
   'him-side':'sprites/him-side.png','him-front':'sprites/him-front.png','him-back':'sprites/him-back.png',
   'her-side':'sprites/her-side.png','her-front':'sprites/her-front.png','her-back':'sprites/her-back.png',
-  'him-dig':'sprites/him-dig.png','him-water':'sprites/him-water.png','him-carry':'sprites/him-carry.png','him-eat':'sprites/him-eat.png','him-canwalk':'sprites/him-canwalk.png','him-craft':'sprites/him-craft.png','her-craft':'sprites/her-craft.png','him-build':'sprites/him-build.png','her-build':'sprites/her-build.png','him-dowse':'sprites/him-dowse.png','her-fill':'sprites/her-fill.png','him-sit':'sprites/him-sit.png','him-sleep':'sprites/him-sleep.png',
+  'him-dig':'sprites/him-dig.png','him-water':'sprites/him-water.png','him-carry':'sprites/him-carry.png','him-eat':'sprites/him-eat.png','him-canwalk':'sprites/him-canwalk.png','him-craft':'sprites/him-craft.png','her-craft':'sprites/her-craft.png','him-build':'sprites/him-build.png','her-build':'sprites/her-build.png','him-dowse':'sprites/him-dowse.png','her-fill':'sprites/her-fill.png','him-fill':'sprites/him-fill.png','her-toss':'sprites/her-toss.png','him-toss':'sprites/him-toss.png','her-potwalk':'sprites/her-potwalk.png','him-sit':'sprites/him-sit.png','him-sleep':'sprites/him-sleep.png',
   'her-pickup':'sprites/her-pickup.png','her-gather':'sprites/her-gather.png','him-pickup':'sprites/him-pickup.png','him-gather':'sprites/him-gather.png','her-dig':'sprites/her-dig.png','her-water':'sprites/her-water.png','her-carry':'sprites/her-carry.png','her-eat':'sprites/her-eat.png','her-sit':'sprites/her-sit.png','her-sleep':'sprites/her-sleep.png',
   'icon-twig':'sprites/icon-twig.webp','icon-moss':'sprites/icon-moss.webp','icon-stone':'sprites/icon-stone.webp','icon-acorn':'sprites/icon-acorn.webp','icon-seed':'sprites/icon-seed.webp',
   'woodpile-1':'sprites/woodpile-1.webp','woodpile-2':'sprites/woodpile-2.webp','woodpile-3':'sprites/woodpile-3.webp',   // art day 10, cut by tools/cut_day10.py
@@ -286,7 +286,7 @@ if (NEWGROUND) {
   for (const n of ['bank', 'lip', 'path']) ASSETS['g-st-ribbon-' + n] = `sprites/kit/ribbon-${n}.webp`;   // art day 14 banks and path edges, straightened by tools/make_ribbons.py
   ASSETS['kit-rut-mud'] = 'sprites/kit/rut-mud.webp'; ASSETS['kit-rut-filled'] = 'sprites/kit/rut-filled.webp';
 }
-const GNOMES = {"him":{"cell":[108,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[144,242]},"water":{"n":4,"cell":[129,245]},"carry":{"n":4,"cell":[140,260]},"eat":{"n":4,"cell":[118,241]},"sit":{"n":4,"cell":[127,208]},"sleep":{"n":4,"cell":[264,85]},"pickup":{"n":4,"cell":[152,243]},"gather":{"n":4,"cell":[173,233]},"canwalk":{"n":4,"cell":[116,242]},"craft":{"n":4,"cell":[115,242]},"build":{"n":4,"cell":[115,242]},"dowse":{"n":4,"cell":[121,242]}}},"her":{"cell":[122,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[159,242]},"water":{"n":4,"cell":[148,241]},"carry":{"n":6,"cell":[105,244]},"eat":{"n":4,"cell":[102,244]},"sit":{"n":4,"cell":[119,208]},"sleep":{"n":2,"cell":[264,73]},"pickup":{"n":4,"cell":[161,240]},"gather":{"n":4,"cell":[159,224]},"craft":{"n":4,"cell":[111,242]},"build":{"n":4,"cell":[114,242]},"fill":{"n":4,"cell":[107,242]}}}};
+const GNOMES = {"him":{"cell":[108,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[144,242]},"water":{"n":4,"cell":[129,245]},"carry":{"n":4,"cell":[140,260]},"eat":{"n":4,"cell":[118,241]},"sit":{"n":4,"cell":[127,208]},"sleep":{"n":4,"cell":[264,85]},"pickup":{"n":4,"cell":[152,243]},"gather":{"n":4,"cell":[173,233]},"canwalk":{"n":4,"cell":[116,242]},"craft":{"n":4,"cell":[115,242]},"build":{"n":4,"cell":[115,242]},"dowse":{"n":4,"cell":[121,242]},"toss":{"n":4,"cell":[144,242]},"fill":{"n":4,"cell":[119,242]}}},"her":{"cell":[122,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[159,242]},"water":{"n":4,"cell":[148,241]},"carry":{"n":6,"cell":[105,244]},"eat":{"n":4,"cell":[102,244]},"sit":{"n":4,"cell":[119,208]},"sleep":{"n":2,"cell":[264,73]},"pickup":{"n":4,"cell":[161,240]},"gather":{"n":4,"cell":[159,224]},"craft":{"n":4,"cell":[111,242]},"build":{"n":4,"cell":[114,242]},"fill":{"n":4,"cell":[107,242]},"toss":{"n":4,"cell":[126,242]},"potwalk":{"n":4,"cell":[107,242]}}}};
 
 // ---------- world helpers ----------
 function tileOrigin(k) { const [tx, ty] = k.split(',').map(Number); return [tx*EX[0] + ty*EY[0], tx*EX[1] + ty*EY[1]]; }
@@ -325,7 +325,7 @@ const RHYTHM = {
   him: { eat:[0.42,0.56,'campfire'], sit:[0.60,0.42,'campfire'], sleep:[0.24,0.40,null] },
   her: { eat:[0.58,0.44,'campfire'], sit:[0.65,0.39,'campfire'], sleep:[0.52,0.24,null] },
 };
-const ACT_FPS = { fill:2, dowse:3, canwalk:9, craft:4, build:4, pickup:3, gather:3, dig:4, water:3, carry:9, eat:2.5, sit:1.6, sleep:0.7 };
+const ACT_FPS = { fill:2, toss:3, potwalk:6, dowse:3, canwalk:9, craft:4, build:4, pickup:3, gather:3, dig:4, water:3, carry:9, eat:2.5, sit:1.6, sleep:0.7 };
 const SPOT_ACT = { feeder:'carry', wheelbarrow:'dig', seedbed:'water', sapling:'water', shelter:'carry', fence:'carry', stonebench:'carry', fire:'carry' };
 function routineFor(h) {   // what the couple do at this hour when no job needs them
   if (G.festivalOn()) return 'fest';   // festival evening: they dance on the green (beats jobs and bedtime)
@@ -498,7 +498,7 @@ for (const v of C.visitors) { ART_SLOTS['vis-' + v.id] = {}; ART_SLOTS['portrait
 // story-<id>-home when they move in, find-<id> the thing you look for in their story; plus the bridge, the traveller's tent, a glow jar, new icons.
 for (const f of C.folk) { for (const k of ['face-', 'story-']) ART_SLOTS[k + f.id] = {}; ART_SLOTS['story-' + f.id + '-home'] = {}; ART_SLOTS['folk-' + f.id] = {}; (f.members || []).forEach((_, i) => ART_SLOTS[`folk-${f.id}-${i + 2}`] = {});
   ART_SLOTS['home-' + f.id] = { w: 250 }; ART_SLOTS['bld-' + f.id] = { w: 160 }; if (f.quest.steps.some(st => st.find)) ART_SLOTS['find-' + f.id] = { w: 44 }; }
-Object.assign(ART_SLOTS, { 'bld-bridge': { w: 200 }, 'camp-tent': { w: 110 }, 'glow-jar': { w: 30 }, 'icon-bread': {}, 'icon-plank': {}, 'icon-honey': {}, 'icon-yarn': {} });
+Object.assign(ART_SLOTS, { 'bld-bridge': { w: 200 }, 'camp-tent': { w: 110 }, 'glow-jar': { w: 30 }, 'icon-bread': {}, 'icon-plank': {}, 'icon-honey': {}, 'icon-yarn': {} });   // (art day 15 adds the crop icons below)
 // the festival (docs/ART-BATCH-7.md): the green's furniture, and story-fest-* paintings for the festival pages
 Object.assign(ART_SLOTS, { 'fest-table': { w: 300 }, 'fest-feast': { w: 300 }, 'fest-bunting': { w: 300 }, 'fest-lantern': { w: 44 }, 'fest-arch': { w: 120 } });
 for (const k of ['fest-idea', 'fest-secret', 'fest-night', 'fest-surprise', 'fest-dance', 'fest-end']) ART_SLOTS['story-' + k] = {};
@@ -511,6 +511,21 @@ for (const d of C.tasks) if (d.make && d.id !== 'barrow') ART_SLOTS['make-' + d.
 // the animals' side stories (docs/ANIMALS.md): a painting for each storybook page (page-a-<beat id>); the rabbit's portrait (not a journal visitor)
 for (const b of C.animals.beats) if (b.kind === 'page') ART_SLOTS['page-a-' + b.id] = {};
 ART_SLOTS['portrait-rabbit'] = {};
+// art day 15 (tools/cut_day15.py): crops, healing pieces, the animals' story pieces, the neighbours' farms, the bigger oaks. Each is drawn
+// by height where its stand-in was (cropPic, HEAL_PAINT, FARM_PAINT); missing files leave the stand-ins.
+for (const k of ['carrot', 'lettuce', 'bean']) for (let i = 1; i <= 4; i++) ART_SLOTS[`crop-${k}-${i}`] = {};
+for (const k of ['carrot-legs', 'beanpoles', 'beanpoles-grown', 'pumpkin-leaf-1', 'pumpkin-leaf-2', 'pumpkin-leaf-3', 'pumpkin-1', 'pumpkin-2', 'pumpkin-3',
+  'icon-carrot', 'icon-lettuce', 'icon-bean', 'icon-pumpkin',
+  'heal-gum-1', 'heal-gum-2', 'heal-gum-3', 'heal-wattle-1', 'heal-wattle-2', 'heal-wattle-3', 'heal-guard', 'heal-deadtree', 'heal-deadtree-home', 'vis-wombat', 'vis-wombat-sleep', 'vis-heron',
+  'heal-beestone', 'heal-birdbath', 'heal-birdbox', 'heal-perch', 'heal-seeddish', 'heal-wall', 'heal-fence-1', 'heal-fence-2', 'heal-wheel', 'heal-bucket', 'heal-slump', 'heal-shelf-1', 'heal-shelf-2', 'heal-shelf-3',
+  'spirit-wind', 'spirit-cloud', 'spirit-seed', 'spirit-sing',
+  'rabbit-gate', 'burrow-mound', 'baby-1', 'baby-2', 'baby-3', 'baby-4', 'sock-hammock', 'sign-noknock', 'owlbox', 'owlbox-owl', 'owlbox-snow', 'vis-hedgehog-coat', 'vis-hedgehog-thin', 'nest-leafpile-asleep', 'lyre-dance',
+  'oak-young', 'oak-young-plain', 'oak-grown', 'oak-grown-plain'])
+  if (!ART_SLOTS[k]) ART_SLOTS[k] = {};
+for (const id of Object.keys(C.animals.gifts)) ART_SLOTS['gift-' + id] = {};   // the doorstep gifts' own little pictures
+for (const k of ['herb', 'rhubarb', 'willow', 'fruit', 'lavender', 'wheat']) for (let i = 1; i <= 4; i++) ART_SLOTS[`farm-${k}-${i}`] = {};
+for (const k of ['cabbage-1', 'cabbage-2', 'cabbage-3', 'peas-1', 'peas-2', 'straw-1', 'straw-2', 'radish', 'scarecrow', 'ladder', 'bottlebrush', 'willow-cut', 'wheat-cut',
+  'flax-1', 'flax-2', 'flax-3', 'woad-1', 'woad-2', 'weld', 'indigo', 'trellis', 'moon-1', 'moon-2', 'moon-open', 'moon-closed', 'primrose']) ART_SLOTS['farm-' + k] = {};
 // painted sizes in world px (a gnome stands 111 tall): w = width, h = height, for the little makes cut by tools/cut_day14.py
 const MAKE_SIZE = { firering:{w:100}, potstools:{w:70}, spinner:{h:90}, scraper:{w:46}, doorpots:{w:62}, doormat:{w:58}, scarecrow:{h:105}, pebbles:{w:80}, daisypot:{h:62},
   sundial:{h:66}, herbpots:{w:66}, wreath:{w:40}, plank:{w:84}, chime:{h:70}, nameboard:{w:52}, cushion:{w:44}, swing:{h:120}, hammock:{w:120}, sign:{h:96},
@@ -521,7 +536,7 @@ const ART = {};   // name -> loaded Image, only for slots whose file exists
 function art(k) { return ART[k] || null; }
 function loadArtSlots() {   // after the game starts, so missing files never slow the first picture
   for (const k of Object.keys(ART_SLOTS)) {
-    const im = new Image(); im.onload = () => { ART[k] = /^(btn|plot|room|vis|portrait|folk|face|story|page|icon|find)-/.test(k) ? im : settle(im, k === 'stepping-stones'); if (k.startsWith('btn-')) paintButton(k); }; im.src = `sprites/${k}.webp`;
+    const im = new Image(); im.onload = () => { ART[k] = /^(btn|plot|room|vis|portrait|folk|face|story|page|icon|find|gift)-/.test(k) ? im : settle(im, k === 'stepping-stones'); if (k.startsWith('btn-')) paintButton(k); }; im.src = `sprites/${k}.webp`;
   }
 }
 function slotSize(k, img, w) {   // world-pixel width and height for a slot picture (w: width of the prop it replaces)
@@ -529,6 +544,11 @@ function slotSize(k, img, w) {   // world-pixel width and height for a slot pict
   if (o.h) return [o.h / r, o.h];
   w = w || (typeof o.w === 'string' ? IM[o.w.slice(5)].width * SPR : o.w);
   return [w, w * r];
+}
+function cropPic(k, x, y, h, flip, foot = 0.9) {   // a painted plant or piece by height, standing at (x, y); false if it is not painted
+  const im = art(k); if (!im) return false; const w = h * im.width / im.height;
+  if (flip) { ctx.save(); ctx.translate(x, 0); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, y - h * foot, w, h); ctx.restore(); } else ctx.drawImage(im, x - w / 2, y - h * foot, w, h);
+  return true;
 }
 function drawSlot(k, x, y, a = 1, opts = {}) {   // bottom-centre at (x, y); flat pieces are centred on (x, y) instead
   const img = art(k); if (!img || a <= 0) return false;
@@ -693,8 +713,9 @@ class Gnome {
     if (this.drawSitting(now)) return;
     const [wx, wy] = toWorld(this.gx, this.gy);
     const s = SPR * 0.92;
-    const carrying = this.walking && (this.pace || this.carryWalk) && this.dir === 'side';   // carrying wood: use the carry strip instead of the walk
-    const act0 = this.act || (carrying ? (this.carryWalk === 'can' && this.who === 'him' ? 'canwalk' : 'carry') : null);   // carryWalk 'can': he walks with the watering can
+    const potw = potInHands(this) && this.acts.potwalk && this.dir === 'side' && !this.act;   // carrying the potted oak (art day 15 strip)
+    const carrying = potw || (this.walking && (this.pace || this.carryWalk) && this.dir === 'side');   // carrying wood: use the carry strip instead of the walk
+    const act0 = this.act || (potw ? 'potwalk' : carrying ? (this.carryWalk === 'can' && this.who === 'him' ? 'canwalk' : 'carry') : null);   // carryWalk 'can': he walks with the watering can
     let img, cw, ch, f, flip;
     const twig = (this.job === 'spring' && taskProg('spring') < SPRING_FOUND && (act0 === 'dowse' || (!act0 && this.dir === 'side'))) || (act0 === 'dowse' && !!this.job && this.job.startsWith('heal:'));   // looking for water, or pegging out the bare plain: the painted dowsing strip (him-dowse), or a code-drawn twig if it is missing
     const dowseWalk = twig && !act0 && this.walking && !!this.acts.dowse, act = dowseWalk ? 'dowse' : act0;   // the strip is also his walk while he searches
@@ -714,7 +735,7 @@ class Gnome {
       const sp = L * 0.12; for (const [w, c] of [[3.2, 'rgba(42,21,16,0.85)'], [1.6, '#9a7a50']]) { ctx.lineWidth = w; ctx.strokeStyle = c; ctx.beginPath(); ctx.moveTo(-L * 0.1, -sp); ctx.lineTo(L * 0.3, 0); ctx.moveTo(-L * 0.1, sp); ctx.lineTo(L * 0.3, 0); ctx.lineTo(L * 0.85, 0); ctx.stroke(); }
     }
     ctx.restore();
-    if (potInHands(this)) {   // the potted oak held in front of her at waist height (code stand-in until a carrying-the-sapling strip is painted)
+    if (potInHands(this) && !potw) {   // the potted oak held in front of her at waist height (code stand-in when she faces front or back)
       const im = IM.sapling, k = SPR * 0.62, w = im.width * k, h = im.height * k, side = this.dir === 'side' ? (this.flip ? -1 : 1) : 0;
       ctx.drawImage(im, wx + side * cw * s * 0.2 - w / 2, wy - ch * s * 0.24 - h, w, h);
     }
@@ -1459,7 +1480,7 @@ function drawProp(p) {
   if (!p.flat) { groundPatch(x, y, w * 0.72, w * 0.28); shadow(x, y, w * 0.48, w * 0.17); }
   const sw = SWAP_ART[p.name], sp = sw && art(sw[0]) ? taskProg(sw[1]) : 0;   // painted "after" picture crossfades in as its job runs
   if (p.name === 'shelter') drawHouse(img, x, y, w, h);
-  else if (p.name === 'sapling' && taskProg('sapling') >= 1) { if (!drawSlot('oak-planted', x, y)) drawPlantedOak(x, y, s); }
+  else if (p.name === 'sapling' && taskProg('sapling') >= 1) { const ok = oakPic(); if (ok) cropPic(ok[0], x + ok[2], y, ok[1], false, 0.96); else if (!drawSlot('oak-planted', x, y)) drawPlantedOak(x, y, s); }
   else if (p.name === 'fence' && art('fence-fallen')) { const f = taskProg('fence'); drawSlot('fence-fallen', x, y, 1 - f, { w }); ctx.globalAlpha = a * f; ctx.drawImage(img, x - w / 2, y - h, w, h); }
   else {
     if (sp < 1) { ctx.globalAlpha = a * (sw && sp > 0 ? 1 - sp * 0.5 : 1); ctx.drawImage(img, x - w / 2, y - h + (p.flat ? h / 2 : 0), w, h); }
@@ -1584,6 +1605,11 @@ const AFTER = {
     const [wx, wy] = at(52, 36); ctx.save(); blob(wx, wy, 30 * s, 9 * s, 'rgba(120,170,200,0.85)'); blob(wx - 6 * s, wy - 2 * s, 12 * s, 3 * s, `rgba(240,250,255,${0.5 + 0.3 * Math.sin(now / 500)})`); ctx.restore();
   },
 };
+function oakPic() {   // the bigger oak paintings (art day 15) by land stage: [picture, height, dx], or null for the planted oak
+  const st = G.landStage().key, k = st === 'wood' ? 'oak-grown' : st === 'meadow' ? 'oak-young' : null; if (!k) return null;
+  const sw = taskProg('swing') >= 1 ? k : k + '-plain'; if (!art(sw)) return null;
+  return [sw, k === 'oak-grown' ? 290 : 220, k === 'oak-grown' ? 46 : 34];   // the grown crown spreads right, over the yard rather than the neighbours
+}
 function drawPlantedOak(x, y, s) {   // "Plant the sapling out": the pot is gone; the oak stands in a mound of earth, a little taller
   const img = IM.sapling, top = 82, k = s * 1.5, w = img.width * k, h = top * k;
   blob(x, y, 26, 9, 'rgba(90,64,40,0.95)'); blob(x - 4, y - 2, 14, 4, 'rgba(140,105,70,0.8)');
@@ -1816,12 +1842,25 @@ function beanPlant(x, y, k, ph, now) {   // a twining stem with heart leaves; po
   if (k > 0.8) for (const d of [-1, 1]) { const px = x + d * 3, py = y - h * (d > 0 ? 0.55 : 0.4); ctx.strokeStyle = '#4f6a2a'; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(px, py); ctx.quadraticCurveTo(px + d * 1.5, py + 5, px + d * 0.5, py + 10); ctx.stroke(); ctx.strokeStyle = '#9cc05a'; ctx.lineWidth = 1.6; ctx.stroke(); }   // two slim pods
   ctx.strokeStyle = '#7a9a3a'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(x + sw, y - h); ctx.quadraticCurveTo(x + 3 + sw, y - h - 2, x + 2 + sw, y - h - 3.5); ctx.stroke();   // a curly tendril reaching for something to climb
 }
+// the painted crops (art day 15): four steps each, seedling first; drawn by height (world px), a full carrot top about a gnome's knee
+const CROP_H = { carrot: [9, 17, 27, 30], lettuce: [8, 12, 17, 21], bean: [9, 16, 32, 46] };
+function paintedPlant(look, x, y, k, ph) {   // k = 0..1 how grown (the same k the stand-ins use); false until the painting has loaded
+  if (!art(`crop-${look}-4`)) return false;
+  const st = k < 0.3 ? 0 : k < 0.55 ? 1 : k < 0.85 ? 2 : 3, hs = CROP_H[look], f = st ? (k - [0, 0.3, 0.55, 0.85][st]) / [0.3, 0.25, 0.3, 0.15][st] : k / 0.3;
+  shadow(x, y, 4 + hs[st] * 0.2, 1.6 + hs[st] * 0.06);
+  return cropPic(`crop-${look}-${st + 1}`, x, y, hs[st] * (0.8 + 0.2 * Math.min(1, f)), ph > 0.5);
+}
 // bean poles (job "Raise the bean poles"): three little stick wigwams along the back of the bed; beans climb them as they grow
 const BEAN_POLES = [[-0.45, -0.42], [0.02, -0.5], [0.48, -0.4]];
 function drawBeanPoles(x, y, W, H, vine, built = 1) {
   for (const [i, [u, v]] of BEAN_POLES.entries()) {
     if (built * 3 < i + 0.6) continue;   // Wendel puts them up one by one
     const bx = x + u * W, by = y + v * H - u * W * 0.22, top = by - 46;
+    if (art('beanpoles') && art('beanpoles-grown')) {   // painted: the bare wigwam, and the grown one fading in over it as the beans climb
+      shadow(bx, by + 1, 14, 4); if (vine < 1) cropPic('beanpoles', bx, by, 68, i % 2, 0.97);
+      if (vine > 0) { ctx.save(); ctx.globalAlpha *= Math.min(1, vine * 1.3); cropPic('beanpoles-grown', bx, by, 70, i % 2, 0.97); ctx.restore(); }
+      continue;
+    }
     blob(bx, by + 2, 13, 4, 'rgba(60,40,22,0.3)');
     ctx.lineCap = 'round';
     for (const d of [-9, -3, 4, 10]) { ctx.strokeStyle = 'rgba(42,21,16,0.75)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(bx + d, by + (d > 0 ? 1 : -1)); ctx.lineTo(bx + d * 0.08, top); ctx.stroke(); ctx.strokeStyle = '#8a6a44'; ctx.lineWidth = 1.7; ctx.stroke(); }
@@ -1838,6 +1877,18 @@ function drawBeanPoles(x, y, W, H, vine, built = 1) {
 }
 function drawPumpkin(x, y, W, H, prog, now) {   // one plant: the vine wanders over the whole bed, a few yellow flowers, then one big pumpkin swelling in the middle
   const vine = Math.min(1, prog / 0.45);
+  if (art('pumpkin-3') && art('pumpkin-leaf-1')) {   // painted (art day 15): leaf clumps along five runners, then the pumpkin going green, half-ripe, ripe
+    const leaves = [];
+    for (let a = 0; a < 5; a++) { const ang = a / 5 * Math.PI * 2 + 0.4;
+      for (let i = 1; i <= 2; i++) { const f = i / 2.4 * vine, lx = x + Math.cos(ang) * W * 0.68 * f, ly = y + Math.sin(ang) * H * 0.62 * f - Math.cos(ang) * W * 0.68 * f * 0.22; if (f * 0.45 > prog) continue;
+        leaves.push([lx, ly, (a + i) % 3, a % 2]); } }
+    leaves.sort((p, q) => p[1] - q[1]);
+    const lh = 10 + 12 * Math.min(1, prog * 1.6), g = Math.max(0, Math.min(1, (prog - 0.35) / 0.65));
+    const flowers = prog > 0.3 && prog < 0.75;   // the clump with the yellow flower only while it flowers
+    for (const [lx, ly, n, fl] of leaves) cropPic(`pumpkin-leaf-${n === 1 && !flowers ? 1 : n + 1}`, lx, ly, lh, fl, 0.8);
+    if (g > 0) { shadow(x + 2, y + 2, 10 + 22 * g, 3 + 6 * g); cropPic(`pumpkin-${g < 0.45 ? 1 : g < 0.8 ? 2 : 3}`, x, y, 10 + 50 * g, false, 0.88); }
+    return;
+  }
   ctx.strokeStyle = '#557530'; ctx.lineWidth = 2; ctx.lineCap = 'round';
   for (let a = 0; a < 5; a++) {   // five runners out from the middle
     const ang = a / 5 * Math.PI * 2 + 0.4, ex = x + Math.cos(ang) * W * 0.68 * vine, ey = y + Math.sin(ang) * H * 0.62 * vine - (Math.cos(ang) * W * 0.68 * vine) * 0.22;
@@ -1878,12 +1929,13 @@ function drawCrop(x, y) {
     if (p.stage === 'planted') { if (look === 'pumpkin') continue; blob(sx, sy, 3.5, 2, '#4a3620'); blob(sx - 1, sy - 0.6, 1.4, 0.7, 'rgba(160,130,90,0.7)'); continue; }   // little sown mounds
     if (p.nibbled && u > 0.15 && v > -0.35 && ph < 0.75) { ctx.strokeStyle = '#6f8a34'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + 0.5, sy - 4); ctx.stroke(); blob(sx + 0.5, sy - 4, 1.4, 1, '#cfe0a0'); continue; }   // nibbled down to a stalk (the rabbit started at the near right)
     const k = Math.min(1, prog * (0.8 + 0.4 * ph));
-    if (k < 0.3) { seedling(sx, sy, k / 0.3 * 0.7, ph, now); continue; }   // every crop comes up as the same little sprout
+    if (k < 0.3 && !art(`crop-${look}-1`)) { seedling(sx, sy, k / 0.3 * 0.7, ph, now); continue; }   // every crop comes up as the same little sprout
     const kk = (k - 0.3) / 0.7;
+    if (paintedPlant(look, sx, sy, k, ph)) continue;
     if (look === 'carrot') carrotPlant(sx, sy, kk, ph, now); else if (look === 'lettuce') lettucePlant(sx, sy, kk, ph); else beanPlant(sx, sy, kk, ph, now);
   }
   if (p.stage === 'planted' && look === 'pumpkin' && !(sow && cp < 0.5)) { blob(x, y, 7, 3.5, '#4a3620'); blob(x - 1.5, y - 1, 2.4, 1.1, 'rgba(160,130,90,0.7)'); }   // one solemn mound in the middle
-  if (look === 'lettuce' && prog > 0.85) { const [u, v] = SEEDLINGS[Math.floor(SEEDLINGS.length * 0.62)]; snail(x + u * W + 2, y + v * H - u * W * 0.22 - 9, now); }
+  if (look === 'lettuce' && prog > 0.85 && !art('crop-lettuce-4')) { const [u, v] = SEEDLINGS[Math.floor(SEEDLINGS.length * 0.62)]; snail(x + u * W + 2, y + v * H - u * W * 0.22 - 9, now); }
   if (p.stage === 'ready' && !pick) { const ph = ((now / 1000) % 2.8) / 2.8; if (ph < 0.22) twinkle(x + 18, y - (look === 'pumpkin' ? 58 : 30), Math.sin(ph / 0.22 * Math.PI)); }   // ready to pick: a glint, not a glow (nothing glows)
 }
 function wantsTap(p) {   // does this thing have something the player can do right now?
@@ -1897,7 +1949,7 @@ function drawOffer(o, now) {
   o.screen = { x, y, w: 46 * k, h: 46 * k };
   shadow(x, y, 9 * k, 4 * k);   // no glow behind pick-ups any more: a cut-out paper edge and a glint now and then
   if (o.kind === 'light') { glow(x, y - 14 * k + b, 36 * k, 'rgba(255,240,170,1)', 0.6 + 0.2 * Math.sin(now / 200)); }
-  const img = IM['icon-' + o.kind] || art('icon-' + o.kind), sz = (TRUE_SIZE[o.kind] || 30) * k * (o.keep ? 1.4 : 1);   // an animal's keepsake is a little bigger   // drawn at its real size beside a gnome; the tap box above stays finger-sized
+  const img = (o.keep && art('gift-' + o.keep)) || IM['icon-' + o.kind] || art('icon-' + o.kind), sz = (TRUE_SIZE[o.kind] || 30) * k * (o.keep ? 1.4 : 1);   // an animal's keepsake is a little bigger   // drawn at its real size beside a gnome; the tap box above stays finger-sized
   if (img) { const f = sz / Math.max(img.width, img.height), w = img.width * f, h = img.height * f, im = inked(img), p = im.pad * f, top = y - 8 * k + b - sz * 0.2 - h * 0.6;   // keep the painted icon's own shape
     ctx.drawImage(im, x - w / 2 - p, top - p, w + p * 2, h + p * 2);
     const ph = ((now / 1000 + o.gx * 11 + o.gy * 5) % 3.2) / 3.2; if (ph < 0.2) twinkle(x + w * 0.38, top + h * 0.15, Math.sin(ph / 0.2 * Math.PI)); }
@@ -1953,6 +2005,7 @@ const NESTS = { robin:[0.93, 0.73], wren:[0.80, 0.95], hedgehog:[0.74, 0.62], bl
 function drawNest(id, x, y, now) {
   const kind = G.visitorDef(id).nest;
   NESTS[id].screen = { x, y, w: 50, h: 34 };
+  if (id === 'hedgehog' && G.asleep('hedgehog') && drawSlot('nest-leafpile-asleep', x + 8, y, 1, { w: 92 })) return;   // painted with its ASLEEP sign (art day 15)
   if (drawSlot('nest-' + kind, x, y)) { if (id === 'hedgehog' && G.asleep('hedgehog')) asleepSign(x + 34, y + 2); return; }
   ctx.save();
   if (kind === 'nest') {   // a little woven cup of twigs and moss
@@ -2045,8 +2098,11 @@ function drawVisitor(v, now) {
   const yy = y - fly - hop + peck + (fly ? Math.sin(now / 350) * 4 : 0) - (v.lift || 0);
   if (!fly) shadow(x, y, Math.max(8, h * 0.45), Math.max(3, h * 0.14)); else shadow(x, y, h * 0.25, h * 0.08);
   if (def.spirit || def.id === 'spirit' || def.id === 'glowworm') glow(x, yy - h / 2, h * 1.2, def.id === 'glowworm' ? 'rgba(170,255,210,1)' : 'rgba(200,255,190,1)', 0.45 + 0.1 * Math.sin(now / 400));
-  drawCreature(def, x, yy, h, v.faceR);
-  if (def.id === 'hedgehog' && G.beatDone('hogShopping') && season() === 'autumn') leafCoat(x, yy, h);   // out shopping again
+  const coat = def.id === 'hedgehog' && G.beatDone('hogShopping') && season() === 'autumn', look = def.id === 'hedgehog' ? (coat ? 'hedgehog-coat' : season() === 'spring' && G.beatDone('hogSpring') ? 'hedgehog-thin' : null) : null;
+  const dance = def.id === 'lyrebird' && !moving && Math.floor(now / 3500) % 3 === 2 && art('lyre-dance');   // the lyrebird dances now and then while it visits
+  if (dance) { const w = h * dance.width / dance.height; ctx.drawImage(dance, x - w / 2, yy - h, w, h); }
+  else drawCreature(look && art('vis-' + look) ? Object.assign({}, def, { id: look, faces: 'R' }) : def, x, yy, h, v.faceR);
+  if (coat && !art('vis-hedgehog-coat')) leafCoat(x, yy, h);   // out shopping again
   if (!G.met(def.id) && !v.trouble) { const ph = ((now / 1000) % 2.6) / 2.6; if (ph < 0.25) twinkle(x + h * 0.35, yy - h * 0.95, Math.sin(ph / 0.25 * Math.PI)); }   // "say hello": a glint over someone new (no glow); trouble has its own bubble
   if (v.trouble) {   // a small paper bubble with a "!" so you can see it needs help
     const bx = x, by = yy - h - 16 - Math.sin(now / 300) * 2;
@@ -2494,6 +2550,7 @@ function mouseHouse(x, y, w, h, now) {   // the toadstool turns into a mouse hou
   if (painted || since >= MOUSE_IN) mouseWindow(painted ? x + w * 0.126 : dx + 2, painted ? y - h * 0.15 : y - h * 0.42, painted ? h * 0.032 : 4, x, y - h * 0.9, night);
   if (G.s.flags.mouseSock && !G.beatDone('mouseWinter')) SOCK.screen = sockHammock(x - w * 0.3, y + 40, now); else SOCK.screen = null;
   if (since < MOUSE_IN) return;
+  if (art('sign-noknock')) { shadow(x + w * 0.42, y + 2, 7, 2); cropPic('sign-noknock', x + w * 0.42, y + 3, 30, false, 0.95); }   // the mice's own sign by the door (art day 15)
   if (!G.s.flags.miceIn) { G.s.flags.miceIn = true; G.note('A mouse family has moved into the old toadstool.'); toast('A mouse family has moved into the toadstool!'); }
   const im = art('vis-mouse'); if (!im || night > 0.6) return;   // by day the little ones play round the door
   const t = now / 1000;
@@ -2519,6 +2576,7 @@ function mouseWindow(wx, wy, r, cx, top, night) {   // the toadstool's little ro
   }
 }
 function sockHammock(x, y, now) {   // Wendel's missing sock, strung between two grass stalks beside the mouse house, with somebody small asleep in it
+  if (art('sock-hammock')) { const sw = Math.sin(now / 1300) * 0.03; ctx.save(); ctx.translate(x, y); ctx.rotate(sw); cropPic('sock-hammock', 0, 0, 58, false, 0.97); ctx.restore(); return { x, y, w: 50, h: 58 }; }   // painted (art day 15)
   const ax = x - 32, bx = x + 32, top = y - 40, sway = Math.sin(now / 1300) * 2.5;
   ctx.save(); ctx.lineCap = 'round';
   for (const px of [ax, bx]) { ctx.strokeStyle = INK; ctx.lineWidth = 3.4; ctx.beginPath(); ctx.moveTo(px, y); ctx.quadraticCurveTo(px + 2, y - 22, px, top - 8); ctx.stroke(); ctx.strokeStyle = '#7d9a45'; ctx.lineWidth = 1.8; ctx.stroke(); blob(px + 3, top - 8, 4, 1.6, '#7d9a45'); }   // the stalks
@@ -2562,9 +2620,15 @@ function animalItems(items, now) {
     shadow(x, y, w * 0.45, w * 0.13); ctx.save(); ctx.translate(x, y - bob); if (flip) ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, -hh, w, hh); ctx.restore();
     if (seed) { const sx = x + (flip ? 1 : -1) * w * 0.12, sy = y - bob - hh * 0.97; ctx.save(); ctx.strokeStyle = 'rgba(250,248,240,0.95)'; ctx.lineWidth = 0.7; for (let i = 0; i < 7; i++) { const a = -Math.PI / 2 + (i - 3) * 0.32; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + Math.cos(a) * 4, sy + Math.sin(a) * 4); ctx.stroke(); } ctx.restore();
       BABY_SEED.screen = { x, y, w: 30, h: hh + 10 }; } } });
-  if (!RABBIT.on) rab(bx + 0.04, by - 0.04, sit, 0.62, true, 0);   // the mother, by her door, when she is not off visiting the yard
+  const gate = art('rabbit-gate'), B = [1, 2, 3, 4].map(i => art('baby-' + i)), byH = (im, h) => h / im.height;
+  if (!RABBIT.on) { if (gate) rab(bx + 0.04, by - 0.04, gate, byH(gate, 92), true, 0); else rab(bx + 0.04, by - 0.04, sit, 0.62, true, 0); }   // the mother, by her door, when she is not off visiting the yard
   if (!G.beatDone('rabbitBabies')) return;
   const t = now / 1000, hop = i => Math.max(0, Math.sin(t * 2 + i * 2.1)) * 3;   // the babies: two sitting up, one asleep in a heap
+  if (B.every(Boolean)) {   // painted (art day 15): two sitting up, one nosing about, one asleep in a heap
+    rab(bx + 0.09, by + 0.03, B[3], byH(B[3], 40), false, hop(0)); BABY_SEED.screen = (() => { const [x, y] = toWorld(bx + 0.09, by + 0.03); return { x, y, w: 30, h: 50 }; })();
+    rab(bx + 0.14, by + 0.06, B[0], byH(B[0], 42), true, hop(1)); rab(bx + 0.03, by + 0.07, B[1], byH(B[1], 24), false, 0); rab(bx + 0.08, by + 0.09, B[2], byH(B[2], 22), false, 0);
+    return;
+  }
   rab(bx + 0.09, by + 0.03, sit, 0.3, true, hop(0), true);
   rab(bx + 0.14, by + 0.06, sit, 0.28, false, hop(1));
   if (nap && nap.width) rab(bx + 0.08, by + 0.08, nap, 0.26, false, 0);
@@ -2592,7 +2656,9 @@ function spiritItem(items, now) {
 function openLesson(n, again) {
   const L = typeof n === 'string' ? Object.assign({ spell: C.heal.kinds[n.slice(5)].spell }, C.heal.kinds[n.slice(5)].lesson) : C.story.lessons[n - 1], v = G.visitorDef('spirit'), first = !again && G.teach(n), sp = L.spell && C.spells[L.spell];
   if (!again) { SPIRIT_N = 0; SPIRIT_HINT.screen = null; }
-  openSheet(again ? 'lessonagain' : 'lesson', `<div class="jpage card"><p class="meta" style="margin:0">${first ? 'A new friend!' : 'The Wood spirit'}</p>${v ? portraitHtml(v, true) : ''}<h2>${L.title}</h2>
+  const pose = { wind:'spirit-wind', cloud:'spirit-cloud', seedwake:'spirit-seed', sing:'spirit-sing' }[L.spell];   // art day 15: the spirit showing the spell
+  const pic = pose && art(pose) ? `<div class="por big pad"><img src="sprites/${pose}.webp" alt=""></div>` : v ? portraitHtml(v, true) : '';
+  openSheet(again ? 'lessonagain' : 'lesson', `<div class="jpage card"><p class="meta" style="margin:0">${first ? 'A new friend!' : 'The Wood spirit'}</p>${pic}<h2>${L.title}</h2>
     ${first ? `<p class="lore">${C.story.spiritFirst}</p>` : ''}<p class="lore">${L.text}</p>${L.after ? `<p class="lore">${L.after}</p>` : ''}
     <p class="meta">${sp ? `New in your magic: <b>${sp.name}</b>, for ${costHtml(sp.cost)}.` : 'No new spell. A page about the Wood spirit is in your Journal, and it will come back when the valley needs something new.'}</p></div>
     <p style="text-align:center">${again ? `<button class="act quiet" data-a="journal">Back to the journal</button>` : sp ? `<button class="act" data-a="openmagic">Open your magic</button>` : `<button class="act" data-a="close">Thank you</button>`}</p>`);
@@ -2941,6 +3007,7 @@ Object.assign(MAKE_DRAW, {   // the animals' side stories (docs/ANIMALS.md)
   earthbank(x, y) { shadow(x, y, 54, 12); blob(x, y - 11, 52, 20, '#7a5a3a'); blob(x - 4, y - 18, 40, 15, '#8f6c48'); blob(x + 9, y - 26, 22, 9, '#a07c56');   // a soft mound of loose earth
     for (let i = 0; i < 12; i++) blob(x - 46 + rnd(i + 950) * 92, y - 2 - rnd(i + 960) * 8, 2.6, 1.7, ['#6e5038', '#a07c56'][i % 2]);
     for (let i = 0; i < 6; i++) { const gx = x - 40 + i * 16, gy = y - 14 - Math.sin(i / 5 * Math.PI) * 22; ctx.save(); ctx.strokeStyle = '#6f8a34'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx - 2, gy - 6); ctx.moveTo(gx, gy); ctx.lineTo(gx + 2, gy - 5); ctx.stroke(); ctx.restore(); }
+    if (G.s.moved.burrow && art('burrow-mound')) { cropPic('burrow-mound', x - 6, y + 6, 70, true, 0.95); return; }   // painted mound with its round door (art day 15) over the code mound
     if (G.s.moved.burrow && drawSlot('nest-burrow', x - 14, y + 4, 1, { scale: 1.6 })) return;   // the rabbit has dug its burrow into it
     if (G.s.moved.burrow) { blob(x - 20, y - 10, 14, 12, '#2a1a10'); blob(x - 20, y - 11, 10.5, 9, '#140c06'); for (let i = 0; i < 6; i++) blob(x - 34 + i * 5, y + 2 + rnd(i + 970) * 3, 2, 1.3, '#8f6c48'); } },   // a round door, a few crumbs of soil
   clover(x, y) { blob(x, y, 62, 13, 'rgba(70,52,34,0.35)');   // a strip of dug earth sown with clover, a few white and pink heads
@@ -2951,7 +3018,9 @@ Object.assign(MAKE_DRAW, {   // the animals' side stories (docs/ANIMALS.md)
     ctx.save(); ctx.fillStyle = '#5a3e26'; ctx.strokeStyle = INK; ctx.lineWidth = 1.1; ctx.beginPath(); ctx.moveTo(mx - 5, my); ctx.lineTo(mx - 5, my - 7); ctx.arc(mx, my - 7, 5, Math.PI, 0); ctx.lineTo(mx + 5, my); ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.strokeStyle = 'rgba(30,18,10,0.6)'; ctx.lineWidth = 0.7; for (const dx of [-2, 1, 3]) { ctx.beginPath(); ctx.moveTo(mx + dx, my - 1); ctx.lineTo(mx + dx, my - 9); ctx.stroke(); }
     ctx.fillStyle = '#3a2414'; ctx.fillRect(mx - 3, my - 12.5, 6, 1.6); ctx.restore(); },
-  owlbox(x, y, a, now) { post(x, y, 116, 6, '#6e4a2c'); const bx = x, by = y - 110;   // a tall post beside the little oak, and the box with its round hole
+  owlbox(x, y, a, now) { if (art('owlbox')) { const home = G.s.moved.owlbox, out = visitor && visitor.def.id === 'owl', k = season() === 'winter' && art('owlbox-snow') ? 'owlbox-snow' : home && !out && dayPhase().light > 0.5 && art('owlbox-owl') ? 'owlbox-owl' : 'owlbox';
+      shadow(x, y, 8, 3); cropPic(k, x, y, k === 'owlbox-owl' ? 142 : 140, false, 0.98); return; }   // painted (art day 15): the owl is drawn in its box by day
+    post(x, y, 116, 6, '#6e4a2c'); const bx = x, by = y - 110;   // a tall post beside the little oak, and the box with its round hole
     ctx.save(); ctx.fillStyle = '#8a6a48'; ctx.strokeStyle = INK; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.rect(bx - 10, by - 22, 20, 24); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#6e4a2c'; ctx.beginPath(); ctx.moveTo(bx - 14, by - 21); ctx.lineTo(bx, by - 30); ctx.lineTo(bx + 14, by - 21); ctx.closePath(); ctx.fill(); ctx.stroke();
     if (season() === 'winter') { blob(bx - 4, by - 26, 9, 3, '#f4f6f8'); blob(bx + 5, by - 24, 7, 2.4, '#e8ecf0'); }   // a snow cap in winter
@@ -2974,6 +3043,7 @@ function makeItems(items, now) {
   for (const d of C.tasks) {
     if (!d.make || (d.make === 'garden' && !garden)) continue;
     const a = taskProg(d.id); if (a <= 0 || d.id === 'barrow') continue;   // the wheelbarrow is a prop already
+    const op = d.id === 'swing' && a >= 1 && oakPic(); if (op && !op[0].endsWith('-plain')) continue;   // the bigger oak paintings have the swing in them
     const [hx, hy] = makeAt(d);
     if (MAKE_PARTS[d.id] && !art('make-' + d.id)) { for (const [gx, gy, k, h] of MAKE_PARTS[d.id]()) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); ctx.save(); ctx.globalAlpha = a; shadow(x, y, h * 0.3, h * 0.08); kitPiece(k, x, y, h); ctx.restore(); } }); continue; }
     const hd = HOUSE_DOOR[d.id], sh = hd && PROPS.find(q => q.name === 'shelter');
@@ -3016,7 +3086,7 @@ const HEAL_LOOK = {
   ],
   creature: [
     { always:1, draw:'deadtree', at:[0.78, 0.30] },
-    { always:1, pic:'kit-stumps-rocks-01', at:[0.64, 0.60], h:76 },   // a low, sound stump (the seed dish goes on it)
+    { always:1, pic:'kit-stumps-rocks-01', at:[0.64, 0.60], h:76, until:'dish' },   // a low, sound stump (the seed dish goes on it; the painted seed dish has its own stump, so this one gives way)
     ...[[0.36, 0.40], [0.52, 0.54], [0.30, 0.66], [0.58, 0.32], [0.44, 0.76]].map((at, i) => ({ s:'mulch', go:1, draw:'cracks', at, flat:1, n:i })),
     { s:'branches', go:1, pic:'kit-stumps-rocks-04', at:[0.40, 0.44], h:68 }, { s:'branches', go:1, pic:'kit-stumps-rocks-05', at:[0.56, 0.66], h:53, flat:1 },
     { s:'branches', go:1, pic:'kit-stumps-rocks-10', at:[0.30, 0.56], h:76 }, { s:'branches', go:1, pic:'kit-stumps-rocks-04', at:[0.64, 0.42], h:61, flip:1 },
@@ -3191,6 +3261,21 @@ const HEAL_DRAW = {
     ctx.fillStyle = '#5d7a33'; ctx.beginPath(); ctx.moveTo(x - 10, y - 61); ctx.lineTo(x, y - 69); ctx.lineTo(x + 10, y - 61); ctx.closePath(); ctx.fill(); ctx.stroke(); blob(x, y - 55, 2.6, 2.6, '#2a1d14'); ctx.restore(); },
   wattlebush(x, y, a, q) { const im = healPic('kit-wood-08'), h = healEvAt(q.k, 'hedge2') ? 62 : 42; if (!im) return; const w = h * im.width / im.height; shadow(x, y, w * 0.25, 4); ctx.drawImage(im, x - w / 2, y - h * 0.94, w, h); },
 };
+// the paintings (art day 15) that take over from HEAL_DRAW: [picture, height in world px, an extra piece drawn in front]
+const HEAL_PAINT = {
+  oldfence: q => [q.broken ? 'heal-fence-2' : 'heal-fence-1', q.h * 0.85],
+  tree: q => { const sz = healTreeSize(q); return [`heal-${q.tree}-${sz + 1}`, [24, 50, 140][sz], sz < 2 && 'heal-guard']; },
+  deadtree: q => [healEvAt(q.k, 'possum') || healProg(q.k, 'nestbox') > 0.6 ? 'heal-deadtree-home' : 'heal-deadtree', 250],
+  beestone: () => ['heal-beestone', 18], birdbath: () => ['heal-birdbath', 28], birdbox: () => ['heal-birdbox', 72], perch: () => ['heal-perch', 46],
+  seeddish: () => ['heal-seeddish', 40], wall: () => ['heal-wall', 22], wheel: () => ['heal-wheel', 26],
+  wombat: () => [dayPhase().light > 0.5 ? 'vis-wombat-sleep' : 'vis-wombat', 24], heron: () => ['vis-heron', 58],
+};
+function healPainted(x, y, q) {
+  const f = HEAL_PAINT[q.draw]; if (!f) return false; const [k, h, front] = f(q), im = art(k); if (!im) return false;
+  const w = h * im.width / im.height; if (q.draw !== 'heron') shadow(x, y, w * 0.32, w * 0.09);
+  cropPic(k, x, y, h, !!q.flip, 0.92); if (front) cropPic(front, x, y + 1, h < 30 ? 22 : 34, false, 0.92);
+  return true;
+}
 function healItems(items, now) {   // the pieces on every healing tile, depth-sorted with everything else
   const vb = viewBox(); vb.x0 -= 160; vb.x1 += 160; vb.y0 -= 260; vb.y1 += 80;
   for (const k of G.healTiles()) for (const q of healPieces(k)) {
@@ -3199,7 +3284,7 @@ function healItems(items, now) {   // the pieces on every healing tile, depth-so
       let x = x0, y = y0; if (q.crawl) x += Math.sin(now / 2400 + ux * 9) * 4; if (q.hop) y -= Math.max(0, Math.sin(now / 600 + ux * 7)) * 3;
       if (q.perch) { x += 22; y -= 40; } if (q.onbox) y -= 69;
       ctx.save(); ctx.globalAlpha *= Math.min(1, q.a);
-      if (q.draw) HEAL_DRAW[q.draw](x, y, q.a, q, now);
+      if (q.draw) { if (!healPainted(x, y, q)) HEAL_DRAW[q.draw](x, y, q.a, q, now); }
       else { const im = healPic(q.pic); if (im) { const w = im.width * q.h / im.height; if (!q.flat && !q.perch && !q.onbox) shadow(x, y, w * 0.32, w * 0.09); if (q.flat && /patch|marks/.test(q.pic)) ctx.globalAlpha *= 0.8;
         if (q.flip) { ctx.translate(x, 0); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, q.flat ? y - q.h / 2 : y - q.h * 0.92, w, q.h); } else ctx.drawImage(im, x - w / 2, q.flat ? y - q.h / 2 : y - q.h * 0.92, w, q.h); } }
       ctx.restore(); } });
@@ -3216,6 +3301,7 @@ function shelfStage() {   // the nursery shelf at home: 0 none, then empty pots,
 function shelfItem(items, now) {
   const sh = shelfStage(); if (sh.made <= 0) return; const [gx, gy] = SHELF_AT;
   items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); ctx.save(); ctx.globalAlpha *= sh.made; shadow(x, y, 30, 7);
+    if (art('heal-shelf-1')) { cropPic(sh.grow > 0.4 ? 'heal-shelf-3' : sh.pots > 0 ? 'heal-shelf-2' : 'heal-shelf-1', x, y, 46, false, 0.95); ctx.restore(); return; }   // painted (art day 15): empty pots, sown pots, seedlings
     for (const dx of [-22, 22]) { blob(x + dx, y - 6, 7, 3, '#5d4430'); post(x + dx, y, 14, 12, '#7a5a3a'); }
     ctx.fillStyle = '#9a7a50'; ctx.strokeStyle = INK; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.rect(x - 32, y - 19, 64, 6); ctx.fill(); ctx.stroke();
     if (sh.pots > 0) for (let i = 0; i < 4; i++) { const px = x - 22 + i * 15; ctx.globalAlpha = sh.made * Math.min(1, sh.pots * 4 - i);
@@ -3352,6 +3438,34 @@ const FARM_PLANT = {   // (x, y) is where it meets the ground; st 0 seedling, 1 
     if (st >= 2) { const open = st >= 3 && dusk(); for (let j = 0; j < 3 * (0.4 + 0.6 * ripe); j++) { const fy = y - h * (0.45 + j * 0.2), fx = x + (j % 2 ? 9 : -7);   // pale moonflowers: wide open at dusk, twisted buds by day (pale, never glowing)
       if (open) { iblob(fx, fy, 7, 6, '#f6f3e6'); iblob(fx, fy, 2.4, 2, '#e8e2c4'); } else { iblob(fx, fy, 2.2, 4.5, '#ece6cf'); } } } },
 };
+// the farm paintings (art day 15) that take over from FARM_PLANT / FARM_EDGE: [picture, height] in the stand-ins' own units (drawn at FARM_S),
+// or a list of [picture, height, dx] for a clump; null keeps the stand-in. st 0..3 as above; just picked (ripe low) shows the cut-back look.
+const picked = (st, ripe) => st >= 2 && ripe < 0.3;
+const FARM_PAINT = {
+  herb: st => [`farm-herb-${st + 1}`, [8, 13, 20, 23][st]], sage: st => [`farm-herb-${st + 1}`, [8, 12, 18, 21][st]],
+  rhubarb: (st, r) => [`farm-rhubarb-${picked(st, r) ? 2 : st + 1}`, [6, 13, 24, 30][picked(st, r) ? 1 : st]],
+  willow: (st, r) => picked(st, r) ? ['farm-willow-cut', 20] : [`farm-willow-${st + 1}`, [22, 36, 92, 108][st]],
+  cabbage: (st, r) => [`farm-cabbage-${picked(st, r) ? 1 : [1, 1, 2, 3][st]}`, [6, 9, 15, 18][st]],
+  peas: st => [`farm-peas-${st < 3 ? 1 : 2}`, [14, 26, 46, 50][st]], straw: st => [`farm-straw-${st < 3 ? 1 : 2}`, [6, 9, 13, 15][st]], radish: st => ['farm-radish', [6, 9, 13, 14][st]],
+  apple: (st, r) => [`farm-fruit-${st === 3 && r < 0.4 ? 2 : st + 1}`, [24, 52, 100, 124][st]],
+  pear: st => [`farm-fruit-${Math.min(st, 2) + 1}`, [24, 52, 100, 124][st]], plum: st => [`farm-fruit-${Math.min(st, 2) + 1}`, [24, 52, 100, 124][st]],   // (their own fruit is dotted on in code)
+  lavender: st => [`farm-lavender-${st + 1}`, [7, 12, 21, 24][st]],
+  wheat: (st, r) => picked(st, r) ? ['farm-wheat-cut', 22] : st ? [-14, 0, 14].map((dx, j) => [`farm-wheat-${st + 1}`, [7, 18, 38, 44][st] * (1 - j % 2 * 0.1), dx]) : ['farm-wheat-1', 7],
+  flax: st => [-12, 0, 12].map((dx, j) => [`farm-flax-${[1, 1, 2, 3][st]}`, [8, 16, 32, 36][st] * (1 - j % 2 * 0.12), dx]),
+  woad: st => [`farm-woad-${st < 2 ? 1 : 2}`, [6, 10, 28, 32][st]], weld: st => st >= 2 ? ['farm-weld', [0, 0, 30, 34][st]] : null,
+  moonvine: st => st < 2 ? ['farm-moon-1', [8, 22][st]] : st === 2 ? ['farm-moon-2', 58] : [dusk() ? 'farm-moon-open' : 'farm-moon-closed', 64],
+  bottlebrush: st => ['farm-bottlebrush', [16, 24, 32][st]], indigo: st => ['farm-indigo', [14, 22, 30][st]], primrose: st => ['farm-primrose', [9, 13, 17][st]],
+  scarecrow: () => ['farm-scarecrow', 92],
+};
+function farmPainted(kind, st, ripe, i, now) {   // drawn at (0, 0) in the farm's scaled units; false until painted
+  const f = FARM_PAINT[kind]; if (!f) return false; let L = f(st, ripe, i); if (!L) return false; if (typeof L[0] === 'string') L = [L];
+  if (!L.every(([k]) => art(k))) return false;
+  const sway = Math.sin(now / 1500 + i * 1.7) * 0.02;
+  for (const [k, h, dx = 0] of L) { shadow(dx, 0, 3 + h * 0.18, 1 + h * 0.05); ctx.save(); ctx.translate(dx, 0); ctx.rotate(sway); cropPic(k, 0, 0, h, (i + (dx > 0 ? 1 : 0)) % 2, 0.94); ctx.restore(); }
+  if ((kind === 'pear' || kind === 'plum') && st >= 3) for (let j = 0; j < 8 * ripe; j++) iblob((rnd(i * 7 + j + 60) - 0.5) * 50, -86 + (rnd(i * 7 + j + 70) - 0.5) * 34, 3.2, 3.4, kind === 'pear' ? '#c9b84a' : '#6a3a5a');
+  if (kind === 'apple' && st >= 3 && i !== 1) cropPic('farm-ladder', 20, 4, 74, false, 0.98);   // Bert's old ladder
+  return true;
+}
 function fruitTree(x, y, st, ripe, i, now, fruit) {   // a young fruit tree with a stake: leaves, blossom when grown, fruit when full (and an old ladder leaning in it)
   const h = [24, 52, 100, 124][st], sway = Math.sin(now / 1600 + i) * 1.2; shadow(x, y, 6 + h * 0.2, 3 + h * 0.06);
   ctx.save(); ctx.lineCap = 'round'; if (st < 3) post(x - 7, y, h * 0.55, 2.4, '#9a7a50');
@@ -3386,7 +3500,9 @@ const FARM_PROP = {
     ctx.fillStyle = '#b8402e'; ctx.beginPath(); ctx.ellipse(x, y - 67, 11, 3, 0, 0, 7); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x - 8, y - 67); ctx.lineTo(x + 8, y - 67); ctx.quadraticCurveTo(x + 3, y - 80, x + sw + 4, y - 90); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
     snailShell(x + 20, y - 55, 2.4); },
   trellis(x, y, now, k) {   // Juniper's stick trellis along the moonflower bed
-    const pts = farmLook(G.farmOn(k)).plants.map(q => toWorld(...glob(k, q[0], q[1]))); ctx.save(); ctx.lineCap = 'round';
+    const pts = farmLook(G.farmOn(k)).plants.map(q => toWorld(...glob(k, q[0], q[1])));
+    if (art('farm-trellis')) { for (const [px, py] of pts) cropPic('farm-trellis', px - 2, py + 3, 96, false, 0.95); return; }   // painted (art day 15): a little stick trellis behind each vine
+    ctx.save(); ctx.lineCap = 'round';
     for (const [w, c] of [[4, INK], [2.2, '#8a6a48']]) { ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); for (const [px, py] of pts) { ctx.moveTo(px - 2, py + 2); ctx.lineTo(px - 2, py - 106); }
       for (const f of [46, 80, 104]) pts.forEach(([px, py], j) => j ? ctx.lineTo(px - 2, py - f) : ctx.moveTo(px - 2, py - f)); ctx.stroke(); }
     ctx.restore(); },
@@ -3402,13 +3518,13 @@ function farmItems(items, now) {   // every farm's beds, plants, props and edge,
       put(gx, gy, true, (x, y) => { ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.scale(1.4, 1.4 * ry / rx);
         const g = ctx.createRadialGradient(0, 0, rx * 0.2, 0, 0, rx); g.addColorStop(0, plant > 0 ? 'rgba(70,46,28,0.9)' : 'rgba(110,79,52,0.85)'); g.addColorStop(0.8, plant > 0 ? 'rgba(80,56,34,0.75)' : 'rgba(125,92,62,0.7)'); g.addColorStop(1, 'rgba(125,92,62,0)');
         ctx.fillStyle = g; ctx.beginPath(); for (let t = 0; t < 6.3; t += 0.35) { const r = rx * (0.86 + 0.14 * rnd(j * 30 + t * 3)); t ? ctx.lineTo(Math.cos(t) * r, Math.sin(t) * r) : ctx.moveTo(r, 0); } ctx.closePath(); ctx.fill(); ctx.restore(); }); });
-    for (const [gx, gy, kind] of L.props || []) { const a = sstep(0.4, 1, dig); if (a > 0) put(gx, gy, kind === 'trellis', (x, y) => { ctx.save(); ctx.globalAlpha *= a; if (kind === 'trellis') FARM_PROP[kind](x, y, now, k); else { ctx.translate(x, y); ctx.scale(FARM_S * 0.85, FARM_S * 0.85); FARM_PROP[kind](0, 0, now, k); } ctx.restore(); }); }
+    for (const [gx, gy, kind] of L.props || []) { const a = sstep(0.4, 1, dig); if (a > 0) put(gx, gy, kind === 'trellis', (x, y) => { ctx.save(); ctx.globalAlpha *= a; if (kind === 'trellis') FARM_PROP[kind](x, y, now, k); else { ctx.translate(x, y); ctx.scale(FARM_S * 0.85, FARM_S * 0.85); if (!farmPainted(kind, 0, 1, 0, now)) FARM_PROP[kind](0, 0, now, k); } ctx.restore(); }); }
     const np = L.plants.length; L.plants.forEach((q, j) => { const [gx, gy, kind] = q, a = sstep((j + 0.1) / np, (j + 0.6) / np, plant); if (a <= 0) return;
       const r = picking ? (pp < (j + 0.5) / np ? 1 : 0) : ripe;   // picked one plant after another while the job runs, then growing back over the day
-      put(gx, gy, false, (x, y) => { ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.scale(FARM_S, FARM_S); FARM_PLANT[kind](0, 0, st, r, j, now, q); ctx.restore();
+      put(gx, gy, false, (x, y) => { ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.scale(FARM_S, FARM_S); if (!farmPainted(kind, st, r, j, now)) FARM_PLANT[kind](0, 0, st, r, j, now, q); ctx.restore();
         if (ready && j % 3 === 0) { const ph = ((now / 1000 + j * 1.7) % 5) / 5; if (ph < 0.14) twinkle(x + 8, y - 38, Math.sin(ph / 0.14 * Math.PI), 2.2); } }); });   // ripe for picking: an occasional glint, never a glow
     const ne = L.edge.length; L.edge.forEach(([gx, gy, kind], j) => { const a = sstep((j + 0.1) / ne, (j + 0.6) / ne, edge); if (a <= 0) return;
-      put(gx, gy, kind === 'clover' || kind === 'puddle', (x, y) => { ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.scale(FARM_S, FARM_S); FARM_EDGE[kind](0, 0, est, j, now); ctx.restore(); }); });
+      put(gx, gy, kind === 'clover' || kind === 'puddle', (x, y) => { ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.scale(FARM_S, FARM_S); if (!farmPainted(kind, est, 1, j, now)) FARM_EDGE[kind](0, 0, est, j, now); ctx.restore(); }); });
     const h = dayPhase().h, [cx, cy] = [FARM_ZONE[0], FARM_ZONE[1] - 0.02];   // the creatures the farm brings in
     if (st >= 2 && ['lavender', 'herbs'].includes(C.farms.list[fid].look) && h >= 8 && h < 18) put(cx, cy, false, (x, y) => HEAL_DRAW.bees(x, y, 1, {}, now));
     if (est >= 1 && C.farms.list[fid].look === 'flax' && h >= 9 && h < 17) put(0.90, 0.68, false, (x, y) => HEAL_DRAW.butterflies(x, y, 1, {}, now));
@@ -4122,7 +4238,7 @@ function openBeat(id, again) {
 }
 function openKeepsake(id, fresh) {   // an animal's thank-you, picked up from the doorstep
   const g = C.animals.gifts[id], k = Object.keys(g.give)[0];
-  openSheet('keepsake', `<div class="jpage card"><p class="meta" style="margin:0">${fresh ? 'Left on the doorstep' : 'A gift, kept in the journal'}</p><div class="por big pad">${ASSETS['icon-' + k] || art('icon-' + k) ? `<img src="sprites/icon-${k}.webp" alt="">` : `<span>${C.resources[k].icon}</span>`}</div><h2>${g.name}</h2><p class="lore">${g.line}</p>
+  openSheet('keepsake', `<div class="jpage card"><p class="meta" style="margin:0">${fresh ? 'Left on the doorstep' : 'A gift, kept in the journal'}</p><div class="por big pad">${art('gift-' + id) ? `<img src="sprites/gift-${id}.webp" alt="">` : ASSETS['icon-' + k] || art('icon-' + k) ? `<img src="sprites/icon-${k}.webp" alt="">` : `<span>${C.resources[k].icon}</span>`}</div><h2>${g.name}</h2><p class="lore">${g.line}</p>
     <p class="meta">From ${animalName(id)}${fresh ? ` · ${Object.entries(g.give).map(([r, n]) => `+${n} ${C.resources[r].name}`).join(', ')}` : ''}</p></div>
     <p style="text-align:center">${fresh ? `<button class="act" data-a="close">Keep it</button>` : `<button class="act quiet" data-a="journal">Back to the journal</button>`}</p>`);
 }
