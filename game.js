@@ -4,8 +4,8 @@
 const C = window.CONTENT;
 const FAST = /fast/.test(location.hash);          // #fast: minutes become tenths of a second (3h -> 18s)
 const MIN = FAST ? 100 : 60000;                   // ms per content "minute"
-const SKEW_KEY = 'gnomelife.skew';   // test panel: pretend this many extra days have gone by (whole days, so the time of day stays right)
-let SKEW = 0; try { SKEW = Number(localStorage.getItem(SKEW_KEY)) || 0; } catch (e) {}
+const SKEW_KEY = 'gnomelife.skew';   // test panel: pretend this many extra days have gone by (whole days; +30 minutes moves the clock on too)
+let SKEW = 0; try { SKEW = Number(localStorage.getItem(SKEW_KEY)) || 0; } catch (e) {}   // whole days, plus any +30 minutes from the test panel
 const now = () => Date.now() + SKEW;
 const DAY = () => 1440 * MIN;                     // a real day (a tenth-second-minute day under #fast)
 const lc = (t) => t[0].toLowerCase() + t.slice(1);   // "Build Mabel a home" -> "build Mabel a home" (keeps names capitalised)
@@ -137,6 +137,7 @@ const G = {
       if (d.folk) this.villageDone(id, d, tk);
       if (id === 'bridge') { for (const k of ['1,-1', '0,-1', '2,-1', '-1,-1']) if (s.tiles[k] && s.tiles[k].state === 'green') this.reveal(k); this.note('The bridge is up. The far side of the stream is reachable at last.'); }
       if (d.give) this.give(d.give);
+      if (id === 'spring') s.pages.cards.push({ k: 'spring' });   // Bryce: finding the spring is a big moment; it gets its own card before the story page
       this.note(`${C.names[d.who]} finished: ${lc(d.name)}.`); if (d.doneNote) this.note(d.doneNote);
       this.emit('task', { id, done: true });
     }
@@ -154,6 +155,9 @@ const G = {
     const E = C.events; if (E && t - s.events.lastAt >= E.every * MIN) this.rollEvent(t);
     // offerings trickle in during a visit too
     if (t - s.lastOfferAt >= C.offerEvery * MIN) { s.lastOfferAt = t; if (s.offers.length < C.offerCap) { this.spawnOffer(t); this.emit('offer'); } }
+    { const p = s.plots.seedbed, dug = this.done('bedwater') || p.stage || p.grown, lying = k => s.offers.some(o => o.kind === k && !o.keep);   // never stuck at the seed bed (Bryce): an empty tin or a dry can, and the land leaves one lying about
+      const need = !dug ? null : !p.stage && !this.canSow() && (s.inv.seed || 0) < 2 ? 'seed' : p.stage === 'planted' && !this.can(this.waterCost()) ? 'water' : null;
+      if (need && !lying(need)) { this.spawnOffer(t, need, true); this.emit('offer'); } }
   },
 
   // ---- gentle events (data in CONTENT.events; never a loss) ----
@@ -196,13 +200,14 @@ const G = {
   },
 
   // ---- offerings ----
-  spawnOffer(t) {
+  spawnOffer(t, want, home) {   // want/home: this kind, in the home yard (the seed bed's safety net)
     const s = this.s, h = new Date(t).getHours(), night = h < 6 || h >= 19;
     const pool = C.offers.map(o => ({ kind: o.kind, w: (night ? o.night : o.day) * (o.kind === 'water' && h >= 5 && h < 10 ? 2.5 : 1) })).filter(o => o.w > 0);
     let r = Math.random() * pool.reduce((a, o) => a + o.w, 0), kind = pool[0].kind;
     for (const o of pool) { r -= o.w; if (r <= 0) { kind = o.kind; break; } }
+    if (want) kind = want;
     const tiles = Object.keys(s.tiles).filter(k => s.tiles[k].state !== 'revealed' || Math.random() < 0.3);
-    const tile = tiles[(Math.random() * tiles.length) | 0];
+    const tile = home ? '0,0' : tiles[(Math.random() * tiles.length) | 0];
     let gx, gy, n = 0; do { gx = 0.1 + Math.random() * 0.8; gy = 0.1 + Math.random() * 0.8; } while (this.spotTaken && this.spotTaken(tile, gx, gy) && ++n < 12);   // not on the dug seed bed
     s.offers.push({ id: Math.random().toString(36).slice(2, 8), kind, tile, gx, gy, at: t });
   },
@@ -558,7 +563,7 @@ const G = {
     if (sp.heal && !this.healSpellFor(sp.heal).length && !(sp.heal === 'nursery' && this.seedlingsWaiting().length)) return { ok: false, why: sp.heal === 'nursery' ? 'no seedlings are waiting to wake' : 'it helps a job that is under way: start it first' };   // special spells come with what they are for, not with days
     if (!this.can(sp.cost)) return { ok: false, why: `needs ${this.missing(sp.cost).join(', ')}` };
     if (id === 'legs' && this.s.flags.toadWalk) return { ok: false, why: 'it has already walked off' };
-    if (id === 'coax' && this.plot().stage !== 'growing') return { ok: false, why: 'nothing is growing' };
+    if (id === 'coax' && this.plot().stage !== 'growing') return { ok: false, why: this.plot().stage === 'planted' ? 'the bed needs watering first: nothing grows until it has had a drink' : this.plot().stage === 'ready' ? 'the bed is already ready to pick' : 'nothing is growing in the seed bed yet' };
     if (id === 'rain' && this.plot().stage !== 'planted') return { ok: false, why: 'nothing is waiting for water' };
     if (id === 'wake' && !this.running().some(r => r.def.tile || r.def.healTile)) return { ok: false, why: 'no patch is regrowing' };
     return { ok: true };
@@ -577,6 +582,7 @@ const G = {
   visitorDef(id) { return C.visitors.find(v => v.id === id); },
   pickVisitor(t = now()) {
     const s = this.s, h = new Date(t).getHours(), stage = this.landStage().key, order = C.landStages.map(x => x.key), dk = dayKey(t), food = s.feeder.food;
+    if (stage === 'barren') return null;   // Bryce: no animals while it is all bare earth (the rabbit's raid on the first sprouts is the story's own)
     const pool = C.visitors.filter(v => ((h >= v.hours[0] && h < v.hours[1]) || (v.alsoHours && h >= v.alsoHours[0] && h < v.alsoHours[1])) && !this.asleep(v.id) && (!v.stage || order.indexOf(stage) >= order.indexOf(v.stage)) && (!v.task || (s.tasks[v.task] && s.tasks[v.task].done)) && (!v.seasons || v.seasons.includes(this.season(t))));
     if (!pool.length) return null;
     // a regular that has not been by today comes first; food in the dish draws the creatures that eat it
@@ -615,7 +621,7 @@ const G = {
   // A rabbit always comes for the first sprouts: if there is food in the dish it eats that first, then nibbles a few sprouts.
   // Only then is "Fence the seed bed" offered. index.html plays the raid when you are watching; catchUp() settles it when you were away.
   rabbitDue() {
-    const s = this.s, t = now(); if (s.flags.rabbit || this.plot().stage !== 'growing') { s.rabbitAt = 0; return false; }
+    const s = this.s, t = now(); if (s.flags.rabbit || !/^(growing|ready)$/.test(this.plot().stage)) { s.rabbitAt = 0; return false; }   // ready too: a spell can hurry the sprouts, and the rabbit still comes
     if (!s.rabbitAt) s.rabbitAt = t + C.rabbit.after * MIN; return t >= s.rabbitAt;
   },
   rabbitEats() {   // a later visit: the rabbit eats what is in the dish (after the fence is up, three different days of it make a truce)
@@ -694,6 +700,7 @@ const G = {
   },
   savingFor(d) {   // the story comes first (fix 3): while a story job waits for things, the extras (Hazel's list, the optional home jobs) don't spend them
     if (d.spine || this.s.tasks[d.id] || !C.tasks.includes(this.baseDef(d))) return '';
+    if ((d.cost || {}).seed && (this.s.inv.seed || 0) - d.cost.seed < 1 && this.done('bedwater')) return 'saving a seed for the seed bed';   // the bed always has one to sow
     for (const sp of C.tasks) {
       if (!sp.spine || sp.retired || this.s.tasks[sp.id] || !this.needsMet(sp) || this.can(sp.cost)) continue;
       const short = Object.keys(d.cost || {}).filter(k => (this.s.inv[k] || 0) < (sp.cost[k] || 0) + d.cost[k] && sp.cost[k]);
@@ -926,6 +933,7 @@ const G = {
   beatText(b) { const n = C.animals.rabbitName; return b.text.map(x => x.replace(/\{rabbit\}/g, n)); },
   animalDue(b, t) {
     const s = this.s, w = b.when, A = s.animals;
+    if (this.landStage().key === 'barren') return false;   // no animal stories on bare earth
     if (w.after && !this.beatDone(w.after)) return false;
     if (w.done && !this.done(w.done)) return false;
     if (w.moved && !s.moved[w.moved]) return false;
@@ -971,6 +979,7 @@ const G = {
   timeLeft(endsAt) { const ms = Math.max(0, endsAt - now()); if (FAST) return `${Math.ceil(ms / 1000)}s`; const m = Math.ceil(ms / 60000); return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`; },
   FAST, now,
   // ---- test panel helpers ----
+  skipMins(n) { try { localStorage.setItem(SKEW_KEY, String(SKEW + n * 60000)); } catch (e) {} this.save(); location.reload(); },   // test panel: +30 minutes (moves the clock too)
   skipDays(n) { try { localStorage.setItem(SKEW_KEY, String(SKEW + n * 86400000)); } catch (e) {} this.save(); location.reload(); },
   finishAll() { const t = now(); for (const tk of Object.values(this.s.tasks)) if (!tk.done && tk.endsAt > t) tk.endsAt = t; const p = this.s.plots.seedbed; if (p.stage === 'growing') p.readyAt = t; this.tick(); this.emit('inv'); },
   fillPack() { const o = {}; for (const k of Object.keys(C.resources)) o[k] = 20; this.give(o); },

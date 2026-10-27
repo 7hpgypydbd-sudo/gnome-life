@@ -83,7 +83,7 @@ window.CONTENT = {
       doneNote:'Wendel found a spring choked with stones and dead leaves by the old stump. Clear water is trickling out again, the first in this valley for a long time.' },
     { id:'bedwater', name:'Fetch water for the seed bed', short:'fetching water', spine:true, who:'him', act:'water', spot:'spring', cost:{}, mins:45, green:0, magic:1,
       needs:['bed', 'spring'], blurb:'Can after can from the new spring pool, until the fresh soil is dark and damp. Then it is ready for seeds.' },
-    { id:'feeder',  name:'Set out a feeding dish', short:'setting out the dish',     who:'her', act:'carry', spot:'feeder', cost:{ stone:2, twig:1 }, mins:45, green:0, magic:1, needs:['page:1.4'],
+    { id:'feeder',  name:'Set out a feeding dish', short:'setting out the dish', spine:true, who:'her', act:'carry', spot:'feeder', cost:{ stone:2, twig:1 }, mins:45, green:0, magic:1, needs:['flag:rabbit'],   // Bryce: the dish is the compromise after the rabbit's raid, beside the fence
       blurb:'A flat stone dish on a stump. Put out seed or berries and see who comes. Some will come back.' },
     // the rabbit always comes for the first sprouts (game.js rabbitDue); only then is the fence offered
     { id:'fence', act:'build',   name:'Fence the seed bed', short:'fencing the bed', spine:true, who:'him', spot:'fence',       cost:{ twig:4 },           mins:120, green:0, magic:1,
@@ -106,7 +106,7 @@ window.CONTENT = {
     { id:'stump', name:'Dig out the old stump', short:'digging out the stump', who:'either', act:'dig', spot:'lanternstump', cost:{}, give:{ twig:3 }, mins:60, green:0,
       needs:['woodpile', 'page:2.1'], blurb:'An old loggers\' stump, right where the fire wants room. Whoever is free digs round the roots, rocks it loose and chops it up for the woodpile.',
       doneNote:'The old stump is gone, chopped and stacked on the woodpile. There is room round the fire now.' },
-    { id:'rainbarrel', name:'Scrub the rain barrel', short:'scrubbing the barrel',   who:'either', spot:'barrel',        cost:{ twig:2, stone:1 },  mins:60,  green:0, needs:['page:2.1'],
+    { id:'rainbarrel', name:'Scrub the rain barrel', short:'scrubbing the barrel',   who:'either', spot:'barrel',        cost:{ twig:2, stone:1 },  mins:60,  green:0, needs:['roof'],   // after the roof: it catches the rain off it (Bryce: why have a barrel at all?)
       blurb:'The old barrel by the fire is green with slime. Scrubbed clean, it catches the rain off the roof: a can of water every so often without the walk to the spring. Whoever is free will do it.' },
     { id:'herbs',   name:'Plant a herb corner', short:'planting herbs',        who:'her', act:'water', spot:'seedbed',     cost:{ seed:2, water:2, moss:1 }, mins:180, green:1, needs:['bed', 'page:2.1'],
       blurb:'Thyme, mint and the one parsley that will not die. Good for tea and for bees.' },
@@ -167,7 +167,7 @@ window.CONTENT = {
     // make: which patch (yard = home tile 0,0; garden = the couple's garden 0,1). stage: the land stage of THAT patch they come with. at: their fixed
     // spot on that patch (yard layout plan); nothing to place or drag. Either gnome can make any of them, one job at a time. Only planted ones give green.
     // barrow, swing, sign and wildflowers were jobs before and keep their ids, so a garden that already made them still has them.
-    { id:'barrow', make:'yard', stage:'barren', at:[0.26, 0.56], name:'Make a little wheelbarrow', short:'making a wheelbarrow', who:'either', act:'build', spot:'wheelbarrow', cost:{ twig:2, stone:1 }, mins:40, green:0,
+    { id:'barrow', make:'yard', stage:'barren', at:[0.85, 0.92], name:'Make a little wheelbarrow', short:'making a wheelbarrow', who:'either', act:'build', spot:'wheelbarrow', cost:{ twig:2, stone:1 }, mins:40, green:0,
       blurb:'The old one lost its wheel on the hill. This one is smaller, and mostly for Hazel\'s flowers.', doneNote:'The little wheelbarrow is done, and already full of moss.' },
     { id:'firering', make:'yard', stage:'barren', at:[0.52, 0.48], name:'Ring the fire with stones', short:'ringing the fire', who:'either', act:'dig', cost:{ stone:3 }, mins:30, green:0,
       blurb:'So the sparks stay where they\'re put.' },
