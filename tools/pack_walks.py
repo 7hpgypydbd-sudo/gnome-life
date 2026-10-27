@@ -26,7 +26,7 @@ for who, dirs in SEL.items():
     for d, ims in fb.items():
         strip = Image.new('RGBA', (cw*len(ims), ch))
         for i, im in enumerate(ims): strip.paste(im, (i*cw + (cw-im.width)//2, ch - im.height), im)
-        strip.save(f'{OUT}/{who}-{d}.png', optimize=True); atlas[who]['dirs'][d] = len(ims)
+        strip.save(f'{OUT}/{who}-{d}.webp', lossless=True, exact=True, method=6); atlas[who]['dirs'][d] = len(ims)
         gif = []
         for i in range(len(ims)):
             f = Image.new('RGB', (cw, ch), (92,110,70)); c = strip.crop((i*cw,0,(i+1)*cw,ch)); f.paste(c,(0,0),c); gif.append(f)

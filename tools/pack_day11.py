@@ -1,4 +1,4 @@
-"""Pack art day 11 gnome strips (4 frames each on magenta) into sprites/<who>-<act>.png and add them to sprites/gnomes.json.
+"""Pack art day 11 gnome strips (4 frames each on magenta) into sprites/<who>-<act>.webp and add them to sprites/gnomes.json.
 usage: pack_day11.py art-day-11/   (him-carry-can -> him-canwalk, him-craft -> him-craft, her-craft -> her-craft)
 """
 import sys, json, numpy as np
@@ -24,5 +24,5 @@ for name, who, act in JOBS:
     cw = max(i.width for i in ims) + 4; ch = max(i.height for i in ims) + 2
     strip = Image.new('RGBA', (cw * 4, ch))
     for i, f in enumerate(ims): strip.paste(f, (i * cw + (cw - f.width) // 2, ch - f.height), f)
-    strip.save(f'{OUT}/{who}-{act}.png', optimize=True); atlas[who]['acts'][act] = {'n': 4, 'cell': [cw, ch]}; print(who, act, cw, ch)
+    strip.save(f'{OUT}/{who}-{act}.webp', lossless=True, exact=True, method=6); atlas[who]['acts'][act] = {'n': 4, 'cell': [cw, ch]}; print(who, act, cw, ch)
 json.dump(atlas, open(f'{OUT}/gnomes.json', 'w'), indent=1)

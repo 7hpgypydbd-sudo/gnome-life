@@ -54,14 +54,14 @@ def quarters(rgba, n=4):   # split a row of n frames at the emptiest column near
     cuts.append(L); return list(zip(cuts, cuts[1:]))
 
 
-def pack_strip(frames, who, act, atlas):   # frames: list of RGBA arrays -> sprites/<who>-<act>.png (4 cells side by side)
+def pack_strip(frames, who, act, atlas):   # frames: list of RGBA arrays -> sprites/<who>-<act>.webp (4 cells side by side)
     ims = [Image.fromarray(crop_alpha(f)) for f in frames]
     s = TARGET_H / max(i.height for i in ims)
     ims = [i.resize((round(i.width * s), round(i.height * s)), Image.LANCZOS) for i in ims]
     cw = max(i.width for i in ims) + 4; ch = max(i.height for i in ims) + 2
     strip = Image.new('RGBA', (cw * len(ims), ch))
     for i, f in enumerate(ims): strip.paste(f, (i * cw + (cw - f.width) // 2, ch - f.height), f)
-    strip.save(os.path.join(SPR, f'{who}-{act}.png'), optimize=True)
+    strip.save(os.path.join(SPR, f'{who}-{act}.webp'), lossless=True, exact=True, method=6)
     atlas[who]['acts'][act] = {'n': len(ims), 'cell': [cw, ch]}; print(who, act, cw, ch)
 
 
@@ -111,7 +111,7 @@ def sit():
     left = int(max(c for _, c in out)); right = int(max(i.width - c for i, c in out)); cw = left + right + 2
     strip = Image.new('RGBA', (cw * 4, target))
     for n, (im, c) in enumerate(out): strip.paste(im, (n * cw + left - int(c), 0), im)
-    strip.save(os.path.join(SPR, 'sit-couple.png'), optimize=True); print('sit-couple', strip.size, 'frame', cw, target, 'bench centre at', round(left / cw, 3), 'of the frame width')
+    strip.save(os.path.join(SPR, 'sit-couple.webp'), lossless=True, exact=True, method=6); print('sit-couple', strip.size, 'frame', cw, target, 'bench centre at', round(left / cw, 3), 'of the frame width')
     # bench width = the plank in the frames (from the legs), measured against the sitting height so the plain bench can match
     im, c = out[0]; low = np.asarray(im)[int(target * 0.55):, :, 3] > 100; cols = np.where(low.any(0))[0]
     print('bench width / frame height ~', (cols.max() - cols.min()) / target)

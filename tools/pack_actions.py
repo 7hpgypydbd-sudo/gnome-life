@@ -71,7 +71,7 @@ for who, sheets in SHEETS.items():
         cw = max(im.width for im in ims) + 4; ch = max(im.height for im in ims) + 2
         strip = Image.new('RGBA', (cw*len(ims), ch))
         for i, im in enumerate(ims): strip.paste(im, (i*cw + (cw-im.width)//2, ch - im.height), im)
-        strip.save(f'{OUT}/{who}-{act}.png', optimize=True)
+        strip.save(f'{OUT}/{who}-{act}.webp', lossless=True, exact=True, method=6)
         atlas[who]['acts'][act] = {'n': len(ims), 'cell': [cw, ch]}
         print(who, act, len(ims), cw, ch)
 json.dump(atlas, open(f'{OUT}/gnomes.json', 'w'), indent=1)
@@ -79,7 +79,7 @@ json.dump(atlas, open(f'{OUT}/gnomes.json', 'w'), indent=1)
 rows = []
 for who in SHEETS:
     for act in ['dig','water','carry','eat','sit','sleep']:
-        st = Image.open(f'{OUT}/{who}-{act}.png'); bg = Image.new('RGB', st.size, (92,110,70)); bg.paste(st, (0,0), st); rows.append(bg)
+        st = Image.open(f'{OUT}/{who}-{act}.webp'); bg = Image.new('RGB', st.size, (92,110,70)); bg.paste(st, (0,0), st); rows.append(bg)
 W = max(r.width for r in rows); H = sum(r.height for r in rows) + 6*len(rows)
 pv = Image.new('RGB', (W, H), (30,30,30)); y = 0
 for r in rows: pv.paste(r, (0, y)); y += r.height + 6
