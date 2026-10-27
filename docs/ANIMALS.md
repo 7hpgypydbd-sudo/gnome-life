@@ -1,5 +1,7 @@
 # The animals' side stories (written 2026-10-27)
 
+**Words revised 2026-10-28** (thread "Rewrite the story prose"): the final words of every beat now live in `content.js` (`animals.beats`); the drafts quoted in the tables below are the earlier versions. Side-by-side: https://claude.ai/artifact/5hT9CR9KAn79MLw9kYnDZz .
+
 Design doc, no code yet. Written for Bryce and for the build chat that wires it. The tone is the storybook's: warm, small, a little funny, and nobody is ever in real danger. This sits beside `STORY.md` (Wendel and Hazel's marriage) and `DECORATIONS.md` (the little makes). The animals' stories are the second thread of the game; the first is the couple.
 
 ## Tone rule (Bryce, 2026-10-27)
