@@ -75,7 +75,7 @@ By evening the bed was dark and damp and very still. By morning it was not. Tiny
 ### 1.5 The thief
 *Opens right after the rabbit's raid (or on the next visit, if it happened while you were away), just before "Fence the seed bed" appears in Jobs. The raid line is now gentler: "Oh, you poor hungry thing," said Wendel. "All right. A fence, then, so we can share."*
 
-Somebody had been in the seed bed. Somebody with long ears, a white tail and no shame at all. The feeding dish was licked clean, and three of the sprouts were bitten off at the bottom.
+Somebody had been in the seed bed. Somebody with long ears, a white tail and no shame at all. The feeding dish was licked clean, and three of the sprouts were bitten off at the bottom. *(If the dish is empty or not built yet: "Three of the sprouts were bitten off at the bottom." The rabbit always comes for the first sprouts, v64.)*
 
 Wendel stood over the bitten stalks with a stick in his hand, ready to make a very stern speech about thieves. He had got as far as "Now, see here" when he noticed how small the footprints were.
 
@@ -83,7 +83,7 @@ Hazel had seen the rabbit from the doorway: thin as a rake, sitting up with a sp
 
 "It's hungry, love," she said. "Same as us when we got here."
 
-Wendel put the stick down and was quiet for a moment. Then he picked it up again, and a few more, and started measuring. "A low fence," he said softly. "With a gate. It can have the dish. We'll just have to ask it to leave the carrots."
+Wendel put the stick down and was quiet for a moment. Then he picked it up again, and a few more, and started measuring. "A low fence," he said softly. "With a gate. We'll put something out for it, and just ask it to leave the carrots."
 
 **Button:** Fair's fair
 
@@ -173,13 +173,15 @@ The garden next door opens, the toadstool walks off and the mice move in, and th
 
 It was the first cold morning. Not very cold: just enough that Hazel's breath made a little cloud, and Wendel's toes found hers under the blanket and were told to go away.
 
+*(In spring and summer, by the phone's date: "It was a grey morning, the first in weeks. Not cold: just damp enough that the canvas sagged and dripped, and Wendel's toes found Hazel's under the blanket and were told to go away.")*
+
 Hazel sat up and looked at the canvas, and the moss roof, and the big old stump the shelter leaned against.
 
 "Wendel," she said. "That stump is hollow."
 
 "Mm."
 
-"A stump that size could be a house. A real one. With a door, and windows, and a chimney, before the winter comes."
+"A stump that size could be a house. A real one. With a door, and windows, and a chimney, before the winter comes." *(In winter: "before this winter gets any colder.")*
 
 Wendel was out of bed so fast he took the blanket with him. He had been waiting the whole of his life for somebody to say those words.
 
@@ -221,7 +223,7 @@ Wendel's pipe fell out of his mouth. Hazel picked it up and put it back in witho
 
 "Did you do that?" Wendel asked her.
 
-"No," said Hazel, and looked straight at you. "But I know who did."
+"No," said Hazel. She looked round at the empty air, the way you look for somebody who has just left the room, and smiled. "Luck lives here," she said. "I'm sure of it."
 
 **Button:** Just a little magic
 
@@ -306,7 +308,7 @@ Whichever lesson comes first gets this opening line: *"Something soft and green 
 ### Lesson four: Wake the land (fifth day, magic level 4)
 *It floats at the edge of the healed ground, where the land next door is still a pencil sketch (the sketch look comes in a later chat; until then, at the misty edge).*
 
-"See out there, where the world is only drawn and not yet painted? It is not dead. It is asleep, and dreaming of what it was. When the gnomes have done their part, you can wake it a little sooner. Only a little. Waking up is not something you rush."
+"See out there, past the garden, where the land is still dark? It is not dead. It is asleep, and dreaming of what it was. When the gnomes have done their part, you can wake it a little sooner. Only a little. Waking up is not something you rush."
 
 **New in your magic:** Wake the land.
 
@@ -338,7 +340,7 @@ Three cards mark the big changes (they replace the `explain` text in `CONTENT.la
 
 **Young meadow.** One morning there was grass round the house. Not a haze any more: real grass, with clover in it, and the first daisies, and a magpie strutting about on it as if he had planted it himself. The ground remembers now. Plant things that stay, like trees and bushes and flowers, and the woods will start to come home.
 
-**Young woodland.** The saplings are taller than a gnome now. You have to look up at them. The creatures who left long ago are finding their way back, one by one, following the green. This is not a clearing any more. It is the beginning of a wood.
+**Young woodland.** Young trees are coming up all round the yard now, some planted and some that came by themselves, and the little oak has put on a new crown of leaves. The creatures who left long ago are finding their way back, one by one, following the green. This is not a clearing any more. It is the beginning of a wood.
 
 **Small notes when a creature moves in** (toast + "While you were away"):
 - "The robins have moved into the nest box. The grass by the fence looks greener this morning."
@@ -348,27 +350,29 @@ Three cards mark the big changes (they replace the `explain` text in `CONTENT.la
 
 ## All done for now
 
+*(v64: the gnomes say these to each other. They feel a kindly luck about the place but never see you; only the Wood spirit talks to you. See docs/VISION.md.)*
+
 Once a visit, when both gnomes are busy (or nothing more can be started) and every pick-up lying about has been collected, the visit gently closes: one gnome looks up and says a line, a small paper label reads **All done for now**, and the view eases out a little to show the whole yard. Nothing is locked: chatting, little finds and fiddling stay open. `{time}` is the real time their jobs finish.
 
 **Both busy, daytime**
-- Hazel: "That's us busy till about {time}, love. Off you go. We'll be here."
-- Wendel: "Nothing more to do but wait and work. Come back after {time} and see what we've made."
-- Hazel: "Go on, shoo. A watched seed bed never sprouts."
+- Hazel: "That's us busy till about {time}, love. Nothing to do till then but the doing."
+- Wendel: "Nothing more to start till about {time}. Then we'll see what we've made."
+- Hazel: "Leave it be, Wendel. A watched seed bed never sprouts."
 
 **Nothing more to start (waiting on materials or time)**
-- Wendel: "We'll need a few more bits before the next job. The land always leaves something out. Come and look later."
+- Wendel: "We'll need a few more bits before the next job. The land always leaves something out, if you wait."
 - Hazel: "That's all we can do today. It's enough. A little each day, that's the trick."
 
 **Evening**
-- Hazel: "Kettle's on, the fire's lit, and we're stopping. Come and say goodnight later if you like."
+- Hazel: "Kettle's on, the fire's lit, and we're stopping. Come and sit, love."
 - Wendel: "I'm putting my feet up. Don't tell anyone I said that before six."
 
 **Night**
-- Hazel, whispering: "He's asleep already. Come back in the morning, there'll be dew."
-- Wendel, yawning: "Night, little spirit. Mind the wisps on the way out."
+- Hazel, whispering: "He's asleep already. There'll be dew in the morning."
+- Wendel, yawning: "Goodnight, valley. Goodnight, Gerald. Goodnight, whatever luck lives here."
 
 **After a big day** (a story page opened this visit)
-- Hazel: "What a day. I think we've earned a sit down, the three of us."
+- Hazel: "What a day. I think we've earned a sit down, love."
 
 ## The five tidy-ups, in story words
 
@@ -380,32 +384,29 @@ Once a visit, when both gnomes are busy (or nothing more can be started) and eve
 
 ## Where every card appears
 
-In the order a typical player meets them; real days are rough guesses and some cards swap places.
+In book order, always (v64, docs/PLAN.md "Progression review" fix 1): a page waits for the page before it, and the jobs that come next wait for the pages, so the story decides what unlocks. Days are what the progression sim (`node tools/progression_sim.js 2 90`) shows for a twice-a-day player.
 
-| Roughly when | What the player has just done | Card that opens |
-| --- | --- | --- |
-| Day 1 | Opens the game for the first time (`flags.welcomed` not set) | 1.1, then the "How it works" tips |
-| Day 1 | `woodpile` finished | 1.2 The first fire |
-| Day 1 | `spring` finished | 1.3 Water under the rubbish |
-| Day 1 to 2 | First seedlings in the bed | 1.4 Rows and wiggles |
-| Day 2 | Magic level 2 | Spirit lesson one (seed bed) |
-| Day 2 to 3 | Rabbit raid (dish eaten, sprouts nibbled) | 1.5 The thief, then `fence` appears |
-| Day 2 to 3 | First harvest (`flags.firstpick`) | 2.1 Supper from our own ground |
-| Day 3 | Magic level 3 | Spirit lesson two (spring) |
-| Days 3 to 6 | `roof` finished | 2.2 The night it rained |
-| Days 3 to 6 | `bench` finished | 2.3 Room for two |
-| Days 4 to 7 | Home tile reaches first green | First green card |
-| Day 5 | Magic level 4 | Spirit lesson four (sketched edge) |
-| Days 5 to 8 | `sapling` finished | 2.4 The little oak |
-| Day 7 | First visit 7 days after arrival | 2.5 Our first week |
-| Day 8 | Magic level 5 | Spirit lesson five (fire, dusk) |
-| Week 2 | `house1` first startable | 3.0 A house for winter + quest |
-| Weeks 2 to 3 | Tile 0,1 turns green | 3.1 Next door, then spirit lesson three (toadstool) |
-| Weeks 2 to 3 | Toadstool walk ends | 3.2 The toadstool takes a walk |
-| A day later | `flags.miceIn` | 3.3 Somebody's moved in |
-| Weeks 2 to 3 | Home tile reaches young meadow | Young meadow card |
-| Weeks 2 to 3 | `house1` finished | 3.4 Big plans (`leanto` appears) |
-| Weeks 3 to 4 | `house3` finished | 3.5 Over the threshold |
+| Roughly when | What the player has just done | Card that opens | What it opens up |
+| --- | --- | --- | --- |
+| Day 1 | Opens the game for the first time | 1.1, then the "How it works" tips | Clear the ground, Gather the wood |
+| Day 1 evening | `woodpile` finished (evening, or once the spring is found) | 1.2 The first fire | |
+| Day 1 to 2 | `spring` finished | 1.3 Water under the rubbish | |
+| Day 2 | Magic level 2, bed dug | Spirit lesson one (seed bed) | Coax a sprout |
+| Day 2 | First seedlings in the bed | 1.4 Rows and wiggles | the feeding dish |
+| Day 2 | The rabbit always comes for the first sprouts (it eats the dish first if there is food in it) | 1.5 The thief | Fence the seed bed |
+| Day 2 to 3 | First harvest | 2.1 Supper from our own ground | the roof; small jobs start coming, a couple at a time; Hazel's first list |
+| Day 3 | Magic level 3, spring found | Spirit lesson two (spring) | Call soft rain |
+| Day 3 | `roof` finished | 2.2 The night it rained | the bench |
+| Day 4 | `bench` finished | 2.3 Room for two | the little oak |
+| Day 4 | `sapling` finished | 2.4 The little oak | |
+| Day 7 to 8 | Seven days since they arrived | 2.5 Our first week | |
+| straight after | | 3.0 A house for winter + quest | the house; the garden patch comes out of the mist |
+| Week 2 | The garden patch turns green | 3.1 Next door, spirit lesson three (toadstool) | the creature corner (pond, bee house, nest box, leaf pile, birdbath, berry bush) |
+| Week 2 | Toadstool walk ends | 3.2 The toadstool takes a walk | |
+| next day | Spirit lesson four (wake the land), then five (by the fire), one a day | | |
+| A day later | `flags.miceIn` | 3.3 Somebody's moved in | |
+| Week 2 | `house1` finished (and 3.3 has come) | 3.4 Big plans | the lean-to |
+| When the house is done | `house3` finished (and 3.3 has come) | 3.5 Over the threshold | the old track, the first traveller, who names the patch they would like to live on |
 
 **House rules:** at most one story page at a time (a second waits for the close or the next visit); never over an open menu; every page is kept in the Journal under **Our story**; spirit lessons are greeting-card size.
 

@@ -110,6 +110,10 @@
   .row .t span, .jrow .t span { font-size:15.5px; }
   .row .t span.bad { color:var(--red); font-style:italic; }
   .row .t span.bl { font-style:italic; display:block; margin:1px 0 3px; line-height:1.3; } .row .t .hrs { white-space:nowrap; } .row .t .cost i { margin-right:5px; }
+  .row.story { background: rgba(184,137,47,.10); border-radius:6px; padding-left:8px; padding-right:8px; margin:0 -8px; }
+  .row .t i.ribbon { display:inline-block; font-style:normal; font-family: var(--fell); font-variant: small-caps; letter-spacing:1px; font-size:13px; color:#fffaf0; background:#8a3a2a; padding:0 8px 1px 6px; margin-bottom:3px; clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 50%, 100% 100%, 0 100%); }
+  #sheet p.next { margin:8px 0 2px; font-style:italic; } #sheet p.next b { font-style:normal; }
+  #sheet p.tabs { display:flex; gap:8px; margin:4px 0 8px; }
   .row .jpic { width:58px; height:52px; object-fit:contain; flex:none; filter: drop-shadow(0 1px 1px rgba(40,25,10,.25)); }
   .row .t .who { background:none; color:var(--green); font-family: var(--fell); font-weight:400; font-size:15px; padding:0; border-radius:0; margin-right:2px; white-space:nowrap; }
   .who[data-w]::before { content:""; display:inline-block; width:26px; height:26px; margin:-3px 5px 0 0; vertical-align:middle; border-radius:50%; border:1.5px solid var(--gold); background: #f8efd6 center / cover no-repeat; box-shadow:0 1px 2px rgba(0,0,0,.25); }
@@ -200,7 +204,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v63</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v64</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -219,16 +223,16 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 63;
+const BUILD = 64;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=63"></script>
-<script src="game.js?v=63"></script>
-<script src="walk.js?v=63"></script>
+<script src="content.js?v=64"></script>
+<script src="game.js?v=64"></script>
+<script src="walk.js?v=64"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -2015,7 +2019,7 @@ function spawnVisitor(forced) {
   G.arrive(def.id);
 }
 // ---------- the rabbit: a cheeky regular (code stand-in until a painted rabbit exists) ----------
-// First visit (G.rabbitDue): it hops in, empties the feeding dish, then nibbles a few sprouts until Wendel gently shoos it off; only then
+// First sprouts (G.rabbitDue, always): it hops in, empties the feeding dish if there is food in it, then nibbles a few sprouts until Wendel gently shoos it off; only then
 // is "Fence the seed bed" offered. Once the fence is up it pops back now and then: peering through the fence, napping by the woodpile,
 // or pinching a berry from the dish. Never a real loss.
 const RABBIT = { on: null, next: 0 };
@@ -2034,8 +2038,8 @@ function updateRabbit(dt) {
   const r = RABBIT.on, nowMs = performance.now();
   if (!r) {
     if (G.rabbitDue()) {   // the first raid
-      rabbitGo([[1.05, 0.40], [FEEDER.gx + 0.07, FEEDER.gy - 0.03, 'eat', 7, () => { G.rabbitAte(); toast('A rabbit is eating everything in the dish!'); }],
-        [0.70, 0.62, 'nibble', 8, () => { G.rabbitRaid(); gnomeSays('him', 'Oh, you poor hungry thing!'); toast('The rabbit nibbled the sprouts. Time for a fence.'); }], [1.06, 0.92]]);
+      const nibble = [0.70, 0.62, 'nibble', 8, () => { G.rabbitRaid(); gnomeSays('him', 'Oh, you poor hungry thing!'); toast('The rabbit nibbled the sprouts. Time for a fence.'); }];
+      rabbitGo(G.s.feeder.food ? [[1.05, 0.40], [FEEDER.gx + 0.07, FEEDER.gy - 0.03, 'eat', 7, () => { G.rabbitAte(); toast('A rabbit is eating everything in the dish!'); }], nibble, [1.06, 0.92]] : [[1.05, 0.40], nibble, [1.06, 0.92]]);
       RABBIT.on.fast = 2; return;
     }
     const h = dayPhase().h;
@@ -3789,7 +3793,7 @@ sheet.addEventListener('click', e => {
   if (a === 'fest') { const [k, i] = id.split(':'); return openFest(k, +i || 0); }
   if (a === 'festgreen') return openFestGreen();
   if (a === 'festend') { G.finishFestival(); return openFest('end'); }
-  if (a === 'jobs') return openTasks(id || '');
+  if (a === 'jobs' || a === 'jobtab') return openTasks(id || '');
   if (a === 'tseason') { location.hash = id ? 'test&' + id : 'test'; return; }
   if (a === 'tfest') { closeSheet(); G.testFestival(b.dataset.n === '1'); return; }
   if (a === 'journal') return openJournal();
@@ -3869,28 +3873,44 @@ function jobPic(d) {   // a small painted picture of what the job makes, for the
   return k ? `<img class="jpic" src="sprites/${k}.webp" alt="" onerror="this.remove()">` : '';
 }
 function makesLine() { return Object.keys(C.makes).filter(k => C.makes[k].tile === '0,0' || G.gardenOpen()).map(k => { const n = G.makesCount(k); return `${C.makes[k].name}: ${n.done} of ${n.total}`; }).join(' · '); }
+// Jobs (docs/PLAN.md "Progression review", fix 1): the story decides what is offered. No greyed "Not yet" rows: the story's own
+// job sits on top with a ribbon, one "Next:" line says what the story is waiting for, and Hazel's little makes have their own tab.
+function jobRow(v, focus) {
+  const d = v.def, who = `<span class="who" data-w="${d.who}">${C.names[d.who]}</span>`;
+  let right = '', sub = '';
+  if (v.state === 'running') { const pr = 1 - Math.max(0, v.endsAt - G.now()) / (v.endsAt - v.startedAt); sub = `${who} is on it · ${G.timeLeft(v.endsAt)} to go<div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div>`; if ((d.tile || d.healTile) && G.magicInfo().spells.includes('wake')) right = `<button class="act" data-a="cast" data-id="wake" ${G.canCast('wake').ok ? '' : 'disabled'}>Wake ✨4</button>`; }
+  else if (v.state === 'done') sub = `${who} finished this.`;
+  else { sub = `${who} · ` + (Object.keys(d.cost).length ? `<span class="cost">${costHtml(d.cost)}</span>` : `no materials`) + ` · <span class="hrs">${hours(d.mins)}</span>` + (v.locked ? `<br><span class="bad">${v.why}</span>` : v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`); right = `<button class="act" data-a="start" data-id="${d.id}" ${v.can && !v.locked ? '' : 'disabled'}>Start</button>`; }
+  return `<div class="row${d.id === focus ? ' hi' : ''}${v.story && v.state !== 'done' ? ' story' : ''}">${jobPic(d)}<div class="t">${v.story && v.state !== 'done' ? `<i class="ribbon">for the story</i>` : ''}<b>${d.name}</b>${d.where ? `<span class="meta">${d.where}${d.healTile && G.s.village.traveller && G.s.village.traveller.want === d.healTile ? ` · for ${G.folkDef(G.s.village.traveller.id).short}` : ''}</span>` : ''}<span class="bl">${d.blurb}</span><span>${sub}</span></div>${right}</div>`;
+}
 function openTasks(focus = '') {
-  const list = G.taskList(); let html = `<h2>Jobs<small>give the materials; they do the work</small></h2>`;
-  if (!list.length) html += `<p>Nothing to do right now. The gnomes are resting.</p>`;
-  const groups = [['running', 'Happening now'], ['ready', 'You can start'], ['make', 'Little makes'], ['locked', 'Not yet'], ['done', 'Just finished']];
-  for (const [state, title] of groups) {
-    const rows = list.filter(v => state === 'make' ? v.def.make && (v.state === 'ready' || v.state === 'locked') : v.state === state && !(v.def.make && (v.state === 'ready' || v.state === 'locked')));
-    if (state === 'make' && G.s.flags.firstpick) { html += `<h3 id="mk">${title}</h3><p class="meta" style="margin:0 0 4px">Small things to make, paid for with what you gather. Each appears in its own spot. ${makesLine()} made.</p>`; if (!rows.length) { html += `<p class="meta">Nothing new to make yet. More come as the land heals.</p>`; continue; } }
-    if (!rows.length) continue;
-    if (state !== 'make') html += `<h3>${title}</h3>`;
-    for (const v of rows) {
-      const d = v.def, who = `<span class="who" data-w="${d.who}">${C.names[d.who]}</span>`;
-      let right = '', sub = '';
-      if (state === 'running') { const pr = 1 - Math.max(0, v.endsAt - G.now()) / (v.endsAt - v.startedAt); sub = `${who} is on it · ${G.timeLeft(v.endsAt)} to go<div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div>`; if ((d.tile || d.healTile) && G.magicInfo().spells.includes('wake')) right = `<button class="act" data-a="cast" data-id="wake" ${G.canCast('wake').ok ? '' : 'disabled'}>Wake ✨4</button>`; }
-      else if (state === 'done') sub = `${who} finished this.`;
-      else if (state === 'locked' || (state === 'make' && v.locked)) { sub = `${who} · <span class="bad">${v.why}</span>`; }
-      else { sub = `${who} · ` + (Object.keys(d.cost).length ? `<span class="cost">${costHtml(d.cost)}</span>` : `no materials`) + ` · <span class="hrs">${hours(d.mins)}</span>` + (v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`); right = `<button class="act" data-a="start" data-id="${d.id}" ${v.can ? '' : 'disabled'}>Start</button>`; }
-      html += `<div class="row${d.id === focus ? ' hi' : ''}">${jobPic(d)}<div class="t"><b>${d.name}</b>${d.where ? `<span class="meta">${d.where}</span>` : ''}<span class="bl">${d.blurb}</span><span>${sub}</span></div>${right}</div>`;
+  const all = G.taskList(), makes = focus === 'makes' || (C.tasks.some(t => t.id === focus && t.make)), list = all.filter(v => !!v.def.make === makes && !(v.def.make && v.state === 'done' && !makes));
+  const mk = all.filter(v => v.def.make && v.state !== 'done' && v.state !== 'running').length;
+  let html = `<h2>Jobs<small>give the materials; they do the work</small></h2>`;
+  if (G.s.flags.firstpick) html += `<p class="tabs"><button class="act${makes ? ' quiet' : ''}" data-a="jobtab" data-id="">Jobs</button> <button class="act${makes ? '' : ' quiet'}" data-a="jobtab" data-id="makes">Hazel's list${mk ? ` (${mk})` : ''}</button></p>`;
+  if (makes) {
+    html += `<p class="meta" style="margin:0 0 4px">Little things to make, paid for with what you gather. Each appears in its own spot. ${makesLine()} made.</p>`;
+    if (!list.length) html += `<p class="meta">Nothing new to make yet. More come as the land heals.</p>`;
+    for (const v of list) html += jobRow(v, focus);
+  } else {
+    const next = G.nextUp(), groups = [['running', 'Happening now', v => v.state === 'running'], ['story', 'For the story', v => v.story && (v.state === 'ready' || v.state === 'locked')],
+      ['ready', 'You can start', v => !v.story && (v.state === 'ready' || v.state === 'locked')], ['done', 'Just finished', v => v.state === 'done']];
+    if (!list.some(v => v.state !== 'done') && !next) html += `<p>Nothing to do right now. The gnomes are resting.</p>`;
+    for (const [key, title, f] of groups) {
+      const rows = list.filter(f);
+      if (key === 'story') { html += rows.map(v => jobRow(v, focus)).join('') + (next ? `<p class="meta next">Next for the story: <b>${next.name}</b>, ${next.why}.</p>` : ''); continue; }   // the story's own jobs carry a ribbon, no heading
+      if (!rows.length) continue;
+      let more = 0;
+      if (key === 'ready') {   // the patches: only a few here (the traveller's wished-for patch first, then the nearest); the rest are on each patch's own card
+        const want = G.s.village.traveller && G.s.village.traveller.want, far = k => k === want ? -1 : k.split(',').reduce((a, n) => a + Math.abs(+n), 0);
+        const pt = rows.filter(v => v.def.healTile).sort((a, b) => far(a.def.healTile) - far(b.def.healTile)), keep = new Set(pt.filter((v, i) => i < 3 || v.def.id === focus));
+        more = pt.length - keep.size; rows.splice(0, rows.length, ...rows.filter(v => !v.def.healTile || keep.has(v)));
+      }
+      html += `<h3>${title}</h3>` + rows.map(v => jobRow(v, focus)).join('') + (more ? `<p class="meta next">And ${more} more patch${more > 1 ? 'es' : ''} with a next job. Tap a patch on the land to see what it needs.</p>` : '');
     }
   }
   if (C.tasks.some(t => t.id === focus && t.spot === 'shelter')) html = html.replace('</h2>', `</h2><p><button class="act quiet" data-a="room">Look inside the home</button></p>`);
   openSheet('tasks:' + focus, html);
-  if (focus === 'makes') { const h = document.getElementById('mk'); if (h) sheet.scrollTop = h.offsetTop - 12; }
 }
 function openMagic() {
   const m = G.magicInfo(); let html = `<h2>Their magic<small>${m.name}</small></h2><div class="meter">${C.magicLevels.map((_, i) => `<i class="${i < m.level ? 'on' : ''}"></i>`).join('')}</div><p>It grows a little with every day you visit. Day ${m.days}${m.nextDays ? `; it will grow again on day ${m.nextDays}` : ''}. Spells burn ✨ light, which the land offers at night.</p>`;
@@ -4029,7 +4049,7 @@ function openMakes(patch, stage) {   // Hazel's list: what they could make now t
   const M = C.makes[patch], list = C.tasks.filter(d => d.make === patch && d.stage === stage && !(d.needs || []).some(n => n.startsWith('flag:') && !G.s.flags[n.slice(5)]));
   openSheet('makes', `<div class="jpage card"><p class="meta" style="margin:0">Hazel's list · ${M.name.toLowerCase()}</p><div class="por big"><img src="sprites/face-her.webp" alt=""></div><h2>Little makes</h2>
     <p class="lore">"${M.lines[stage]}"</p><ul class="mlist">${list.map(d => `<li>${d.name}</li>`).join('')}</ul>
-    <p class="meta">They are in Jobs, under Little makes. Each is paid for with things you gather, and appears in its own spot once it is made.</p></div>
+    <p class="meta">They are in Jobs, on Hazel's list. Each is paid for with things you gather, and appears in its own spot once it is made.</p></div>
     <p style="text-align:center"><button class="act" data-a="jobs" data-id="makes">See the little makes</button> <button class="act quiet" data-a="close">Later</button></p>`);
 }
 function cardCheck() {   // open the next waiting card (a story page, a land card, Hazel's list): one at a time, never over an open menu
@@ -4066,7 +4086,7 @@ const pick = a => a[(Math.random() * a.length) | 0];
 function openTraveller() {
   const tr = G.s.village.traveller; if (!tr) return;
   const f = G.folkDef(tr.id), v = G.taskView(G.taskDef('home:' + f.id)), d = v.def;
-  let html = `<div class="jpage">${folkPor(f, true)}<h2>${f.name}</h2><p class="meta">${f.trade}, camped by the path</p><p class="lore">${f.intro}</p></div><h3>Will they stay?</h3>`;
+  let html = `<div class="jpage">${folkPor(f, true)}<h2>${f.name}</h2><p class="meta">${f.trade}, camped by the path</p><p class="lore">${f.intro}</p>${G.wishOf(f.id) ? `<p class="lore">${G.wishText(f.id)}</p>` : ''}</div><h3>Will they stay?</h3>`;
   if (v.state === 'running') html += `<div class="row"><div class="t"><b>${d.name}</b><span><span class="who" data-w="${d.who}">${C.names[d.who]}</span> is on it · ${G.timeLeft(v.endsAt)} to go</span></div></div>`;
   else {
     html += `<div class="row"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>` + (v.locked ? `<span class="bad">${v.why}</span>` : `<span class="who" data-w="${d.who}">${C.names[d.who]}</span> needs <span class="cost">${costHtml(d.cost)}</span> · ${hours(d.mins)}` + (v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`)) + `</span></div><button class="act" data-a="start" data-id="${d.id}" ${v.state === 'ready' && v.can ? '' : 'disabled'}>Build</button></div>`;
@@ -4104,7 +4124,7 @@ function storyPic(key, f) {   // a painted story picture (art slot story-<key>),
 function openStory(fid, kind) {
   const f = G.folkDef(fid);
   if (kind === 'moved') openSheet('story', `<div class="jpage">${storyPic(fid + '-home', f)}<h2>${f.name} moved in</h2><p class="lore">${f.movedIn}</p><p class="meta">Next job: ${f.building.name}.</p></div><p style="text-align:center"><button class="act" data-a="folk" data-id="${fid}">Say hello</button></p>`);
-  else if (kind === 'arrived') openSheet('story', `<div class="jpage">${folkPor(f, true)}<h2>A traveller on the path</h2><p class="lore">${f.intro}</p></div><p style="text-align:center"><button class="act" data-a="traveller">Go and see</button> <button class="act quiet" data-a="close">Later</button></p>`);
+  else if (kind === 'arrived') openSheet('story', `<div class="jpage">${folkPor(f, true)}<h2>A traveller on the path</h2><p class="lore">${f.intro}</p>${G.wishOf(f.id) ? `<p class="lore">${G.wishText(f.id)}</p>` : ''}</div><p style="text-align:center"><button class="act" data-a="traveller">Go and see</button> <button class="act quiet" data-a="close">Later</button></p>`);
   else { const r = f.quest.reward; openSheet('story', `<div class="jpage">${storyPic(fid, f)}<h2>${f.quest.story.title}</h2><p class="lore" style="text-align:left">${f.quest.story.text}</p><p class="meta">The end of ${f.short}'s story. ${r ? 'A gift for you: ' + costHtml(r) : ''}</p></div><p style="text-align:center"><button class="act" data-a="close">Close the book</button></p>`); }
 }
 // ---------- the festival pages ----------
@@ -4180,7 +4200,9 @@ G.onChange((kind, data) => { renderInv(kind === 'inv' && typeof data === 'string
   if (kind === 'story') { btnAlert('bJournal', true); openStory(data.folk, data.kind); }
   if (kind === 'quest') btnAlert('bJournal', true);
   if (kind === 'festival') { if (data === 'ready') toast(G.festText(C.festival.ready).replace('{when}', dayKeyOf(G.s.festival.at) === dayKeyOf(G.now()) ? 'tonight' : 'tomorrow evening')); else festCheck(); }
-  if (kind === 'favour') { const f = G.folkDef(data); toast(`${f.short[0].toUpperCase() + f.short.slice(1)} could use a small favour.`); } });
+  if (kind === 'favour') { const f = G.folkDef(data); toast(`${f.short[0].toUpperCase() + f.short.slice(1)} could use a small favour.`); }
+  if (kind === 'offered') toast(`Something new in Jobs: ${lcName(G.taskDef(data).name)}.`);
+  if (kind === 'wishready') toast(G.wishText(data, true)); });
 
 // ---------- start ----------
 function onBed(tile, gx, gy) {   // inside the dug seed bed (or its fence ring)? Bryce: nothing should sit in the tilled oval

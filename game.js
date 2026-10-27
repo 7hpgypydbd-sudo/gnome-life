@@ -11,6 +11,7 @@ const DAY = () => 1440 * MIN;                     // a real day (a tenth-second-
 const lc = (t) => t[0].toLowerCase() + t.slice(1);   // "Build Mabel a home" -> "build Mabel a home" (keeps names capitalised)
 const cap = (t) => t[0].toUpperCase() + t.slice(1);
 const dayKey = (t) => { const d = new Date(t); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; };
+const VISIT_GAP = FAST ? 10000 : 10 * 60000;      // away this long (real time) and coming back counts as a new visit
 
 // ---------- storage adapter (swap this for a server later) ----------
 const Store = {
@@ -48,6 +49,8 @@ function fresh() {
     spirit: { taught: {} },                  // the Wood spirit's lessons: number -> time taught
     moved: {},                               // creatures that moved into a home the gnomes made (CONTENT.story.moveIns): id -> time
     animals: { done: {}, day: '', rabbitFed: [], gifts: {}, giftDue: {} },   // the animals' side stories: beats that have happened (id -> time), the day of the last one, days the rabbit ate at the dish after the fence, keepsakes picked up (id -> time) and ones still to be left (id -> when)
+    offered: {},                             // jobs the story has offered so far (id -> time; see offerTick)
+    visits: { n: 0, offer: -1 },             // visits so far, and the visit the last new job was offered in (one new job a visit)
   };
 }
 
@@ -88,7 +91,7 @@ const G = {
   // ---- time passing while away ----
   catchUp() {
     const s = this.s, t = now(), gone = t - s.lastSeen, report = { gone, finished: [], offered: 0, newDay: false };
-    const dk = dayKey(t);
+    const dk = dayKey(t); this.markVisit(t);
     if (!s.days.includes(dk)) { s.days.push(dk); report.newDay = true; }
     const se = this.season(t); if (s.season !== se) { if (s.season) report.season = se; s.season = se; }
     // offerings accumulate, but never a backlog beyond the cap
@@ -103,7 +106,7 @@ const G = {
     // timers that finished while away are reported (they resolve lazily in tick)
     for (const [id, tk] of Object.entries(s.tasks)) if (!tk.done && tk.endsAt <= t) report.finished.push(this.taskDef(id).name);
     const p = s.plots.seedbed; if (p.stage === 'growing' && p.readyAt <= t) report.finished.push(`${this.cropName(p.crop)} ${p.crop === 'pumpkin' ? 'is' : 'are'} ready`);
-    if (gone >= 60 * MIN && !s.flags.rabbit && s.feeder.food && p.stage === 'growing') { this.rabbitRaid(); report.rabbit = C.rabbit.away; }   // the rabbit came while you were away
+    if (gone >= 60 * MIN && !s.flags.rabbit && p.stage === 'growing') { this.rabbitRaid(); report.rabbit = C.rabbit.away; }   // the rabbit came while you were away (it always comes for the first sprouts)
     if (gone >= 60 * MIN && this.done('fence') && s.feeder.food && !this.beatDone('rabbitTruce') && Math.random() < 0.5) { this.rabbitEats(); report.ate = 'rabbit'; }   // the rabbit had it, politely
     if (gone >= 60 * MIN) { const ate = this.awayEater(); if (ate) report.ate = ate; }
     const had = s.village.traveller && s.village.traveller.id, movedBefore = Object.keys(s.moved);
@@ -115,8 +118,10 @@ const G = {
   },
 
   // ---- per-frame rules (cheap; call a few times a second) ----
+  markVisit(t) { if (t - (this.lastActive || 0) >= VISIT_GAP) this.s.visits.n++; this.lastActive = t; },   // back after a while: a new visit
   tick() {
     const s = this.s, t = now(); if (!s) return;   // not loaded yet (the first frame can come before the save is read)
+    this.markVisit(t);
     // crop
     const p = s.plots.seedbed;
     if (p.stage === 'growing' && p.readyAt <= t) { p.stage = 'ready'; this.note(`${cap(this.cropName(p.crop))} ${p.crop === 'pumpkin' ? 'is' : 'are'} ready to pick.`); this.emit('plot', p); }
@@ -135,6 +140,7 @@ const G = {
       this.emit('task', { id, done: true });
     }
     this.storyTick(t);
+    this.offerTick(t);
     this.moveInTick(t);
     this.animalTick(t);
     this.healTick(t);
@@ -236,6 +242,7 @@ const G = {
   },
   harvest() {   // returns what was picked (for the little float), or false
     const p = this.plot(); if (p.stage !== 'ready') return false;
+    if (!this.s.flags.rabbit) this.rabbitRaid();   // the rabbit always gets to the first sprouts (even if a spell hurried them)
     const c = C.crops[p.crop], got = Object.assign({}, c.harvest), nib = !!p.nibbled; let k0 = Object.keys(got)[0];
     if (nib && got[k0] > 1) got[k0]--;   // the rabbit had a few
     if (this.done('compost')) got.seed = (got.seed || 0) + 1;   // the compost heap makes the soil rich: one extra seed every harvest
@@ -254,9 +261,9 @@ const G = {
     if (id.startsWith('regrow:')) { const tile = id.slice(7); return Object.assign({ id, tile }, C.regrow, { name: `${C.regrow.name} (${this.tileName(tile)})` }); }
     if (id.startsWith('fest:')) { const j = C.festival.jobs.find(j => j.id === id); return j && Object.assign({ festival: true }, j, { cost: this.festCost(j) }); }
     const [kind, fid, step] = id.split(':'), f = this.folkDef(fid);
-    if (f && kind === 'home') return Object.assign({ id, folk: fid, name: `Build ${f.short} a home`, short: 'building a home', green: 2, home: true, act: 'carry' }, f.build);
-    if (f && kind === 'trade') return Object.assign({ id, folk: fid, green: 1 }, f.building);
-    if (f && kind === 'quest') { const st = f.quest.steps[+step]; return Object.assign({ id, folk: fid, green: 1, blurb: st.say, quest: true }, st.job); }
+    if (f && kind === 'home') return Object.assign({ id, folk: fid, name: `Build ${f.short} a home`, short: 'building a home', green: 0, home: true, act: 'carry' }, f.build);
+    if (f && kind === 'trade') return Object.assign({ id, folk: fid, green: 0 }, f.building);   // building gives no green (only life does)
+    if (f && kind === 'quest') { const st = f.quest.steps[+step]; return Object.assign({ id, folk: fid, green: 0, blurb: st.say, quest: true }, st.job); }
     const d = C.tasks.find(t => t.id === id);
     return d && d.who === 'either' ? Object.assign({}, d, { who: this.eitherWho(d) }) : d;
   },
@@ -282,22 +289,70 @@ const G = {
     if (s.festival.stage !== 'waiting') for (const j of C.festival.jobs) out.push(this.taskView(this.taskDef(j.id)));
     return out.filter(v => v.show).sort((a, b) => (a.rank - b.rank));
   },
-  taskView(d) {
+  taskView(d) {   // a job as the Jobs list sees it. A job whose needs are not met is not shown at all (no greyed rows); one that
+    // can't start for another reason (that gnome is busy, the patch isn't ready) shows with the reason (locked, why)
     const s = this.s, tk = s.tasks[d.id], t = now();
-    const gate = tk ? '' : this.gateWhy(d);
-    const met = n => n.startsWith('flag:') ? !!s.flags[n.slice(5)] : n.startsWith('tile:') ? !!s.tiles[n.slice(5)] : !!(s.tasks[n] && s.tasks[n].done);   // 'flag:x' = after something happened (e.g. the rabbit's raid)
-    const locked = (d.needs || []).some(n => !met(n)) || (d.minLevel && this.magicLevel() < d.minLevel) || !!gate;
-    const state = tk ? (tk.done ? 'done' : (tk.endsAt <= t ? 'done' : 'running')) : (locked ? 'locked' : 'ready');
-    return { def: d, state, locked, endsAt: tk ? tk.endsAt : 0, startedAt: tk ? tk.startedAt : 0, can: this.can(d.cost), missing: this.missing(d.cost),
-             show: (state !== 'done' || (t - (tk.endsAt || 0)) < 60 * MIN) && (!d.make || !!tk || this.makeOpen(d)) && !(d.needs || []).some(n => (n.startsWith('trade:') && !this.folkState(n.slice(6))) || ((n.startsWith('flag:') || n.startsWith('tile:')) && !met(n))),   // village jobs stay hidden until that neighbour lives here
-             rank: { running: 0, ready: 1, locked: 2, done: 3 }[state],
-             why: gate ? gate : locked ? (d.minLevel && this.magicLevel() < d.minLevel ? `needs magic level ${d.minLevel}` : `after: ${(d.needs || []).filter(n => !n.startsWith('flag:') && !n.startsWith('tile:')).map(n => lc(this.taskDef(n).name)).join(', ')}`) : '' };
+    const gate = tk ? '' : this.gateWhy(d), ready = this.needsMet(d);
+    const offered = !!tk || !C.tasks.includes(this.baseDef(d)) || d.spine || !!d.make || d.id in s.offered;   // home jobs are offered a little at a time (offerTick)
+    const state = tk ? (tk.done ? 'done' : (tk.endsAt <= t ? 'done' : 'running')) : (ready && !gate ? 'ready' : 'locked');
+    return { def: d, state, locked: state === 'locked', endsAt: tk ? tk.endsAt : 0, startedAt: tk ? tk.startedAt : 0, can: this.can(d.cost), missing: this.missing(d.cost),
+             show: (state !== 'done' || (t - (tk.endsAt || 0)) < 60 * MIN) && (!!tk || (ready && offered)) && (!d.make || !!tk || this.makeOpen(d)),
+             story: !!d.spine, rank: { running: 0, ready: 1, locked: 2, done: 3 }[state], why: gate || (ready ? '' : this.needsWhy(d)) };
+  },
+  baseDef(d) { return C.tasks.find(x => x.id === d.id) || null; },
+  // ---- what the story has offered (docs/PLAN.md "Progression review", fix 1) ----
+  needMet(n) {   // one of a job's needs: a finished job, 'page:<id>' (that page has come), 'flag:<x>', 'stage:<key>' (home yard), 'tile:<k>'
+    const s = this.s;
+    if (n.startsWith('flag:')) return !!s.flags[n.slice(5)];
+    if (n.startsWith('page:')) return this.pageHappened(n.slice(5));
+    if (n.startsWith('stage:')) return this.stageIndex('0,0') >= C.landStages.findIndex(x => x.key === n.slice(6));
+    if (n.startsWith('tile:')) return !!s.tiles[n.slice(5)];
+    return this.done(n);
+  },
+  needsMet(d) { return (d.needs || []).every(n => this.needMet(n)); },
+  needHint(n) {   // a need in words, for the one "Next:" line ('' = keep it a surprise)
+    if (n.startsWith('page:')) return this.pageHint(n.slice(5));
+    if (n.startsWith('stage:')) return `once the yard is ${C.landStages.find(x => x.key === n.slice(6)).name}`;
+    if (n.startsWith('flag:') || n.startsWith('tile:') || n.startsWith('trade:')) return '';
+    const d = this.taskDef(n); return d ? `after ${d.short}` : '';
+  },
+  needsWhy(d) { return (d.needs || []).filter(n => !this.needMet(n)).map(n => this.needHint(n)).filter(Boolean).join(', '); },
+  pageHint(id) {   // when a page comes, in words
+    const i = C.story.pages.findIndex(p => p.id === id), pg = C.story.pages[i]; if (!pg) return ''; const w = pg.when;
+    if (w.startsWith('done:')) return `after ${this.taskDef(w.slice(5)).short}`;
+    if (w === 'flag:firstpick') return 'after the first harvest';
+    if (w === 'week') return 'when their first week is up';
+    if (w === 'garden') return 'once the garden opens';
+    if (w === 'next' && i > 0) return this.pageHint(C.story.pages[i - 1].id);
+    return '';
+  },
+  offerTick(t) {   // the home jobs that aren't the story's own come a little at a time: at most two waiting, at most one new a visit
+    const s = this.s, O = s.offered, V = s.visits, isTask = id => C.tasks.some(x => x.id === id && !x.make && !x.spine);
+    for (const d of C.tasks) {   // a job the story is waiting on comes at once (the doorstep before the house)
+      if (!d.spine || d.retired || s.tasks[d.id]) continue;
+      const own = (d.needs || []).filter(isTask); if (!own.length || !(d.needs || []).every(n => own.includes(n) || this.needMet(n))) continue;
+      for (const n of own) if (!(n in O) && !s.tasks[n] && this.needsMet(this.baseDef({ id: n }))) { O[n] = t; this.dirty = true; }
+    }
+    const waiting = Object.keys(O).filter(id => !s.tasks[id] && isTask(id)).length; if (waiting >= 2) return;
+    if (waiting && V.offer === V.n) return;   // one new job a visit (unless there is nothing else waiting)
+    const d = C.tasks.find(d => !d.retired && !d.make && !d.spine && !(d.id in O) && !s.tasks[d.id] && this.needsMet(d) && !(d.needs || []).some(n => n.startsWith('trade:') && !this.folkState(n.slice(6))));
+    if (!d) return;
+    O[d.id] = t; V.offer = V.n; this.dirty = true; this.note(`Something new to do: ${lc(d.name)}.`); this.emit('offered', d.id);
+  },
+  nextUp() {   // the one "Next:" line in Jobs: the story's next job that isn't open yet, and what it waits for (null: nothing to say)
+    for (const d of C.tasks) {
+      if (!d.spine || d.retired || this.s.tasks[d.id] || this.needsMet(d)) continue;
+      const left = (d.needs || []).filter(n => !this.needMet(n)), why = left.map(n => this.needHint(n));
+      if (why.some(w => !w)) continue;   // waits on a surprise (the rabbit): say nothing
+      return { name: d.name, why: why.join(' and ') };
+    }
+    return null;
   },
   startTask(id) {
     const d = this.taskDef(id), v = this.taskView(d); if (v.state !== 'ready' || !v.can) return false;
     this.pay(d.cost); const t = now();
     this.s.tasks[id] = { startedAt: t, endsAt: t + this.dur(d.mins), done: false }; if (d.healTile || d.farm || C.tasks.some(x => x.id === id && x.who === 'either')) this.s.tasks[id].who = d.who;
-    if (d.home || d.claims) this.s.tasks[id].tile = this.freeLot();
+    if (d.home || d.claims) this.s.tasks[id].tile = d.home ? this.homeLot(d.folk) : this.freeLot();
     if (d.claims) this.s.festival.tile = this.s.tasks[id].tile;
     if (d.tile) this.s.tiles[d.tile].state = 'regrowing';
     this.note(`${C.names[d.who]} set to work: ${lc(d.name)}.`); this.emit('task', { id }); return true;
@@ -312,7 +367,7 @@ const G = {
     if (!n) return;
     const bump = k => { const before = this.landStage(k).key; this.s.tiles[k].green += n; const after = this.landStage(k); return after.key !== before ? after : null; };
     if (where !== 'garden') { const st = bump('0,0');
-      if (st) { this.note(`The home patch is now ${st.name}.`); if (st.key === 'green') this.reveal('0,0'); this.s.pages.cards.push({ k: 'land', key: st.key }); this.emit('land', st); } }
+      if (st) { this.note(`The home patch is now ${st.name}.`); this.s.pages.cards.push({ k: 'land', key: st.key }); this.emit('land', st); } }
     if (this.gardenOpen()) { const st = bump('0,1'); if (st) this.note(`The garden is now ${st.name}.`); }
   },
   gardenOpen() { const t = this.s.tiles['0,1']; return !!t && t.state === 'green' && !Object.values(this.s.village.folk).some(f => f.tile === '0,1'); },   // the couple's garden (tile 0,1; an older save may have a neighbour living there)
@@ -326,7 +381,8 @@ const G = {
     return (d.needs || []).every(n => n.startsWith('flag:') ? !!s.flags[n.slice(5)] : this.done(n));
   },
   makesCount(patch) { const all = C.tasks.filter(d => d.make === patch); return { done: all.filter(d => this.done(d.id)).length, total: all.length }; },
-  reveal(k) {   // bare neighbours appear around a greened tile (max 2 at a time so the map grows gently)
+  reveal(k) {   // bare neighbours appear around a greened tile (max 2 at a time so the map grows gently); only from chapter four on
+    if (!this.pageHappened('3.5')) return;   // before that it's just the yard and the garden (storyTick)
     const [x, y] = k.split(',').map(Number); let n = 0;
     for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
       const kk = `${x + dx},${y + dy}`; if (this.s.tiles[kk] || n >= 2 || Math.abs(x + dx) > 2 || Math.abs(y + dy) > 2) continue;
@@ -527,10 +583,10 @@ const G = {
   barrelFull() { const tk = this.s.tasks.rainbarrel; if (!(tk && this.done('rainbarrel'))) return false; return now() - (this.s.barrelAt || tk.endsAt) >= C.barrel.every * MIN; },
   drawBarrel() { if (!this.barrelFull()) return false; this.s.barrelAt = now(); this.give(C.barrel.give); this.note('Fresh rainwater from the barrel.'); return true; },
   // ---- the rabbit: a cheeky regular, never a real loss ----
-  // The first time there is food in the dish while the seedlings are up, a rabbit eats the lot and then nibbles a few sprouts.
+  // A rabbit always comes for the first sprouts: if there is food in the dish it eats that first, then nibbles a few sprouts.
   // Only then is "Fence the seed bed" offered. index.html plays the raid when you are watching; catchUp() settles it when you were away.
   rabbitDue() {
-    const s = this.s, t = now(); if (s.flags.rabbit || !s.feeder.food || this.plot().stage !== 'growing') { s.rabbitAt = 0; return false; }
+    const s = this.s, t = now(); if (s.flags.rabbit || this.plot().stage !== 'growing') { s.rabbitAt = 0; return false; }
     if (!s.rabbitAt) s.rabbitAt = t + C.rabbit.after * MIN; return t >= s.rabbitAt;
   },
   rabbitEats() {   // a later visit: the rabbit eats what is in the dish (after the fence is up, three different days of it make a truce)
@@ -539,10 +595,10 @@ const G = {
     this.note(`The ${this.rabbitName() || 'rabbit'} ate what was in the feeding dish.`); this.emit('feeder', this.s.feeder);
   },
   rabbitName() { return this.beatDone('rabbitBabies') ? C.animals.rabbitName : null; },   // Hazel names her on the babies page
-  rabbitAte() { this.s.feeder.food = null; this.note(C.rabbit.dish); this.emit('feeder', this.s.feeder); },
+  rabbitAte() { this.s.feeder.food = null; this.s.flags.rabbitDish = true; this.note(C.rabbit.dish); this.emit('feeder', this.s.feeder); },
   rabbitRaid() {
-    const s = this.s; if (s.flags.rabbit) return; if (s.feeder.food) s.feeder.food = null;
-    if (this.plot().stage === 'growing') this.plot().nibbled = true;
+    const s = this.s; if (s.flags.rabbit) return; if (s.feeder.food) { s.feeder.food = null; s.flags.rabbitDish = true; }   // it empties the dish first, if there is anything in it (page 1.5 says so)
+    if (this.plot().stage === 'growing' || this.plot().stage === 'ready') this.plot().nibbled = true;
     s.flags.rabbit = true; this.note(C.rabbit.raid); this.emit('rabbit'); this.emit('plot', this.plot());
   },
   wantsFood(id) { const d = this.visitorDef(id), f = this.s.feeder.food; return !!(f && d && (d.eats || []).includes(f)); },
@@ -583,6 +639,24 @@ const G = {
   folkState(id) { return this.s.village.folk[id] || null; },
   settled() { return Object.keys(this.s.village.folk); },
   done(id) { const t = this.s.tasks[id]; return !!(t && t.done); },
+  wishOf(fid) { const tr = this.s.village.traveller; return tr && tr.id === fid ? tr.want || null : null; },
+  homeLot(fid) {   // where this traveller's home would go now: the patch they asked for once it is young meadow (else, for an older save, any ready lot)
+    const k = this.wishOf(fid); if (!k) return this.freeLot();
+    const tl = this.s.tiles[k]; return tl && tl.state === 'green' && (!tl.kind || this.stageIndex(k) >= 2) && !this.lotTaken().has(k) ? k : null;
+  },
+  lotTaken() { const s = this.s, taken = new Set(Object.values(s.village.folk).map(f => f.tile));
+    for (const tk of Object.values(s.tasks)) if (tk.tile && !tk.done) taken.add(tk.tile);
+    if (s.festival.tile) taken.add(s.festival.tile); return taken; },
+  wishLot() {   // the patch a new traveller would like: a lot that is already ready, else the nearest one still healing, else the nearest still dark (it comes out of the mist)
+    const s = this.s, taken = this.lotTaken(), L = C.village.lots.filter(k => !taken.has(k));
+    const k = this.freeLot() || L.find(k => s.tiles[k] && s.tiles[k].kind) || L.find(k => !s.tiles[k]); if (!k) return null;
+    if (!s.tiles[k]) { s.tiles[k] = { state: 'revealed', green: 0, kind: this.tileKind(k) }; this.emit('reveal', k); }
+    return k;
+  },
+  wishText(fid, ready) {   // "Mabel has taken a fancy to the bare plain, to the left..." / "... has grown to young meadow"
+    const f = this.folkDef(fid), k = this.wishOf(fid), V = C.village, who = f.short, Who = cap(who);
+    return (ready ? V.wishReady : V.wish).replace(/\{who\}/g, who).replace(/\{Who\}/g, Who).replace(/\{patch\}/g, this.patchName(k)).replace(/\{Patch\}/g, cap(this.patchName(k))).replace(/\{where\}/g, this.tileWhere(k));
+  },
   freeLot() {   // the nearest healed plain tile that has no home on it yet (one being built counts as taken)
     const s = this.s, taken = new Set(Object.values(s.village.folk).map(f => f.tile));
     for (const tk of Object.values(s.tasks)) if (tk.tile && !tk.done) taken.add(tk.tile);
@@ -592,7 +666,7 @@ const G = {
   gateWhy(d) {   // extra reasons a job cannot start yet, in words ('' = fine)
     const busy = d.who && Object.entries(this.s.tasks).find(([id, tk]) => !tk.done && tk.endsAt > now() && id !== d.id && (this.taskDef(id) || {}).who === d.who);   // one job at a time for each gnome
     if (busy) return `${C.names[d.who]} is busy with ${lc(this.taskDef(busy[0]).name)}`;
-    if (d.home && !this.freeLot()) return 'needs a patch next door grown to young meadow for their home';
+    if (d.home && !this.homeLot(d.folk)) { const k = this.wishOf(d.folk); return k ? `waits for ${this.patchName(k)}, ${this.tileWhere(k)}, to grow to young meadow` : 'needs a patch next door grown to young meadow for their home'; }
     if (d.claims && !this.s.tasks[d.id] && !this.freeLot()) return 'needs a patch grown to young meadow with no home on it';
     if (d.healTile) { const w = this.healWait(d.healTile, d.step); if (w > now()) return `the tree seedlings are still growing (ready in ${this.timeLeft(w)})`;
       if (d.needsFlow && !this.canFlow(d.healTile)) return 'the water cannot reach this stretch yet: clear the creek next to it first'; }
@@ -603,10 +677,13 @@ const G = {
   villageTick(t) {
     const s = this.s, v = s.village, V = C.village, dk = dayKey(t), h = new Date(t).getHours();
     // a traveller arrives once the house is finished, when it is time, and someone is still on the road
-    if (!v.traveller && v.queue.length && t >= v.nextAt && (this.done(V.firstAfter) || /village|test/.test(location.hash))) {
-      v.traveller = { id: v.queue.shift(), at: t };
-      const f = this.folkDef(v.traveller.id); this.note(`A traveller has camped by the path: ${f.name}, ${f.trade}.`); this.emit('traveller', v.traveller.id);
+    if (!v.traveller && v.queue.length && t >= v.nextAt && (this.needMet(V.firstAfter) || /village|test/.test(location.hash))) {
+      v.traveller = { id: v.queue.shift(), at: t }; v.traveller.want = this.wishLot();   // they name the patch they'd like to live on
+      const f = this.folkDef(v.traveller.id); this.note(`A traveller has camped by the path: ${f.name}, ${f.trade}.`); if (v.traveller.want) this.note(this.wishText(f.id)); this.emit('traveller', v.traveller.id);
     }
+    const tr = v.traveller;
+    if (tr && !tr.want && !s.tasks['home:' + tr.id]) { tr.want = this.wishLot(); if (tr.want) this.note(this.wishText(tr.id)); }   // an older save's traveller names theirs too
+    if (tr && tr.want && !tr.told && !s.tasks['home:' + tr.id] && this.homeLot(tr.id)) { tr.told = t; this.note(this.wishText(tr.id, true)); this.emit('wishready', tr.id); }
     for (const [fid, fs] of Object.entries(v.folk)) {
       const f = this.folkDef(fid), traded = this.done('trade:' + fid);
       // a small daily gift at their door, once their trade building is up (one a day; no backlog)
@@ -726,17 +803,20 @@ const G = {
   },
 
   // ---- the first month's story (CONTENT.story; words from docs/STORY.md) ----
-  // Each page opens once, when its moment comes (storyDue). Pages, land cards and Hazel's lists wait in pages.cards until index.html
-  // can show them (one at a time, never over an open menu), so nothing is lost if the game is closed first.
+  // Each page opens once, when its moment comes (storyDue), and never before the page before it (pg.after). Pages, land cards and
+  // Hazel's lists wait in pages.cards until index.html can show them (one at a time, never over an open menu), so nothing is lost
+  // if the game is closed first. A page that is waiting in pages.cards has happened, as far as the jobs are concerned.
+  pageHappened(id) { const P = this.s.pages; return id in P.seen || P.cards.some(c => c.k === 'page' && c.id === id); },
+  pageAfter(pg) { const i = C.story.pages.indexOf(pg); return pg.after || (i > 0 ? [C.story.pages[i - 1].id] : []); },
   storyDue(pg, t) {
     const s = this.s, w = pg.when, h = new Date(t).getHours(), p = s.plots.seedbed;
     if (w === 'welcome') return false;   // opened by index.html as the welcome page
+    if (w === 'next') return true;   // straight after the page before it
     if (w.startsWith('done:')) return this.done(w.slice(5));
     if (w.startsWith('flag:')) return !!s.flags[w.slice(5)];
-    if (w === 'evening:woodpile') return this.done('woodpile') && (h >= 17 || h < 5);   // the first evening, so the stars are out
+    if (w === 'evening:woodpile') return this.done('woodpile') && (h >= 17 || h < 5 || this.done('spring'));   // the first evening, so the stars are out (or, so the book never waits all day, once the spring is found: the page tells of that evening)
     if (w === 'seedlings') return !!(p.stage === 'growing' || p.stage === 'ready' || p.grown);
     if (w === 'week') return t - s.created >= 7 * DAY();
-    if (w === 'startable:house1') { const d = this.taskDef('house1'); return !!s.tasks.house1 || ((d.needs || []).every(n => this.done(n)) && this.magicLevel() >= (d.minLevel || 1)); }
     if (w === 'garden') return this.gardenOpen();
     if (w === 'toadWalked') return !!s.flags.toadWalk && t - s.flags.toadWalk >= 45000;   // index.html TOAD_WALK
     return false;
@@ -744,7 +824,11 @@ const G = {
   storyTick(t) {
     const s = this.s, P = s.pages, queued = id => P.cards.some(c => c.k === 'page' && c.id === id);
     if (this.gardenOpen() && !s.flags.garden) s.flags.garden = true;   // garden jobs (the pond) wait for this
-    for (const pg of C.story.pages) if (!(pg.id in P.seen) && !queued(pg.id) && this.storyDue(pg, t)) { P.cards.push({ k: 'page', id: pg.id }); this.emit('card'); }
+    for (const pg of C.story.pages) if (!(pg.id in P.seen) && !queued(pg.id) && this.pageAfter(pg).every(id => this.pageHappened(id)) && this.storyDue(pg, t)) { P.cards.push({ k: 'page', id: pg.id }); this.emit('card'); }
+    // the land opens with the story: the garden patch beside the yard in chapter three (once the yard has greened), and the
+    // old track the night the first traveller's lantern comes up it (page 3.5); after that, each healed patch shows the next
+    if (!s.tiles['0,1'] && this.pageHappened('3.0') && this.stageIndex('0,0') >= 1) { s.tiles['0,1'] = { state: 'revealed', green: 0, kind: this.tileKind('0,1') }; this.note('The mist has drawn back from the patch beside the yard.'); this.emit('reveal', '0,1'); }
+    if (!s.tiles['1,0'] && this.pageHappened('3.5')) { s.tiles['1,0'] = { state: 'revealed', green: 0, kind: this.tileKind('1,0') }; this.note('The mist has drawn back from the old track. A lantern is bobbing up it.'); this.emit('reveal', '1,0'); }
     for (const [patch, M] of Object.entries(C.makes)) {   // Hazel's list: a patch reached a new stage, so new little makes are ready
       if (M.tile !== '0,0' && !this.gardenOpen()) continue;
       if (patch === 'yard' && !s.flags.firstpick) continue;
@@ -756,7 +840,7 @@ const G = {
   seePage(id) { this.s.pages.seen[id] = now(); this.s.pages.cards = this.s.pages.cards.filter(c => !(c.k === 'page' && c.id === id)); this.dirty = true; },
   pageDef(id) { return C.story.pages.find(p => p.id === id); },
   pageText(pg) {   // the page's paragraphs as they read now (lines about things not done yet are left out)
-    const ok = c => c.startsWith('flag:') ? !!this.s.flags[c.slice(5)] : c.startsWith('helped:') ? !!(this.s.journal[c.slice(7)] || {}).helped : this.done(c);
+    const ok = c => c.startsWith('flag:') ? !!this.s.flags[c.slice(5)] : c.startsWith('helped:') ? !!(this.s.journal[c.slice(7)] || {}).helped : c.startsWith('season:') ? c.slice(7).split('|').includes(this.season(now())) : this.done(c);
     const one = x => typeof x === 'string' ? x : x.if ? (ok(x.if) ? x.text : x.else || '') : x.text;
     return pg.text.map(x => Array.isArray(x) ? x.map(one).filter(Boolean).join(' ') : x.margin ? { margin: true, text: x.text } : one(x)).filter(Boolean);
   },
@@ -768,14 +852,18 @@ const G = {
     for (const [patch, M] of Object.entries(C.makes)) { if (!s.tiles[M.tile]) continue; const cur = this.stageIndex(M.tile);
       C.landStages.forEach((st, i) => { if (i < cur) s.pages.makes[`${patch}:${st.key}`] = 0; }); }
   },
-  // ---- the Wood spirit: five lessons, one each time the magic grows (CONTENT.story.lessons) ----
-  spiritLesson() {   // the lesson it is waiting by now (its number), or 0
+  // ---- the Wood spirit: five lessons in the first month, always in this order (CONTENT.story.lessons) ----
+  // 1 coax (the seed bed is dug), 2 rain (the spring is found), 3 the toadstool (the garden opens with it in the way), 4 wake the
+  // land, 5 "nothing new today" by the fire, the last of the first month. Magic level only says when it can come. After lesson 5
+  // it comes back to teach each new kind of bare patch (never the garden: its chain stops at first green).
+  spiritLesson() {   // the lesson it is waiting by now (its number, or 'heal:<kind>'), or 0
     const s = this.s, sp = s.spirit.taught, L = this.magicLevel(), h = new Date(now()).getHours();
-    if (!(3 in sp) && this.gardenOpen() && !s.flags.toadWalk) return 3;   // when the garden opens and the toadstool is in the way
-    for (const k of this.healTiles()) { const kind = this.s.tiles[k].kind, L = C.heal.kinds[kind].lesson; if (L && !this.healTaught(kind) && this.healAt(k) < this.healSteps(k).length) return 'heal:' + kind; }   // the first time a kind of bare tile appears, it comes to teach that tile's spell
-    for (const [n, ok] of [[1, L >= 2 && this.done('bed')], [2, L >= 3 && this.done('spring')], [4, L >= 4], [5, L >= 5 && (h >= 17 || h < 5)]]) {
-      if (n in sp) continue; return ok ? n : 0;   // in order: a later lesson waits for the one before
+    if (Object.values(sp).some(at => at && dayKey(at) === dayKey(now()))) return 0;   // one lesson a day, so each has room to sink in
+    for (const [n, ok] of [[1, L >= 2 && this.done('bed')], [2, L >= 3 && this.done('spring')], [3, this.gardenOpen()], [4, L >= 4], [5, L >= 5 && (h >= 17 || h < 5)]]) {
+      if (n in sp) continue; if (n === 3 && s.flags.toadWalk) continue;   // an older garden whose toadstool already walked
+      return ok ? n : 0;   // in order: a later lesson waits for the one before
     }
+    for (const k of this.healTiles()) { if (k === '0,1') continue; const kind = this.s.tiles[k].kind, Ls = C.heal.kinds[kind].lesson; if (Ls && !this.healTaught(kind) && this.healAt(k) < this.healSteps(k).length) return 'heal:' + kind; }   // the first time a kind of bare patch appears, it comes to teach that patch's spell
     return 0;
   },
   teach(n) { const first = !Object.keys(this.s.spirit.taught).length; this.s.spirit.taught[n] = now(); if (!this.met('spirit')) this.noteVisitor('spirit'); this.dirty = true; return first; },
@@ -808,7 +896,7 @@ const G = {
     if (w.rabbitFed && A.rabbitFed.length < w.rabbitFed) return false;
     if (w.season && this.season(t) !== w.season) return false;
     if (w.hours && !this.inHours(w.hours, new Date(t).getHours())) return false;
-    if (w.days) { const since = w.moved ? s.moved[w.moved] : w.after ? A.done[w.after] : s.tasks[w.done].endsAt; if (t - since < w.days * DAY()) return false; }
+    if (w.days) { const since = w.moved ? s.moved[w.moved] : w.after ? A.done[w.after] : w.done ? s.tasks[w.done].endsAt : this.entry(w.met).first; if (t - since < w.days * DAY()) return false; }
     return true;
   },
   animalTick(t) {

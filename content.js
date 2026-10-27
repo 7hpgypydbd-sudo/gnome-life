@@ -60,101 +60,109 @@ window.CONTENT = {
   // Gnome tasks: you give the materials, a gnome does it over real time.
   // who: which gnome walks over and works; spot: where (prop name); green: regrowth points for the home tile.
   // act: which painted action loop plays while working (dig, water, carry); if missing, the spot decides (wheelbarrow dig, seed bed and sapling water, otherwise carry).
+  // The STORY decides what is offered, not the days you have visited (docs/PLAN.md "Progression review", fix 1). needs: a finished
+  // job id, 'page:<id>' (that story page has come), 'flag:<x>', or 'stage:<key>' (the home yard has reached that land stage).
+  // spine: the story's own jobs (the first chain, the roof, bench and oak, the house): offered as soon as their needs are met,
+  // and shown at the top of Jobs. Every other job is offered a little at a time (game.js offerTick): at most two waiting to be
+  // started, and at most one new one each visit. Jobs whose needs are not met yet are not listed at all.
   tasks: [
-    // --- first days ---
     // retired: no longer offered (Bryce, 2026-10-26: it had no reason to exist). Kept so old saves and the "after" jobs still
     // know it; its painted gully can come back later as a one-off storm-damage event (docs/PLAN.md).
     { id:'ruts',    name:'Fill the washed-out gully', short:'filling the gully',   retired:true, who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:3, twig:2 }, mins:120, green:1, magic:2,
       blurb:'Storm water has carved a muddy gully across the yard. Wendel will fill it with stones and twigs and level the ground, so the grass can creep back.' },
-    { id:'clear',   name:'Clear the ground', short:'clearing the ground',           who:'her', act:'carry', spot:'clearing', cost:{}, give:{ twig:3, stone:2 }, mins:90, green:0, magic:1,
+
+    // --- chapter one: the bare clearing. The first chain, two jobs at a time, one for each of them ---
+    { id:'clear',   name:'Clear the ground', short:'clearing the ground', spine:true, who:'her', act:'carry', spot:'clearing', cost:{}, give:{ twig:3, stone:2 }, mins:90, green:0, magic:1,
       blurb:'Old tins, broken pots and loggers\' rubbish everywhere. Hazel carries it all off, one piece at a time, and piles the good sticks by the house for Wendel.' },
-    { id:'woodpile', name:'Gather the fallen wood',    short:'gathering wood', who:'him', act:'gather', spot:'firewood', cost:{}, give:{ twig:2 }, mins:60, green:0, magic:1,
+    { id:'woodpile', name:'Gather the fallen wood',    short:'gathering wood', spine:true, who:'him', act:'gather', spot:'firewood', cost:{}, give:{ twig:2 }, mins:60, green:0, magic:1,
       blurb:'Fallen branches lie all about the yard. Wendel gathers them up, odd sticks and all, and stacks a proper woodpile by the house, bark side up, for their first fire.' },
-    { id:'bed',     name:'Dig a seed bed', short:'digging the bed',             who:'her', act:'dig', spot:'clearing', cost:{ twig:2 },  mins:120, green:0, magic:1,
+    { id:'bed',     name:'Dig a seed bed', short:'digging the bed', spine:true, who:'her', act:'dig', spot:'clearing', cost:{ twig:2 },  mins:120, green:0, magic:1,
       needs:['clear'], blurb:'Now the ground is clear, the earth can be turned. Hazel digs it over row by row, until there is a patch of soft dark soil.' },
-    { id:'spring', name:'Look for water', short:'looking for water', who:'him', act:'dig', spot:'spring', cost:{}, give:{ water:1 }, mins:60, green:1, magic:1,
+    { id:'spring', name:'Look for water', short:'looking for water', spine:true, who:'him', act:'dig', spot:'spring', cost:{}, give:{ water:1 }, mins:60, green:1, magic:1,
       needs:['woodpile'], blurb:'The seed bed will need water, and the creek behind the house is bone dry. Wendel walks the yard, kneeling to feel the ground and listen. Somewhere under all that old rubbish there must be a spring.',
       doneNote:'Wendel found a spring choked with stones and dead leaves by the old stump. Clear water is trickling out again, the first in this valley for a long time.' },
-    { id:'bedwater', name:'Fetch water for the seed bed', short:'fetching water', who:'him', act:'water', spot:'spring', cost:{}, mins:45, green:0, magic:1,
+    { id:'bedwater', name:'Fetch water for the seed bed', short:'fetching water', spine:true, who:'him', act:'water', spot:'spring', cost:{}, mins:45, green:0, magic:1,
       needs:['bed', 'spring'], blurb:'Can after can from the new spring pool, until the fresh soil is dark and damp. Then it is ready for seeds.' },
-    { id:'roof',    name:'Moss for the shelter roof', short:'mossing the roof',  who:'her', spot:'shelter',     cost:{ moss:4 },           needs:['bedwater'], mins:180, green:0, magic:2,
-      blurb:'The canvas leaks. A thick moss roof keeps the rain out and the warmth in.' },
-    { id:'fence', act:'build',   name:'Fence the seed bed', short:'fencing the bed',         who:'him', spot:'fence',       cost:{ twig:4 },           mins:120, green:0, magic:1,
-      needs:['bed', 'flag:rabbit'], blurb:'That rabbit ate the whole dish and then helped itself to the sprouts. A low woven fence all round the bed, with a little gate. The dish it can share.' },
-    { id:'sapling', name:'Plant the sapling out', short:'planting the sapling',      who:'her', act:'water', spot:'sapling',     cost:{ water:2, moss:2 },  mins:360, green:2, magic:3,
-      needs:['clear', 'flag:firstpick'], blurb:'The little oak they carried from their old home is ready for real ground. Trees bring life back faster than anything. It will outlive us all.' },
-    { id:'feeder',  name:'Set out a feeding dish', short:'setting out the dish',     who:'her', act:'carry', spot:'feeder', cost:{ stone:2, twig:1 }, mins:45, green:0, magic:1, needs:['clear'],
+    { id:'feeder',  name:'Set out a feeding dish', short:'setting out the dish',     who:'her', act:'carry', spot:'feeder', cost:{ stone:2, twig:1 }, mins:45, green:0, magic:1, needs:['page:1.4'],
       blurb:'A flat stone dish on a stump. Put out seed or berries and see who comes. Some will come back.' },
-    { id:'bench',   name:'Build a bench by the fire', short:'building a bench',  who:'him', act:'build', spot:'logseat',  cost:{ twig:3 },          needs:['bedwater'], mins:60,  green:0, magic:1,
+    // the rabbit always comes for the first sprouts (game.js rabbitDue); only then is the fence offered
+    { id:'fence', act:'build',   name:'Fence the seed bed', short:'fencing the bed', spine:true, who:'him', spot:'fence',       cost:{ twig:4 },           mins:120, green:0, magic:1,
+      needs:['bed', 'flag:rabbit'], blurb:'That rabbit helped itself to the sprouts. A low woven fence all round the bed, with a little gate, and something put out for it instead. It is only hungry.' },
+
+    // --- chapter two: putting down roots (from page 2.1, the first harvest). The roof first, then the bench, then the oak;
+    // the small jobs come a couple at a time, in this order ---
+    { id:'roof',    name:'Moss for the shelter roof', short:'mossing the roof', spine:true, who:'her', spot:'shelter',     cost:{ moss:4 },           needs:['page:2.1'], mins:180, green:0, magic:2,
+      blurb:'The canvas leaks. A thick moss roof keeps the rain out and the warmth in.' },
+    { id:'bench',   name:'Build a bench by the fire', short:'building a bench', spine:true, who:'him', act:'build', spot:'logseat',  cost:{ twig:3 },          needs:['page:2.2'], mins:60,  green:0, magic:1,
       blurb:'A plank on two stout legs by the campfire, just long enough for two gnomes of an evening.' },
-    { id:'doorstep', name:'Lay a flat-stone doorstep', short:'laying the doorstep', who:'him', act:'dig', spot:'shelter',     cost:{ stone:3 },          needs:['flag:firstpick'], mins:90,  green:0,
+    { id:'sapling', name:'Plant the sapling out', short:'planting the sapling', spine:true, who:'her', act:'water', spot:'sapling',     cost:{ water:2, moss:2 },  mins:360, green:2, magic:3,
+      needs:['clear', 'page:2.3'], blurb:'The little oak they carried from their old home is ready for real ground. Trees bring life back faster than anything. It will outlive us all.' },
+    { id:'doorstep', name:'Lay a flat-stone doorstep', short:'laying the doorstep', who:'him', act:'dig', spot:'shelter',     cost:{ stone:3 },          needs:['page:2.1'], mins:90,  green:0,
       blurb:'So the mud stays outside. Mostly.' },
-    { id:'rainbarrel', name:'Scrub the rain barrel', short:'scrubbing the barrel',   who:'either', spot:'barrel',        cost:{ twig:2, stone:1 },  mins:60,  green:0, needs:['flag:firstpick'],
-      blurb:'The old barrel by the fire is green with slime. Scrubbed clean, it catches the rain off the roof: a can of water every so often without the walk to the spring. Whoever is free will do it.' },
-    { id:'clothesline', act:'build', name:'String up a washing line', short:'stringing the line', who:'her', spot:'fire',      cost:{ twig:3, moss:1 },   needs:['flag:firstpick'], mins:60,  green:0,
+    { id:'beanpoles', name:'Raise the bean poles', short:'raising bean poles',     who:'him', act:'build', spot:'seedbed',     cost:{ twig:5 },           mins:120, green:0, needs:['bed', 'page:2.1'],
+      blurb:'For the beans, which have strong opinions about climbing.' },
+    { id:'clothesline', act:'build', name:'String up a washing line', short:'stringing the line', who:'her', spot:'fire',      cost:{ twig:3, moss:1 },   needs:['page:2.1'], mins:60,  green:0,
       blurb:'Two tunics, one apron, a very small pair of socks. The sun can do the drying.' },
+    { id:'stump', name:'Dig out the old stump', short:'digging out the stump', who:'either', act:'dig', spot:'lanternstump', cost:{}, give:{ twig:3 }, mins:60, green:0,
+      needs:['woodpile', 'page:2.1'], blurb:'An old loggers\' stump, right where the fire wants room. Whoever is free digs round the roots, rocks it loose and chops it up for the woodpile.',
+      doneNote:'The old stump is gone, chopped and stacked on the woodpile. There is room round the fire now.' },
+    { id:'rainbarrel', name:'Scrub the rain barrel', short:'scrubbing the barrel',   who:'either', spot:'barrel',        cost:{ twig:2, stone:1 },  mins:60,  green:0, needs:['page:2.1'],
+      blurb:'The old barrel by the fire is green with slime. Scrubbed clean, it catches the rain off the roof: a can of water every so often without the walk to the spring. Whoever is free will do it.' },
+    { id:'herbs',   name:'Plant a herb corner', short:'planting herbs',        who:'her', act:'water', spot:'seedbed',     cost:{ seed:2, water:2, moss:1 }, mins:180, green:1, needs:['bed', 'page:2.1'],
+      blurb:'Thyme, mint and the one parsley that will not die. Good for tea and for bees.' },
+    { id:'compost', name:'Start a compost heap', short:'starting the compost',       who:'him', act:'dig', spot:'wheelbarrow', cost:{ twig:2, moss:3, water:1, carrot:1 }, mins:180, green:0, needs:['page:2.1'],
+      blurb:'Peelings, leaves and patience. Dug into the seed bed, it makes the soil rich: one extra seed every harvest.' },
+    { id:'springring', name:'Ring the spring with stones', short:'ringing the spring', who:'either', act:'dig', spot:'spring', cost:{ stone:5 }, mins:90, green:0, needs:['bedwater', 'page:2.1'],
+      blurb:'Flat stones round the spring pool, so the edges don\'t crumble and the birds have somewhere to stand. Not a well. Wells are for villages.' },
     // parked (Bryce, 2026-10-26: the yard by the fire was cramped): the old stump and its lamp post are dug out instead. Kept so old saves still read.
     { id:'lantern', retired:true, act:'build', name:'Mend the old lantern', short:'mending the lantern',       who:'him', spot:'fire',        cost:{ twig:1, stone:1, light:1 }, needs:['flag:firstpick'], mins:90, green:0,
       blurb:'It needs a wisp of caught light, and a gnome who admits he is not good at wiring.' },
-    { id:'stump', name:'Dig out the old stump', short:'digging out the stump', who:'either', act:'dig', spot:'lanternstump', cost:{}, give:{ twig:3 }, mins:60, green:0,
-      needs:['woodpile'], blurb:'An old loggers\' stump, right where the fire wants room. Whoever is free digs round the roots, rocks it loose and chops it up for the woodpile.',
-      doneNote:'The old stump is gone, chopped and stacked on the woodpile. There is room round the fire now.' },
-    { id:'springring', name:'Ring the spring with stones', short:'ringing the spring', who:'either', act:'dig', spot:'spring', cost:{ stone:5 }, mins:90, green:0, needs:['bedwater'],
-      blurb:'Flat stones round the spring pool, so the edges don\'t crumble and the birds have somewhere to stand. Not a well. Wells are for villages.' },
+
+    // --- chapter three: a proper home (from page 3.0, after "Our first week"). The house is the story; the garden patch
+    // appears beside the yard, and when it opens, the creature corner comes with it ---
+    { id:'house1', name:'Hollow out the old stump', short:'hollowing the stump', spine:true, who:'him', act:'build', spot:'shelter', cost:{ twig:4, stone:4 }, mins:360, green:0, needs:['page:3.0', 'doorstep'],
+      blurb:'The loggers left the stump; the gnomes will make it a home. Room for a bed, a hearth and, Wendel insists, a workbench.' },
+    { id:'house2', name:'Fit a plank wall and windows', short:'fitting the windows', spine:true, who:'him', act:'build', spot:'shelter', cost:{ twig:6, moss:2, light:2 }, mins:360, green:0, needs:['house1'],
+      blurb:'Planks across the gap, and two round windows with a wisp of light set in the glass so they never quite go dark.' },
+    { id:'house3', name:'Raise the roof and chimney', short:'raising the roof', spine:true, who:'her', act:'build', spot:'shelter', cost:{ twig:8, moss:6, stone:6 }, mins:480, green:0, needs:['house2'],
+      blurb:'Bark shingles instead of patched canvas, and a stone chimney for a real hearth. After this, it is a house.' },
+    { id:'leanto',  name:'Raise Wendel\'s workshop lean-to', short:'raising the workshop', spine:true, who:'him', act:'build', spot:'shelter', cost:{ twig:8, moss:6, stone:4 }, mins:360, green:0, needs:['house1', 'page:3.4'],
+      blurb:'A lean-to of his own against the side of the house, with a hook for every tool and a little window for the stars. His mess lives in here now. Hazel is delighted.' },
+    { id:'path',    name:'Lay a stepping-stone path', short:'laying the path',  who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:6 },          mins:240, green:0, needs:['doorstep', 'page:3.0'],
+      blurb:'From the doorstep to the fire, so the grass can grow where the feet used to go.' },
+    { id:'wildmeadow', name:'Sow the meadow strip', short:'sowing the meadow',    who:'her', act:'water', spot:'wheelbarrow', cost:{ seed:5, water:3 },  mins:360, green:3, needs:['bedwater', 'page:3.0'],
+      blurb:'A long ribbon of grasses and clover along the fence, left to grow wild.' },
     { id:'windowbox', name:'Hang a window box', short:'hanging the window box',        who:'her', act:'water', spot:'shelter',     cost:{ twig:2, moss:2, seed:1 }, mins:90, green:1, needs:['house3'],
       blurb:'Now there is a proper house with a proper window. A home is not a home until something is flowering under it.' },
-
-    // --- a glow (day 2 onward) ---
-    { id:'herbs',   name:'Plant a herb corner', short:'planting herbs',        who:'her', act:'water', spot:'seedbed',     cost:{ seed:2, water:2, moss:1 }, mins:180, green:1, minLevel:2, needs:['bed'],
-      blurb:'Thyme, mint and the one parsley that will not die. Good for tea and for bees.' },
-    { id:'compost', name:'Start a compost heap', short:'starting the compost',       who:'him', act:'dig', spot:'wheelbarrow', cost:{ twig:2, moss:3, water:1, carrot:1 }, mins:180, green:0, minLevel:2,
-      blurb:'Peelings, leaves and patience. Dug into the seed bed, it makes the soil rich: one extra seed every harvest.' },
-    { id:'birdbath', name:'Set a stone birdbath', short:'setting the birdbath',      who:'him', act:'water', spot:'stonebench',  cost:{ stone:4, water:2 }, mins:120, green:0, minLevel:2,
+    // the creature corner: comes with the garden (flag:garden = the garden patch has opened)
+    { id:'birdbath', name:'Set a stone birdbath', short:'setting the birdbath',      who:'him', act:'water', spot:'stonebench',  cost:{ stone:4, water:2 }, mins:120, green:0, needs:['flag:garden'],
       blurb:'A hollow stone full of dew. Somebody small will want a wash.' },
-    { id:'beanpoles', name:'Raise the bean poles', short:'raising bean poles',     who:'him', act:'build', spot:'seedbed',     cost:{ twig:5 },           mins:120, green:0, minLevel:2, needs:['bed', 'flag:firstpick'],
-      blurb:'For the beans, which have strong opinions about climbing.' },
-    { id:'path',    name:'Lay a stepping-stone path', short:'laying the path',  who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:6 },          mins:240, green:0, minLevel:2, needs:['doorstep'],
-      blurb:'From the doorstep to the fire, so the grass can grow where the feet used to go.' },
-    { id:'berrybush', name:'Plant a berry bush', short:'planting the berry bush',       who:'her', act:'water', spot:'sapling',     cost:{ seed:2, water:2, moss:2 }, mins:300, green:2, minLevel:2, needs:['bedwater'],
-      blurb:'Berries for jam, and berries for the birds. Mostly the birds.' },
-
-    // --- a steady light (day 3 onward) ---
-    { id:'pond',    name:'Dig a little dew pond', short:'digging the pond',      who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:4, twig:2, water:3 }, mins:360, green:0, minLevel:3, needs:['spring', 'flag:garden'],
-      blurb:'Just big enough for a frog and a sky, in the corner of the garden, fed by a trickle from the spring. Lined with clay and lots of stones.' },
-    { id:'beehive', name:'Hang a hollow-log bee house', short:'hanging the bee house', who:'him', spot:'fence',     cost:{ twig:4, moss:2, acorn:2 }, mins:240, green:0, minLevel:3, needs:['herbs'],
-      blurb:'For the little native bees who live alone and sting almost never.' },
-    { id:'nestbox', name:'Nail up a nest box', short:'nailing up the nest box',         who:'him', spot:'fence',       cost:{ twig:3, feather:1, acorn:1 }, mins:180, green:0, minLevel:3, needs:['fence'],
-      blurb:'The hole must be the right size. Too big and the wrong sort of bird moves in.' },
-    { id:'hedgehoghouse', name:'Build a leaf-pile shelter', short:'piling the leaves', who:'her', spot:'fence',  cost:{ twig:3, moss:3 },   mins:180, green:0, minLevel:3,
+    { id:'hedgehoghouse', name:'Build a leaf-pile shelter', short:'piling the leaves', who:'her', spot:'fence',  cost:{ twig:3, moss:3 },   mins:180, green:0, needs:['flag:garden'],
       blurb:'A heap of leaves and sticks in a quiet corner. Please do not tidy it.' },
-    { id:'toadstools', name:'Coax a ring of toadstools', short:'coaxing toadstools', who:'her', act:'water', spot:'sapling',   cost:{ moss:4, water:2, light:2 }, mins:300, green:1, minLevel:3,
+    { id:'nestbox', name:'Nail up a nest box', short:'nailing up the nest box',         who:'him', spot:'fence',       cost:{ twig:3, feather:1, acorn:1 }, mins:180, green:0, needs:['fence', 'flag:garden'],
+      blurb:'The hole must be the right size. Too big and the wrong sort of bird moves in.' },
+    { id:'pond',    name:'Dig a little dew pond', short:'digging the pond',      who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:4, twig:2, water:3 }, mins:360, green:0, needs:['spring', 'flag:garden'],
+      blurb:'Just big enough for a frog and a sky, in the corner of the garden, fed by a trickle from the spring. Lined with clay and lots of stones.' },
+    { id:'berrybush', name:'Plant a berry bush', short:'planting the berry bush',       who:'her', act:'water', spot:'sapling',     cost:{ seed:2, water:2, moss:2 }, mins:300, green:2, needs:['bedwater', 'flag:garden'],
+      blurb:'Berries for jam, and berries for the birds. Mostly the birds.' },
+    { id:'beehive', name:'Hang a hollow-log bee house', short:'hanging the bee house', who:'him', spot:'fence',     cost:{ twig:4, moss:2, acorn:2 }, mins:240, green:0, needs:['herbs', 'flag:garden'],
+      blurb:'For the little native bees who live alone and sting almost never.' },
+    { id:'toadstools', name:'Coax a ring of toadstools', short:'coaxing toadstools', who:'her', act:'water', spot:'sapling',   cost:{ moss:4, water:2, light:2 }, mins:300, green:1, needs:['flag:garden'],
       blurb:'A little light, a lot of damp. The ring will be the best seat in the garden.' },
-    { id:'acornplant', name:'Plant acorns for a grove', short:'planting acorns', who:'her', act:'dig', spot:'sapling',    cost:{ acorn:5, water:2 }, mins:360, green:2, minLevel:3, needs:['sapling'],
+
+    // --- retired by the progression review (2026-10-27): no story around them (the seed tin is Hazel's mother's, page 1.4;
+    // the path lights are Juniper's; the acorns became the one grove below). Kept so old saves still read.
+    { id:'acornplant', retired:true, name:'Plant acorns for a grove', short:'planting acorns', who:'her', act:'dig', spot:'sapling',    cost:{ acorn:5, water:2 }, mins:360, green:2, needs:['sapling'],
       blurb:'Most will be eaten or forgotten. That is how a forest begins.' },
-
-    // --- home stage 2: the old stump becomes a proper house (three jobs, each changes the picture) ---
-    { id:'house1', name:'Hollow out the old stump', short:'hollowing the stump', who:'him', act:'build', spot:'shelter', cost:{ twig:4, stone:4 }, mins:360, green:0, minLevel:3, needs:['roof', 'doorstep'],
-      blurb:'The loggers left the stump; the gnomes will make it a home. Room for a bed, a hearth and, Wendel insists, a workbench.' },
-    { id:'house2', name:'Fit a plank wall and windows', short:'fitting the windows', who:'him', act:'build', spot:'shelter', cost:{ twig:6, moss:2, light:2 }, mins:360, green:0, minLevel:3, needs:['house1'],
-      blurb:'Planks across the gap, and two round windows with a wisp of light set in the glass so they never quite go dark.' },
-    { id:'house3', name:'Raise the roof and chimney', short:'raising the roof', who:'her', act:'build', spot:'shelter', cost:{ twig:8, moss:6, stone:6 }, mins:480, green:0, minLevel:4, needs:['house2'],
-      blurb:'Bark shingles instead of patched canvas, and a stone chimney for a real hearth. After this, it is a house.' },
-
-    // --- a warm flame (day 5 onward) ---
-    { id:'seedsave', name:'Keep a seed tin', short:'filling the seed tin',           who:'her', spot:'shelter',     cost:{ seed:4, twig:2 },   mins:180, green:0, minLevel:4,
+    { id:'seedsave', retired:true, name:'Keep a seed tin', short:'filling the seed tin',           who:'her', spot:'shelter',     cost:{ seed:4, twig:2 },   mins:180, green:0,
       blurb:'Labelled in her tiny handwriting. Next year starts with this year\'s best.' },
-    { id:'wildmeadow', name:'Sow the meadow strip', short:'sowing the meadow',    who:'her', act:'water', spot:'wheelbarrow', cost:{ seed:5, water:3 },  mins:360, green:3, minLevel:4, needs:['bedwater'],
-      blurb:'A long ribbon of grasses and clover along the fence, left to grow wild.' },
-    { id:'lanternpath', name:'Line the path with glow jars', short:'lining the path', who:'her', spot:'fence', cost:{ light:5, stone:2 }, mins:240, green:0, minLevel:4, needs:['path'],
+    { id:'lanternpath', retired:true, name:'Line the path with glow jars', short:'lining the path', who:'her', spot:'fence', cost:{ light:5, stone:2 }, mins:240, green:0, needs:['path'],
       blurb:'Wisps in jars, so nobody trips on the way back from the creek.' },
     // --- night lights: glow-worm lanterns and street lamps ---
-    { id:'wormlantern', retired:true, name:'Hang glow-worm lanterns', short:'hanging the lanterns', who:'her', act:'carry', spot:'shelter', cost:{ twig:2, moss:2, light:1 }, mins:120, green:0, minLevel:2,
+    { id:'wormlantern', retired:true, name:'Hang glow-worm lanterns', short:'hanging the lanterns', who:'her', act:'carry', spot:'shelter', cost:{ twig:2, moss:2, light:1 }, mins:120, green:0,
       blurb:'Little glass jars with a few sleepy glow-worms and a scrap of moss. Hung by the door, they light the way home.' },
-    { id:'wormlamp', retired:true, name:'Set glow-worm street lamps', short:'setting the lamps', who:'him', act:'carry', spot:'fence', cost:{ twig:4, stone:2, light:2 }, mins:240, green:0, minLevel:3, needs:['wormlantern'],
+    { id:'wormlamp', retired:true, name:'Set glow-worm street lamps', short:'setting the lamps', who:'him', act:'carry', spot:'fence', cost:{ twig:4, stone:2, light:2 }, mins:240, green:0, needs:['wormlantern'],
       blurb:'Four little lamp posts along the yard, each with a jar of worms. Wendel named them all and will not say what the names are.' },
-    { id:'leanto',  name:'Raise Wendel\'s workshop lean-to', short:'raising the workshop', who:'him', act:'build', spot:'shelter', cost:{ twig:8, moss:6, stone:4 }, mins:360, green:0, minLevel:4, needs:['house1'],
-      blurb:'A lean-to of his own against the side of the house, with a hook for every tool and a little window for the stars. His mess lives in here now. Hazel is delighted.' },
-
     // --- little makes (docs/DECORATIONS.md): each patch earns 4-5 small makes per land stage, paid with what you gather, so the pack never piles up.
     // make: which patch (yard = home tile 0,0; garden = the couple's garden 0,1). stage: the land stage of THAT patch they come with. at: their fixed
     // spot on that patch (yard layout plan); nothing to place or drag. Either gnome can make any of them, one job at a time. Only planted ones give green.
@@ -254,10 +262,10 @@ window.CONTENT = {
     { id:'bridge', name:'Build a bridge at the stepping stones', short:'building the bridge', who:'him', act:'build', cost:{ plank:4, stone:4, twig:4 }, mins:420, green:0, needs:['trade:tobias'], needsTile:'1,-1',
       blurb:'Tobias draws it, Wendel builds it, and the far side of the stream can finally be reached with dry feet.' },
 
-    // --- a bright fire (day 8 onward) ---
-    { id:'greatgrove', name:'Plant the grove', short:'planting the grove',         who:'her', act:'dig', spot:'sapling',     cost:{ acorn:8, seed:4, water:4 }, mins:360, green:3, minLevel:5, needs:['acornplant'],
-      blurb:'Oaks, wattles and one very hopeful fig. They will not see it finished. Someone will.' },
-    { id:'picnic',  name:'A thank-you picnic for the garden', short:'laying the picnic', who:'her', spot:'stonebench', cost:{ berry:4, moss:2, acorn:2 }, mins:120, green:0, minLevel:5,
+    // --- the grove: one moment, once the yard is young woodland and the little oak is in ---
+    { id:'greatgrove', name:'Plant the grove', short:'planting the grove',         who:'her', act:'dig', spot:'sapling',     cost:{ acorn:8, seed:4, water:4 }, mins:360, green:3, needs:['sapling', 'stage:wood'],
+      blurb:'Oaks, wattles and one very hopeful fig, round the little oak so it has company. They will not see it finished. Someone will.' },
+    { id:'picnic', retired:true, name:'A thank-you picnic for the garden', short:'laying the picnic', who:'her', spot:'stonebench', cost:{ berry:4, moss:2, acorn:2 }, mins:120, green:0,
       blurb:'Crumbs for the ants, berries for the birds, one slice of cake for the gnomes.' },
   ],
 
@@ -440,11 +448,11 @@ window.CONTENT = {
       explain:'You would have to kneel to see it. A haze of green over the bare brown earth, so faint that Hazel thought it was her eyes. It isn\'t. Every living thing the gnomes grow here teaches the soil to grow again. The spring brought the water back, and each crop leaves a little more life behind. Keep growing things, and it will spread.' },
     { at:12,key:'meadow', name:'young meadow', sub:'grass, clover and the first daisies',
       explain:'One morning there was grass round the house. Not a haze any more: real grass, with clover in it, and the first daisies, and a magpie strutting about on it as if he had planted it himself. The ground remembers now. Plant things that stay, like trees and bushes and flowers, and the woods will start to come home.' },
-    { at:26,key:'wood',   name:'young woodland', sub:'saplings taller than a gnome',
-      explain:'The saplings are taller than a gnome now. You have to look up at them. The creatures who left long ago are finding their way back, one by one, following the green. This is not a clearing any more. It is the beginning of a wood.' },
+    { at:26,key:'wood',   name:'young woodland', sub:'young trees coming up all round',
+      explain:'Young trees are coming up all round the yard now, some planted and some that came by themselves, and the little oak has put on a new crown of leaves. The creatures who left long ago are finding their way back, one by one, following the green. This is not a clearing any more. It is the beginning of a wood.' },
   ],
 
-  // Magic grows with the days you visit. level by distinct days visited.
+  // Magic grows with the days you visit (level by distinct days visited). It only grows the magic: spells, and jobs go a little faster. The story decides the jobs.
   magicLevels: [ // daysNeeded, name, what it unlocks
     { days:1, name:'a flicker',     unlock:null },
     { days:2, name:'a glow',        unlock:'coax' },
@@ -480,7 +488,8 @@ window.CONTENT = {
       trouble:{ text:'has a dry leaf stuck on nearly every spine.', act:'Pick the leaves off', thanks:'It snuffled, very politely, and trundled off a good deal lighter.' } },
     { id:'owl',      name:'Tawny owl',   hours:[19,24], weight:2, h:72, faces:'L', icon:'🦉', speed:0.3, alsoHours:[0,5], note:'Watches from the top of the woodpile. Says nothing.' },
     { id:'ladybird', name:'Ladybird',    hours:[8,17],  weight:3, h:18, faces:'R', icon:'🐞', speed:0.05, stage:'green', note:'Only came once there was something green to land on.' },
-    { id:'spirit',   name:'Wood spirit', hours:[21,24], weight:1, h:84, faces:'R', icon:'✨', fly:30, speed:0.06, stage:'green', alsoHours:[0,4], note:'A soft light that is not a firefly. It likes the new moss.' },
+    // the Wood spirit only comes to teach (game.js spiritLesson); never as a random night visitor. Kept for its journal entry.
+    { id:'spirit',   name:'Wood spirit', hours:[0,0], weight:0, h:84, faces:'R', icon:'✨', fly:30, speed:0.06, note:'Soft and green, like a handful of new leaves that forgot to fall. It comes when there is something to teach, and the gnomes cannot see it.' },
     { id:'wren',      name:'Fairy-wren',     hours:[6,17],  weight:3, h:26, icon:'🐦', fly:14, speed:0.2, task:'birdbath', eats:['seed'], nest:'nest',
       note:'A tiny blue flicker with a cocked tail. It bathed, looked at everyone, and left.',
       trouble:{ text:'is caught in a loop of the loggers\' old string.', act:'Untangle it', thanks:'One careful tug and it was free. It scolded everybody, then sang.' } },
@@ -507,15 +516,15 @@ window.CONTENT = {
     { id:'kookaburra', name:'Kookaburra',    hours:[5,9],   weight:1, h:56, icon:'🐦', speed:0.25, stage:'meadow', alsoHours:[16,19], note:'Laughed at the fence. The fence did not laugh back. Everyone else did.' },
     { id:'nativebee', name:'Native bee',     hours:[9,16],  weight:2, h:12, icon:'🐝', fly:20, speed:0.15, task:'beehive', note:'A small, shiny, round bee. Moved into the log house and did not ask for a lease.' },
     { id:'glowworm',  name:'Glow-worm',      hours:[20,24], weight:1, h:10, icon:'✨', speed:0.01, stage:'meadow', alsoHours:[0,4], note:'A single point of cool blue-green light under the fern. It seems to be waiting for someone.' },
-    { id:'moth',      name:'Bogong moth',    hours:[20,24], weight:2, h:20, icon:'🦋', fly:24, speed:0.12, alsoHours:[0,4], note:'Drawn to the lantern. Told firmly to stay away from the flame. Mostly did.',
-      trouble:{ text:'is fluttering against the shelter canvas, trying to get out of the night.', act:'Guide it to the lantern', thanks:'It settled by the lantern glass and stayed there, content, all evening.', task:'lantern' } },
+    { id:'moth',      name:'Bogong moth',    hours:[20,24], weight:2, h:20, icon:'🦋', fly:24, speed:0.12, alsoHours:[0,4], note:'Drawn to the firelight. Told firmly to stay away from the flames. Mostly did.',
+      trouble:{ text:'is fluttering against the shelter canvas, lost in the firelight.', act:'Show it the way out', thanks:'It found the open night again and went off towards the mountains, where the bogongs go every year.' } },
     // seasonal visitors (southern hemisphere seasons; seasons: only then)
     { id:'silvereye', name:'Silvereye',      hours:[7,17],  weight:3, h:26, faces:'L', icon:'🐤', speed:0.2, eats:['berry'], seasons:['autumn','winter'],
       note:'Turns up in a chattering little flock when the weather cools, every one of them wearing a neat white ring round the eye, like spectacles.' },
     { id:'kingfisher', name:'Sacred kingfisher', hours:[6,16], weight:2, h:36, faces:'L', icon:'🐦', speed:0.18, seasons:['spring','summer'], stage:'green',
       note:'Back from the north for the warm months, turquoise as the stream. Sits very still on the fence and waits for something to move.' },
     { id:'beetle',    name:'Christmas beetle', hours:[18,23], weight:2, h:16, icon:'🪲', fly:20, speed:0.1, seasons:['summer'],
-      note:'A clumsy, shining gold-green beetle that blundered into the lantern light, apologised, and did it again.' },
+      note:'A clumsy, shining gold-green beetle that blundered into the firelight, apologised, and did it again.' },
     { id:'cockatoo',  name:'Yellow-tailed black cockatoo', hours:[7,16], weight:1, h:60, faces:'L', icon:'🐦‍⬛', fly:36, speed:0.15, seasons:['winter'], stage:'meadow',
       note:'A slow pair came over, wailing. Old gnomes say that means rain. It rained.' },
     // the platypus (docs/ANIMALS.md section 8): never spawned like the others (hours 0-0). It only glides past on the last healed
@@ -527,12 +536,12 @@ window.CONTENT = {
     { id:'wisp',      name:'Will-o\'-wisp', hours:[21,24], weight:1, h:30, icon:'💫', fly:40, speed:0.08, stage:'green', alsoHours:[0,4], spirit:true,
       note:'A small cold light that bobbed just out of reach and left a little brighter than it came.' },
   ],
-  // the rabbit (game.js rabbitDue/rabbitRaid): a cheeky regular. after = minutes of food in the dish while the seedlings are up before it comes.
+  // the rabbit (game.js rabbitDue/rabbitRaid): a cheeky regular that always comes for the first sprouts. after = minutes the seedlings are up before it comes (it empties the dish first, if there is food in it).
   barrel: { every: 360, give: { water: 2 } },   // the scrubbed rain barrel fills every `every` minutes; tap it to draw the water
   rabbit: { after: 2,
     dish: 'A rabbit hopped up to the feeding dish and ate every last bit. Then it looked about for more.',
     raid: 'The rabbit hopped into the seed bed and nibbled the tops off a few sprouts before Wendel could gently shoo it off. "Oh, you poor hungry thing," said Wendel. "All right. A fence, then, so we can share."',
-    away: 'A rabbit came while you were away. It emptied the feeding dish, then nibbled a few of the sprouts. Wendel is already drawing a fence, a kind one, with a gate.',
+    away: 'A rabbit came while you were away and nibbled a few of the sprouts. Wendel is already drawing a fence, a kind one, with a gate.',
     visits: [ 'The rabbit is back, nose pressed to the fence, looking at the sprouts.', 'The rabbit is asleep in the sun by the woodpile. Gerald the beetle does not approve.', 'The rabbit pinched a berry from the dish and sat there eating it, bold as anything.' ] },
   // the feeding dish (job "Set out a feeding dish"): put out seed or berries; whoever eats there on enough different days becomes a regular
   feeding: { foods:['seed', 'berry'], regularAfter:3, nestAfter:6 },
@@ -545,12 +554,16 @@ window.CONTENT = {
   // Each neighbour has a trade building (a job that changes the picture, then a small daily gift at their door), a few
   // sayings, the odd small favour, and one short story quest that shows a moment in Wendel and Hazel's marriage.
   village: {
-    firstAfter: 'house3',     // the first traveller turns up once the stump house is finished
+    firstAfter: 'page:3.5',   // the first traveller comes up the old track the night they move into the stump house (page 3.5)
+    // each traveller names the patch they would like to live on (game.js wishLot); it comes out of the mist if it was still dark,
+    // and their home job opens once it has grown to young meadow. {who} = their short name, {patch} and {where} = the patch.
+    wish: '{Who} has taken a fancy to {patch}, {where}. "If that ground came back to life," says {who}, "I could be very happy there."',
+    wishReady: '{Patch} has grown to young meadow. {Who} is already measuring it with a piece of string.',
     gapDays: 4,               // days after one neighbour moves in before the next traveller comes
     waveGapDays: 1,           // after waving a traveller on, someone else comes after about this long
     favourEvery: 360,         // minutes between small favours (only one waiting at a time)
     questAfterDays: 1,        // a neighbour's story begins about a day after their trade building is finished
-    // where homes go, nearest first: plain healed tiles (not the stream row or the path). A home needs one of these grown to young meadow.
+    // where homes go, nearest first: plain tiles (not the stream row or the old track). A home needs its patch grown to young meadow.
     lots: ['-1,0', '-1,1', '2,0', '-2,0', '2,1', '-2,1', '0,2', '-1,2', '0,-2', '-1,-2', '2,-2', '-2,-2', '2,2', '-2,2'],
     order: ['mabel', 'tobias', 'fernsby', 'pebbleworth', 'clem', 'barnaby', 'nettle', 'juniper'],   // who comes next (waved-on travellers go to the back)
   },
@@ -570,11 +583,11 @@ window.CONTENT = {
                 { ask:'I\'m trying a seed loaf. Have you 2 seeds to spare?', cost:{ seed:2 }, thanks:'There. It will be lumpy and wonderful.' },
                 { ask:'A drop of honey would make this cake sing. Just 1?', cost:{ honey:1 }, thanks:'Oh, that\'s the stuff. Come by later.' },
                 { ask:'Carrot cake today, if your bed can spare 3 carrots. Crooked ones are fine. Crooked ones are better.', cost:{ carrot:3 }, thanks:'You\'ll get the first slice, dear. The crooked bit.' } ],
-      quest:{ name:'The forgotten anniversary', steps:[
-        { say:'Mabel pulls you aside. "It is Wendel and Hazel\'s first anniversary this week. Hazel mentioned it, very lightly. Wendel has not mentioned it at all. I think the dear man has forgotten." A cake would help. She needs 3 seeds and 2 berries.', give:{ seed:3, berry:2 } },
+      quest:{ name:'The forgotten day', steps:[
+        { say:'Mabel catches Wendel by the oven, flour to her elbows. "It is a month this week since you two came up that hill," she says. "Hazel mentioned it to me, very lightly. You have not mentioned it at all." Wendel opens his mouth, and shuts it again. He had forgotten. A cake would help, Mabel says. She needs 3 seeds and 2 berries.', give:{ seed:3, berry:2 } },
         { say:'"Now the hard part," says Mabel. "Hazel\'s mother wrote her a honey-seed cake recipe on the back of a letter, and it blew away on the road here. She has never said, but she misses it." Look for a scrap of paper caught somewhere on the land.', find:{ name:'a scrap of old letter', icon:'📜' } },
-        { say:'The recipe! Wendel goes pale, then pink, then very determined. He and Mabel bake it together in secret, late, by the oven.', job:{ name:'Bake the secret cake with Mabel', short:'baking in secret', who:'him', act:'carry', mins:180, cost:{ water:1 } } } ],
-        story:{ title:'The forgotten anniversary', text:'He had forgotten. He admitted it at once, standing in the doorway with the cake held out like a shield. Hazel looked at the cake, and at the familiar slanting handwriting propped beside it, and sat down rather suddenly. "That\'s Mum\'s," she said. They ate it on the step, all three of them, and Wendel was forgiven by the second slice.' },
+        { say:'The recipe! Wendel goes pink, then very determined. He and Mabel bake it together in secret, late, by the oven.', job:{ name:'Bake the secret cake with Mabel', short:'baking in secret', who:'him', act:'carry', mins:180, cost:{ water:1 } } } ],
+        story:{ title:'The forgotten day', text:'He had forgotten. He admitted it at once, standing in the doorway with the cake held out like a shield. Hazel looked at the cake, and at the familiar slanting handwriting propped beside it, and sat down rather suddenly. "That\'s Mum\'s," she said. They ate it on the step, all three of them, and Wendel was forgiven by the second slice.' },
         reward:{ light:3, bread:2 } } },
 
     { id:'tobias', name:'Tobias Burl', short:'Tobias', trade:'the carpenter', base:'him', look:{ hat:205, coat:28, s:1.1 }, home:'log', door:'#5a7a3a', icon:'🪚',
@@ -877,8 +890,8 @@ window.CONTENT = {
   },
 
   // ---------- the festival: the soft ending (decided by Bryce 2026-10-25) ----------
-  // Once enough neighbours live here, they propose a Greening Festival for the healed valley, and quietly tell you (only you) it
-  // is really the wedding feast Wendel and Hazel never had. Festival jobs get the green ready; then, on the next evening, the
+  // Once enough neighbours live here, they propose a Greening Festival for the healing valley, and plot among themselves (you
+  // overhear; the couple must not) that it is really the wedding feast Wendel and Hazel never had. Festival jobs get the green ready; then, on the next evening, the
   // night itself plays as story pages, the couple dance on the green, and an "end of the beginning" page closes the main story.
   // The world keeps going after that, and the festival comes back on the same date every year.
   // {who} = the neighbour who has lived here longest. alt = cost used if nobody in the village makes one of the goods in cost.
@@ -900,15 +913,15 @@ window.CONTENT = {
       { id:'fest:feast', name:'Help bake the festival feast', short:'baking the feast', who:'him', act:'carry', cost:{ bread:3, honey:2, pumpkin:1, bean:2 }, alt:{ seed:4, berry:6, water:2 }, mins:300, green:0, needs:['fest:table'], spot:'table',
         blurb:'Loaves, honey cakes, berry tarts and one enormous pie. Wendel is in charge of tasting.' },
     ],
-    idea: { title:'A festival?', text:'The neighbours came up the path together this morning, which has never happened before, and stood in a row outside the stump house looking pleased with themselves. "The valley is green again," said {who}. "Every patch of it. That deserves a festival." Wendel was delighted. Hazel was already making a list. A Greening Festival, then: a mown green, a long table, bunting, lanterns, a flower arch and a feast.' },
-    secret: { title:'A secret', text:'As the others went off arguing about bunting, {who} hung back and beckoned to you, the helper nobody quite sees. "They married on the road, those two," {who} whispered. "No feast. No flowers. No dancing. So this festival is going to be their wedding feast, and they are not to know until the night. Not a word." A pause. "And the flower arch is not for the gate."' },
+    idea: { title:'A festival?', text:'The neighbours came up the path together this morning, which has never happened before, and stood in a row outside the stump house looking pleased with themselves. "The valley is coming back to life," said {who}. "Patch by patch. That deserves a festival." Wendel was delighted. Hazel was already making a list. A Greening Festival, then: a mown green, a long table, bunting, lanterns, a flower arch and a feast.' },
+    secret: { title:'A secret', text:'Later, well out of Wendel and Hazel\'s hearing, the neighbours put their heads together by the path. Nobody saw the luck that drifted close to listen. "They married on the road, those two," {who} whispered. "No feast. No flowers. No dancing. So this festival is going to be their wedding feast, and they are not to know until the night. Not a word." A pause. "And the flower arch is not for the gate."' },
     ready: 'Everything is ready on the green. The festival is {when}, from five o\'clock.',
     night: [
       { key:'fest-night', title:'The Greening Festival', text:'The lanterns came on one by one as the sun went down, and the whole village walked to the green in its best clothes. Wendel had combed his beard twice. Hazel had a sprig of wattle behind her ear. The table was so full that the benches creaked, and someone had to hold the pie down.' },
-      { key:'fest-surprise', title:'The surprise', text:'Before anyone sat down, {who} climbed onto the bench and tapped a cup. "This is a festival for the valley," {who} said, "and it is also a wedding feast. Yours. A year late, and you are not getting out of it." Everyone turned to look at Wendel and Hazel, standing under the flower arch, which was suddenly, obviously, a wedding arch. Hazel put both hands over her mouth. Wendel said "Oh," and then nothing at all for quite a long time.' },
+      { key:'fest-surprise', title:'The surprise', text:'Before anyone sat down, {who} climbed onto the bench and tapped a cup. "This is a festival for the valley," {who} said, "and it is also a wedding feast. Yours. Late, and you are not getting out of it." Everyone turned to look at Wendel and Hazel, standing under the flower arch, which was suddenly, obviously, a wedding arch. Hazel put both hands over her mouth. Wendel said "Oh," and then nothing at all for quite a long time.' },
       { key:'fest-dance', title:'The first dance', text:'They danced on the green, badly and happily, while the neighbours clapped the time and the wisps came down out of the dark to watch. "You never told me you could dance," said Hazel. "I can\'t," said Wendel. "I\'m just holding on to you." Over the stump house, low and warm, the first star came out.' },
     ],
-    end: { key:'fest-end', title:'The end of the beginning', text:'When you first came, this was a logged clearing full of rubbish, two small gnomes and a wheelbarrow. Now it is a village. This is not the end: the seasons will keep turning, visitors will keep coming, and Wendel and Hazel will keep growing older together, slowly, the way the trees do. Come and visit whenever you like. They will be glad to see you.' },
+    end: { key:'fest-end', title:'The end of the beginning', text:'When you first came, this was a logged clearing full of rubbish, two small gnomes and a wheelbarrow. Now it is a village. This is not the end: the seasons will keep turning, visitors will keep coming, and Wendel and Hazel will keep growing older together, slowly, the way the trees do. Come back whenever you like. There will always be something growing, and they will always be glad of a little luck.' },
     reward: { light:5 },
     yearly: { title:'Another year', text:'The bunting came out of the chest again this morning, a little faded, and the lanterns went back up round the green. "{years}," said Hazel. "Doesn\'t feel like it," said Wendel. "Feels like longer," said Hazel, and kissed him, to show she meant it nicely. Tonight there is a festival on the green.' },
   },
@@ -917,7 +930,9 @@ window.CONTENT = {
   // nothing here is plot, only the shape: ordered beats with a trigger and a flag the engine can set.
   // The first month's story (docs/STORY.md is the master for the words). Each page opens once, from something the player
   // already does (when: see game.js storyDue), at most one at a time and never over an open menu; all are kept in the Journal.
-  // text: paragraphs; a paragraph may be { if:'taskId' | 'flag:x', text } (left out until that has happened). pic: a creature
+  // Pages come in book order: a page waits for the page before it (after: the pages it waits for instead), and the jobs that
+  // come next wait for the pages (tasks needs 'page:<id>'), so the story is in charge of what unlocks.
+  // text: paragraphs; a paragraph may be { if:'taskId' | 'flag:x' | 'season:a|b', text, else } (left out until that has happened). pic: a creature
   // portrait as the stand-in picture until the page is painted (art slot page-<id with a dash>, e.g. page-1-1); else the couple.
   story: { beats: [ /* { id:'staff-found', when:{ landStage:'green' }, text:'...', sets:'staffFound' } */ ],
     chapters: { 1:'Chapter one: The bare clearing', 2:'Chapter two: Putting down roots', 3:'Chapter three: A proper home' },
@@ -947,11 +962,12 @@ window.CONTENT = {
         `They planted in rows, with one wiggle at the end, which is how most marriages work.`,
         `By evening the bed was dark and damp and very still. By morning it was not. Tiny green shoots stood up all over it, looking surprised to be there.` ] },
       { id:'1.5', ch:1, when:'flag:rabbit', pic:'rabbit', title:'The thief', button:`Fair's fair`, text:[
-        `Somebody had been in the seed bed. Somebody with long ears, a white tail and no shame at all. The feeding dish was licked clean, and three of the sprouts were bitten off at the bottom.`,
+        [ `Somebody had been in the seed bed. Somebody with long ears, a white tail and no shame at all.`,
+          { if:'flag:rabbitDish', text:`The feeding dish was licked clean, and three of the sprouts were bitten off at the bottom.`, else:`Three of the sprouts were bitten off at the bottom.` } ],
         `Wendel stood over the bitten stalks with a stick in his hand, ready to make a very stern speech about thieves. He had got as far as "Now, see here" when he noticed how small the footprints were.`,
         `Hazel had seen the rabbit from the doorway: thin as a rake, sitting up with a sprout in its mouth, chewing as fast as it could in case someone took it away.`,
         `"It's hungry, love," she said. "Same as us when we got here."`,
-        `Wendel put the stick down and was quiet for a moment. Then he picked it up again, and a few more, and started measuring. "A low fence," he said softly. "With a gate. It can have the dish. We'll just have to ask it to leave the carrots."` ] },
+        `Wendel put the stick down and was quiet for a moment. Then he picked it up again, and a few more, and started measuring. "A low fence," he said softly. "With a gate. We'll put something out for it, and just ask it to leave the carrots."` ] },
       { id:'2.1', ch:2, when:'flag:firstpick', title:'Supper from our own ground', button:'About that roof', text:[
         `The first carrots came out of the ground small, crooked and very orange. One had two legs. Wendel said it looked like him. Hazel said it was better looking.`,
         `They washed them in the spring and ate them by the fire with a pinch of salt, and nothing had ever tasted so good, because nothing had ever been theirs before.`,
@@ -982,12 +998,14 @@ window.CONTENT = {
         `The land is waking up. There's green at the edges now, I'm sure of it.`,
         `I think somebody is helping us. Things turn up where we need them. Twigs by the door. Dew in the morning. I don't know who you are, but thank you.`,
         { margin:true, text:`Best week of my life. Lost my pipe four times. Found it in her apron four times.` } ] },
-      { id:'3.0', ch:3, when:'startable:house1', title:'A house for winter', button:`Let's build a house`, quest:true, text:[
-        `It was the first cold morning. Not very cold: just enough that Hazel's breath made a little cloud, and Wendel's toes found hers under the blanket and were told to go away.`,
+      { id:'3.0', ch:3, when:'next', title:'A house for winter', button:`Let's build a house`, quest:true, text:[
+        { if:'season:spring|summer', text:`It was a grey morning, the first in weeks. Not cold: just damp enough that the canvas sagged and dripped, and Wendel's toes found Hazel's under the blanket and were told to go away.`,
+          else:`It was the first cold morning. Not very cold: just enough that Hazel's breath made a little cloud, and Wendel's toes found hers under the blanket and were told to go away.` },
         `Hazel sat up and looked at the canvas, and the moss roof, and the big old stump the shelter leaned against.`,
         `"Wendel," she said. "That stump is hollow."`,
         `"Mm."`,
-        `"A stump that size could be a house. A real one. With a door, and windows, and a chimney, before the winter comes."`,
+        { if:'season:winter', text:`"A stump that size could be a house. A real one. With a door, and windows, and a chimney, before this winter gets any colder."`,
+          else:`"A stump that size could be a house. A real one. With a door, and windows, and a chimney, before the winter comes."` },
         `Wendel was out of bed so fast he took the blanket with him. He had been waiting the whole of his life for somebody to say those words.` ] },
       { id:'3.1', ch:3, when:'garden', title:'Next door', button:'Hello there', text:[
         `Hazel stood at the edge of the yard with her hands on her hips and looked at the patch next door, which had been grey and bare a week ago and was now, very definitely, green.`,
@@ -1002,7 +1020,7 @@ window.CONTENT = {
         `First it shivered. Then four knobbly root legs wriggled out from under its cap, tested the ground one at a time, and stood it up with a creak. It looked about, the way you do when you've slept too long. Then it set off, wobble, wobble, wobble, to the far corner of the garden, and sat down there with a sigh of great satisfaction.`,
         `Wendel's pipe fell out of his mouth. Hazel picked it up and put it back in without looking.`,
         `"Did you do that?" Wendel asked her.`,
-        `"No," said Hazel, and looked straight at you. "But I know who did."` ] },
+        `"No," said Hazel. She looked round at the empty air, the way you look for somebody who has just left the room, and smiled. "Luck lives here," she said. "I'm sure of it."` ] },
       { id:'3.3', ch:3, when:'flag:miceIn', pic:'mouse', title:`Somebody's moved in`, button:'Welcome home, mice', text:[
         `On the morning after the toadstool grew its door, there was a tiny line of washing strung between its stalk and a blade of grass.`,
         { if:'helped:mouse', text:`The field mouse they had once helped out of a bottle had moved in, and brought her family: one husband, very polite, and three small mice who had already found the seed bed. Hazel let them off, the first time.`,
@@ -1028,14 +1046,15 @@ window.CONTENT = {
     ],
     // the stump house quest, started by page 3.0 and shown at the top of the Journal
     quest: { name:'A proper home', steps:[ ['house1', 'Hollow out the old stump'], ['house2', 'Fit a plank wall and windows'], ['house3', 'Raise the roof and chimney'], ['page:3.5', 'Move in'] ] },
-    // The Wood spirit comes five times, once each time your magic grows, and floats by what it is teaching about until you tap it.
-    // Its one lesson: magic is for asking, not pushing. The gnomes cannot see it.
+    // The Wood spirit comes five times in the first month, always in this order (game.js spiritLesson), and floats by what it is
+    // teaching about until you tap it. Then it comes back to teach each new kind of bare patch. Its one lesson: magic is for
+    // asking, not pushing. The gnomes cannot see it; it is the only one who ever talks to you.
     spiritFirst: `Something soft and green drifts out of the trees, like a handful of new leaves that forgot to fall. It looks at you as if it has always known you were there.`,
     lessons: [
       { n:1, at:'seedbed', spell:'coax', title:'Coax a sprout', text:`"You feel the light you gather, little spirit? That is your magic. It cannot make a thing grow. Nothing can. But it can whisper to a seed that is already trying, and tell it to hurry, because somebody is hungry."` },
       { n:2, at:'spring', spell:'rain', title:'Call soft rain', text:`"The clouds go over this hill without stopping. They think nothing lives here. Ask them nicely to look down, and they might. Never ask for a storm. A garden needs a drink, not a bath."` },
       { n:3, at:'toadstool', spell:'legs', title:'Give the toadstool legs', text:`"Big, isn't it? And very settled. You could push it all day and it wouldn't care. But ask it kindly, give it a little light, and it will find its own legs. It might even like the corner better."` },
-      { n:4, at:'edge', spell:'wake', title:'Wake the land', text:`"See out there, where the world is only drawn and not yet painted? It is not dead. It is asleep, and dreaming of what it was. When the gnomes have done their part, you can wake it a little sooner. Only a little. Waking up is not something you rush."` },
+      { n:4, at:'edge', spell:'wake', title:'Wake the land', text:`"See out there, past the garden, where the land is still dark? It is not dead. It is asleep, and dreaming of what it was. When the gnomes have done their part, you can wake it a little sooner. Only a little. Waking up is not something you rush."` },
       { n:5, at:'fire', spell:null, title:'A bright fire', text:`"Your light is strong now, stronger than mine was at your age. There is nothing new to teach you today, only this: you will find light in the dark, in wisps and dew, and you will also find it every time you are kind. Help the small ones when they are in trouble. That is the brightest magic there is."`,
         after:`"I'll be about. When the valley needs something new, I'll come and show you."` },
     ],
@@ -1051,13 +1070,13 @@ window.CONTENT = {
     ],
     moveInAfter: 720,   // minutes after the home is made before someone moves in (after: a move-in's own wait)
     // "All done for now": once a visit, when both gnomes are busy (or nothing more can be started) and nothing is left lying about.
-    // {time} is when their next job finishes.
+    // {time} is when their next job finishes. They are talking to each other: they feel a kindly luck about, but never see you.
     allDone: {
-      busy: [ ['her', `That's us busy till about {time}, love. Off you go. We'll be here.`], ['him', `Nothing more to do but wait and work. Come back after {time} and see what we've made.`], ['her', `Go on, shoo. A watched seed bed never sprouts.`] ],
-      nothing: [ ['him', `We'll need a few more bits before the next job. The land always leaves something out. Come and look later.`], ['her', `That's all we can do today. It's enough. A little each day, that's the trick.`] ],
-      evening: [ ['her', `Kettle's on, the fire's lit, and we're stopping. Come and say goodnight later if you like.`], ['him', `I'm putting my feet up. Don't tell anyone I said that before six.`] ],
-      night: [ ['her', `He's asleep already. Come back in the morning, there'll be dew.`], ['him', `Night, little spirit. Mind the wisps on the way out.`] ],
-      bigDay: [ ['her', `What a day. I think we've earned a sit down, the three of us.`] ],
+      busy: [ ['her', `That's us busy till about {time}, love. Nothing to do till then but the doing.`], ['him', `Nothing more to start till about {time}. Then we'll see what we've made.`], ['her', `Leave it be, Wendel. A watched seed bed never sprouts.`] ],
+      nothing: [ ['him', `We'll need a few more bits before the next job. The land always leaves something out, if you wait.`], ['her', `That's all we can do today. It's enough. A little each day, that's the trick.`] ],
+      evening: [ ['her', `Kettle's on, the fire's lit, and we're stopping. Come and sit, love.`], ['him', `I'm putting my feet up. Don't tell anyone I said that before six.`] ],
+      night: [ ['her', `He's asleep already. There'll be dew in the morning.`], ['him', `Goodnight, valley. Goodnight, Gerald. Goodnight, whatever luck lives here.`] ],
+      bigDay: [ ['her', `What a day. I think we've earned a sit down, love.`] ],
     },
   },
 
@@ -1081,7 +1100,7 @@ window.CONTENT = {
           "Every stump was once a tree that had a view.", "I'm going to build her a garden bench. I haven't told her.", "One acorn, one oak. That's the maths.", "Look at that moss. Doing it all without being asked.",
           "Marriage tip: never say 'just a quick job'.", "The soil's coming back. Smell that? That's life.", "We're not saving the world. We're saving this corner of it.", "I think the fence is leaning on me.",
           "That robin is judging my digging.", "Let's leave the long grass long. Somebody lives in it.", "Tea first. Heroics after."],
-    her: ["Hello, dear. Come to help?", "The sapling wants water, not wishes.", "Isn't it quiet without the trees?", "I've put the moss aside for the roof.", "A little each day, that's the trick.", "Listen… was that a robin?",
+    her: ["I left a crumb on the step for the luck. Don't laugh.", "The sapling wants water, not wishes.", "Isn't it quiet without the trees?", "I've put the moss aside for the roof.", "A little each day, that's the trick.", "Listen… was that a robin?",
           "He built the doorstep crooked. I love it.", "Wattle and daisies by spring, that's my promise.", "Everything here is borrowed from the soil. We should say thank you.", "I counted four new green shoots this morning.",
           "Plant something that will outlast you.", "I've named the sapling. I'm not saying the name.", "We have a home, a kettle and each other. What more is there?", "The bees will come once there's something for them. Build it and they will.",
           "Mind the clover, it's feeding the soil.", "Do you hear that? The frogs are practising.", "A gnome could get used to this.", "Nothing is waste. Not even the dead leaves.", "We don't own this patch. We just look after it.",
@@ -1128,7 +1147,7 @@ window.CONTENT = {
   // Each animal's story goes on over real days: at most one beat a day, each waiting for its moment (when). A beat opens as a small
   // card (kind 'card', with the animal's portrait) or a storybook page (kind 'page', painting slot page-a-<id>), and sets
   // flags.<id> so the picture and the jobs can follow. Closing beats leave a doorstep gift the next morning (gifts).
-  // when: after (another beat, done) · days (since that beat, or since moved/done) · done (a job) · moved (a creature moved in)
+  // when: after (another beat, done) · days (since that beat, or since moved/done/met) · done (a job) · moved (a creature moved in)
   //       · flag · met (a creature in the journal) · nest (it lives nearby) · rabbitFed (days the rabbit ate at the dish after the fence)
   //       · season (southern hemisphere, by the phone's date) · hours [from, to) (may wrap past midnight)
   animals: {
@@ -1206,7 +1225,7 @@ window.CONTENT = {
         `Wendel and Hazel watched from behind the woodpile, very still. When it finished, Hazel clapped before she could stop herself. The lyrebird looked straight at her, bowed (they both swear it bowed), and walked back into the ferns.` ] },
 
       // short arcs: one small closing moment each
-      { id:'robinChicks', who:'robin', kind:'card', gift:'robin', when:{ nest:'robin', season:'spring', hours:[6, 18] }, title:'A red thread', button:'Lovely', text:[
+      { id:'robinChicks', who:'robin', kind:'card', gift:'robin', when:{ nest:'robin', met:'robin', days:14, season:'spring', hours:[6, 18] }, title:'A red thread', button:'Lovely', text:[
         `Hazel's red thread turned up in the robins' nest, woven in very neatly. She said that was a compliment.`,
         `Two chicks peep from it now, mouths wide, all day long.` ] },
       { id:'wrenPair', who:'wren', kind:'card', gift:'wren', when:{ nest:'wren', season:'spring', hours:[6, 17] }, title:'Practising', button:'Sing on', text:[
