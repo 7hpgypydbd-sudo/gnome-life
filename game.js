@@ -352,7 +352,7 @@ const G = {
     return [ns, ew].filter(Boolean).join(' and ') + (Math.abs(x) + Math.abs(y) > 1 ? ', further out' : ''); },
   healStepDone(k, i) { const st = this.healSteps(k)[i], tk = this.s.tasks[`heal:${k}:${i}`]; return !!(tk && tk.done) || (!!st.once && !tk && !!this.s.flags[st.once]); },
   healAt(k) { const n = this.healSteps(k).length; let i = 0; while (i < n && this.healStepDone(k, i)) i++; return i; },   // the first job not done yet (n: all done)
-  healClaimed(k) {   // a neighbour's lot, the festival green or the couple's garden: the chain stops at first green and that takes over
+  healClaimed(k) {   // a neighbour's lot, the festival green or the couple's garden: the chain stops once that takes over (neighbours wait for young meadow, see freeLot)
     const s = this.s; if (k === '0,1' || s.festival.tile === k || Object.values(s.village.folk).some(f => f.tile === k)) return true;
     return Object.entries(s.tasks).some(([id, tk]) => id.startsWith('home:') && tk.tile === k);
   },
@@ -571,13 +571,13 @@ const G = {
     const s = this.s, taken = new Set(Object.values(s.village.folk).map(f => f.tile));
     for (const tk of Object.values(s.tasks)) if (tk.tile && !tk.done) taken.add(tk.tile);
     if (s.festival.tile) taken.add(s.festival.tile);
-    return C.village.lots.find(k => s.tiles[k] && s.tiles[k].state === 'green' && !taken.has(k)) || null;
+    return C.village.lots.find(k => s.tiles[k] && s.tiles[k].state === 'green' && (!s.tiles[k].kind || this.stageIndex(k) >= 2) && !taken.has(k)) || null;   // young meadow (old saves' plain greened tiles still count)
   },
   gateWhy(d) {   // extra reasons a job cannot start yet, in words ('' = fine)
     const busy = d.who && Object.entries(this.s.tasks).find(([id, tk]) => !tk.done && tk.endsAt > now() && id !== d.id && (this.taskDef(id) || {}).who === d.who);   // one job at a time for each gnome
     if (busy) return `${C.names[d.who]} is busy with ${lc(this.taskDef(busy[0]).name)}`;
-    if (d.home && !this.freeLot()) return 'needs a healed patch next door for their home';
-    if (d.claims && !this.s.tasks[d.id] && !this.freeLot()) return 'needs a healed patch with no home on it';
+    if (d.home && !this.freeLot()) return 'needs a patch next door grown to young meadow for their home';
+    if (d.claims && !this.s.tasks[d.id] && !this.freeLot()) return 'needs a patch grown to young meadow with no home on it';
     if (d.healTile) { const w = this.healWait(d.healTile, d.step); if (w > now()) return `the tree seedlings are still growing (ready in ${this.timeLeft(w)})`;
       if (d.needsFlow && !this.canFlow(d.healTile)) return 'the water cannot reach this stretch yet: clear the creek next to it first'; }
     if (d.farm && d.hours && !this.inHours(d.hours, new Date(now()).getHours())) return d.hoursWhy || 'not at this time of day';

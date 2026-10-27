@@ -538,7 +538,7 @@ window.CONTENT = {
     waveGapDays: 1,           // after waving a traveller on, someone else comes after about this long
     favourEvery: 360,         // minutes between small favours (only one waiting at a time)
     questAfterDays: 1,        // a neighbour's story begins about a day after their trade building is finished
-    // where homes go, nearest first: plain healed tiles (not the stream row or the path). A home needs one of these to be green.
+    // where homes go, nearest first: plain healed tiles (not the stream row or the path). A home needs one of these grown to young meadow.
     lots: ['-1,0', '-1,1', '2,0', '-2,0', '2,1', '-2,1', '0,2', '-1,2', '0,-2', '-1,-2', '2,-2', '-2,-2', '2,2', '-2,2'],
     order: ['mabel', 'tobias', 'fernsby', 'pebbleworth', 'clem', 'barnaby', 'nettle', 'juniper'],   // who comes next (waved-on travellers go to the back)
   },
