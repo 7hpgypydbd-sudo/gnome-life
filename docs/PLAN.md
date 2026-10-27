@@ -274,7 +274,98 @@ Lamp posts made by a job, unlocking one by one at Bryce's spots; dirt darkening 
 1: 0.20,0.08 · 2: 0.92,0.08 · 3: 0.08,0.20 · 4: 0.56,0.20 · 5: 0.68,0.20 · 6: 0.92,0.20 · 7: 0.56,0.32 · 8: 0.68,0.32 · 9: 0.80,0.32 · 10: 0.92,0.32 · 11: 0.32,0.44 · 12: 0.80,0.44 · 13: 0.92,0.44 · 14: 0.08,0.56 · 15: 0.32,0.56 · 16: 0.44,0.56 · 17: 0.80,0.56 · 18: 0.92,0.56 · 19: 0.08,0.68 · 20: 0.20,0.68 · 21: 0.32,0.68 · 22: 0.80,0.68 · 23: 0.92,0.68 · 24: 0.08,0.80 · 25: 0.32,0.80 · 26: 0.80,0.80 · 27: 0.92,0.80 · 28: 0.08,0.92 · 29: 0.20,0.92 · 30: 0.32,0.92 · 31: 0.44,0.92 · 32: 0.68,0.92 · 33: 0.80,0.92 · 34: 0.92,0.92.
 Suggested order if Bryce doesn't pick: by the door 0.40, 0.38; by the hearth 0.60, 0.58; on the spring path 0.70, 0.27; where the yard meets the village path 0.92, 0.66; at the garden track 0.38, 0.94; then two in the garden (G 0.52, 0.44 and G 0.36, 0.52).
 
+## Healing the bare tiles (AGREED by Bryce 2026-10-27, thread "Brainstorm how the barren tiles heal")
+
+**Bryce's steer:** the oval seed bed belongs to the home tile only. The other tiles heal in their own creative, natural ways (planting seeds and so on). Farming only arrives on tiles where neighbours move in. **Bryce picked "the full mix"**: every kind of bare tile has its own hurt and its own fix, drawing on wildflower meadows, a tree nursery, following the water and creature helpers, with farms only for neighbours and one Wood spirit spell for each kind of tile. Not built yet; the build is its own later chat (Opus medium, preview first).
+
+**What it replaces:** today every revealed tile heals with one generic job, `C.regrow` "Coax the land next door" (seed 3, moss 3, water 2, 6 h, magic 4), generated per tile in `game.js` (`taskDef('regrow:'+k)`), and the tile flips straight from bare to `tile-green`. That job goes. **Bryce (2026-10-27): "There should be multiple steps we need to work at, like on the home tile."** So every tile gets a real chain of about 8-10 jobs, like the home tile's early chain (clear the ground, woodpile, dig, find water, fetch water, plant...): the jobs unlock one after another (not all up front), each takes 15 minutes to a few hours, one job per gnome at a time, either gnome can do any of them, each has a working animation beside what it works on, and each one visibly changes the tile. A tile takes several days of visits to heal, the way the home yard does.
+
+### Rules for every tile
+- **Each tile tracks its own land stage** (bare, first green, young meadow, young woodland), like the home tile's `landStages`. This is also what DECORATIONS.md needs for each tile's little makes.
+- **Greening rule still holds:** clearing and building give 0 green; only planted, growing things and creatures moving into gnome-made homes give green. So each chain is: put right the hurt (0 green), then plant or invite (green).
+- **Tap a bare tile** to open its little to-do card ("What this patch needs"), written in Hazel's or Wendel's voice. Wendel is gentle and caring in every line.
+- **One spell per kind of tile, taught by the Wood spirit** the first time that kind of tile is revealed (same teaching card as the toadstool lesson: magic asks, it never pushes). The spells only help something that is already trying: call the rain, ask the wind, wake a sleeping seed, sing the water on.
+- **Unopened tiles stay DARK** (pencil-sketch land is on the maybe pile).
+- **More than half of every tile stays wild.** Nothing in rows, and no oval beds off the home tile.
+- **Little makes** (DECORATIONS.md "Everywhere else") open per tile as each one reaches a new stage.
+
+### The kinds of bare tile and their step-by-step chains
+The tile kind comes from its art today (`BARREN` in index.html: plain, stumps, fence, dead tree; the stream row shows the dry creek). Steps unlock in order; the stage line shows where the tile moves on (and the next little makes open). Clearing and building steps give 0 green; planting and creatures moving in give the green.
+
+**1. Rubbish and old fence tiles (loggers' junk) -> wildflower meadow**
+1. *Pick up the loggers' rubbish.* A gnome walks about with the wheelbarrow; the junk disappears piece by piece. Gives a few twigs and stones back.
+2. *Pull out the old fence.* Post by post. The good posts are stacked to reuse as stakes; the tins go on Wendel's wind spinner at home.
+3. *Fork the trampled ground.* Patch by patch the hard ground turns to soft dark earth (like the seed bed's wet patches).
+4. *Fetch water* (2-3 trips from the spring or rain barrel). The forked earth darkens. -> **first green** once the first seeds take.
+5. *Roll seed balls* (Hazel or Wendel, at home: mud + wildflower seed heads from flowers already grown). Uses seed and water.
+6. *Toss the seed balls.* A throwing animation; small dots appear where they land, never in rows. Spell: **Ask the wind** carries them into the far corners. Each patch that sprouts gives +1 green.
+7. *Make a little beetle log pile* from the reused posts. A creature moves in (beetles, then a skink) -> green. -> **young meadow**.
+8. *Plant a nursery sapling* at the meadow's edge (see kind 3) with a stick guard.
+9. *Set a bee stone* (a flat stone with a dish of water): bees and butterflies arrive -> green. -> **young woodland** once the sapling is gnome-tall. Clem's honey now "tastes of the meadow".
+
+**2. Cracked earth with stumps / a dead tree -> creature helpers, then trees**
+1. *Clear the dead branches* under the dead tree (the tree itself STAYS). They become a stick heap at the edge.
+2. *Dig out one rotten stump* (like the home tile's "Dig out the old stump"); clods of turned earth are left.
+3. *Spread mulch* (leaf litter and bark carried over in baskets). The cracks fill in patch by patch. Spell: **Call the rain**, a soft shower over that tile only, which closes the last cracks.
+4. *Build a hollow-log home* by the stick heap. A **wombat** moves in (green) and digs the soil loose; a burrow mound appears. -> **first green**.
+5. *Make a rock pile* in the sun. A **skink** moves in (green).
+6. *Hang a nest box in the dead tree.* A possum or the owl takes the hollow (green). Hidden detail: a tiny door-knocker on the hollow that nobody admits to fitting.
+7. *Put out a seed dish on the dead tree's stump.* Birds come and drop seeds; sprouts appear under their perch over the next days (green). -> **young meadow**.
+8. *Plant two nursery saplings* with stick guards.
+9. *Bring fern spores from the creek* to the shade of the young trees: ferns uncurl (green). -> **young woodland**.
+
+**3. Plain bare tiles -> tree nursery and a small wood**
+Before the first plain tile: a home job *Build a nursery shelf* (Hazel's growing zone, near the sapling), then *Gather tree seeds* (gumnuts, wattle seeds, banksia cones, acorns as finds) and *Pot the seeds* in the couple's old travelling pots. Seedlings are ready in about a day; **Wake a sleeping seed** (spell) helps a slow one along.
+1. *Walk the patch* (Wendel, with his forked twig) and mark where the trees should go with little pegs.
+2. *Clear the stones* from those spots into a low wall at the edge.
+3. *Dig planting holes*, one hole at a time.
+4. *Carry a seedling out and plant it* (like the v54 sapling carry: carry, dig, plant, water), with a stick guard. Green. -> **first green**.
+5. *Fetch water* for the young trees (2-3 trips).
+6. *Plant two more seedlings* (one gum, one wattle). Green each.
+7. *Scatter grass seed* between the trees. -> **young meadow**.
+8. *Build a little bird bath* on the stone wall: a creature moves in nearby (green).
+9. *Mulch round the trees*; moss and ferns come up in their shade. -> **young woodland** once the first tree is gnome-tall.
+The young trees grow through 3-4 looks over real days (seedling, knee-high, gnome-tall, young tree). Detail: Wendel names every tree and has a quiet word with each one when he passes; tapping a tree shows its name.
+
+**4. Dry creek (the stream row behind the home) -> follow the water** (VISION: the spring's trickle heals the stream tiles)
+Heals in order from the spring at `-2,-1` along the row; the next stretch only starts when the one before is flowing.
+1. *Pull the rubbish out of the creek bed* (tins, a broken bucket, a cart wheel kept for later).
+2. *Roll away the stones* that dam the trickle. The water reaches this stretch: a thin wet line down the bed. Spell: **Sing the water on**, which coaxes the trickle round the last stones.
+3. *Dig a little channel* where the bank has fallen in. The trickle runs the length of the tile. -> **first green** (first reeds sprout by themselves at the wet edge).
+4. *Plant reeds and rushes* along the banks (2 trips). Green.
+5. *Lay a few flat stones* so the water burbles over them (a ford or a little pool).
+6. *Scoop out a frog pond* at the bend (one stretch only). Frogs move in (green). -> **young meadow**.
+7. *Plant a creekside sapling* from the nursery. Green.
+8. *Wait for the visitors*: a heron, a kingfisher, and on the last stretch the platypus passing at dawn (ANIMALS.md: it never moves in). -> **young woodland**.
+Three looks per stretch: dammed and dry, trickling, flowing with reeds. The crossing tile `1,-1` keeps its stepping stones until Tobias's bridge.
+
+**5. Path tiles (`tx=1`) -> verges**
+1. *Fill the cart ruts* on the old track. 2. *Lay stepping stones* along it, a gnome's stride apart. 3. *Toss seed balls* along both edges (flowering verges, green). 4. *Plant a sapling at the bend* (green). 5. little makes after that: milestones, a bench at the bend, a bird box on a post.
+
+### Neighbour farms (farming only where neighbours live)
+- When a neighbour moves onto a lot, their tile gets its own farm that suits their trade, in its own shape (patches, a curve, a few trees, never the oval): the **Pebbleworths' orchard** (a few fruit trees with old ladders), **Barnaby's wheat** patch for flour (shared with Mabel's baking), **Clem's lavender** rows round the skeps, **Mabel's herb and rhubarb patch** by the oven, **Nettle's flax and dye plants**, **the Fernsbys' family veg patch** with the twins' scarecrow, **Tobias's willow** for weaving and wood, **Juniper's moonflowers** that open at dusk (pale, not glowing: nothing glows).
+- The gnomes help plant and pick (a job on that tile), the neighbour pays them back in gifts, and pantry swaps happen here: this is where the home-grown veg gets used.
+- A farm plants growing things, so it greens that tile. Each farm has 2-3 growth stages.
+
+### What a 2-5 minute visit looks like
+Pick up what the land left you, start one small job per gnome on a tile that needs it (rubbish, seed balls, a sapling carry, a creek stretch), spend light on that tile's spell if it is waiting, look over what sprouted or who moved in since last time.
+
+### Art this needs (for a future art day, prompts not written yet)
+- For each kind of tile, an "in between" healing picture (rubbish cleared, meadow first dots, young meadow; cracked earth loosened; creek trickling and flowing): about 8 tile pictures.
+- Seed-ball scatter strip for both gnomes; nursery shelf with pots (empty, sprouting, full).
+- Gum, wattle and banksia saplings in 3 sizes each, plus a stick tree guard.
+- Creature homes: hollow log, rock pile, stick heap, dead tree hollow (with the tiny door-knocker); a wombat, a skink, dung beetles, a heron, reeds, frog pond.
+- Neighbour farms: 2-3 stages each for 8 neighbours (can be spread over several art days).
+- A Wood spirit teaching pose per spell (4).
+- Hidden snail in each new tile picture, as always.
+
+### Build notes for the later chat
+- Replace `C.regrow` with per-kind chains (`C.heal[kind]`), a tile kind from `BARREN`/`MAP`, a per-tile stage and green, and partial looks while a tile heals (instead of the instant swap to `tile-green`). Old saves: tiles already green stay green; tiles half-way through "Coax the land next door" finish as before.
+- `reveal()` still opens at most 2 neighbours at a time when a tile reaches first green.
+- Neighbour lots (`village.lots`) only take a home on a tile at first green or better; the farm then takes over that tile's later stages.
+
 ## What's next (prioritised)
+- **HEALING THE BARE TILES: AGREED (2026-10-27, Bryce picked "the full mix" and asked for multiple steps like the home tile).** See "Healing the bare tiles" above: every kind of bare tile has its own 8-10 step chain (rubbish -> seed-ball meadow, cracked earth -> creature helpers then trees, plain -> tree nursery and small wood, creek -> follow the water, paths -> verges), farms only on neighbours' tiles, one Wood spirit spell per kind. Not built; next a build chat (Opus medium, preview first), then an art day for its pictures.
 - **ANIMAL SIDE STORIES: WRITTEN (2026-10-27, thread "Write the animals' side stories").** Master is **`docs/ANIMALS.md`**: the five-beat pattern, the rabbit (truce, soft earth bank and burrow, four baby rabbits one spring morning), the mouse family (mouse door in the fence, the sock, the lit window), the owl (company, owl box in the big oak, one "Hoo"), the hedgehog (it was shopping, ASLEEP sign, thin and cross), short closing beats for the rest, and one **doorstep gift** system. New green is only +2 (burrow, owl box). Not yet built; wiring is a later Sonnet chat. **Pictures to add to the art list:** rabbit at the gate + burrow mound; 4 baby rabbits (one with a dandelion seed on its ear); mouse door prop + toadstool window variants (sock curtain, lit, chimney smoke); owl box in the oak, owl asleep in it, owl on the sapling stake; tawny frogmouth-as-a-branch hidden find; hedgehog in a leaf coat + ASLEEP sign; 4 story pages ("Four small noses", "The window with the sock in it", "Hoo", "Thin and cross", each with a snail); 8 gift icons; robin chicks, wren pair, frog pair. Bryce added (2026-10-27) the lyrebird, a named rabbit and a platypus (ANIMALS.md section 8; their pictures are in section 9). **TONE RULE (Bryce, 2026-10-27): Wendel is gentle, caring and understanding like David the gnome; never stubborn or curmudgeonly; couple conflicts come from good-natured misunderstandings or events** (also in VISION.md).
 - **FIRST MONTH'S STORY: WRITTEN and AGREED (2026-10-26, thread "Write the first month's story").** The words are the master in **`docs/STORY.md`** (living copy for comments: https://claude.ai/artifact/HUoQHsALfrq6PHMzn1mkT9): 16 story pages for chapters 1-3 (incl. 3.0, the stump house quest "A proper home", Bryce's idea), the Wood spirit's five lessons, new land-waking cards and the greening table, the "all done for now" lines, the tidy-ups in story words, a table of exactly where each card fires, a painting + hidden-snail list, a cross-check against the live game and v51, and the code changes needed. **NOT wired yet.** **Decorations by stage ("Little makes") AGREED the same day: `docs/DECORATIONS.md`** (each tile earns 4-5 makes per land stage, paid for with gathered resources so the pack never piles up, fixed spots, 20 yard + 14 garden makes listed). Next: a fresh chat fits the story AND the little makes into the game (see "Fitting it into the game" in STORY.md).
 - **NEXT CHATS after the concept review (2026-10-26, in order):** (1) **The first month's story**, Opus medium: chapter 1-3 story pages, Wood spirit as magic teacher, "all done for now" moment, the five tidy-ups and the new greening rule (preview anything visible). (2) ~~Pencil-sketch land~~ **MAYBE PILE (Bryce 2026-10-27): Bryce likes unopened tiles staying DARK for now; it adds mystery and cosiness. Do not build pencil-sketch land unless Bryce brings it back.** The decoration-spots plan across every tile still stands. (3) **Real crops**, Opus medium: a few vegetables, pantry, bean poles, compost bonus. (4) **Animal side stories**, Sonnet: closing pages, the rabbit's burrow and spring babies, the toadstool house and mouse family. (5) **Art day on the Mac**, Sonnet, once 1-4 have made their list: pencil-on-paper swatch, toadstool house, mouse family, crops, rabbit burrow and babies, Wood spirit poses, plus the waiting list (him-dowse strip, plank bench, small wheelbarrow). The job-mechanics chat keeps taking Bryce's playtest notes alongside.
