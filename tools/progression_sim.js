@@ -14,7 +14,7 @@ vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(REPO, 'content.js'), 'utf8').replace('window.CONTENT', 'var CONTENT = window.CONTENT'), ctx);
 vm.runInContext(fs.readFileSync(path.join(REPO, 'game.js'), 'utf8'), ctx);
 const G = ctx.window.GL, C = ctx.window.CONTENT;
-G.boot(); G.s.flags.welcomed = true;
+G.boot(); G.s.flags.welcomed = true; G.seePage('1.1');   // index.html opens the welcome page on the first visit
 const income = {}, spent = {};
 const _give = G.give.bind(G), _pay = G.pay.bind(G);
 G.give = items => { for (const [k,n] of Object.entries(items||{})) income[k]=(income[k]||0)+n; return _give(items); };
@@ -48,7 +48,7 @@ function watch() {
   const L = G.magicLevel(); if (L !== magicWas) { magicWas = L; ev('MAGIC', `level ${L}`); }
 }
 const started = new Set();
-let maxList = 0, listLog = [];
+let maxList = 0, maxAt = "", listLog = [];
 function visit() {
   G.catchUp(); watch();
   // test panel would show festival night; just finish it
@@ -74,8 +74,8 @@ function visit() {
     if (G.s.village.favour) G.doFavour();
     // jobs
     const list = G.taskList();
-    const vis = list.filter(v => v.state !== 'done');
-    if (vis.length > maxList) maxList = vis.length;
+    let pn = 0; const vis = list.filter(v => v.state !== 'done' && !v.def.make && !(v.def.healTile && v.state !== 'running' && ++pn > 3));   // the Jobs tab as drawn (Hazel's list is its own tab; at most three waiting patch jobs, the rest are on each patch's card)
+    if (vis.length > maxList) { maxList = vis.length; maxAt = stamp() + ": " + vis.map(v => v.def.healTile ? "patch" : v.def.farm ? "farm" : v.def.folk ? "village" : v.def.festival ? "fest" : "home:" + v.def.id).join(", "); }
     const ready = list.filter(v => v.state === 'ready' && v.can);
     const pri = v => v.def.home ? 0 : v.def.folk ? 1 : v.def.festival ? 1 : (!v.def.make && !v.def.healTile && !v.def.farm) ? 2 : v.def.healTile ? 3 : v.def.farm ? 4 : 5;
     ready.sort((a, b) => pri(a) - pri(b));
@@ -85,8 +85,9 @@ function visit() {
   }
 }
 function snapshotList(label) {
-  const list = G.taskList(); const by = {}; for (const v of list) (by[v.state] = by[v.state] || []).push(v.def.name);
-  listLog.push(`${label}: ready ${ (by.ready||[]).length }, locked/Not yet ${(by.locked||[]).length}, running ${(by.running||[]).length}\n   Not yet: ${(by.locked||[]).join(' | ')}`);
+  const list = G.taskList().filter(v => !v.def.make), by = {}; for (const v of list) (by[v.state] = by[v.state] || []).push(v.def.name);
+  const mk = G.taskList().filter(v => v.def.make && v.state !== 'done').length, nx = G.nextUp();
+  listLog.push(`${label}: Jobs tab: ready ${(by.ready||[]).length}, waiting (gnome busy etc.) ${(by.locked||[]).length}, running ${(by.running||[]).length}; Hazel's list ${mk}${nx ? `; Next: ${nx.name}, ${nx.why}` : ''}\n   ready: ${(by.ready||[]).join(' | ')}\n   waiting: ${(by.locked||[]).join(' | ')}`);
 }
 const hours = { 1: [8], 2: [8, 19], 3: [8, 13, 19], 4: [7, 11, 15, 20] }[VPD];
 snapshotList('Very first visit');
@@ -96,7 +97,7 @@ for (let d = 0; d < DAYS; d++) {
   if ([0,2,6,13,20,29,44,59].includes(d)) invLog.push(`D${d+1} pack: ` + Object.entries(G.s.inv).filter(([k,n])=>n).map(([k,n])=>k+' '+n).join(', '));
 }
 console.log(log.join('\n'));
-console.log('\nMax jobs listed (not done) at once:', maxList);
+console.log("\nMost rows in the Jobs tab (not done) at once:", maxList, "\n   at", maxAt);
 console.log(listLog.join('\n'));
 console.log('\nIncome:', JSON.stringify(income)); console.log('Spent:', JSON.stringify(spent)); console.log(invLog.join('\n'));
 console.log('\nFinal: green home', G.s.tiles['0,0'].green, 'tiles', Object.keys(G.s.tiles).length, 'neighbours', G.settled().length, 'festival', G.s.festival.stage);
