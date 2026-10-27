@@ -8,6 +8,8 @@ The whole game now works from start to festival with stand-ins (code drawings or
 
 **Already painted and in the game:** the ground tiles, Wendel and Hazel (young) walking and doing their jobs, the pick-up icons, the first props (shelter, campfire, barrel, bench...), and six creatures (robin, mouse, hedgehog, owl, ladybird, wood spirit).
 
+> **Animal side stories (v60, 2026-10-27): built with stand-ins.** The pictures they want are listed in `docs/ANIMALS.md` section 9 (13 pictures: rabbit at the gate and burrow, four baby rabbits, mouse door and toadstool window variants, owl box and owl asleep, frogmouth, hedgehog leaf coat and ASLEEP sign, five story pages, gift icons, lyrebird and platypus, chick/wren/frog pairs), with the slot names they drop into. Prompts not written yet.
+
 ## Ready to paint (prompts written): 55 pictures
 
 | Batch | What it is | Pictures | Prompts |
