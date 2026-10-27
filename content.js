@@ -234,6 +234,16 @@ window.CONTENT = {
     { id:'pebblepath', make:'garden', stage:'wood', at:[0.64, 0.59], name:'A painted pebble path to the creature corner', short:'painting pebbles', who:'either', act:'craft', cost:{ stone:8, berry:3, feather:1 }, mins:45, green:0,
       blurb:'Every pebble painted with a different animal. One is a snail.' },
 
+    // --- the animals' side stories (docs/ANIMALS.md): homes and little kindnesses that come up as each animal's story goes on ---
+    { id:'earthbank', make:'garden', stage:'green', at:[0.70, 0.74], name:'Heap a soft earth bank', short:'heaping the earth bank', who:'either', act:'dig', cost:{ stone:2, moss:1 }, mins:40, green:0, needs:['flag:rabbitTruce'],
+      blurb:'A soft mound of loose earth in the creature corner. A rabbit should have a proper home, Wendel says.' },
+    { id:'clover', make:'garden', stage:'green', at:[0.52, 0.82], name:'Sow a clover strip', short:'sowing clover', who:'either', act:'water', cost:{ seed:3 }, mins:30, green:0, needs:['flag:rabbitHome'],
+      blurb:'Clover for the rabbit\'s side of the fence. Peace costs three seeds.' },
+    { id:'mousedoor', make:'yard', stage:'barren', at:[0.62, 0.79], name:'Cut a mouse door in the fence', short:'cutting a mouse door', who:'either', act:'build', cost:{ twig:1 }, mins:20, green:0, needs:['flag:mouseGap'],
+      blurb:'A bark flap on a leather hinge, low in the seed bed fence, so the mouse children can come and go without making new holes.' },
+    { id:'owlbox', make:'yard', stage:'wood', at:[0.12, 0.74], name:'Put up an owl box by the oak', short:'putting up the owl box', who:'either', act:'build', cost:{ twig:4, moss:2, feather:1 }, mins:180, green:0, needs:['sapling'],
+      blurb:'The little oak is not big enough to hold one yet, so Wendel sets a tall post beside it. A box with a round hole, just so, for the owl.' },
+
     // --- with the neighbours: jobs that use what they make (each waits for that neighbour's trade building) ---
     { id:'workbench', name:'Fit Wendel a proper workbench', short:'fitting the workbench', who:'him', spot:'shelter', cost:{ plank:4, stone:2 }, mins:240, green:0, needs:['trade:tobias', 'leanto'],
       blurb:'In his workshop: real planks, a vice, and a drawer for the things he swears he will tidy away.' },
@@ -462,7 +472,7 @@ window.CONTENT = {
   visitors: [
     { id:'robin',    name:'Robin',       hours:[6,18],  weight:4, h:44, faces:'L', icon:'🐦', speed:0.25, eats:['seed'], nest:'nest',
       note:'Hops after the digging, hoping for worms.' },
-    { id:'mouse',    name:'Field mouse', hours:[0,24],  weight:3, h:80, faces:'L', icon:'🐭', speed:0.06, eats:['seed'], nest:'burrow',
+    { id:'mouse',    name:'Field mouse', hours:[0,24],  weight:3, h:80, faces:'L', icon:'🐭', speed:0.06, eats:['seed'],
       note:'Keeps a close eye on the seed bed.',
       trouble:{ text:'has got its head stuck in an old loggers\' bottle.', act:'Tip the bottle', thanks:'Out it popped, whiskers first, and sat washing its face as if nothing had happened.' } },
     { id:'hedgehog', name:'Hedgehog',    hours:[17,24], weight:3, h:50, faces:'R', icon:'🦔', speed:0.05, eats:['berry'], nest:'leafpile',
@@ -512,6 +522,8 @@ window.CONTENT = {
     // stretch of the creek at dawn, once the whole creek is healed (index.html PLATY). It never moves in, eats nothing, gives no gift.
     { id:'platypus', name:'Platypus', hours:[0,0], weight:0, h:22, faces:'L', icon:'🦫', speed:0.05, dawn:true,
       note:'Seen once. Will not be rushed.' },
+    { id:'lyrebird',  name:'Superb lyrebird', hours:[7,16], weight:1, h:70, icon:'🐦', speed:0.12, seasons:['winter'], stage:'meadow',
+      note:'A shy brown bird that stepped out of the ferns, raised a tail like a silver harp over its head, and danced on the bare earth as if nobody were watching.' },
     { id:'wisp',      name:'Will-o\'-wisp', hours:[21,24], weight:1, h:30, icon:'💫', fly:40, speed:0.08, stage:'green', alsoHours:[0,4], spirit:true,
       note:'A small cold light that bobbed just out of reach and left a little brighter than it came.' },
   ],
@@ -1034,8 +1046,10 @@ window.CONTENT = {
       { id:'beehouse', job:'beehive', note:'The little native bees have moved into the log house. The herbs are humming, and the land is the better for it.' },
       { id:'pond', job:'pond', note:'A frog has moved into the pond, and the land is the better for it.' },
       { id:'mice', flag:'miceIn', garden:true, note:'The mice have moved into the toadstool. Wherever someone makes a home, the land takes heart.' },
+      { id:'burrow', job:'earthbank', garden:true, after:2880, note:'The rabbit has dug a burrow into the earth bank. Wherever someone makes a home, the land takes heart.' },
+      { id:'owlbox', job:'owlbox', after:2880, note:'The owl has moved into the owl box. The land is the better for it.' },
     ],
-    moveInAfter: 720,   // minutes after the home is made before someone moves in
+    moveInAfter: 720,   // minutes after the home is made before someone moves in (after: a move-in's own wait)
     // "All done for now": once a visit, when both gnomes are busy (or nothing more can be started) and nothing is left lying about.
     // {time} is when their next job finishes.
     allDone: {
@@ -1110,6 +1124,110 @@ window.CONTENT = {
       { id:'wash',      weight:2, text:'Washing day. Two tunics, one apron, a very small pair of socks. Dry by noon.', hours:[8,12], task:'clothesline' },
     ],
   },
+  // ---------- the animals' side stories (docs/ANIMALS.md; game.js animalTick) ----------
+  // Each animal's story goes on over real days: at most one beat a day, each waiting for its moment (when). A beat opens as a small
+  // card (kind 'card', with the animal's portrait) or a storybook page (kind 'page', painting slot page-a-<id>), and sets
+  // flags.<id> so the picture and the jobs can follow. Closing beats leave a doorstep gift the next morning (gifts).
+  // when: after (another beat, done) · days (since that beat, or since moved/done) · done (a job) · moved (a creature moved in)
+  //       · flag · met (a creature in the journal) · nest (it lives nearby) · rabbitFed (days the rabbit ate at the dish after the fence)
+  //       · season (southern hemisphere, by the phone's date) · hours [from, to) (may wrap past midnight)
+  animals: {
+    chapter: `The animals' stories`,
+    rabbitName: 'Clover',   // Hazel names the rabbit on the babies page (Bryce to confirm)
+    doorstep: [0.27, 0.28],   // where gifts are left (home tile, just in front of the door)
+    gifts: {
+      rabbit:     { name:'A dandelion clock', line:'Left very carefully, so as not to blow it.', give:{ seed:3 } },
+      mouse:      { name:'A tiny shiny button', line:'Hazel has decided it is a plate.', give:{ light:1 } },
+      owl:        { name:'A single feather', line:'Not a word. Just the feather.', give:{ feather:1 } },
+      hedgehog:   { name:'An acorn cap of dried berries', line:'Saved for winter, then shared anyway.', give:{ berry:2 } },
+      robin:      { name:'A red thread end', line:`Hazel's own colour, frayed from the nest.`, give:{ moss:1 } },
+      wren:       { name:'A blue tail-feather', line:'One. He has plenty.', give:{ feather:1 } },
+      frog:       { name:'A pebble worn smooth', line:'From the bottom of the pond. It sang while it brought it.', give:{ stone:1 } },
+      bluetongue: { name:'A shed, perfect leaf skin', line:'Do not ask.', give:{ moss:1 } },
+      lyrebird:   { name:'One long tail feather', line:'Shaped like a little harp. Wendel hums at it.', give:{ feather:1 } },
+    },
+    beats: [
+      // the rabbit: "that rabbit"
+      { id:'rabbitTruce', who:'rabbit', kind:'card', when:{ done:'fence', rabbitFed:3 }, title:'The truce', button:'Good rabbit', text:[
+        `The rabbit sat by the gate for an hour, perfectly good, nose twitching, not so much as looking at the carrots.`,
+        `Wendel is keeping an eye on it. He has also started leaving it the outside leaves of the lettuces.` ] },
+      { id:'rabbitHome', who:'rabbit', kind:'card', when:{ moved:'burrow' }, title:'A hole of its own', button:'Welcome home', text:[
+        `Hazel patted the earth bank flat for the third time and said it was a bit much. Wendel said a rabbit should have a proper home, and patted it flat a fourth time.`,
+        `In the morning there was a round door in the side of it, and the sound of someone very pleased with themselves, thumping.` ] },
+      { id:'rabbitBabies', who:'rabbit', kind:'page', gift:'rabbit', when:{ after:'rabbitHome', days:21, season:'spring', hours:[5, 11] }, title:'Four small noses', button:'Not the lettuce', text:[
+        `Dawn, and a row of four tiny rabbits along the inside of the garden fence, noses through the gaps, looking at the vegetables. Their mother sat behind them looking pleased and ashamed.`,
+        `Wendel counted them twice. Hazel counted them once and put the kettle on. "They'll want something," she said. "We'll plant extra," said Wendel, beaming.`,
+        `"She ought to have a name," said Hazel, over her tea, "now she's a mother." She thought about it. "{rabbit}."`,
+        `"{rabbit}," said Wendel at once, as if it had always been her name. He has not called her anything else since.`,
+        `The smallest of the four had a dandelion seed stuck on one ear and did not know. It was the best morning of the spring.` ] },
+
+      // the field mouse family: "tenants"
+      { id:'mouseGap', who:'mouse', kind:'card', when:{ moved:'mice', days:3, done:'fence' }, title:'A gap in the fence', button:'Oh, mice', text:[
+        `The mouse children have found a gap in the seed bed fence. Wendel patched it with a stick, saying sorry to the gap as he did.`,
+        `In the morning there was another gap, and three small mice sitting in it, looking hopeful.` ] },
+      { id:'mouseDoor', who:'mouse', kind:'card', when:{ done:'mousedoor' }, title:'Rent', button:'Mind the step', text:[
+        `Wendel patched the fence three times, saying sorry to the gap each time. On the fourth morning, Hazel cut a small door in it herself, and Wendel held the bark flap while she tied the hinge.`,
+        `"Rent," she said.` ] },
+      { id:'mouseSock', who:'mouse', kind:'card', when:{ moved:'mice', days:7 }, title:'One sock', button:'Leave it', text:[
+        `"Have you seen my other sock?" said Wendel, scratching his head by the washing line.`,
+        `Hazel did not look up. "Leave it," she said. Beside the toadstool house, strung between two grass stalks, a grey sock is swinging gently. It is far too small for a grown mouse, but the littlest of the mouse babies fits it exactly, with just its ears poking out of the top.` ] },
+      { id:'mouseWinter', who:'mouse', kind:'page', gift:'mouse', when:{ after:'mouseSock', moved:'mice', days:14, season:'winter', hours:[16, 23] }, title:'The window with the sock in it', button:'Goodnight, tenants', text:[
+        `It was the first really cold night, and the toadstool had a light in it. The sock hammock was gone from the grass. Through the window: the littlest mouse, zipped into one grey sock like a sleeping bag, and the rest of the family curled round it.`,
+        `Wendel stood with his hands in his pockets for a long time. "It's a good sock," he said. "It's doing very well."`,
+        `The next morning on the doorstep, someone had left a single button.` ] },
+
+      // the tawny owl: "says nothing"
+      { id:'owlSapling', who:'owl', kind:'card', when:{ done:'sapling', met:'owl', hours:[19, 5] }, title:'The inspector', button:'Carry on', text:[
+        `The owl has taken to sitting on the little oak's stake at night, looking down at it.`,
+        `It has not yet written a report.` ] },
+      { id:'owlHome', who:'owl', kind:'card', when:{ moved:'owlbox' }, title:'An owl box', button:'Sleep well', text:[
+        `Wendel put the box up just so. The owl looked at it for three nights. On the fourth, it was in it, fast asleep and as round as a cushion.`,
+        `"That," said Hazel, "is a tenant who knows what they want."` ] },
+      { id:'owlHoo', who:'owl', kind:'page', gift:'owl', when:{ after:'owlHome', season:'winter', hours:[23, 5] }, title:'Hoo', button:'Goodnight, owl', text:[
+        `Wendel had stayed out to look at the stars, and meant to come in an hour ago. Hazel came out with a blanket instead, and sat beside him on the bench, and neither of them said anything for a long time.`,
+        `Above them, the owl opened one eye. "Hoo," it said, very quietly, and shut it again.`,
+        `It was the only thing it ever said, and it said it just right.` ] },
+
+      // the hedgehog: "the leaf coat"
+      { id:'hogShopping', who:'hedgehog', kind:'page', when:{ moved:'leafpile', season:'autumn', hours:[16, 23] }, title:'It was shopping', button:'Of course', text:[
+        `At dusk the hedgehog came up the path wearing a thick coat of dry leaves on its spines, trundled into the leaf-pile shelter, and shook them off into a neat heap.`,
+        `"That wasn't stuck at all," said Hazel. "It was shopping."`,
+        `Wendel remembered picking those leaves off, very carefully, in the dusk. "I took its groceries," he said, stricken, and put a berry in the dish by way of an apology.` ] },
+      { id:'hogAsleep', who:'hedgehog', kind:'card', when:{ after:'hogShopping', season:'winter' }, title:'Do not disturb', button:'Shh', text:[
+        `The hedgehog has stopped coming. Wendel made a sign in his best handwriting and leaned it by the leaf pile. It said ASLEEP.`,
+        `Hazel said that was obvious from the snoring, and then helped him paint a small leaf on it.` ] },
+      { id:'hogSpring', who:'hedgehog', kind:'page', gift:'hedgehog', when:{ after:'hogAsleep', season:'spring', hours:[5, 11] }, title:'Thin and cross', button:'Eat up', text:[
+        `It came out at six in the morning, thin as a stick with a prickle on it, and went directly to the dish without so much as a good morning.`,
+        `Hazel filled it twice. Wendel took down the sign, dusted it and kept it. "For next year," he said.` ] },
+
+      // the lyrebird: a rare winter visitor
+      { id:'lyreHum', who:'lyrebird', kind:'card', gift:'lyrebird', when:{ met:'lyrebird', season:'winter', hours:[7, 17] }, title:'The dance', button:'Bravo', text:[
+        `The lyrebird scratched itself a little round stage in the bare earth, threw its tail up over its head like a silver harp, and danced.`,
+        `Wendel and Hazel watched from behind the woodpile, very still. When it finished, Hazel clapped before she could stop herself. The lyrebird looked straight at her, bowed (they both swear it bowed), and walked back into the ferns.` ] },
+
+      // short arcs: one small closing moment each
+      { id:'robinChicks', who:'robin', kind:'card', gift:'robin', when:{ nest:'robin', season:'spring', hours:[6, 18] }, title:'A red thread', button:'Lovely', text:[
+        `Hazel's red thread turned up in the robins' nest, woven in very neatly. She said that was a compliment.`,
+        `Two chicks peep from it now, mouths wide, all day long.` ] },
+      { id:'wrenPair', who:'wren', kind:'card', gift:'wren', when:{ nest:'wren', season:'spring', hours:[6, 17] }, title:'Practising', button:'Sing on', text:[
+        `It bathed for ten minutes, then sang, then bathed again. Wendel says it is practising.`,
+        `This morning there were two of them crossing the yard together: him bright blue, her soft brown.` ] },
+      { id:'frogSong', who:'frog', kind:'card', gift:'frog', when:{ moved:'pond', days:14, hours:[19, 5] }, title:'Off-key', button:'Hum along', text:[
+        `It sings off-key and with total confidence. Wendel has started to hum along. Hazel hums back when he isn't listening.`,
+        `Tonight a second small voice answered from the reeds.` ] },
+      { id:'lizardSkin', who:'bluetongue', kind:'card', gift:'bluetongue', when:{ nest:'bluetongue', hours:[9, 17] }, title:'Stepped over', button:'Do not ask', text:[
+        `It sunbathed on the doorstep so long that Hazel just stepped over it. Then Wendel did.`,
+        `This morning a shed skin lay on the doorstep, perfect, like a little leaf.` ] },
+    ],
+    // little moments that come round more than once (no card; a line at the bottom of the screen)
+    owlCompany: [ `Wendel gave the owl a nod. The owl gave him nothing.`, `"He's looking at me again," said Wendel. "He's looking at the fire," said Hazel.`, `Hazel says the owl is good company if you do not ask it for conversation.` ],
+    lyreMimic: [ `The lyrebird is scratching the ground into a little stage. Something is about to happen.`, `The lyrebird has thrown its tail up over its head like a silver harp. Wendel has stopped work to watch.` ],
+    rabbitGate: 'The rabbit is sitting by the gate, perfectly good.',
+    rabbitSeed: 'The rabbit had the seed from the dish, very neatly, and washed its face after.',
+    babyTap: 'Still wearing it.',
+    knock: 'A tiny sign on the toadstool door: "Please do not knock."',
+  },
+
   // little finds: tiny painted secrets tucked into the healed land now and then (sprites/kit/secrets-*). Tap one to press it into the journal.
   // size = how wide it is drawn on the land (a gnome is about 120). Nothing here is part of the story.
   secretEvery: [180, 360],   // minutes between new ones (random in this range); at most two are out at once

@@ -200,7 +200,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v62</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v63</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -219,16 +219,16 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 62;
+const BUILD = 63;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=62"></script>
-<script src="game.js?v=62"></script>
-<script src="walk.js?v=62"></script>
+<script src="content.js?v=63"></script>
+<script src="game.js?v=63"></script>
+<script src="walk.js?v=63"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -490,6 +490,9 @@ Object.assign(ART_SLOTS, { 'pond': { w: 146 } });
 for (const k of ['spirit-float', 'spirit-point', 'spirit-settle', 'toad-legs', 'toad-house']) ART_SLOTS[k] = {};   // the Wood spirit's painted poses (art day 14)
 for (const p of C.story.pages) ART_SLOTS['page-' + p.id.replace('.', '-')] = {};
 for (const d of C.tasks) if (d.make && d.id !== 'barrow') ART_SLOTS['make-' + d.id] = { w: 60 };
+// the animals' side stories (docs/ANIMALS.md): a painting for each storybook page (page-a-<beat id>); the rabbit's portrait (not a journal visitor)
+for (const b of C.animals.beats) if (b.kind === 'page') ART_SLOTS['page-a-' + b.id] = {};
+ART_SLOTS['portrait-rabbit'] = {};
 // painted sizes in world px (a gnome stands 111 tall): w = width, h = height, for the little makes cut by tools/cut_day14.py
 const MAKE_SIZE = { firering:{w:100}, potstools:{w:70}, spinner:{h:90}, scraper:{w:46}, doorpots:{w:62}, doormat:{w:58}, scarecrow:{h:105}, pebbles:{w:80}, daisypot:{h:62},
   sundial:{h:66}, herbpots:{w:66}, wreath:{w:40}, plank:{w:84}, chime:{h:70}, nameboard:{w:52}, cushion:{w:44}, swing:{h:120}, hammock:{w:120}, sign:{h:96},
@@ -533,7 +536,7 @@ const hash = location.hash.slice(1);
 for (const tok of hash.split(/[#&]/)) if (/^(day|night|dawn|dusk|morning|evening)$/.test(tok)) tod = tok;
 if (/reset/.test(hash)) { G.reset(); }
 window.addEventListener('hashchange', () => location.reload());
-if (/test/.test(hash)) window.DBG = { feet: () => footprints(), walk: Walk, visitor: () => visitor, spawn: id => spawnVisitor(C.visitors.find(v => v.id === id)), patch: k => openPatch(k), farm: f => openFarm(f), platy: () => PLATY, swap: f => G.swap(f), jobs: f => openTasks(f || ''), magic: () => openMagic(), lesson: n => openLesson(n), cam, gnomes, IM, seat: BENCH_SEAT, dishFill: f => startDishFill(f), art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spirit: n => openLesson(n || 3), get allDone() { return ALLDONE; }, groundReady: () => !NEWGROUND || !groundMissing(), spiritAt: () => SPIRIT_HINT.screen, spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
+if (/test/.test(hash)) window.DBG = { ev: src => eval(src), feet: () => footprints(), walk: Walk, visitor: () => visitor, spawn: id => spawnVisitor(C.visitors.find(v => v.id === id)), patch: k => openPatch(k), farm: f => openFarm(f), platy: () => PLATY, swap: f => G.swap(f), jobs: f => openTasks(f || ''), magic: () => openMagic(), lesson: n => openLesson(n), cam, gnomes, IM, seat: BENCH_SEAT, dishFill: f => startDishFill(f), art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spirit: n => openLesson(n || 3), get allDone() { return ALLDONE; }, groundReady: () => !NEWGROUND || !groundMissing(), spiritAt: () => SPIRIT_HINT.screen, spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
 
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -1836,7 +1839,7 @@ function drawOffer(o, now) {
   o.screen = { x, y, w: 46 * k, h: 46 * k };
   shadow(x, y, 9 * k, 4 * k);   // no glow behind pick-ups any more: a cut-out paper edge and a glint now and then
   if (o.kind === 'light') { glow(x, y - 14 * k + b, 36 * k, 'rgba(255,240,170,1)', 0.6 + 0.2 * Math.sin(now / 200)); }
-  const img = IM['icon-' + o.kind] || art('icon-' + o.kind), sz = (TRUE_SIZE[o.kind] || 30) * k;   // drawn at its real size beside a gnome; the tap box above stays finger-sized
+  const img = IM['icon-' + o.kind] || art('icon-' + o.kind), sz = (TRUE_SIZE[o.kind] || 30) * k * (o.keep ? 1.4 : 1);   // an animal's keepsake is a little bigger   // drawn at its real size beside a gnome; the tap box above stays finger-sized
   if (img) { const f = sz / Math.max(img.width, img.height), w = img.width * f, h = img.height * f, im = inked(img), p = im.pad * f, top = y - 8 * k + b - sz * 0.2 - h * 0.6;   // keep the painted icon's own shape
     ctx.drawImage(im, x - w / 2 - p, top - p, w + p * 2, h + p * 2);
     const ph = ((now / 1000 + o.gx * 11 + o.gy * 5) % 3.2) / 3.2; if (ph < 0.2) twinkle(x + w * 0.38, top + h * 0.15, Math.sin(ph / 0.2 * Math.PI)); }
@@ -1888,11 +1891,11 @@ function drawFeeder(x, y, a, now) {
     else { blob(fx, fy, 3, 3, ['#4a2c5e', '#6a3a7a', '#8a2a3a'][i % 3]); blob(fx - 1, fy - 1, 0.9, 0.9, 'rgba(255,240,240,0.7)'); } }
 }
 // where each nesting creature settles once it has been fed on enough days (code stand-ins until nest-<kind> is painted)
-const NESTS = { robin:[0.93, 0.73], wren:[0.80, 0.95], mouse:[0.16, 0.66], hedgehog:[0.96, 0.82], bluetongue:[0.05, 0.12], bandicoot:[0.40, 0.92] };   // placement check (2026-10-27): robin and wren off the paths, blue-tongue out from under the wind spinner
+const NESTS = { robin:[0.93, 0.73], wren:[0.80, 0.95], hedgehog:[0.96, 0.82], bluetongue:[0.05, 0.12], bandicoot:[0.40, 0.92] };   // (the mice live in the walked toadstool); placement check (2026-10-27): robin and wren off the paths, blue-tongue out from under the wind spinner
 function drawNest(id, x, y, now) {
   const kind = G.visitorDef(id).nest;
   NESTS[id].screen = { x, y, w: 50, h: 34 };
-  if (drawSlot('nest-' + kind, x, y)) return;
+  if (drawSlot('nest-' + kind, x, y)) { if (id === 'hedgehog' && G.asleep('hedgehog')) asleepSign(x + 34, y + 2); return; }
   ctx.save();
   if (kind === 'nest') {   // a little woven cup of twigs and moss
     shadow(x, y, 18, 5); blob(x, y - 6, 17, 8, '#7a5a3a'); blob(x, y - 9, 12, 4.5, '#4a3622');
@@ -1904,6 +1907,7 @@ function drawNest(id, x, y, now) {
   } else if (kind === 'leafpile') {   // a heap of fallen leaves; please do not tidy it
     shadow(x, y, 32, 9);
     for (let i = 0; i < 26; i++) blob(x - 28 + rnd(i + 70) * 56, y - 4 - rnd(i + 80) * 20 * (1 - Math.abs(rnd(i + 70) - 0.5)), 7, 4, ['#9a5a2a', '#b8782e', '#7a4a24', '#c4903c'][i % 4]);
+    if (id === 'hedgehog' && G.asleep('hedgehog')) asleepSign(x + 30, y + 2);
   } else {   // a pile of warm flat stones with a gap under them
     blob(x, y - 2, 14, 6, '#1e140c'); stone(x - 14, y - 4, 11); stone(x + 12, y - 3, 12); stone(x - 1, y - 12, 10);
   }
@@ -1980,17 +1984,18 @@ function drawVisitor(v, now) {
   const def = v.def, [x, y] = toWorld(v.gx, v.gy), h = def.h || 30, moving = v.phase === 'in' || v.phase === 'out';
   const fly = v.phase === 'eat' || (v.trouble && !def.fly) ? 0 : (def.fly || (def.id === 'robin' && v.perch < 1 ? 30 : 0));
   const hop = moving && !fly ? Math.abs(Math.sin(now / 110)) * Math.min(6, h * 0.12) : 0, peck = v.phase === 'eat' ? Math.max(0, Math.sin(now / 160)) * 3 : 0;
-  const yy = y - fly - hop + peck + (fly ? Math.sin(now / 350) * 4 : 0);
+  const yy = y - fly - hop + peck + (fly ? Math.sin(now / 350) * 4 : 0) - (v.lift || 0);
   if (!fly) shadow(x, y, Math.max(8, h * 0.45), Math.max(3, h * 0.14)); else shadow(x, y, h * 0.25, h * 0.08);
   if (def.spirit || def.id === 'spirit' || def.id === 'glowworm') glow(x, yy - h / 2, h * 1.2, def.id === 'glowworm' ? 'rgba(170,255,210,1)' : 'rgba(200,255,190,1)', 0.45 + 0.1 * Math.sin(now / 400));
   drawCreature(def, x, yy, h, v.faceR);
+  if (def.id === 'hedgehog' && G.beatDone('hogShopping') && season() === 'autumn') leafCoat(x, yy, h);   // out shopping again
   if (!G.met(def.id) && !v.trouble) { const ph = ((now / 1000) % 2.6) / 2.6; if (ph < 0.25) twinkle(x + h * 0.35, yy - h * 0.95, Math.sin(ph / 0.25 * Math.PI)); }   // "say hello": a glint over someone new (no glow); trouble has its own bubble
   if (v.trouble) {   // a small paper bubble with a "!" so you can see it needs help
     const bx = x, by = yy - h - 16 - Math.sin(now / 300) * 2;
     ctx.save(); ctx.fillStyle = '#f3e9d2'; ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(bx, by, 11, 0, 7); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#b14c37'; ctx.font = 'bold 15px Georgia, serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', bx, by + 1); ctx.restore();
   }
-  v.screen = { x, y: y - fly, w: Math.max(40, h * 1.2), h: h + 20 + fly };
+  v.screen = { x, y: y - fly - (v.lift || 0), w: Math.max(40, h * 1.2), h: h + 20 + fly };
 }
 function spawnVisitor(forced) {
   const def = forced || G.pickVisitor(); if (!def) return;
@@ -2000,9 +2005,12 @@ function spawnVisitor(forced) {
   if (hungry) to = [FEEDER.gx - 0.05, FEEDER.gy + 0.05];
   const perch = def.id === 'owl' || (trouble && def.id === 'possum');
   if (perch) { const l = PROPS.find(p => p.name === 'firewood'); to = [l.gx - 0.02, l.gy - 0.02]; }   // up on the woodpile
+  let lift = 0;   // perched up high: on the owl box, or the little oak's stake (the animals' stories)
+  if (def.id === 'owl' && G.s.moved.owlbox) { to = [OWLBOX_AT[0] + 0.004, OWLBOX_AT[1] + 0.004]; lift = 128; }
+  else if (def.id === 'owl' && G.beatDone('owlSapling')) { to = [SAPLING_AT[0] + 0.004, SAPLING_AT[1] + 0.004]; lift = 70; }
   const from = Walk.edge(to[0], to[1]), how = visitorWalk(def, perch);   // in from the nearest wild edge of the yard, round whatever is in the way
   visitor = { def, gx: from[0], gy: from[1], phase: 'in', t: 0, stay: trouble ? 1e9 : 18 + Math.random() * 15, perch: 0, hungry, trouble,
-              speed: def.speed || 0.06, faceR: to[0] - to[1] > from[0] - from[1] };
+              speed: def.speed || 0.06, faceR: to[0] - to[1] > from[0] - from[1], lift };
   Walk.go(visitor, to[0], to[1], how);
   G.arrive(def.id);
 }
@@ -2013,13 +2021,15 @@ function spawnVisitor(forced) {
 const RABBIT = { on: null, next: 0 };
 function rabbitGo(steps) { const [gx, gy] = steps[0]; RABBIT.on = { steps, i: 1, gx, gy, act: null, t: 0, flip: false, hop: 0 }; }
 function gnomeSays(who, text) { const g = gnomes.find(g => g.who === who); if (!g) return; for (const o of gnomes) o.sayT = 0; g.say = text; g.sayT = 3.2; bubble.textContent = text; }
-function rabbitVisit() {   // a later visit, once the fence is up
-  const kinds = ['peer', 'nap']; if (G.s.feeder.food === 'berry') kinds.push('berry');
-  const k = kinds[(Math.random() * kinds.length) | 0], say = C.rabbit.visits[{ peer: 0, nap: 1, berry: 2 }[k]];
-  const spot = { peer: [0.80, 0.86, 'sniff', 30], nap: [WOOD_DROP[0] + 0.08, WOOD_DROP[1] + 0.01, 'nap', 50], berry: [FEEDER.gx + 0.07, FEEDER.gy - 0.03, 'berry', 7] }[k];
-  rabbitGo([[1.05, 0.62], [...spot, () => { if (k === 'berry' && G.s.feeder.food === 'berry') { G.s.feeder.food = null; G.emit('feeder', G.s.feeder); } }], [1.06, 0.40]]);
-  RABBIT.on.say = say;
+function rabbitVisit() {   // a later visit, once the fence is up (after the truce it sits by the gate instead of testing the fence)
+  const kinds = [G.beatDone('rabbitTruce') ? 'gate' : 'peer', 'nap']; if (G.s.feeder.food) kinds.push('dish', 'dish');   // food in the dish draws it
+  const k = kinds[(Math.random() * kinds.length) | 0], food = G.s.feeder.food;
+  const say = k === 'gate' ? C.animals.rabbitGate : k === 'dish' ? (food === 'berry' ? C.rabbit.visits[2] : C.animals.rabbitSeed) : C.rabbit.visits[{ peer: 0, nap: 1 }[k]];
+  const spot = { peer: [0.80, 0.86, 'sniff', 30], gate: [...RABBIT_GATE(), 'sniff', 40], nap: [WOOD_DROP[0] + 0.08, WOOD_DROP[1] + 0.01, 'nap', 50], dish: [FEEDER.gx + 0.07, FEEDER.gy - 0.03, food === 'berry' ? 'berry' : 'eat', 7] }[k];
+  rabbitGo([[1.05, 0.62], [...spot, () => { if (k === 'dish' && G.s.feeder.food) G.rabbitEats(); }], [1.06, 0.40]]);
+  RABBIT.on.say = say ? say.replace(/^The rabbit/, `The ${G.rabbitName() || 'rabbit'}`) : say;
 }
+const RABBIT_GATE = () => [FENCE_GATE.gx + 0.035, FENCE_GATE.gy + 0.07];   // where it sits, perfectly good, after the truce
 function updateRabbit(dt) {
   const r = RABBIT.on, nowMs = performance.now();
   if (!r) {
@@ -2061,7 +2071,7 @@ function updateVisitor(dt) {
   if (d > 0.005) v.faceR = dx - dy > 0;   // screen x grows with gx - gy
   if (v.phase === 'in') { if (Walk.step(v, v.speed * dt)) { v.phase = v.hungry && G.wantsFood(v.def.id) ? 'eat' : 'stay'; v.t = 0; v.perch = 1; } }
   else if (v.phase === 'eat') { if (v.t > 6) { v.hungry = false; v.phase = 'stay'; v.t = 0; ate(v); } }
-  else if (v.phase === 'stay') {
+  else if (v.phase === 'stay') { visitorMoment(v);
     if (v.def.id === 'mouse' && !v.trouble && Math.random() < dt * 0.4) { Walk.go(v, Math.min(0.95, Math.max(0.05, v.gx + (Math.random() - 0.5) * 0.2)), Math.min(0.95, Math.max(0.05, v.gy + (Math.random() - 0.5) * 0.2)), visitorWalk(v.def)); v.phase = 'in'; }   // a scurry, never under anything
     if (v.t > v.stay) { const [ex, ey] = Walk.edge(v.gx, v.gy); v.phase = 'out'; v.perch = 0; Walk.go(v, ex, ey, Object.assign({ exact: true }, visitorWalk(v.def))); } }   // off by the nearest wild edge
   else if (Walk.step(v, v.speed * 1.5 * dt)) visitor = null;
@@ -2408,6 +2418,7 @@ function toadItem(items, now, vb) {   // drawn by hand: while it walks it stands
     if (p >= 1) mouseHouse(x, y, w, h, now);
   } });
 }
+const SOCK = {};   // the sock hammock (tap it)
 const SPIRIT_HINT = {}, MOUSE_DOOR = 2 * 3600e3, MOUSE_IN = 24 * 3600e3;   // after the walk: a tiny door and window appear, then a mouse family moves in
 function mouseHouse(x, y, w, h, now) {   // the toadstool turns into a mouse house: an arched door in the big stem, a round window, then the family
   const since = G.now() - G.s.flags.toadWalk - TOAD_WALK; if (since < MOUSE_DOOR) return;
@@ -2420,12 +2431,83 @@ function mouseHouse(x, y, w, h, now) {   // the toadstool turns into a mouse hou
   ctx.beginPath(); ctx.moveTo(wx - 4, wy); ctx.lineTo(wx + 4, wy); ctx.moveTo(wx, wy - 4); ctx.lineTo(wx, wy + 4); ctx.stroke(); ctx.restore();
   if (night > 0.3) glow(wx, wy, 26, 'rgba(255,205,120,1)', 0.5 * night);
   }
+  if (painted || since >= MOUSE_IN) mouseWindow(painted ? x + w * 0.126 : dx + 2, painted ? y - h * 0.15 : y - h * 0.42, painted ? h * 0.032 : 4, x, y - h * 0.9, night);
+  if (G.s.flags.mouseSock && !G.beatDone('mouseWinter')) SOCK.screen = sockHammock(x - w * 0.3, y + 40, now); else SOCK.screen = null;
   if (since < MOUSE_IN) return;
   if (!G.s.flags.miceIn) { G.s.flags.miceIn = true; G.note('A mouse family has moved into the old toadstool.'); toast('A mouse family has moved into the toadstool!'); }
   const im = art('vis-mouse'); if (!im || night > 0.6) return;   // by day the little ones play round the door
   const t = now / 1000;
   [[-22, 32, 0], [16, 23, 1.7], [34, 20, 3.1]].forEach(([ox, hh, ph], i) => { const ww = im.width * hh / im.height, hop = Math.max(0, Math.sin(t * 2.2 + ph)) * (i ? 4 : 0), mx = dx + ox + (i ? Math.sin(t * 0.7 + ph) * 6 : 0);
     ctx.save(); ctx.translate(mx, dy - hop); if (i % 2) ctx.scale(-1, 1); ctx.drawImage(im, -ww / 2, -hh, ww, hh); ctx.restore(); });
+}
+// ---------- the animals' side stories in the picture (CONTENT.animals; docs/ANIMALS.md) ----------
+// Code stand-ins until the art list's animal pictures are painted: the sock and winter light in the toadstool's window, the rabbit's
+// gate seat, burrow and babies, the owl asleep in its box, the hedgehog's leaf coat and ASLEEP sign. Nothing glows.
+function mouseWindow(wx, wy, r, cx, top, night) {   // the toadstool's little round window
+  const F = G.s.flags, winter = G.beatDone('mouseWinter'), lit = winter && season() === 'winter' && night > 0.3;
+  if (!winter && !lit) return;
+  ctx.save();
+  if (lit) { ctx.fillStyle = '#e9b860'; ctx.beginPath(); ctx.arc(wx, wy, r, 0, 7); ctx.fill(); }   // a tiny lamp inside: warm, not glowing
+  if (winter) { ctx.beginPath(); ctx.arc(wx, wy, r, 0, 7); ctx.clip(); ctx.fillStyle = '#8d8a86'; ctx.fillRect(wx - r * 0.75, wy - r * 0.3, r * 0.9, r * 1.4);   // indoors for the winter: Wendel's sock as their blanket
+    ctx.fillStyle = '#6f6c68'; ctx.fillRect(wx - r * 0.75, wy + r * 0.25, r * 0.9, r * 0.18); }
+  ctx.restore();
+  if (lit) {   // a cap-sized chimney and a thread of smoke
+    const t = performance.now() / 1000, chx = cx + 18, chy = top + 6;
+    ctx.save(); ctx.fillStyle = '#a0705a'; ctx.strokeStyle = 'rgba(42,21,16,0.6)'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.rect(chx - 2, chy - 7, 4, 7); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.rect(chx - 2.8, chy - 8.5, 5.6, 2); ctx.fill(); ctx.stroke(); ctx.restore();   // a clay-pipe chimney
+    ctx.save(); ctx.strokeStyle = 'rgba(200,196,190,0.55)'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(chx, chy - 8);
+    for (let i = 1; i <= 8; i++) ctx.lineTo(chx + Math.sin(t * 1.3 + i * 0.8) * 3 + i * 1.5, chy - 8 - i * 5); ctx.stroke(); ctx.restore();
+  }
+}
+function sockHammock(x, y, now) {   // Wendel's missing sock, strung between two grass stalks beside the mouse house, with somebody small asleep in it
+  const ax = x - 32, bx = x + 32, top = y - 40, sway = Math.sin(now / 1300) * 2.5;
+  ctx.save(); ctx.lineCap = 'round';
+  for (const px of [ax, bx]) { ctx.strokeStyle = INK; ctx.lineWidth = 3.4; ctx.beginPath(); ctx.moveTo(px, y); ctx.quadraticCurveTo(px + 2, y - 22, px, top - 8); ctx.stroke(); ctx.strokeStyle = '#7d9a45'; ctx.lineWidth = 1.8; ctx.stroke(); blob(px + 3, top - 8, 4, 1.6, '#7d9a45'); }   // the stalks
+  ctx.strokeStyle = 'rgba(60,40,24,0.85)'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(ax, top); ctx.lineTo(ax + 9, top + 5); ctx.moveTo(bx, top); ctx.lineTo(bx - 10, top + 4); ctx.stroke();   // the strings
+  const L = ax + 9, R = bx - 10, cx = (L + R) / 2 + sway, low = top + 22;
+  const im = art('vis-mouse'); if (im && dayPhase().light > 0.4) { const hh = 13, ww = im.width * hh / im.height; ctx.save(); ctx.translate(L + 6, top + 9); ctx.rotate(-0.35); ctx.drawImage(im, -ww / 2, -hh, ww, hh); ctx.restore(); }   // the littlest baby mouse, asleep in it with its ears out of the cuff (a grown mouse would never fit a gnome's sock)
+  ctx.fillStyle = '#b3b0a9'; ctx.strokeStyle = INK; ctx.lineWidth = 1.3;   // the sock: a sagging grey tube, ribbed cuff at the left, toe at the right
+  ctx.beginPath(); ctx.moveTo(L, top + 1); ctx.quadraticCurveTo(cx, low + 8, R, top + 2); ctx.quadraticCurveTo(R + 9, top + 9, R + 2, top + 14); ctx.quadraticCurveTo(cx, low + 16, L - 1, top + 11); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#8c8982'; ctx.beginPath(); ctx.moveTo(R - 6, top + 6); ctx.quadraticCurveTo(R + 9, top + 7, R + 2, top + 14); ctx.quadraticCurveTo(R - 6, top + 15, R - 9, top + 12); ctx.closePath(); ctx.fill();   // the darker toe
+  ctx.strokeStyle = 'rgba(70,66,60,0.7)'; ctx.lineWidth = 0.8; for (let i = 1; i <= 3; i++) { ctx.beginPath(); ctx.moveTo(L + i * 2.5, top + 2 + i); ctx.lineTo(L + i * 2.5 - 1, top + 11 + i * 0.5); ctx.stroke(); }   // ribbed cuff
+  ctx.fillStyle = '#b14c37'; const hx = cx + 10, hy = low - 1; ctx.beginPath(); ctx.moveTo(hx, hy + 2.5); ctx.bezierCurveTo(hx - 4, hy - 0.5, hx - 2, hy - 3.5, hx, hy - 1.5); ctx.bezierCurveTo(hx + 2, hy - 3.5, hx + 4, hy - 0.5, hx, hy + 2.5); ctx.fill();   // Hazel's darned heart
+  ctx.restore();
+  return { x, y, w: 80, h: 54 };
+}
+function asleepSign(x, y) {   // Wendel's bark sign by the leaf pile, in his best handwriting, with Hazel's small leaf
+  ctx.save(); ctx.translate(x, y); ctx.rotate(0.12); post(0, 0, 26, 3, '#6e4a2c');
+  ctx.fillStyle = '#9a7a50'; ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.rect(-17, -30, 34, 13); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#3a2414'; ctx.font = 'bold 7px Georgia, serif'; ctx.textAlign = 'center'; ctx.fillText('ASLEEP', -2, -21); blob(13, -24, 2.4, 1.4, '#5d7a33'); ctx.restore();
+}
+function leafCoat(x, y, h) {   // dry leaves carried home on its spines (it was shopping)
+  ctx.save(); ctx.lineWidth = 0.6;
+  for (let i = 0; i < 14; i++) { const lx = x - h * 0.45 + rnd(i + 300) * h * 0.8, ly = y - h * 0.3 - rnd(i + 310) * h * 0.45, a = rnd(i + 320) * 6;   // little dry leaves, each with a midrib
+    ctx.fillStyle = ['#9a5a2a', '#b8782e', '#7a4a24', '#c4903c'][i % 4]; ctx.strokeStyle = 'rgba(60,30,12,0.7)';
+    ctx.beginPath(); ctx.ellipse(lx, ly, 4.6, 2, a, 0, 7); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(lx - Math.cos(a) * 4.2, ly - Math.sin(a) * 4.2); ctx.lineTo(lx + Math.cos(a) * 4.2, ly + Math.sin(a) * 4.2); ctx.stroke(); }
+  ctx.restore();
+}
+const OWLBOX_AT = C.tasks.find(d => d.id === 'owlbox').at;   // the owl box's post, beside the little oak (home grid)
+function visitorMoment(v) {   // a little line now and then while someone is visiting (once a visit)
+  if (v.said || v.t < 4) return; const id = v.def.id;
+  if (id === 'owl' && gnomes.some(g => g.onBench)) { v.said = true; toast(pick(C.animals.owlCompany)); }   // the gnomes by the fire, the owl watching
+  else if (id === 'lyrebird') { v.said = true; toast(pick(C.animals.lyreMimic)); }
+}
+const BABY_SEED = {};   // the smallest baby, with the dandelion seed on its ear (tap it)
+function animalItems(items, now) {
+  const h = dayPhase().h, day = h >= 6 && h < 19;
+  BABY_SEED.screen = null;
+  if (!G.gardenOpen() || !G.s.moved.burrow || !day) return;
+  const bank = C.tasks.find(d => d.id === 'earthbank'), [bx, by] = glob('0,1', bank.at[0], bank.at[1]), sit = IM['rabbit-sit'], nap = IM['rabbit-nap'];
+  if (!sit || !sit.width) return;
+  const rab = (gx, gy, im, k, flip, bob, seed) => items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy), w = im.width * k, hh = im.height * k;
+    shadow(x, y, w * 0.45, w * 0.13); ctx.save(); ctx.translate(x, y - bob); if (flip) ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, -hh, w, hh); ctx.restore();
+    if (seed) { const sx = x + (flip ? 1 : -1) * w * 0.12, sy = y - bob - hh * 0.97; ctx.save(); ctx.strokeStyle = 'rgba(250,248,240,0.95)'; ctx.lineWidth = 0.7; for (let i = 0; i < 7; i++) { const a = -Math.PI / 2 + (i - 3) * 0.32; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + Math.cos(a) * 4, sy + Math.sin(a) * 4); ctx.stroke(); } ctx.restore();
+      BABY_SEED.screen = { x, y, w: 30, h: hh + 10 }; } } });
+  if (!RABBIT.on) rab(bx + 0.04, by - 0.04, sit, 0.62, true, 0);   // the mother, by her door, when she is not off visiting the yard
+  if (!G.beatDone('rabbitBabies')) return;
+  const t = now / 1000, hop = i => Math.max(0, Math.sin(t * 2 + i * 2.1)) * 3;   // the babies: two sitting up, one asleep in a heap
+  rab(bx + 0.09, by + 0.03, sit, 0.3, true, hop(0), true);
+  rab(bx + 0.14, by + 0.06, sit, 0.28, false, hop(1));
+  if (nap && nap.width) rab(bx + 0.08, by + 0.08, nap, 0.26, false, 0);
 }
 // The Wood spirit's lessons (CONTENT.story.lessons): it floats by what it is teaching about until you tap it. The gnomes cannot see it.
 let SPIRIT_N = 0, spiritAt = 0;
@@ -2681,7 +2763,8 @@ function makeAt(d) { return glob(G.makeTile(d), d.at[0], d.at[1]); }   // its sp
 const MAKE_WORK = {   // where a gnome stands to make it (home grid); default: just in front of the spot
   firering:[0.46, 0.58], potstools:[0.43, 0.58], spinner:[0.16, 0.40], doorpots:[0.42, 0.40], doormat:[0.38, 0.40], wreath:SPOTS.door, nameboard:SPOTS.door, chime:[0.45, 0.31],
   herbpots:[0.50, 0.31], cushion:[0.66, 0.44], pebbles:[0.48, 0.84], scarecrow:[0.62, 0.74], swing:[0.24, 0.84], hammock:[0.14, 0.76], plank:[0.70, 0.30],
-  gstones:[0.50, 1.10], wicket:[0.50, 1.04], arch:[0.50, 1.10], border:[0.50, 1.24], mousering:[0.30, 1.84], mousetable:[0.38, 1.84], ferns:[0.14, 1.34] };
+  gstones:[0.50, 1.10], wicket:[0.50, 1.04], arch:[0.50, 1.10], border:[0.50, 1.24], mousering:[0.30, 1.84], mousetable:[0.38, 1.84], ferns:[0.14, 1.34],
+  earthbank:[0.76, 1.80], clover:[0.56, 1.88], owlbox:[0.17, 0.78] };
 function makeWork(d) { return MAKE_WORK[d.id] || (([x, y]) => [x + 0.04, y + 0.07])(makeAt(d)); }
 function pot(x, y, w, kind, i = 0) {   // one of the travelling pots (the painted leftover pot), with daisies or herbs in it
   const im = IM['kit-leftovers-05'], h = im && im.width ? w * im.height / im.width : w * 0.85; shadow(x, y, w * 0.5, w * 0.15);
@@ -2794,13 +2877,37 @@ const MAKE_DRAW = {
     pts.forEach(([gx, gy], i) => { const [x, y] = toWorld(gx, gy); pebble(x, y, 5.5, ['#d8d2c2', '#e6dcc4', '#cfc8b6'][i % 3], i);
       if (i === 5) snailShell(x, y - 0.5, 2.6); else blob(x + (rnd(i) - 0.5) * 2, y - 0.5, 1.8, 1.3, ['#b14c37', '#4f6b2a', '#3d6a8a', '#e2b33a', '#7a4a8a'][i % 5]); }); },
 };
+Object.assign(MAKE_DRAW, {   // the animals' side stories (docs/ANIMALS.md)
+  earthbank(x, y) { shadow(x, y, 54, 12); blob(x, y - 11, 52, 20, '#7a5a3a'); blob(x - 4, y - 18, 40, 15, '#8f6c48'); blob(x + 9, y - 26, 22, 9, '#a07c56');   // a soft mound of loose earth
+    for (let i = 0; i < 12; i++) blob(x - 46 + rnd(i + 950) * 92, y - 2 - rnd(i + 960) * 8, 2.6, 1.7, ['#6e5038', '#a07c56'][i % 2]);
+    for (let i = 0; i < 6; i++) { const gx = x - 40 + i * 16, gy = y - 14 - Math.sin(i / 5 * Math.PI) * 22; ctx.save(); ctx.strokeStyle = '#6f8a34'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx - 2, gy - 6); ctx.moveTo(gx, gy); ctx.lineTo(gx + 2, gy - 5); ctx.stroke(); ctx.restore(); }
+    if (G.s.moved.burrow && drawSlot('nest-burrow', x - 14, y + 4, 1, { scale: 1.6 })) return;   // the rabbit has dug its burrow into it
+    if (G.s.moved.burrow) { blob(x - 20, y - 10, 14, 12, '#2a1a10'); blob(x - 20, y - 11, 10.5, 9, '#140c06'); for (let i = 0; i < 6; i++) blob(x - 34 + i * 5, y + 2 + rnd(i + 970) * 3, 2, 1.3, '#8f6c48'); } },   // a round door, a few crumbs of soil
+  clover(x, y) { blob(x, y, 62, 13, 'rgba(70,52,34,0.35)');   // a strip of dug earth sown with clover, a few white and pink heads
+    for (let i = 0; i < 40; i++) { const t = i / 39, cx = x - 56 + t * 112 + (rnd(i + 980) - 0.5) * 10, cy = y + 9 - t * 18 + (rnd(i + 990) - 0.5) * 12;
+      for (let k = 0; k < 3; k++) { const a = k * 2.1 + i; blob(cx + Math.cos(a) * 3, cy - 2 + Math.sin(a) * 1.8, 3, 2.1, ['#3f6a24', '#4f7a2e', '#5f8f38'][k]); }
+      if (i % 3 === 1) { blob(cx + 1, cy - 8, 3.2, 3.2, i % 2 ? '#f4f0e6' : '#e8b8c8'); blob(cx + 0.5, cy - 8.5, 1.4, 1.4, 'rgba(255,255,255,0.6)'); } } },
+  mousedoor(x, y) { const sg = FENCE_SEGS[0], [mx, my] = bedRing((sg.a0 + sg.a1) / 2);   // a bark flap on a leather hinge, low in the fence
+    ctx.save(); ctx.fillStyle = '#5a3e26'; ctx.strokeStyle = INK; ctx.lineWidth = 1.1; ctx.beginPath(); ctx.moveTo(mx - 5, my); ctx.lineTo(mx - 5, my - 7); ctx.arc(mx, my - 7, 5, Math.PI, 0); ctx.lineTo(mx + 5, my); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = 'rgba(30,18,10,0.6)'; ctx.lineWidth = 0.7; for (const dx of [-2, 1, 3]) { ctx.beginPath(); ctx.moveTo(mx + dx, my - 1); ctx.lineTo(mx + dx, my - 9); ctx.stroke(); }
+    ctx.fillStyle = '#3a2414'; ctx.fillRect(mx - 3, my - 12.5, 6, 1.6); ctx.restore(); },
+  owlbox(x, y, a, now) { post(x, y, 116, 6, '#6e4a2c'); const bx = x, by = y - 110;   // a tall post beside the little oak, and the box with its round hole
+    ctx.save(); ctx.fillStyle = '#8a6a48'; ctx.strokeStyle = INK; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.rect(bx - 10, by - 22, 20, 24); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#6e4a2c'; ctx.beginPath(); ctx.moveTo(bx - 14, by - 21); ctx.lineTo(bx, by - 30); ctx.lineTo(bx + 14, by - 21); ctx.closePath(); ctx.fill(); ctx.stroke();
+    if (season() === 'winter') { blob(bx - 4, by - 26, 9, 3, '#f4f6f8'); blob(bx + 5, by - 24, 7, 2.4, '#e8ecf0'); }   // a snow cap in winter
+    ctx.fillStyle = '#1e140c'; ctx.beginPath(); ctx.arc(bx, by - 11, 5.5, 0, 7); ctx.fill(); ctx.restore();
+    const home = G.s.moved.owlbox, out = visitor && visitor.def.id === 'owl';
+    if (home && !out && dayPhase().light > 0.5) {   // by day: asleep in the hole, as round as a cushion
+      blob(bx, by - 11, 5.2, 5, '#8a6a4a'); blob(bx, by - 10, 3.6, 3, '#b8946a'); ctx.save(); ctx.strokeStyle = '#3a2414'; ctx.lineWidth = 0.8;
+      for (const dx of [-2, 2]) { ctx.beginPath(); ctx.arc(bx + dx, by - 12.5, 1.2, 0.2, Math.PI - 0.2); ctx.stroke(); } ctx.restore(); } },
+});
 const MAKE_TWICE = { potstools: [0.67, 0.49] };   // a second one at another spot (home grid): across the fire from the first, clear of the bench end (placement check, 2026-10-27)
 const MAKE_PARTS = {   // makes spread over a few spots (home grid), so each piece sorts in depth with the gnomes
   ferns: () => [[0.04, 1.24, 'kit-wood-01', 74], [0.10, 1.30, 'kit-wood-02', 52], [0.06, 1.36, 'kit-wood-10', 40], [0.14, 1.26, 'kit-wood-16', 44]],
   border: () => [[0.40, 1.14, 'kit-wood-03', 46], [0.50, 1.15, 'kit-wood-09', 30], [0.395, 1.22, 'kit-wood-09', 28], [0.495, 1.23, 'kit-wood-03', 44], [0.39, 1.30, 'kit-wood-03', 42], [0.49, 1.31, 'kit-wood-09', 30], [0.385, 1.37, 'kit-wood-09', 26]],
 };
 const HOUSE_DOOR = { doormat:[-38, -32], doorpots:[-10, -30], scraper:[-68, -28], wreath:[-38, -76], nameboard:[-38, -104] };   // world px from the house's foot (its painted door), drawn in front of the house
-const MAKE_FLAT = new Set(['doormat', 'pebbles', 'plank', 'gstones', 'wildflowers', 'pebblepath']);   // things that lie on the ground (drawn under the rest)
+const MAKE_FLAT = new Set(['doormat', 'pebbles', 'plank', 'gstones', 'wildflowers', 'pebblepath', 'clover']);   // things that lie on the ground (drawn under the rest)
 const MAKE_DEPTH = { firering: -0.012, wreath: 0.06, nameboard: 0.06, chime: 0.02, cushion: 0.012, mousering: -0.01, spinner: 0.01 };
 function makeItems(items, now) {
   const garden = G.gardenOpen();
@@ -3375,6 +3482,7 @@ function frame(now) {
   if (PLATY.on) { const [gx, gy] = healLocal(PLATY.on.k, { c: [PLATY.on.u, -0.45] }); items.push({ d: depthOf(...glob(PLATY.on.k, gx, gy)) - 0.2, draw: () => drawPlatypus(now) }); }
   spiritItem(items, now);
   makeItems(items, now);
+  animalItems(items, now);
   festItems(items, now);
   items.sort((a, b) => a.d - b.d);
   for (const it of items) it.draw();
@@ -3485,6 +3593,8 @@ function tap(cx, cy) {
   ripples.push({ x: cx, y: cy, t: 0 });
   // little finds and offerings first (small, on top)
   for (const o of [...G.s.secrets.out]) if (hit(o.screen, wx, wy)) { const d = G.findSecret(o.id); if (d) { float('✦ a little find', o.screen.x, o.screen.y); return openSecret(d.id, true); } }
+  for (const o of [...G.s.offers].reverse()) if (o.keep && hit(o.screen, wx, wy)) { G.gather(o.id); return openKeepsake(o.keep, true); }   // an animal's thank-you
+  if (BABY_SEED.screen && hit(BABY_SEED.screen, wx, wy)) { const [x, y] = [BABY_SEED.screen.x, BABY_SEED.screen.y]; float('♥', x, y - 20); return toast(C.animals.babyTap); }
   for (const o of [...G.s.offers].reverse()) if (hit(o.screen, wx, wy)) { G.gather(o.id); float(`+1 ${C.resources[o.kind].name}`, o.screen.x, o.screen.y); return; }
   for (const fd of G.s.village.finds) if (hit(fd.screen, wx, wy)) { const st = G.questStep(fd.folk), f = G.folkDef(fd.folk); G.found(fd.id); float('✓ found', fd.screen.x, fd.screen.y); toast(`You found ${st.find.name}.`); return openFolk(f.id); }
   for (const p of [...folkOnLand].reverse()) if (hit(p.screen, wx, wy)) return G.folkState(p.f.id) ? openFolk(p.f.id) : openTraveller();
@@ -3505,7 +3615,8 @@ function tap(cx, cy) {
   if (taskProg('feeder') >= 1 && hit(FEEDER.screen, wx, wy)) return openFeeder();
   if (SPIRIT_HINT.screen && SPIRIT_N && hit(SPIRIT_HINT.screen, wx, wy)) return openLesson(SPIRIT_N);
   if (G.gardenOpen() && !G.s.flags.toadWalk && TOAD.screen && hit(TOAD.screen, wx, wy)) return openMagic();   // the toadstool in the way: the spell that moves it
-  if (G.s.flags.miceIn && TOAD.screen && hit(TOAD.screen, wx, wy)) return toast('The mouse family\'s toadstool house. Someone has swept the step.');
+  if (SOCK.screen && hit(SOCK.screen, wx, wy)) return toast(`That's Wendel's other sock. The littlest mouse sleeps in it. Don't tell him.`);
+  if (G.s.flags.miceIn && TOAD.screen && hit(TOAD.screen, wx, wy)) return toast(season() === 'winter' ? C.animals.knock : 'The mouse family\'s toadstool house. Someone has swept the step.');
   if (hit(SPRING.screen, wx, wy)) { const t = ['spring', 'bedwater'].find(id => !G.done(id)); if (t) return openTasks(t); }
   for (const id in NESTS) if (G.hasNest(id) && hit(NESTS[id].screen, wx, wy)) { const d = G.visitorDef(id); return toast(`The ${d.name.toLowerCase()}'s ${{ nest: 'nest', burrow: 'burrow', leafpile: 'leaf pile', stones: 'hidey-hole' }[d.nest]}. Quiet, someone may be home.`); }
   // props on the home tile (seed bed, tub, task spots)
@@ -3683,6 +3794,10 @@ sheet.addEventListener('click', e => {
   if (a === 'tfest') { closeSheet(); G.testFestival(b.dataset.n === '1'); return; }
   if (a === 'journal') return openJournal();
   if (a === 'page') return openPage(id, true);
+  if (a === 'beat') return openBeat(id, true);
+  if (a === 'beatdone') { closeSheet(); if (id === 'mouseSock') gnomeSays('him', 'Have you seen my other sock?'); return; }
+  if (a === 'keepsake') return openKeepsake(id);
+  if (a === 'tbeat') { closeSheet(); const b = G.testBeat(); if (!b) toast('Every animal beat has happened.'); return; }
   if (a === 'pagedone') { closeSheet(); if (id === '3.4' || id === '3.0') { const t = id === '3.0' ? 'house1' : 'leanto'; if (G.taskView(G.taskDef(t)).state === 'ready') return openTasks(t); } return; }
   if (a === 'lesson') return openLesson(isNaN(+id) ? id : +id, true);
   if (a === 'patch') return openPatch(id);
@@ -3708,6 +3823,7 @@ function openTest() {
   <h3>Speed things up</h3><p><button class="act" data-a="tfinish">Finish every job now</button></p><p><button class="act" data-a="tpack">Fill my pack (20 of everything)</button></p>
   <h3>Call someone</h3><p><button class="act" data-a="tvisit">A creature visits</button> <button class="act" data-a="ttrav">A traveller arrives</button> <button class="act" data-a="tsecret">Hide a little find</button> <button class="act" data-a="tplaty">The platypus (dawn only, normally)</button></p>
   <h3>Seasons</h3><p>${['spring', 'summer', 'autumn', 'winter'].map(k => `<button class="act${season() === k ? '' : ' quiet'}" data-a="tseason" data-id="${k}">${C.seasons[k].name}</button>`).join(' ')} <button class="act quiet" data-a="tseason" data-id="">The phone's own</button></p>
+  <h3>The animals' stories</h3><p><button class="act" data-a="tbeat">Skip to the next animal beat</button></p><p class="meta">${C.animals.beats.filter(b => G.beatDone(b.id)).length} of ${C.animals.beats.length} beats so far. It ignores the season and the hour, and makes the job or home it waits on finished.</p>
   <h3>The festival</h3><p><button class="act" data-a="tfest" data-n="0">Start the festival plans now</button> <button class="act" data-a="tfest" data-n="1">Festival night now</button></p>
   <p class="meta">A normal play-through order: fill the pack, start jobs in the Jobs list, tap "Finish every job now", repeat. "+1 day" brings the daily things back.</p>
   <p style="margin-top:14px;font-size:12px"><a href="#" data-a="reset" style="color:var(--red)">start over (wipes this garden)</a></p>`);
@@ -3808,6 +3924,8 @@ function openJournal() {
   html += `<h3>Little finds</h3><p>${nf ? `${nf} of ${C.secrets.length} pressed between the pages.` : 'Tiny things hide in the healed grass. Watch for a glint.'}</p><div class="finds">`;
   for (const d of C.secrets) { const f = G.s.secrets.found[d.id]; html += f ? `<button class="find" data-a="secret" data-id="${d.id}"><img src="sprites/kit/secrets-${d.pic}.webp" alt=""></button>` : `<span class="find unseen">?</span>`; }
   html += `</div>`;
+  const kept = Object.keys(C.animals.gifts).filter(id => G.s.animals.gifts[id]);
+  if (kept.length) html += `<h3>Gifts</h3><div class="slist">${kept.map(id => `<button data-a="keepsake" data-id="${id}">${C.animals.gifts[id].name}</button>`).join('')}</div>`;
   const log = [...G.s.log].reverse().slice(0, 8);
   if (log.length) html += `<h3>Lately</h3>` + log.map(l => `<p style="margin:2px 0">${l.text}</p>`).join('');
   openSheet('journal', html); btnAlert('bJournal', false);
@@ -3878,16 +3996,37 @@ function openPage(id, again) {
   openSheet(again ? 'pageagain' : 'page', pageHtml(pg, again) + `<p style="text-align:center">${again ? `<button class="act quiet" data-a="journal">Back to the journal</button>` : `<button class="act" data-a="pagedone" data-id="${id}">${pg.button}</button>`}</p>`);
   sheet.scrollTop = 0;
 }
+// the animals' side stories: a beat opens as a small card with the animal's portrait, or a storybook page (painting slot page-a-<id>)
+const RABBIT_DEF = { id: 'rabbit', icon: '🐇' };   // not a journal visitor, but it has a painted portrait
+function animalName(id) { return id === 'rabbit' ? G.rabbitName() || 'the rabbit' : `the ${G.visitorDef(id).name.toLowerCase()}`; }
+function beatHtml(b) {
+  const pic = art('page-a-' + b.id), por = portraitHtml(b.who === 'rabbit' ? RABBIT_DEF : G.visitorDef(b.who), true), who = b.who === 'rabbit' ? 'The rabbit' : G.visitorDef(b.who).name;
+  if (b.kind === 'page') return `<div class="jpage page"><p class="chap">${C.animals.chapter}</p>${pic ? `<img class="story" src="sprites/page-a-${b.id}.webp" alt="">` : por}<h2>${b.title}</h2>${G.beatText(b).map(x => `<p class="tale">${x}</p>`).join('')}</div>`;
+  return `<div class="jpage card"><p class="meta" style="margin:0">${C.animals.chapter} · ${who}</p>${por}<h2>${b.title}</h2>${G.beatText(b).map(x => `<p class="lore">${x}</p>`).join('')}</div>`;
+}
+function openBeat(id, again) {
+  const b = G.beatDef(id); if (!b) return; if (!again) bigDay = true;
+  openSheet(again ? 'pageagain' : 'beat', beatHtml(b) + `<p style="text-align:center">${again ? `<button class="act quiet" data-a="journal">Back to the journal</button>` : `<button class="act" data-a="beatdone" data-id="${id}">${b.button}</button>`}</p>`);
+  sheet.scrollTop = 0;
+}
+function openKeepsake(id, fresh) {   // an animal's thank-you, picked up from the doorstep
+  const g = C.animals.gifts[id], k = Object.keys(g.give)[0];
+  openSheet('keepsake', `<div class="jpage card"><p class="meta" style="margin:0">${fresh ? 'Left on the doorstep' : 'A gift, kept in the journal'}</p><div class="por big pad">${ASSETS['icon-' + k] || art('icon-' + k) ? `<img src="sprites/icon-${k}.webp" alt="">` : `<span>${C.resources[k].icon}</span>`}</div><h2>${g.name}</h2><p class="lore">${g.line}</p>
+    <p class="meta">From ${animalName(id)}${fresh ? ` · ${Object.entries(g.give).map(([r, n]) => `+${n} ${C.resources[r].name}`).join(', ')}` : ''}</p></div>
+    <p style="text-align:center">${fresh ? `<button class="act" data-a="close">Keep it</button>` : `<button class="act quiet" data-a="journal">Back to the journal</button>`}</p>`);
+}
 function ourStoryHtml() {   // every page read so far, to read again, and the Wood spirit's lessons
   const seen = G.s.pages.seen, pages = C.story.pages.filter(p => p.id in seen), taught = [...C.story.lessons.filter(L => L.n in G.s.spirit.taught), ...Object.entries(C.heal.kinds).filter(([kind, K]) => K.lesson && G.healTaught(kind)).map(([kind, K]) => ({ n: 'heal:' + kind, title: K.lesson.title }))];
-  if (!pages.length && !taught.length) return '';
+  const beats = C.animals.beats.filter(b => G.beatDone(b.id));
+  if (!pages.length && !taught.length && !beats.length) return '';
   let html = `<h3>Our story</h3><div class="slist">`, ch = 0;
   for (const p of pages) { if (p.ch !== ch) { ch = p.ch; html += `<p class="meta">${C.story.chapters[ch]}</p>`; } html += `<button data-a="page" data-id="${p.id}">${p.title}</button>`; }
   if (taught.length) { html += `<p class="meta">The Wood spirit</p>`; for (const L of taught) html += `<button data-a="lesson" data-id="${L.n}">${L.title}</button>`; }
+  if (beats.length) { html += `<p class="meta">${C.animals.chapter}</p>`; for (const b of beats) html += `<button data-a="beat" data-id="${b.id}">${b.title}</button>`; }
   return html + `</div>`;
 }
 function openMakes(patch, stage) {   // Hazel's list: what they could make now this patch has healed a little more
-  const M = C.makes[patch], list = C.tasks.filter(d => d.make === patch && d.stage === stage);
+  const M = C.makes[patch], list = C.tasks.filter(d => d.make === patch && d.stage === stage && !(d.needs || []).some(n => n.startsWith('flag:') && !G.s.flags[n.slice(5)]));
   openSheet('makes', `<div class="jpage card"><p class="meta" style="margin:0">Hazel's list · ${M.name.toLowerCase()}</p><div class="por big"><img src="sprites/face-her.webp" alt=""></div><h2>Little makes</h2>
     <p class="lore">"${M.lines[stage]}"</p><ul class="mlist">${list.map(d => `<li>${d.name}</li>`).join('')}</ul>
     <p class="meta">They are in Jobs, under Little makes. Each is paid for with things you gather, and appears in its own spot once it is made.</p></div>
@@ -3898,6 +4037,7 @@ function cardCheck() {   // open the next waiting card (a story page, a land car
   const c = q[0];
   if (c.k === 'page') return openPage(c.id);
   q.shift(); G.dirty = true;
+  if (c.k === 'beat') return openBeat(c.id);
   if (c.k === 'land') openLand(C.landStages.find(s => s.key === c.key)); else if (c.k === 'makes') openMakes(c.patch, c.stage); else if (c.k === 'tland') healStageCard(c);
 }
 // ---------- "All done for now": once a visit, when both gnomes are busy (or nothing more can be started) and nothing is left lying about ----------
