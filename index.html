@@ -200,7 +200,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v54</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v55</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -219,15 +219,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 54;
+const BUILD = 55;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=54"></script>
-<script src="game.js?v=54"></script>
+<script src="content.js?v=55"></script>
+<script src="game.js?v=55"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -409,6 +409,23 @@ function wetPatchXY(k) {   // world point of patch k on the drawn oval (tilted: 
 function wetPatchAt(k) { const [x, y] = wetPatchXY(k), g = fromWorld(x, y + 14), [i, j] = g.tile.split(',').map(Number); return [g.gx + i, g.gy + j]; }   // where he stands to pour on patch k (just in front of it)
 function bedReady() { const pl = G.plot(); return G.done('bedwater') || !!(pl.stage || pl.grown); }   // dug and watered (older gardens already planted count)
 const BENCH = [0.62, 0.40];   // the plank bench, on the far side of the fire so sitting gnomes face you (yard layout plan)
+// Sitting on the bench (Bryce): now and then as they wander one of them sits a while, alone or with the other, and most evenings
+// the two of them sit there together by the fire. Never instead of a job: a gnome with work to do gets straight up.
+// Hazel sits at the end nearer the fire, Wendel beside her; both face the fire.
+const BENCH_SEAT = { her: [0.602, 0.406], him: [0.638, 0.394] };   // on the plank, along its length
+// Painted sitting loops (art day 14, 4 frames in a row, no seat painted): drop the file in and it is used, no code change.
+// h = drawn height in world pixels (tune to the bench); dy lifts the picture so the invisible seat meets the plank.
+const SIT_ART = { her: { src:'sprites/sit-her.png', n:4, h:96, dy:0 }, him: { src:'sprites/sit-him.png', n:4, h:96, dy:0 }, both: { src:'sprites/sit-couple.png', n:4, h:100, dy:0 } };
+const FIRE_AT = [0.52, 0.48], SITPIC = {};
+// Until then the old sit poses stand in: each comes with its own log or stump, so on the bench the picture is cut off just under
+// the thighs (cut = that row of the 208-high pose) and set on the plank, and the bench is drawn in front, hiding the cut.
+const SIT_STANDIN = { him: { cut: 170 }, her: { cut: 176 } }, BENCH_TOP = 22;   // BENCH_TOP: the plank's height above the ground   // the loops that loaded (filled in after the game starts)
+function loadSitArt() { for (const [k, o] of Object.entries(SIT_ART)) { const im = new Image(); im.onload = () => { SITPIC[k] = im; }; im.src = o.src; } }
+function benchReady() { return taskProg('bench') >= 1; }
+function benchEvening() {   // tonight they sit out on the bench? Before the house has a hearth: always. After: about three evenings in four
+  if (!benchReady()) return false; if (homeStage() < 2) return true;
+  let h = 7; for (const c of new Date(G.now()).toDateString()) h = (h * 31 + c.charCodeAt(0)) | 0; return (h >>> 3) % 4 !== 0;
+}
 const JOB_FACE = { bench:[0.62, 0.40], lantern:[0.75, 0.50], stump:[0.75, 0.50] };   // what a working gnome turns to face (default: the middle of the yard)
 const WORKSPOT = { logseat:[0.675,0.395], feeder:[0.82,0.66], clearing:[0.54,0.66], wheelbarrow:[0.30,0.68], shelter:[0.38,0.30], lanternstump:[0.71,0.54], fence:[0.80,0.74], sapling:[0.24,0.84], stonebench:[0.60,0.36], seedbed:[0.54,0.66] };
 
@@ -504,7 +521,7 @@ const hash = location.hash.slice(1);
 for (const tok of hash.split(/[#&]/)) if (/^(day|night|dawn|dusk|morning|evening)$/.test(tok)) tod = tok;
 if (/reset/.test(hash)) { G.reset(); }
 window.addEventListener('hashchange', () => location.reload());
-if (/test/.test(hash)) window.DBG = { cam, gnomes, IM, dishFill: f => startDishFill(f), art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spirit: n => openLesson(n || 3), get allDone() { return ALLDONE; }, groundReady: () => !NEWGROUND || !groundMissing(), spiritAt: () => SPIRIT_HINT.screen, spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
+if (/test/.test(hash)) window.DBG = { cam, gnomes, IM, seat: BENCH_SEAT, dishFill: f => startDishFill(f), art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spirit: n => openLesson(n || 3), get allDone() { return ALLDONE; }, groundReady: () => !NEWGROUND || !groundMissing(), spiritAt: () => SPIRIT_HINT.screen, spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
 
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -540,7 +557,7 @@ class Gnome {
         if (this.inside) { this.act = rt; this.wait = 2; return; }
         this.plan = 'inside'; this.act = null; this.goto(SPOTS.door[0], SPOTS.door[1]); return;
       }
-      const [sx, sy, face] = RHYTHM[this.who][rt]; this.job = null; this.plan = rt; this.routine = rt;
+      const [sx, sy, face] = rt === 'sit' && benchReady() ? [...BENCH_SEAT[this.who], FIRE_AT] : RHYTHM[this.who][rt]; this.job = null; this.plan = rt; this.routine = rt;   // the evening sit: on the bench once it is built
       if (this.act === rt) { this.wait = 2; return; }
       this.goto(sx, sy); this.faceTowards(sx, sy, face); return;
     }
@@ -553,11 +570,16 @@ class Gnome {
       this.pace = this.plan === 'carry' && !WORKPATH[job.id] ? [[sp[0], sp[1]], [sp[0] - 0.12, sp[1] + 0.06]] : null;
       this.goto(sp[0], sp[1]); this.faceTowards(sp[0], sp[1], JOB_FACE[job.id] || (job.def.make ? makeAt(job.def) : null)); return;
     }
-    this.job = null; this.plan = null; this.act = null; this.carryWalk = false;
+    const sat = this.onBench; this.job = null; this.plan = null; this.act = null; this.carryWalk = false; this.sitFor = 0;
+    if (benchReady() && !sat && !DISH_FILL) {   // a sit on the bench: more likely if the other one is already sitting there alone
+      const mate = gnomes.find(g => g !== this), join = mate && mate.onBench && !mate.routine;
+      if (Math.random() < (join ? 0.5 : 0.12)) { const [sx, sy] = BENCH_SEAT[this.who]; this.plan = 'sit'; this.sitFor = join ? 20 + Math.random() * 25 : 25 + Math.random() * 40; this.goto(sx, sy); this.faceTowards(sx, sy, FIRE_AT); return; }
+    }
     const keys = Object.keys(SPOTS); const [sx, sy] = SPOTS[keys[(Math.random() * keys.length) | 0]];
     this.goto(sx + (Math.random() - 0.5) * 0.08, sy + (Math.random() - 0.5) * 0.08);
   }
-  goesIn(rt) { return rt === 'sleep' || (rt === 'sit' && homeStage() >= 2); }
+  goesIn(rt) { return rt === 'sleep' || (rt === 'sit' && homeStage() >= 2 && !benchEvening()); }
+  get onBench() { const s = BENCH_SEAT[this.who]; return this.act === 'sit' && !this.walking && !this.inside && Math.hypot(this.gx - s[0], this.gy - s[1]) < 0.01; }
   settleIn() {   // opening the game at bedtime: they are already indoors (on festival evening: already dancing on the green)
     const rt = routineFor(dayPhase().h);
     if (rt === 'fest') { [this.gx, this.gy] = festSpot('dance'); this.tx = this.gx; this.ty = this.gy; this.routine = 'fest'; this.dancing = true; return; }
@@ -602,6 +624,7 @@ class Gnome {
         }
         return;
       }
+      if (this.act === 'sit' && !this.routine && G.running().some(r => r.def.who === this.who)) { this.pick(); return; }   // work to do: up off the bench at once
       if (this.routine && this.wait <= 0 && routineFor(dayPhase().h) === this.routine && !G.running().some(r => r.def.who === this.who && this.routine !== 'sleep')) { this.wait = 2; return; }
       if (this.wait <= 0) this.pick();
       return;
@@ -614,7 +637,7 @@ class Gnome {
       if (this.plan === 'dance') { this.plan = null; this.dancing = true; this.speed = 0.055 + Math.random() * 0.01; return; }
       if (this.plan === 'inside') { this.inside = true; this.plan = null; this.act = this.routine; this.aframe = 0; this.wait = 2; return; }
       if (this.plan && this.faceTo) this.faceTowards(this.gx, this.gy, this.faceTo);   // walking turned him; turn back to the work
-      if (this.plan) { this.act = this.plan; this.wait = this.pace ? 0.6 : 2; if (this.pace) this.faceTowards(this.gx, this.gy, 'campfire'); return; }
+      if (this.plan) { this.act = this.plan; this.wait = this.pace ? 0.6 : this.sitFor || 2; this.sitFor = 0; if (this.pace) this.faceTowards(this.gx, this.gy, 'campfire'); return; }
       this.act = null; this.wait = 2 + Math.random() * 5; this.dir = Math.random() < 0.6 ? 'front' : this.dir; return;
     }
     const step = Math.min(d, this.speed * dt);
@@ -629,6 +652,7 @@ class Gnome {
   }
   draw(now) {
     if (this.inside) { this.screen = null; return; }
+    if (this.drawSitting(now)) return;
     const [wx, wy] = toWorld(this.gx, this.gy);
     const s = SPR * 0.92;
     const carrying = this.walking && (this.pace || this.carryWalk) && this.dir === 'side';   // carrying wood: use the carry strip instead of the walk
@@ -638,9 +662,11 @@ class Gnome {
     if (act === 'dowse' && !this.acts.dowse) { img = IM[`${this.who}-side`]; [cw, ch] = this.cell; f = 0; flip = this.flip; }
     else if (act) { const a = this.acts[act] || this.acts.carry; img = IM[`${this.who}-${this.acts[act] ? act : 'carry'}`]; [cw, ch] = a.cell; f = (carrying ? this.frame : this.aframe) % a.n; flip = this.flip; }
     else { img = IM[`${this.who}-${this.dir}`]; [cw, ch] = this.cell; f = this.walking ? this.frame : 0; flip = this.dir === 'side' && this.flip; }
-    shadow(wx, wy, Math.min(cw, 150) * s * 0.45, Math.min(cw, 150) * s * 0.18);
-    ctx.save(); ctx.translate(wx, wy);
+    const perch = act === 'sit' && this.onBench && SIT_STANDIN[this.who], cutH = perch ? (ch - perch.cut) * s : 0;   // stand-in on the bench: cut under the thighs, set on the plank
+    if (!perch) shadow(wx, wy, Math.min(cw, 150) * s * 0.45, Math.min(cw, 150) * s * 0.18);
+    ctx.save(); ctx.translate(wx, perch ? wy - BENCH_TOP + cutH : wy);
     if (flip) ctx.scale(-1, 1);
+    if (perch) { ctx.beginPath(); ctx.rect(-cw * s, -ch * s - 10, cw * s * 2, ch * s + 10 - cutH); ctx.clip(); }
     ctx.drawImage(img, f * cw, 0, cw, ch, -cw * s / 2, -ch * s, cw * s, ch * s);
     if (twig && !this.acts.dowse) {   // a forked hazel twig held out in both hands; it twitches, and dips hard as he nears the spring
       const near = Math.max(0, 1 - Math.hypot(this.gx - SPRING.at[0], this.gy - SPRING.at[1]) / 0.25), t = now / 1000;
@@ -655,12 +681,26 @@ class Gnome {
     }
     // Wendel's pipe: a soft curl of smoke on the frames where the pipe is at his lips (the painted smoke was stripped)
     if (act === 'sit' && this.who === 'him' && (f === 1 || f === 2) && Math.random() < 0.25) {
-      const mx = wx + (flip ? -1 : 1) * cw * s * 0.22, my = wy - ch * s * 0.62;
+      const mx = wx + (flip ? -1 : 1) * cw * s * 0.22, my = wy - ch * s * 0.62 - (perch ? BENCH_TOP - cutH : 0);
       particles.push({ k:'smoke', x: mx, y: my, vx:(Math.random()-0.5)*3 + (flip ? -3 : 3), vy:-9-Math.random()*4, r:2+Math.random()*2, life:0, max:2+Math.random() });
     }
-    this.screen = { x: wx, y: wy, w: cw * s, h: ch * s };
+    this.screen = { x: wx, y: perch ? wy - BENCH_TOP + cutH : wy, w: cw * s, h: ch * s };
   }
 }
+Gnome.prototype.sitPic = function () {   // which painted loop shows this gnome on the bench: 'both', 'him', 'her', or null (stand-in)
+  if (!this.onBench) return null; const mate = gnomes.find(g => g !== this);
+  return mate && mate.onBench && SITPIC.both ? 'both' : SITPIC[this.who] ? this.who : null;
+};
+Gnome.prototype.drawSitting = function (now) {   // on the bench with a painted sitting loop (alone, or the two together in one picture); false: no picture yet
+  const k = this.sitPic(); if (!k) return false;
+  const mate = gnomes.find(g => g !== this), both = k === 'both', im = SITPIC[k];
+  const o = SIT_ART[k], fw = im.width / o.n, h = o.h, w = fw * h / im.height, f = Math.floor(now / 1000 * ACT_FPS.sit) % o.n;
+  const [ax, ay] = toWorld(this.gx, this.gy), [bx, by] = both ? toWorld(mate.gx, mate.gy) : [ax, ay], x = (ax + bx) / 2, y = (ay + by) / 2 - o.dy;
+  if (both && this.who === 'him') { this.screen = mate.screen; return true; }   // the picture of the two is drawn once, with Hazel
+  shadow(x, y + o.dy, w * 0.4, w * 0.12); ctx.save(); ctx.translate(x, y); if (this.flip) ctx.scale(-1, 1);   // painted facing right; the fire is to their left
+  ctx.drawImage(im, f * fw, 0, fw, im.height, -w / 2, -h, w, h); ctx.restore();
+  this.screen = { x, y, w, h }; if (both) mate.screen = this.screen; return true;
+};
 function shadow(x, y, rx, ry) {   // soft contact shadow, two layers: a wide soft one cast away from the light (upper left), and a tight dark one right where the thing meets the earth
   ctx.save(); ctx.translate(x + rx * 0.14, y + 2); ctx.scale(rx * 1.3, ry * 1.3);
   let g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
@@ -1495,7 +1535,7 @@ const EXTRAS = [
     stone(x + 34, y + 2, 9); stone(x + 46, y - 6, 7); ctx.restore(); } },
   { gx: BENCH[0], gy: BENCH[1], show: () => taskProg('bench'), draw(x, y, a) {   // Bryce: a simple bench, a plank on two legs (legs go in first, then the plank is pegged on)
     if (a >= 1 && drawSlot('yard-bench', x, y + 2, 1)) return;
-    const [ax, ay] = toWorld(BENCH[0] - 0.03, BENCH[1] + 0.01), [bx, by] = toWorld(BENCH[0] + 0.03, BENCH[1] - 0.01), H = 22, legs = Math.min(1, a / 0.4), top = Math.max(0, (a - 0.45) / 0.55);
+    const [ax, ay] = toWorld(BENCH[0] - 0.04, BENCH[1] + 0.013), [bx, by] = toWorld(BENCH[0] + 0.04, BENCH[1] - 0.013), H = BENCH_TOP - 3, legs = Math.min(1, a / 0.4), top = Math.max(0, (a - 0.45) / 0.55);
     shadow(x, y, 34, 10); ctx.save(); ctx.lineJoin = 'round';
     for (const [lx, ly] of [[ax + (bx - ax) * 0.15, ay + (by - ay) * 0.15], [ax + (bx - ax) * 0.85, ay + (by - ay) * 0.85]]) {
       ctx.globalAlpha = legs; ctx.fillStyle = '#7a5a3a'; ctx.strokeStyle = 'rgba(42,21,16,0.85)'; ctx.lineWidth = 1.6;
@@ -2587,7 +2627,7 @@ function frame(now) {
   const items = [];
   for (const p of PROPS) items.push({ d: depthOf(p.gx, p.gy) + (p.flat ? -0.25 : 0), draw: () => drawProp(p) });
   for (const e of EXTRAS) { const a = e.show(); if (a > 0) items.push({ d: depthOf(e.gx, e.gy), draw: () => { const [x, y] = toWorld(e.gx, e.gy); e.draw(x, y, a, now); } }); }
-  for (const g of gnomes) items.push({ d: depthOf(g.gx, g.gy), draw: () => g.draw(now) });
+  for (const g of gnomes) items.push({ d: depthOf(g.gx, g.gy) + (g.onBench ? (g.sitPic() ? 0.05 : -0.05) : 0), draw: () => g.draw(now) });   // on the bench: a painted loop sits in front of it, a stand-in behind it
   for (const o of G.s.offers) items.push({ d: depthOf(o.gx, o.gy, o.tile) - 0.02, draw: () => drawOffer(o, now) });
   if (visitor) items.push({ d: depthOf(visitor.gx, visitor.gy), draw: () => drawVisitor(visitor, now) });
   if (RABBIT.on) items.push({ d: depthOf(RABBIT.on.gx, RABBIT.on.gy), draw: () => drawRabbit(now) });
@@ -2822,7 +2862,8 @@ function doing(g) {   // where a gnome is when not indoors, in words
   if (r) return `${n} is busy: ${lcName(shortName(r.def))}`;
   if (rt === 'fest') return `${n} is at the festival on the green`;
   if (rt === 'eat') return `${n} is out by the campfire, having a bite`;
-  if (rt === 'sit') return `${n} is out by the campfire`;
+  if (rt === 'sit') return g.onBench ? `${n} is on the bench by the fire` : `${n} is out by the campfire`;
+  if (g.onBench) return `${n} is having a little sit on the bench`;
   return `${n} is pottering about outside`;
 }
 function roomCaption() {
@@ -3270,7 +3311,7 @@ function start() {
   if (/vis=(\w+)/.test(hash)) { const def = C.visitors.find(v => v.id === RegExp.$1); if (def) spawnVisitor(def); }
   G.view = () => ({ visitor, cam, W, H }); G.toWorld = toWorld;   // for test scripts
   requestAnimationFrame(frame);
-  loadArtSlots();
+  loadArtSlots(); loadSitArt();
   if (/test/.test(hash)) { const b = document.createElement('button'); b.className = 'act'; b.textContent = '🧪 Test'; b.style.cssText = 'position:fixed;right:10px;top:calc(env(safe-area-inset-top) + 10px);z-index:5;min-height:40px;padding:8px 12px'; b.onclick = openTest; document.body.appendChild(b); }
   if (G.away) openAway(G.away);
   festCheck(); ALLDONE.at = performance.now();
