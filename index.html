@@ -204,13 +204,13 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v64</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v65</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
 <div id="bar">
   <div id="btns">
-    <button class="btn" id="bPack"><span class="ic">🧺</span>Pack<i class="dot"></i></button>
+    <button class="btn" id="bPack"><span class="ic">🧺</span>Store<i class="dot"></i></button>
     <button class="btn" id="bTasks"><span class="ic">🔨</span>Jobs<i class="dot"></i></button>
     <button class="btn" id="bMagic"><span class="ic">✨</span>Magic<i class="dot"></i></button>
     <button class="btn" id="bJournal"><span class="ic">📖</span>Journal<i class="dot"></i></button>
@@ -223,16 +223,16 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 64;
+const BUILD = 65;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=64"></script>
-<script src="game.js?v=64"></script>
-<script src="walk.js?v=64"></script>
+<script src="content.js?v=65"></script>
+<script src="game.js?v=65"></script>
+<script src="walk.js?v=65"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -414,6 +414,20 @@ function wetPatchXY(k) {   // world point of patch k on the drawn oval (tilted: 
 }
 function wetPatchAt(k) { const [x, y] = wetPatchXY(k), g = fromWorld(x, y + 14), [i, j] = g.tile.split(',').map(Number); return [g.gx + i, g.gy + j]; }   // where he stands to pour on patch k (just in front of it)
 function bedReady() { const pl = G.plot(); return G.done('bedwater') || !!(pl.stage || pl.grown); }   // dug and watered (older gardens already planted count)
+// The seed bed's chores (progression fix 2): Hazel kneels along the bed to sow, Wendel fills the can and waters, and picking goes
+// into the basket and back to the house. Whoever is free does it (choreGnome); the crop shows sown or picked as they go.
+let PICKING = null;   // what is being picked, while it is picked: { crop, nib }
+function bedChore(kind) { return gnomes.find(g => g.chore && (kind ? g.chore.kind === kind : /^(sow|water|pick)$/.test(g.chore.kind))) || null; }
+function bedPt(k) { const [x, y] = wetPatchXY(k), g = fromWorld(x, y), [i, j] = g.tile.split(',').map(Number); return [g.gx + i, g.gy + j]; }   // patch k itself (to face)
+function startBedChore(g, kind, onDone) {
+  const at = k => [...wetPatchAt(k), null, false, 0, bedPt(k)], step = (k, act, carry, secs) => { const s = at(k); s[2] = act; s[3] = carry; s[4] = secs; return s; };
+  const src = G.done('rainbarrel') ? [0.49, 0.37, 'pickup', false, 2, [0.47, 0.33]] : [SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 2.5, SPRING.at];
+  const can = g.who === 'him' ? 'can' : false, basket = g.who === 'her';
+  const steps = kind === 'sow' ? (G.plot().crop === 'pumpkin' ? [step(3, 'dig', false, 4), step(3, 'pickup', false, 2.5)] : [0, 3, 6, 9].map(k => step(k, 'pickup', false, 2.5)))   // bending to each row, dropping the seed in
+    : kind === 'water' ? [src, step(1, 'water', can, 3.5), step(7, 'water', false, 3.5)]   // fill the can at the barrel (or the spring), then water along the bed
+    : [step(0, 'gather', false, 2.5), step(4, 'gather', false, 2.5), step(8, 'gather', false, 2.5), [SPOTS.door[0] + 0.03, SPOTS.door[1] + 0.04, 'pickup', basket, 2, [0.30, 0.28]]];   // picking along the bed, then the basket to the pantry
+  g.startChore(kind, steps, onDone);
+}
 const BENCH = [0.62, 0.40];   // the plank bench, on the far side of the fire so sitting gnomes face you (yard layout plan)
 // Sitting on the bench (Bryce): now and then as they wander one of them sits a while, alone or with the other, and most evenings
 // the two of them sit there together by the fire. Never instead of a job: a gnome with work to do gets straight up.
@@ -627,6 +641,7 @@ class Gnome {
     }
     if (!this.walking) {
       this.wait -= dt;
+      if (this.chore) { this.doChore(dt); return; }
       if (this.errand === 'dish') {   // kneeling at the feeding dish, tipping the food in a little at a time
         const e = DISH_FILL; if (!e || e.g !== this || !G.s.feeder.food) { this.errand = null; this.act = null; this.wait = 0.5; return; }
         e.p = Math.min(1, e.p + dt / 3);   // Hazel's strip: berry in hand, hand out, tipping, brushing the hands off
@@ -655,6 +670,7 @@ class Gnome {
     if (d < 0.004 && this.route && this.route.length) { [this.tx, this.ty] = this.route.shift(); return; }   // a bend on the way round the seed bed
     if (d < 0.004) {
       this.walking = false; this.frame = 0; this.aframe = 0; this.at = 0;
+      if (this.chore) { this.choreArrive(); return; }
       if (this.errand === 'dish') { this.faceTowards(this.gx, this.gy, [FEEDER.gx, FEEDER.gy]); this.act = this.acts.fill ? 'fill' : 'pickup'; this.aframe = this.acts.fill ? 0 : 1; this.at = -99; return; }   // Hazel stands at the dish with her basket (fill strip, set by how much is in); otherwise bent over it (held on the reaching-down frame)
       if (this.plan === 'dance') { this.plan = null; this.dancing = true; this.speed = 0.055 + Math.random() * 0.01; return; }
       if (this.plan === 'inside') { this.inside = true; this.plan = null; this.act = this.routine; this.aframe = 0; this.wait = 2; return; }
@@ -725,6 +741,41 @@ Gnome.prototype.drawSitting = function (now) {   // on the bench with a painted 
   shadow(x, y + o.dy, w * 0.4, w * 0.12); ctx.save(); ctx.translate(x, y); if (this.flip && !both) ctx.scale(-1, 1);   // painted facing right; the fire is to their left
   ctx.drawImage(im, f * fw, 0, fw, im.height, -w / 2, -h, w, h); ctx.restore();
   this.screen = { x, y, w, h }; if (both) mate.screen = this.screen; return true;
+};
+// Chores (Bryce: the gnomes do every hands-on thing; the player is unseen luck that chooses and lends, never hands): sowing,
+// watering and picking the seed bed, helping a creature in trouble, carrying a basket over to a neighbour. A gnome walks over and
+// does it in a few steps [gx, gy, act, carry on the way, seconds, face]; onDone runs at the end. The game's state has usually
+// changed already (game.js), and the drawing follows the gnome (bedChore). A gnome on a job pops over for a moment, then goes back.
+function choreGnome(pref) {   // who does it: `pref` if free, else the other if free, else whoever is up; null while they sleep or dance
+  const rt = routineFor(dayPhase().h); if (rt === 'sleep' || rt === 'fest') return null;
+  const can = g => !g.dancing && !g.chore && g.errand !== 'dish', free = g => !G.running().some(r => r.def.who === g.who);
+  const order = gnomes.slice().sort((a, b) => (b.who === pref) - (a.who === pref));
+  return order.find(g => can(g) && free(g)) || order.find(can) || null;
+}
+Gnome.prototype.startChore = function (kind, steps, onDone) {
+  if (this.inside) { this.inside = false; [this.gx, this.gy] = SPOTS.door; this.tx = this.gx; this.ty = this.gy; this.dir = 'front'; }   // out of the door for it
+  this.chore = { kind, steps, i: 0, t: 0, onDone }; this.job = null; this.routine = null; this.plan = null; this.pace = null; this.sitFor = 0;
+  this.choreGo();
+};
+Gnome.prototype.choreGo = function () {
+  const c = this.chore, st = c.steps[c.i]; c.t = 0; this.act = null; this.carryWalk = st[3] || false;
+  this.goto(st[0], st[1]); this.faceTowards(st[0], st[1], st[5] || null);
+};
+Gnome.prototype.choreArrive = function () {
+  const st = this.chore.steps[this.chore.i]; this.faceTowards(this.gx, this.gy, st[5] || null); this.act = st[2]; this.aframe = 0; this.at = 0; this.carryWalk = false;
+};
+Gnome.prototype.doChore = function (dt) {
+  const c = this.chore, st = c.steps[c.i];
+  if (Math.hypot(st[0] - this.gx, st[1] - this.gy) > 0.03) return this.choreGo();   // something stopped them on the way: carry on there
+  if (!this.act) this.choreArrive();
+  c.t += dt; if (c.t < st[4]) return;
+  if (++c.i < c.steps.length) return this.choreGo();
+  this.chore = null; this.act = null; this.plan = null; this.wait = 1; this.dir = 'front';
+  if (c.onDone) c.onDone(this);
+};
+Gnome.prototype.choreProg = function (steps) {   // 0..1 through the first `steps` steps of the chore (all of them if not given)
+  const c = this.chore; if (!c) return 1; const n = steps || c.steps.length;
+  return Math.min(1, (c.i + (this.walking ? 0 : Math.min(1, c.t / c.steps[c.i][4]))) / n);
 };
 function shadow(x, y, rx, ry) {   // soft contact shadow, two layers: a wide soft one cast away from the light (upper left), and a tight dark one right where the thing meets the earth
   ctx.save(); ctx.translate(x + rx * 0.14, y + 2); ctx.scale(rx * 1.3, ry * 1.3);
@@ -819,6 +870,7 @@ function updateParticles(dt) {
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i]; p.life += dt;
     if (p.life > p.max) { if (p.k === 'leaf') settleLeaf(p); particles.splice(i, 1); continue; }
+    if (p.k === 'drift') { const t = p.life / p.max, e = t * t * (3 - 2 * t); p.x = p.x0 + (p.tx - p.x0) * e; p.y = p.y0 + (p.ty - p.y0) * e - Math.sin(t * Math.PI) * 50; continue; }   // a pick-up carried home on a little breeze
     if (p.k === 'leaf' || p.k === 'petal') { p.ph += dt * 3; p.rot += dt * p.spin; p.x += (p.vx + Math.sin(p.ph * 0.7) * 14) * dt; p.y += p.vy * dt; }
     else if (p.k === 'mist') { p.x += p.vx * dt; }
     else if (p.k === 'fly') { p.ph += dt; p.x += Math.sin(p.ph * 1.3) * 12 * dt; p.y += Math.cos(p.ph * 0.9) * 8 * dt; }
@@ -831,6 +883,7 @@ function drawParticles(ph) {
   for (const p of particles) {
     const t = p.life / p.max;
     if (p.k === 'smoke' || p.k === 'puff') { ctx.globalAlpha = 0.18 * (1 - t); ctx.fillStyle = p.k === 'puff' ? '#c9b58f' : '#d9d2c4'; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); }
+    else if (p.k === 'drift') { const im = IM['icon-' + p.kind] || art('icon-' + p.kind); ctx.globalAlpha = Math.min(1, (1 - t) * 4); if (im) { const f = 22 / Math.max(im.width, im.height); ctx.drawImage(im, p.x - im.width * f / 2, p.y - im.height * f, im.width * f, im.height * f); } }
     else if (p.k === 'breath') { ctx.globalAlpha = 0.32 * Math.sin(Math.PI * Math.min(1, t * 1.6)) * (1 - t); ctx.fillStyle = '#f4f7fa'; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); }
     else if (p.k === 'bfly') { const f = Math.abs(Math.sin(p.ph * 14)), a = Math.min(1, t * 5, (1 - t) * 5); ctx.globalAlpha = 0.9 * a; ctx.fillStyle = p.col;
       ctx.beginPath(); ctx.ellipse(p.x - 2.6 * f, p.y, 3 * f + 0.4, 2.4, -0.3, 0, 7); ctx.ellipse(p.x + 2.6 * f, p.y, 3 * f + 0.4, 2.4, 0.3, 0, 7); ctx.fill(); }
@@ -1812,12 +1865,15 @@ function snail(x, y, now) {   // a very small snail on its rounds (every paintin
 }
 function cropProg(p) { return p.stage === 'planted' ? 0 : p.stage === 'ready' ? 1 : 1 - Math.max(0, p.readyAt - G.now()) / Math.max(1, p.readyAt - (p.wateredAt || p.readyAt - 1)); }
 function drawCrop(x, y) {
-  const p = G.plot(), t = G.now(), now = performance.now(), healed = G.landStage().key !== 'barren', W = (healed ? 215 : BED_OVAL.w) / 2, H = W * BED_OVAL.ratio;
+  const ch = bedChore(), pick = ch && ch.chore.kind === 'pick' && PICKING, sow = ch && ch.chore.kind === 'sow';
+  const p = pick ? { stage: 'ready', crop: PICKING.crop, nibbled: PICKING.nib } : G.plot(), t = G.now(), now = performance.now(), healed = G.landStage().key !== 'barren', W = (healed ? 215 : BED_OVAL.w) / 2, H = W * BED_OVAL.ratio;
   const prog = p.stage ? cropProg(p) : 0, look = p.crop && C.crops[p.crop] ? C.crops[p.crop].look : 'carrot';
+  const cp = pick ? ch.choreProg(3) : sow ? ch.choreProg() : 0, gone = u => pick ? (u + 1) / 2 < cp : sow ? (u + 1) / 2 > cp : false;   // picked from the left, or not sown yet (she works along the bed from the left)
   const bp = taskProg('beanpoles'); if (bp > 0) drawBeanPoles(x, y, W, H, p.stage && look === 'bean' ? Math.max(0, (prog - 0.2) / 0.8) : 0, bp);
   if (!p.stage) return;
-  if (look === 'pumpkin' && p.stage !== 'planted') { if (prog < 0.12) seedling(x, y, prog / 0.12, 0.3, now); else drawPumpkin(x, y, W * 0.95, H, prog, now); }
+  if (look === 'pumpkin' && p.stage !== 'planted') { if (pick && cp > 0.6) {} else if (prog < 0.12) seedling(x, y, prog / 0.12, 0.3, now); else drawPumpkin(x, y, W * 0.95, H, prog, now); }
   else for (const [u, v, ph] of SEEDLINGS) {
+    if (gone(u)) continue;
     const sx = x + u * W, sy = y + v * H - u * W * 0.22;   // the painted oval tilts with the slanted view: low at the left, high at the right
     if (p.stage === 'planted') { if (look === 'pumpkin') continue; blob(sx, sy, 3.5, 2, '#4a3620'); blob(sx - 1, sy - 0.6, 1.4, 0.7, 'rgba(160,130,90,0.7)'); continue; }   // little sown mounds
     if (p.nibbled && u > 0.15 && v > -0.35 && ph < 0.75) { ctx.strokeStyle = '#6f8a34'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + 0.5, sy - 4); ctx.stroke(); blob(sx + 0.5, sy - 4, 1.4, 1, '#cfe0a0'); continue; }   // nibbled down to a stalk (the rabbit started at the near right)
@@ -1826,14 +1882,12 @@ function drawCrop(x, y) {
     const kk = (k - 0.3) / 0.7;
     if (look === 'carrot') carrotPlant(sx, sy, kk, ph, now); else if (look === 'lettuce') lettucePlant(sx, sy, kk, ph); else beanPlant(sx, sy, kk, ph, now);
   }
-  if (p.stage === 'planted' && look === 'pumpkin') { blob(x, y, 7, 3.5, '#4a3620'); blob(x - 1.5, y - 1, 2.4, 1.1, 'rgba(160,130,90,0.7)'); }   // one solemn mound in the middle
+  if (p.stage === 'planted' && look === 'pumpkin' && !(sow && cp < 0.5)) { blob(x, y, 7, 3.5, '#4a3620'); blob(x - 1.5, y - 1, 2.4, 1.1, 'rgba(160,130,90,0.7)'); }   // one solemn mound in the middle
   if (look === 'lettuce' && prog > 0.85) { const [u, v] = SEEDLINGS[Math.floor(SEEDLINGS.length * 0.62)]; snail(x + u * W + 2, y + v * H - u * W * 0.22 - 9, now); }
-  if (p.name === 'barrel' && a >= 1 && G.barrelFull()) { const ph = ((now / 1000) % 3) / 3; if (ph < 0.22) twinkle(x - w * 0.1, y - h * 0.9, Math.sin(ph / 0.22 * Math.PI)); }   // rainwater to draw: a glint on the water, not a glow
-  if (p.stage === 'ready') { const ph = ((now / 1000) % 2.8) / 2.8; if (ph < 0.22) twinkle(x + 18, y - (look === 'pumpkin' ? 58 : 30), Math.sin(ph / 0.22 * Math.PI)); }   // ready to pick: a glint, not a glow (nothing glows)
+  if (p.stage === 'ready' && !pick) { const ph = ((now / 1000) % 2.8) / 2.8; if (ph < 0.22) twinkle(x + 18, y - (look === 'pumpkin' ? 58 : 30), Math.sin(ph / 0.22 * Math.PI)); }   // ready to pick: a glint, not a glow (nothing glows)
 }
 function wantsTap(p) {   // does this thing have something the player can do right now?
-  if (p.name === 'barrel' && G.barrelFull()) return true;   // rainwater to draw
-  if (p.name === 'seedbed') { const s = G.plot().stage; if (!bedReady()) return false; return s === 'ready' || (!s && G.canSow()) || (s === 'planted' && G.can(G.waterCost())); }
+  if (p.name === 'seedbed') { const s = G.plot().stage; if (!bedReady() || bedChore() || !choreGnome('her')) return false; return s === 'ready' || (!s && G.canSow()) || (s === 'planted' && G.can(G.waterCost())); }
   return C.tasks.some(t => t.spot === p.name && !t.retired && !G.s.tasks[t.id] && G.taskView(t).state === 'ready' && G.can(t.cost));
 }
 const TRUE_SIZE = { twig: 50, moss: 30, stone: 24, acorn: 22, seed: 18, water: 18, berry: 22, feather: 34, light: 36, bread: 26, plank: 40, honey: 24, yarn: 22 };   // world px; a gnome is about 120
@@ -2004,7 +2058,9 @@ function drawVisitor(v, now) {
 function spawnVisitor(forced) {
   const def = forced || G.pickVisitor(); if (!def) return;
   let to = [0.25 + Math.random() * 0.5, 0.25 + Math.random() * 0.5];
-  const trouble = /trouble/.test(hash) && def.trouble ? def.trouble : G.troubleFor(def.id);
+  let trouble = /trouble/.test(hash) && def.trouble ? def.trouble : G.troubleFor(def.id);
+  if (trouble && trouble.by !== 'luck' && !choreGnome(trouble.by)) trouble = null;   // a trouble a gnome sorts out only comes while they are up
+  if (trouble) trouble = Object.assign({}, trouble);   // this visit's own copy (it remembers who is on the way)
   const hungry = !trouble && G.dishBuilt() && G.wantsFood(def.id);
   if (hungry) to = [FEEDER.gx - 0.05, FEEDER.gy + 0.05];
   const perch = def.id === 'owl' || (trouble && def.id === 'possum');
@@ -3384,7 +3440,7 @@ function openFarm(fid) {   // tap a neighbour's farm: how it is coming on, the n
   html += `</ul>`;
   if (G.farmGrown(fid)) { const pv = G.taskView(G.taskDef(`farm:${fid}:pick`));
     html += `<p class="meta">${pv.state === 'ready' || pv.state === 'locked' ? `Ready to pick. ${pv.locked ? `(${pv.why})` : ''}` : pv.state === 'running' ? 'Being picked now.' : `Picked today. It grows back by tomorrow.`}</p>`;
-    const sw = F.swap; html += `<h3>A pantry swap</h3><div class="row"><div class="t"><b>${sw.text}</b><span class="cost">${costHtml(sw.give)} for ${costHtml(sw.get)}</span>${!G.swapOpen(fid) ? `<br><span class="meta">Swapped today. Come back tomorrow.</span>` : G.can(sw.give) ? '' : `<br><span class="bad">Needs ${G.missing(sw.give).join(', ')} from your seed bed.</span>`}</div>${G.swapOpen(fid) && G.can(sw.give) ? `<button class="act" data-a="swap" data-id="${fid}">Swap</button>` : ''}</div>`; }
+    const sw = F.swap; html += `<h3>A pantry swap</h3><div class="row"><div class="t"><b>${sw.text}</b><span class="cost">${costHtml(sw.give)} for ${costHtml(sw.get)}</span>${!G.swapOpen(fid) ? `<br><span class="meta">Swapped today. Come back tomorrow.</span>` : G.can(sw.give) ? '' : `<br><span class="bad">Needs ${G.missing(sw.give).join(', ')} from your seed bed.</span>`}</div>${G.swapOpen(fid) && G.can(sw.give) ? `<button class="act" data-a="swap" data-id="${fid}">Send the basket</button>` : ''}</div>`; }
   else if (at > 1) html += `<p class="meta">Growing. Once it has grown there will be picking to help with, and a pantry swap.</p>`;
   html += `</div><p style="text-align:center">${at < steps.length || G.farmGrown(fid) ? `<button class="act" data-a="jobs" data-id="farm:${fid}:${at < steps.length ? at : 'pick'}">See the job</button> ` : ''}<button class="act quiet" data-a="folk" data-id="${fid}">Talk to ${f.short}</button></p>`;
   openSheet('farm:' + fid, html);
@@ -3599,7 +3655,7 @@ function tap(cx, cy) {
   for (const o of [...G.s.secrets.out]) if (hit(o.screen, wx, wy)) { const d = G.findSecret(o.id); if (d) { float('✦ a little find', o.screen.x, o.screen.y); return openSecret(d.id, true); } }
   for (const o of [...G.s.offers].reverse()) if (o.keep && hit(o.screen, wx, wy)) { G.gather(o.id); return openKeepsake(o.keep, true); }   // an animal's thank-you
   if (BABY_SEED.screen && hit(BABY_SEED.screen, wx, wy)) { const [x, y] = [BABY_SEED.screen.x, BABY_SEED.screen.y]; float('♥', x, y - 20); return toast(C.animals.babyTap); }
-  for (const o of [...G.s.offers].reverse()) if (hit(o.screen, wx, wy)) { G.gather(o.id); float(`+1 ${C.resources[o.kind].name}`, o.screen.x, o.screen.y); return; }
+  for (const o of [...G.s.offers].reverse()) if (hit(o.screen, wx, wy)) { G.gather(o.id); float(`+1 ${C.resources[o.kind].name}`, o.screen.x, o.screen.y); driftHome(o); return; }
   for (const fd of G.s.village.finds) if (hit(fd.screen, wx, wy)) { const st = G.questStep(fd.folk), f = G.folkDef(fd.folk); G.found(fd.id); float('✓ found', fd.screen.x, fd.screen.y); toast(`You found ${st.find.name}.`); return openFolk(f.id); }
   for (const p of [...folkOnLand].reverse()) if (hit(p.screen, wx, wy)) return G.folkState(p.f.id) ? openFolk(p.f.id) : openTraveller();
   if (G.s.village.traveller && hit(CAMP.screen, wx, wy)) return openTraveller();
@@ -3777,7 +3833,11 @@ sheet.addEventListener('click', e => {
   const b = e.target.closest('[data-a]'); if (!b) return; const a = b.dataset.a, id = b.dataset.id;
   if (a === 'close') return closeSheet();
   if (a === 'room') return openRoom();
-  if (a === 'plant') { G.plant(id); } if (a === 'water') { G.water(); } if (a === 'harvest') { const got = G.harvest(); if (got) { const sb = PROPS.find(p => p.name === 'seedbed'); const [x, y] = toWorld(sb.gx, sb.gy); float(Object.entries(got).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(' '), x, y); greenWave = performance.now(); } }
+  if (a === 'plant') { const g = choreGnome('her'); if (g && G.plant(id, g.who)) { startBedChore(g, 'sow'); toast(`${C.names[g.who]} goes to sow the ${C.crops[id].name.replace(/^a /, '')}.`); return closeSheet(); } }
+  if (a === 'water') { const g = choreGnome('him'); if (g && G.water(g.who)) { startBedChore(g, 'water'); toast(`${C.names[g.who]} fetches the watering can.`); return closeSheet(); } }
+  if (a === 'harvest') { const g = choreGnome('her'), pl = G.plot(), was = { crop: pl.crop, nib: !!pl.nibbled }; const got = g && G.harvest(g.who);
+    if (got) { PICKING = was; startBedChore(g, 'pick', () => { PICKING = null; const sb = PROPS.find(p => p.name === 'seedbed'); const [x, y] = toWorld(sb.gx, sb.gy); float(Object.entries(got).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(' '), x, y); greenWave = performance.now(); });
+      toast(`${C.names[g.who]} takes the basket to the seed bed.`); return closeSheet(); } }
   if (a === 'start') { if (G.startTask(id)) { toast('Set to work.'); for (const g of gnomes) if (g.who === G.taskDef(id).who) { g.walking = false; g.wait = 0.1; } } }
   if (a === 'openmagic') { openMagic(); return; }
   if (a === 'cast') { if (G.cast(id)) { toast(C.spells[id].name + '.'); if (id === 'legs') { closeSheet(); const [x, y] = toWorld(...TOAD_FROM); cam.x = x; cam.y = y - 40; return; } } }   // watch it walk off
@@ -3787,8 +3847,9 @@ sheet.addEventListener('click', e => {
   if (a === 'traveller') return openTraveller();
   if (a === 'story') return openStory(id, 'quest');
   if (a === 'wave') { if (b.dataset.sure) { if (G.waveOn()) { toast('They waved goodbye. Someone else will come along.'); return closeSheet(); } } else { b.dataset.sure = 1; b.textContent = 'Yes, wave them on'; return; } }
-  if (a === 'qgive') { if (G.questGive(id)) toast('Given, with thanks.'); }
-  if (a === 'favour') { const g = G.doFavour(); if (g) toast(`Thank you! ${Object.entries(g).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(', ')}`); }
+  if (a === 'qgive') { const g = choreGnome('her'); if (G.questGive(id, g ? g.who : 'her')) { basketTo(g, id); toast(`${C.names[g ? g.who : 'her']} takes it over to ${G.folkDef(id).short}.`); } }
+  if (a === 'favour') { const g = choreGnome('her'), fid = G.s.village.favour && G.s.village.favour.folk, got = G.doFavour(g ? g.who : 'her');
+    if (got) { basketTo(g, fid); toast(`${C.names[g ? g.who : 'her']} takes it over to ${G.folkDef(fid).short}.${Object.keys(got).length ? ' ' + Object.entries(got).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(', ') : ''}`); } }
   if (a === 'entry') return openEntry(id);
   if (a === 'fest') { const [k, i] = id.split(':'); return openFest(k, +i || 0); }
   if (a === 'festgreen') return openFestGreen();
@@ -3806,11 +3867,11 @@ sheet.addEventListener('click', e => {
   if (a === 'lesson') return openLesson(isNaN(+id) ? id : +id, true);
   if (a === 'patch') return openPatch(id);
   if (a === 'farm') return openFarm(id);
-  if (a === 'swap') { if (G.swap(id)) toast(`Swapped. ${Object.entries(C.farms.list[id].swap.get).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(', ')}`); }
+  if (a === 'swap') { const g = choreGnome('her'); if (G.swap(id, g ? g.who : 'her')) { basketTo(g, id); toast(`${C.names[g ? g.who : 'her']} carries the basket over. ${Object.entries(C.farms.list[id].swap.get).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(', ')}`); } }
   if (a === 'tplaty') { closeSheet(); PLATY.force = true; PLATY.next = 0; PLATY.on = null; updatePlatypus(0); if (PLATY.on) { const [gx, gy] = healLocal(PLATY.on.k, { c: [0.5, 0] }), [x, y] = toWorld(...glob(PLATY.on.k, gx, gy)); cam.x = x; cam.y = y; } else toast('The creek needs to be on the map first.'); return; }
   if (a === 'tskip') return G.skipDays(+b.dataset.n);
   if (a === 'tfinish') { G.finishAll(); toast('Every job finished.'); }
-  if (a === 'tpack') { G.fillPack(); toast('Pack filled up.'); }
+  if (a === 'tpack') { G.fillPack(); toast("Store filled up."); }
   if (a === 'tvisit') { closeSheet(); spawnVisitor(); return; }
   if (a === 'tsecret') { closeSheet(); const o = G.spawnSecret(); if (o) { const [x, y] = toWorld(...glob(o.tile, o.gx, o.gy)); cam.x = x; cam.y = y; } else toast('Every little find has been found.'); return; }
   if (a === 'secret') return openSecret(id);
@@ -3824,7 +3885,7 @@ function openTest() {
   openSheet('test', `<h2>Test panel</h2><p>For trying things out. Tap one, then close this and have a look.</p>
   <h3>Start again</h3><p><button class="act" data-a="reset">Start the game over from the beginning</button></p>
   <h3>Jump ahead in time</h3><p><button class="act" data-a="tskip" data-n="1">+1 day</button> <button class="act" data-a="tskip" data-n="3">+3 days</button> <button class="act" data-a="tskip" data-n="7">+1 week</button></p>
-  <h3>Speed things up</h3><p><button class="act" data-a="tfinish">Finish every job now</button></p><p><button class="act" data-a="tpack">Fill my pack (20 of everything)</button></p>
+  <h3>Speed things up</h3><p><button class="act" data-a="tfinish">Finish every job now</button></p><p><button class="act" data-a="tpack">Fill the store (20 of everything)</button></p>
   <h3>Call someone</h3><p><button class="act" data-a="tvisit">A creature visits</button> <button class="act" data-a="ttrav">A traveller arrives</button> <button class="act" data-a="tsecret">Hide a little find</button> <button class="act" data-a="tplaty">The platypus (dawn only, normally)</button></p>
   <h3>Seasons</h3><p>${['spring', 'summer', 'autumn', 'winter'].map(k => `<button class="act${season() === k ? '' : ' quiet'}" data-a="tseason" data-id="${k}">${C.seasons[k].name}</button>`).join(' ')} <button class="act quiet" data-a="tseason" data-id="">The phone's own</button></p>
   <h3>The animals' stories</h3><p><button class="act" data-a="tbeat">Skip to the next animal beat</button></p><p class="meta">${C.animals.beats.filter(b => G.beatDone(b.id)).length} of ${C.animals.beats.length} beats so far. It ignores the season and the hour, and makes the job or home it waits on finished.</p>
@@ -3837,9 +3898,12 @@ function testPeek(x, y) { if (x < 200 && y < 80 + 20) { const n = performance.no
 function refreshSheet() { if (sheetKind === 'test') return; if (sheetKind && sheetKind.startsWith('folk:')) openFolk(sheetKind.slice(5)); else if (sheetKind === 'traveller') G.s.village.traveller ? openTraveller() : closeSheet(); else if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); else if (sheetKind === 'fest') openFestGreen(); else if (sheetKind && sheetKind.startsWith('patch:')) openPatch(sheetKind.slice(6)); else if (sheetKind && sheetKind.startsWith('farm:')) openFarm(sheetKind.slice(5)); renderInv(); renderHud(); }
 function openSeedbed() {
   const p = G.plot(), c = C.crops[p.crop]; let body = '';
+  const busy = bedChore(), sow = choreGnome('her'), wat = choreGnome('him'), nm = g => C.names[g.who];
+  if (busy) return openSheet('seedbed', `<h2>The seed bed<small>${p.grown} grown so far</small></h2><p>${nm(busy)} is ${{ sow: 'sowing', water: 'watering', pick: 'picking' }[busy.chore.kind]} the bed now.</p>${landNote()}`);
+  if (!sow && p.stage !== 'growing') return openSheet('seedbed', `<h2>The seed bed<small>${p.grown} grown so far</small></h2><p>Wendel and Hazel are ${routineFor(dayPhase().h) === 'fest' ? 'dancing on the green' : 'asleep'}. The seed bed can wait till morning.</p>${landNote()}`);
   const stageName = pr => pr < 0.25 ? 'Just up' : pr < 0.6 ? 'Leafing out' : pr < 0.9 ? 'Filling out' : 'Nearly there';
   if (!p.stage) {
-    body = `<p>What shall Hazel sow? One crop fills the whole bed.</p>`;
+    body = `<p>What shall ${nm(sow)} sow? Choose, and lend the seed; ${nm(sow)} will kneel along the bed and sow it. One crop fills the whole bed.</p>`;
     for (const [id, k] of Object.entries(C.crops)) {
       const open = G.cropOpen(id), cost = G.cropCost(id), first = k.free && !Object.keys(cost).length;
       if (!open && !k.lock) continue;   // lettuces just turn up after the first picking
@@ -3847,9 +3911,9 @@ function openSeedbed() {
     }
     if (!G.canSow()) body += `<p>No seeds. The land offers one now and then, and every picking gives some back.</p>`;
   }
-  else if (p.stage === 'planted') body = `<div class="row"><div class="t"><b>${cap(c.name.replace(/^a /, ''))} sown. ${c.water > 1 ? 'They want a good drink' : 'They want water'}</b><span>Costs ${costHtml(G.waterCost())} dew, gathered from the ground</span></div><button class="act" data-a="water" ${G.can(G.waterCost()) ? '' : 'disabled'}>Water</button></div>`;
+  else if (p.stage === 'planted') body = `<div class="row"><div class="t"><b>${cap(c.name.replace(/^a /, ''))} sown. ${c.water > 1 ? 'They want a good drink' : 'They want water'}</b><span>${nm(wat)} fills the can${G.done('rainbarrel') ? ' at the rain barrel' : ' at the spring'}. Costs ${costHtml(G.waterCost())} dew, gathered from the ground</span></div><button class="act" data-a="water" ${G.can(G.waterCost()) ? '' : 'disabled'}>Water</button></div>`;
   else if (p.stage === 'growing') { const pr = cropProg(p); body = `<div class="row"><div class="t"><b>${cap(c.name.replace(/^a /, ''))}: ${stageName(pr).toLowerCase()}</b><span>ready in ${G.timeLeft(p.readyAt)}</span><div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div></div>${G.magicInfo().spells.includes('coax') ? `<button class="act" data-a="cast" data-id="coax" ${G.canCast('coax').ok ? '' : 'disabled'}>Coax ✨2</button>` : ''}</div>`; }
-  else body = `<div class="row"><div class="t"><b>${cap(c.name.replace(/^a /, 'the '))} ${p.crop === 'pumpkin' ? 'is' : 'are'} ready to pick</b><span>Gives ${costHtml(c.harvest)} and a little more green</span></div><button class="act" data-a="harvest">Pick</button></div>`;
+  else body = `<div class="row"><div class="t"><b>${cap(c.name.replace(/^a /, 'the '))} ${p.crop === 'pumpkin' ? 'is' : 'are'} ready to pick</b><span>${nm(sow)} picks them into the basket. Gives ${costHtml(c.harvest)} and a little more green</span></div><button class="act" data-a="harvest">Pick</button></div>`;
   openSheet('seedbed', `<h2>The seed bed<small>${p.grown} grown so far</small></h2>${body}${landNote()}`);
 }
 function landNote() {   // why growing things matters: every harvest (and most jobs) wakes the land a little, towards the next stage
@@ -3859,10 +3923,10 @@ function landNote() {   // why growing things matters: every harvest (and most j
 function cap(t) { return t[0].toUpperCase() + t.slice(1); }
 function hours(mins) { const h = mins / 60 * G.taskSpeed(); return h < 1 ? `${Math.round(h * 60)} minutes` : h < 1.75 ? '1 hour' : `${Math.round(h)} hours`; }
 function openPack() {
-  let html = `<h2>Your pack<small>things gathered from the land</small></h2><p>Tap the little things lying about on the ground to pick them up. Jobs use them.</p><div class="pack">`;
+  let html = `<h2>The gnomes' store<small>things the land has left for them</small></h2><p>Tap the little things lying about, and a little luck carries them home: twigs to the woodpile, the rest to Hazel's shelf by the door. Their jobs use them.</p><div class="pack">`;
   const cell = ([k, r]) => { const n = G.s.inv[k] || 0; return `<div class="${n ? '' : 'zero'}">${iconHtml(k)}<b>${n}</b>${r.name}</div>`; }, all = Object.entries(C.resources);
   html += all.filter(([, r]) => !r.pantry).map(cell).join('') + `</div>`;
-  if (G.s.plots.seedbed.grown) html += `<h3>The pantry</h3><p>From the seed bed. Neighbours ask for these, and some jobs need them.</p><div class="pack">${all.filter(([, r]) => r.pantry).map(cell).join('')}</div>`;   // after the first picking
+  if (G.s.plots.seedbed.grown) html += `<h3>The pantry</h3><p>From the seed bed. They eat from it at breakfast and supper, and the shelf holds about ${C.pantry.cap} of each; the spare goes over the fence. Hazel's seed tin holds ${C.pantry.seedTin} seeds.</p><div class="pack">${all.filter(([, r]) => r.pantry).map(cell).join('')}</div>`;   // after the first picking
   openSheet('pack', html);
 }
 const JOB_PIC = { ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'yard-bench', barrow: 'wheelbarrow',
@@ -3880,7 +3944,7 @@ function jobRow(v, focus) {
   let right = '', sub = '';
   if (v.state === 'running') { const pr = 1 - Math.max(0, v.endsAt - G.now()) / (v.endsAt - v.startedAt); sub = `${who} is on it · ${G.timeLeft(v.endsAt)} to go<div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div>`; if ((d.tile || d.healTile) && G.magicInfo().spells.includes('wake')) right = `<button class="act" data-a="cast" data-id="wake" ${G.canCast('wake').ok ? '' : 'disabled'}>Wake ✨4</button>`; }
   else if (v.state === 'done') sub = `${who} finished this.`;
-  else { sub = `${who} · ` + (Object.keys(d.cost).length ? `<span class="cost">${costHtml(d.cost)}</span>` : `no materials`) + ` · <span class="hrs">${hours(d.mins)}</span>` + (v.locked ? `<br><span class="bad">${v.why}</span>` : v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`); right = `<button class="act" data-a="start" data-id="${d.id}" ${v.can && !v.locked ? '' : 'disabled'}>Start</button>`; }
+  else { sub = `${who} · ` + (Object.keys(d.cost).length ? `<span class="cost">${costHtml(d.cost)}</span>` : `no materials`) + ` · <span class="hrs">${hours(d.mins)}</span>` + (v.locked ? `<br><span class="bad">${v.why}</span>` : v.can ? '' : `<br><span class="bad">The store is short of ${v.missing.join(', ')}.</span>`); right = `<button class="act" data-a="start" data-id="${d.id}" ${v.can && !v.locked ? '' : 'disabled'}>Start</button>`; }
   return `<div class="row${d.id === focus ? ' hi' : ''}${v.story && v.state !== 'done' ? ' story' : ''}">${jobPic(d)}<div class="t">${v.story && v.state !== 'done' ? `<i class="ribbon">for the story</i>` : ''}<b>${d.name}</b>${d.where ? `<span class="meta">${d.where}${d.healTile && G.s.village.traveller && G.s.village.traveller.want === d.healTile ? ` · for ${G.folkDef(G.s.village.traveller.id).short}` : ''}</span>` : ''}<span class="bl">${d.blurb}</span><span>${sub}</span></div>${right}</div>`;
 }
 function openTasks(focus = '') {
@@ -3931,7 +3995,7 @@ function journalFoot(v) {   // what you know about a creature's feeding, nest an
   const e = G.s.journal[v.id] || {}, F = C.feeding, n = (e.fed || []).length, bits = [];
   if (v.eats && n) bits.push(G.hasNest(v.id) ? `Lives nearby now.` : G.isRegular(v.id) ? `A regular: comes by every day.${v.nest ? ` Fed on ${n} days; it may settle nearby after ${F.nestAfter}.` : ''}` : `Fed at the dish on ${n} of ${F.regularAfter} days it needs to become a regular.`);
   else if (v.eats && G.dishBuilt()) bits.push(`Might come to the dish for ${v.eats.map(k => k === 'seed' ? 'seed' : 'berries').join(' or ')}.`);
-  if (e.helped) bits.push(`You have helped it ${e.helped === 1 ? 'once' : e.helped + ' times'}.`);
+  if (e.helped) bits.push(`Helped ${e.helped === 1 ? 'once' : e.helped + ' times'}.`);
   return bits.join(' ');
 }
 function openJournal() {
@@ -3985,17 +4049,44 @@ function openFeeder() {
   if (met.length) html += `<h3>Who eats what</h3>` + met.map(v => `<p style="margin:2px 0"><b>${v.name}</b>: ${v.eats.map(k => k === 'seed' ? 'seed' : 'berries').join(', ')}${G.isRegular(v.id) ? ' · regular' : ` · fed ${G.fedDays(v.id)} of ${F.regularAfter} days`}</p>`).join('');
   openSheet('feeder', html);
 }
+// A creature in trouble (progression fix 2): your luck draws a gnome's eye to it and they walk over and help with their own hands,
+// or, for the gentle ones (trouble.by 'luck'), a little luck does it: a breath of warm air, a patch of sun. Never the player's hands.
 function openHelp() {
   const v = visitor; if (!v || !v.trouble) return;
-  openSheet('help', `<div class="jpage">${portraitHtml(v.def, true)}<h2>The ${v.def.name.toLowerCase()}</h2><p class="lore">The ${v.def.name.toLowerCase()} ${v.trouble.text}</p></div><p style="text-align:center"><button class="act" data-a="help">${v.trouble.act}</button></p>`);
+  const by = v.trouble.by || 'her', g = by !== 'luck' && choreGnome(by), name = g && C.names[g.who];
+  const how = by === 'luck' ? 'A little luck would do it.' : v.trouble.helping ? `${C.names[v.trouble.helping]} is on the way.` : g ? `${name} hasn't noticed yet. A little luck could draw ${g.who === 'her' ? 'her' : 'his'} eye to it.` : 'Wendel and Hazel are asleep.';
+  const btn = by === 'luck' ? `<button class="act" data-a="help">${v.trouble.act}</button>` : g && !v.trouble.helping ? `<button class="act" data-a="help">Draw ${name}'s eye to it</button>` : '';
+  openSheet('help', `<div class="jpage">${portraitHtml(v.def, true)}<h2>The ${v.def.name.toLowerCase()}</h2><p class="lore">The ${v.def.name.toLowerCase()} ${v.trouble.text}</p><p class="meta">${how}</p></div><p style="text-align:center">${btn}</p>`);
 }
 function doHelp() {
   const v = visitor; if (!v || !v.trouble) return closeSheet();
+  const by = v.trouble.by || 'her';
+  if (by === 'luck') { closeSheet(); return helped(v); }
+  const g = choreGnome(by); if (!g || v.trouble.helping) return closeSheet();
+  v.trouble.helping = g.who; const [x, y] = [v.gx + 0.05, v.gy + 0.02];
+  g.startChore('help', [[x, y, v.trouble.act && /ladder/i.test(v.trouble.act) ? 'build' : 'pickup', false, 4, [v.gx, v.gy]]], () => { if (visitor === v && v.trouble) helped(v); });
+  gnomeSays(g.who, g.who === 'her' ? 'Oh! Hold still, little one.' : 'Hello there. What have you got yourself into?');
+  closeSheet();
+}
+// Bryce: pick-ups go into the gnomes' store, not the player's pocket. Your tap is a little luck: the thing drifts on a breeze to
+// where they keep it (twigs to the woodpile, the rest to Hazel's shelf by the door). "Things turn up where we need them." (page 2.5)
+function driftHome(o) {
+  const [x0, y0] = toWorld(o.gx, o.gy, o.tile), pile = PROPS.find(p => p.name === 'firewood'), [tx, ty] = o.kind === 'twig' && pile ? toWorld(pile.gx, pile.gy) : toWorld(SPOTS.door[0] - 0.03, SPOTS.door[1] + 0.03);
+  particles.push({ k: 'drift', kind: o.kind, x: x0, y: y0 - 10, x0, y0: y0 - 10, tx, ty: ty - 6, life: 0, max: 1.3 });
+}
+function basketTo(g, fid) {   // a gnome carries it over to the neighbour's door in the basket, then comes home (only a picture: the swap is done)
+  const fs = G.folkState(fid); if (!g || !fs || !fs.tile) return;
+  const door = glob(fs.tile, LOT.home[0] + 0.10, LOT.home[1] + 0.18);
+  g.startChore('basket', [[door[0], door[1], 'pickup', g.who === 'her', 3, door]]);
+}
+function helped(v) {   // the good deed is done: a little light, and the thank-you
   G.entry(v.def.id); if (!G.met(v.def.id)) G.noteVisitor(v.def.id);
-  const light = G.help(v.def.id), [x, y] = toWorld(v.gx, v.gy);
+  const light = G.help(v.def.id), [x, y] = toWorld(v.gx, v.gy), thanks = v.trouble.thanks;
   float(light ? '+1 light ♥' : '♥', x, y - (v.def.h || 30));
-  openSheet('help', `<div class="jpage">${portraitHtml(v.def, true)}<h2>Thank you</h2><p class="lore">${v.trouble.thanks}</p><p class="meta">${light ? 'A good deed: +1 light.' : 'A good deed. (No more light from good deeds today, but it was still the right thing.)'}</p></div><p style="text-align:center"><button class="act" data-a="close">You're welcome</button></p>`);
+  if (v.trouble.by === 'luck') for (let i = 0; i < 10; i++) particles.push({ k: 'breath', x: x - 40 + Math.random() * 20, y: y - 10 - Math.random() * 30, vx: 22 + Math.random() * 12, vy: -3 - Math.random() * 4, r: 3 + Math.random() * 3, life: 0, max: 1.8 + Math.random() });   // the breath of luck: a soft drift of air past it (not a glow)
   v.trouble = null; v.stay = v.t + 8;
+  if (sheetKind) { toast(thanks); return; }
+  openSheet('help', `<div class="jpage">${portraitHtml(v.def, true)}<h2>A good deed</h2><p class="lore">${thanks}</p><p class="meta">${light ? 'A little light came of it: +1 light.' : 'No more light from good deeds today, but it was still the right thing.'}</p></div><p style="text-align:center"><button class="act" data-a="close">Lovely</button></p>`);
 }
 // ---------- the first month's story: pages, Hazel's lists, the quest (CONTENT.story) ----------
 let bigDay = false;   // a story page opened this visit ("All done for now" says so)
@@ -4089,18 +4180,18 @@ function openTraveller() {
   let html = `<div class="jpage">${folkPor(f, true)}<h2>${f.name}</h2><p class="meta">${f.trade}, camped by the path</p><p class="lore">${f.intro}</p>${G.wishOf(f.id) ? `<p class="lore">${G.wishText(f.id)}</p>` : ''}</div><h3>Will they stay?</h3>`;
   if (v.state === 'running') html += `<div class="row"><div class="t"><b>${d.name}</b><span><span class="who" data-w="${d.who}">${C.names[d.who]}</span> is on it · ${G.timeLeft(v.endsAt)} to go</span></div></div>`;
   else {
-    html += `<div class="row"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>` + (v.locked ? `<span class="bad">${v.why}</span>` : `<span class="who" data-w="${d.who}">${C.names[d.who]}</span> needs <span class="cost">${costHtml(d.cost)}</span> · ${hours(d.mins)}` + (v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`)) + `</span></div><button class="act" data-a="start" data-id="${d.id}" ${v.state === 'ready' && v.can ? '' : 'disabled'}>Build</button></div>`;
+    html += `<div class="row"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>` + (v.locked ? `<span class="bad">${v.why}</span>` : `<span class="who" data-w="${d.who}">${C.names[d.who]}</span> needs <span class="cost">${costHtml(d.cost)}</span> · ${hours(d.mins)}` + (v.can ? '' : `<br><span class="bad">The store is short of ${v.missing.join(', ')}.</span>`)) + `</span></div><button class="act" data-a="start" data-id="${d.id}" ${v.state === 'ready' && v.can ? '' : 'disabled'}>Build</button></div>`;
     html += `<p style="margin-top:12px">Not the right neighbour? <button class="act quiet" data-a="wave">Wave them on</button><br><small>They will go on along the road, and someone else will come by in a day or so.</small></p>`;
   }
   openSheet('traveller', html);
 }
 function folkStory(fid) {   // the story part of a neighbour's page, in words, with whatever button it needs
   const f = G.folkDef(fid), fs = G.folkState(fid), st = G.questStep(fid);
-  if (fs.q === 'done') return `<h3>${f.quest.name}</h3><p>A story you helped finish. <button class="act quiet" data-a="story" data-id="${fid}">Read it again</button></p>`;
+  if (fs.q === 'done') return `<h3>${f.quest.name}</h3><p>A story that has finished. <button class="act quiet" data-a="story" data-id="${fid}">Read it again</button></p>`;
   if (!st) return taskProg('trade:' + fid) >= 1 ? `<p><small>${f.short[0].toUpperCase() + f.short.slice(1)} will have a story for you before long.</small></p>` : '';
   let btn = '';
-  if (st.give) btn = `<span class="cost">${costHtml(st.give)}</span><br>` + (G.can(st.give) ? `<button class="act" data-a="qgive" data-id="${fid}">Give</button>` : `<span class="bad">You are short ${G.missing(st.give).join(', ')}.</span>`);
-  else if (st.job) { const v = G.taskView(G.taskDef(`quest:${fid}:${fs.q}`)); btn = v.state === 'running' ? `<span><span class="who" data-w="${st.job.who}">${C.names[st.job.who]}</span> is on it · ${G.timeLeft(v.endsAt)} to go</span>` : `<span class="who" data-w="${st.job.who}">${C.names[st.job.who]}</span> needs <span class="cost">${costHtml(st.job.cost)}</span> · ${hours(st.job.mins)}<br>` + (v.can ? `<button class="act" data-a="start" data-id="${v.def.id}">${st.job.name}</button>` : `<span class="bad">You are short ${v.missing.join(', ')}.</span>`); }
+  if (st.give) btn = `<span class="cost">${costHtml(st.give)}</span><br>` + (G.can(st.give) ? `<button class="act" data-a="qgive" data-id="${fid}">Send it over</button>` : `<span class="bad">The store is short of ${G.missing(st.give).join(', ')}.</span>`);
+  else if (st.job) { const v = G.taskView(G.taskDef(`quest:${fid}:${fs.q}`)); btn = v.state === 'running' ? `<span><span class="who" data-w="${st.job.who}">${C.names[st.job.who]}</span> is on it · ${G.timeLeft(v.endsAt)} to go</span>` : `<span class="who" data-w="${st.job.who}">${C.names[st.job.who]}</span> needs <span class="cost">${costHtml(st.job.cost)}</span> · ${hours(st.job.mins)}<br>` + (v.can ? `<button class="act" data-a="start" data-id="${v.def.id}">${st.job.name}</button>` : `<span class="bad">The store is short of ${v.missing.join(', ')}.</span>`); }
   else if (st.find) btn = `<span>Look for <b>${st.find.name}</b> on the land${st.find.hours ? ' (after dark)' : ''}. It will glow softly.</span>`;
   else if (st.wait) btn = `<span>Come back in ${G.timeLeft(fs.waitUntil)}.</span>`;
   return `<h3>${f.quest.name} · part ${fs.q + 1} of ${f.quest.steps.length}</h3><p class="lore" style="text-align:left;margin:4px 0 8px">${st.say}</p><p>${btn}</p>`;
@@ -4110,9 +4201,9 @@ function openFolk(fid) {
   if (typeof fs.q === 'number' && fs.q >= 0) fs.seen = fs.q;   // you've read the latest part of their story
   let html = `<div class="jpage">${folkPor(f, true)}<h2>${f.name}</h2><p class="meta">${f.trade}${f.members ? '' : ''} · neighbours since ${new Date(fs.since).toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}</p><p class="lore">"${pick(f.sayings)}"</p></div>`;
   const fv = G.s.village.favour;
-  if (fv && fv.folk === fid) { const ask = f.favours[fv.i]; html += `<h3>A small favour</h3><div class="row"><div class="t"><b>"${ask.ask}"</b><span class="cost">${costHtml(ask.cost)}</span>${G.can(ask.cost) ? '' : `<br><span class="bad">You are short ${G.missing(ask.cost).join(', ')}.</span>`}</div><button class="act" data-a="favour" ${G.can(ask.cost) ? '' : 'disabled'}>Help</button></div>`; }
+  if (fv && fv.folk === fid) { const ask = f.favours[fv.i]; html += `<h3>A small favour</h3><p class="meta" style="margin:0">${f.short[0].toUpperCase() + f.short.slice(1)} asks over the fence.</p><div class="row"><div class="t"><b>"${ask.ask}"</b><span class="cost">${costHtml(ask.cost)}</span>${G.can(ask.cost) ? '' : `<br><span class="bad">The store is short of ${G.missing(ask.cost).join(', ')}.</span>`}</div><button class="act" data-a="favour" ${G.can(ask.cost) ? '' : 'disabled'}>Send it over</button></div>`; }
   const tv = G.taskView(G.taskDef('trade:' + fid)), b = tv.def;
-  if (tv.state !== 'done') html += `<h3>${b.name}</h3><div class="row"><div class="t"><span>${b.blurb}</span><br><span>` + (tv.state === 'running' ? `<span class="who" data-w="${b.who}">${C.names[b.who]}</span> is on it · ${G.timeLeft(tv.endsAt)} to go` : `<span class="who" data-w="${b.who}">${C.names[b.who]}</span> needs <span class="cost">${costHtml(b.cost)}</span> · ${hours(b.mins)}` + (tv.can ? '' : `<br><span class="bad">You are short ${tv.missing.join(', ')}.</span>`)) + `</span></div>${tv.state === 'ready' ? `<button class="act" data-a="start" data-id="${b.id}" ${tv.can ? '' : 'disabled'}>Start</button>` : ''}</div>`;
+  if (tv.state !== 'done') html += `<h3>${b.name}</h3><div class="row"><div class="t"><span>${b.blurb}</span><br><span>` + (tv.state === 'running' ? `<span class="who" data-w="${b.who}">${C.names[b.who]}</span> is on it · ${G.timeLeft(tv.endsAt)} to go` : `<span class="who" data-w="${b.who}">${C.names[b.who]}</span> needs <span class="cost">${costHtml(b.cost)}</span> · ${hours(b.mins)}` + (tv.can ? '' : `<br><span class="bad">The store is short of ${tv.missing.join(', ')}.</span>`)) + `</span></div>${tv.state === 'ready' ? `<button class="act" data-a="start" data-id="${b.id}" ${tv.can ? '' : 'disabled'}>Start</button>` : ''}</div>`;
   else html += `<p><small>${b.giftText.replace(/\.$/, '')}: every day.</small></p>`;
   if (C.farms.list[fid] && G.farms().includes(fid)) html += `<p><button class="act quiet" data-a="farm" data-id="${fid}">${C.farms.list[fid].name}</button></p>`;
   html += folkStory(fid);
@@ -4234,7 +4325,7 @@ function start() {
   if (!G.s.flags.welcomed) {
     G.s.flags.welcomed = true; G.save();
     const pg = G.pageDef('1.1'); G.seePage('1.1');
-    openSheet('welcome', pageHtml(pg) + `<h3>How it works</h3><p>✨ <b>Tap the little things lying about</b> (twigs, stones, seeds: they catch the light now and then). They go into your pack (🧺 Pack).</p><p>🔨 <b>A dot on the Jobs button means a job is ready to start.</b> Give the materials and a gnome gets to work while you go about your day.</p><p>Come back whenever you like: the land leaves something new for you each time.</p><p style="margin-top:12px;text-align:center"><button class="act" data-a="close">${pg.button}</button></p>`);
+    openSheet('welcome', pageHtml(pg) + `<h3>How it works</h3><p>✨ <b>Tap the little things lying about</b> (twigs, stones, seeds: they catch the light now and then). A little luck carries them home to the gnomes' store (🧺 Store).</p><p>🔨 <b>A dot on the Jobs button means a job is ready to start.</b> Lend the materials and a gnome gets to work while you go about your day.</p><p>Come back whenever you like: the land leaves something new for you each time.</p><p style="margin-top:12px;text-align:center"><button class="act" data-a="close">${pg.button}</button></p>`);
   }
 }
 })();
