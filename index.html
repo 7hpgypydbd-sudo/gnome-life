@@ -200,7 +200,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v61</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v62</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -219,15 +219,16 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 61;
+const BUILD = 62;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=61"></script>
-<script src="game.js?v=61"></script>
+<script src="content.js?v=62"></script>
+<script src="game.js?v=62"></script>
+<script src="walk.js?v=62"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -532,7 +533,7 @@ const hash = location.hash.slice(1);
 for (const tok of hash.split(/[#&]/)) if (/^(day|night|dawn|dusk|morning|evening)$/.test(tok)) tod = tok;
 if (/reset/.test(hash)) { G.reset(); }
 window.addEventListener('hashchange', () => location.reload());
-if (/test/.test(hash)) window.DBG = { patch: k => openPatch(k), farm: f => openFarm(f), platy: () => PLATY, swap: f => G.swap(f), jobs: f => openTasks(f || ''), magic: () => openMagic(), lesson: n => openLesson(n), cam, gnomes, IM, seat: BENCH_SEAT, dishFill: f => startDishFill(f), art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spirit: n => openLesson(n || 3), get allDone() { return ALLDONE; }, groundReady: () => !NEWGROUND || !groundMissing(), spiritAt: () => SPIRIT_HINT.screen, spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
+if (/test/.test(hash)) window.DBG = { feet: () => footprints(), walk: Walk, visitor: () => visitor, spawn: id => spawnVisitor(C.visitors.find(v => v.id === id)), patch: k => openPatch(k), farm: f => openFarm(f), platy: () => PLATY, swap: f => G.swap(f), jobs: f => openTasks(f || ''), magic: () => openMagic(), lesson: n => openLesson(n), cam, gnomes, IM, seat: BENCH_SEAT, dishFill: f => startDishFill(f), art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spirit: n => openLesson(n || 3), get allDone() { return ALLDONE; }, groundReady: () => !NEWGROUND || !groundMissing(), spiritAt: () => SPIRIT_HINT.screen, spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
 
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -553,7 +554,9 @@ class Gnome {
     this.say = null; this.sayT = 0; this.job = null; this.bob = 0;
     this.act = null; this.plan = null; this.routine = null; this.pace = null; this.aframe = 0; this.at = 0;
   }
-  goto(x, y) { const r = bedRoute(this.gx, this.gy, x, y); [this.tx, this.ty] = r.shift(); this.route = r; this.walking = true; }   // round the seed bed, in by the gate
+  goto(x, y) {   // round the seed bed (in by the gate), and round everything else standing in the way (walk.js)
+    const r = []; let p = [this.gx, this.gy]; for (const q of bedRoute(this.gx, this.gy, x, y)) { r.push(...Walk.route(p[0], p[1], q[0], q[1])); p = q; }
+    [this.tx, this.ty] = r.shift(); this.route = r; this.walking = true; }
   faceTowards(x, y, propName) { this.faceTo = Array.isArray(propName) ? propName : null;   // action strips face right; flip so the gnome faces the fire (or the middle of the tile)
     const p = typeof propName === 'string' && PROPS.find(p => p.name === propName); const [tx, ty] = Array.isArray(propName) ? propName : p ? [p.gx, p.gy] : [0.5, 0.5];   // propName may be a [gx, gy] to look at
     const [ax] = toWorld(x, y), [bx] = toWorld(tx, ty); this.flip = bx < ax;
@@ -1885,7 +1888,7 @@ function drawFeeder(x, y, a, now) {
     else { blob(fx, fy, 3, 3, ['#4a2c5e', '#6a3a7a', '#8a2a3a'][i % 3]); blob(fx - 1, fy - 1, 0.9, 0.9, 'rgba(255,240,240,0.7)'); } }
 }
 // where each nesting creature settles once it has been fed on enough days (code stand-ins until nest-<kind> is painted)
-const NESTS = { robin:[0.92, 0.64], wren:[0.66, 0.94], mouse:[0.16, 0.66], hedgehog:[0.96, 0.82], bluetongue:[0.10, 0.30], bandicoot:[0.40, 0.92] };
+const NESTS = { robin:[0.93, 0.73], wren:[0.80, 0.95], mouse:[0.16, 0.66], hedgehog:[0.96, 0.82], bluetongue:[0.05, 0.12], bandicoot:[0.40, 0.92] };   // placement check (2026-10-27): robin and wren off the paths, blue-tongue out from under the wind spinner
 function drawNest(id, x, y, now) {
   const kind = G.visitorDef(id).nest;
   NESTS[id].screen = { x, y, w: 50, h: 34 };
@@ -1904,6 +1907,63 @@ function drawNest(id, x, y, now) {
   } else {   // a pile of warm flat stones with a gap under them
     blob(x, y - 2, 14, 6, '#1e140c'); stone(x - 14, y - 4, 11); stone(x + 12, y - 3, 12); stone(x - 1, y - 12, 10);
   }
+  ctx.restore();
+}
+
+// ---------- footprints: what walkers go round (walk.js) ----------
+// Bryce (2026-10-27): nobody walks through or under fixed things, and no creature ever goes inside the seed bed.
+// Each fixed thing standing on the ground gives a round footprint about the size of its base (a little under its drawn
+// width). Flat things (doormat, stepping stones, paths, the plank over the trickle) and gates are walked over or through.
+const FOOT_K = 0.34;   // footprint radius as a share of the drawn width (the base of a picture is narrower than its widest part)
+const FOOT_SKIP = new Set(['doormat', 'pebbles', 'plank', 'gstones', 'wildflowers', 'pebblepath', 'border', 'wicket', 'arch', 'wreath', 'nameboard', 'chime', 'cushion', 'swing', 'scarecrow', 'mousering', 'firering', 'barrow']);
+function footR(wPx, k = FOOT_K) { const [x0] = toWorld(0, 0), [x1] = toWorld(1, 0); return wPx * k / ((x1 - x0) * Math.SQRT2); }   // drawn width (world px) -> radius on the tile grid
+function footprints() {
+  const out = [], add = (name, gx, gy, wPx, k) => out.push({ name, gx, gy, r: footR(wPx, k) });
+  for (const p of PROPS) { if (p.flat || p.name === 'fence' || propAlpha(p) <= 0.05) continue;
+    const im = p.name === 'firewood' ? IM['woodpile-' + Math.max(1, woodStage())] : IM[p.name]; if (!im || !im.width) continue;
+    let w = im.width * SPR * p.s; if (p.name === 'shelter') w = Math.max(w, 300); if (p.name === 'campfire' && taskProg('firering') > 0) w = Math.max(w, 100);
+    if (p.name === 'shelter') { const r = footR(w, 0.36); out.push({ name: 'house', gx: p.gx - r * 0.55, gy: p.gy - r * 0.55, r }); continue; }   // its foot is the front of the doorstep; the house stands behind it
+    add(p.name, p.gx, p.gy, w); }
+  if (taskProg('bench') > 0) add('bench', BENCH[0], BENCH[1], 90, 0.4);
+  if (taskProg('clothesline') > 0) for (const [gx, gy] of [[0.45, 0.12], [0.55, 0.06]]) add('clothesline post', gx, gy, 16, 0.6);
+  if (taskProg('spring') >= SPRING_FOUND) add('spring', SPRING.at[0], SPRING.at[1], SPRING_W, 0.3);
+  if (taskProg('feeder') > 0) add('feeding dish', FEEDER.gx, FEEDER.gy, 64);
+  if (taskProg('clear') > 0) add('stick pile', STICK_PILE[0], STICK_PILE[1], 80);
+  if (NEWGROUND) {
+    const barren = G.landStage().key === 'barren', lvl = { barren: 0, green: 1, meadow: 2, wood: 3 }[G.landStage().key] || 0;
+    for (const [a, b, gx, gy, sc, job] of HOME_KIT) { const k = barren ? a : b, there = barren ? 1 - (job ? taskProg(job) : 0) : b ? 1 : 0; if (!k || there <= 0.05) continue;   // stumps and rocks that stay; the rubbish Hazel clears goes
+      const im = IM['kit-' + k]; if (im && im.width) add(k, gx, gy, im.width * sc); }
+    if (lvl >= 1) for (const [n, gx, gy, st] of YARD_WOOD) { if (lvl < st || n === 15) continue; const im = IM['kit-wood-' + pad2(n)]; if (im && im.width) add('wood ' + n, gx, gy, im.width * WOOD[n] / im.height, n >= 11 ? 0.3 : 0.26); }
+    if (lvl >= 1 && (toadProg() <= 0 || toadProg() >= 1)) {   // the big toadstool (not while it is walking off on its root legs)
+      const im = IM['kit-wood-15']; if (im && im.width) { const [tx, ty] = toadAt(); add(toadProg() >= 1 ? 'mouse house' : 'toadstool', tx, ty, im.width * WOOD[15] / im.height * (taskProg('mousering') > 0 ? 1.3 : 1), 0.3); } }
+  }
+  for (const id in NESTS) if (G.hasNest(id)) add(id + "'s home", NESTS[id][0], NESTS[id][1], 46);
+  for (const d of C.tasks) { if (!d.make || FOOT_SKIP.has(d.id) || MAKE_FLAT.has(d.id) || HOUSE_DOOR[d.id] || (d.make === 'garden' && !G.gardenOpen()) || taskProg(d.id) <= 0) continue;
+    const sz = MAKE_SIZE[d.id] || { w: 50 }, [gx, gy] = makeAt(d); add(d.id, gx, gy, sz.w || sz.h * 0.6);
+    if (MAKE_TWICE[d.id]) add(d.id, ...MAKE_TWICE[d.id], sz.w || 50); }
+  if (G.gardenOpen() && taskProg('pond') > 0) { const [px, py] = glob(POND.tile, POND.gx, POND.gy); add('pond', px, py, 150, 0.4); }
+  if (shelfStage().made > 0) add('nursery shelf', SHELF_AT[0], SHELF_AT[1], 60);
+  return out;
+}
+// the yard's wild edges, where creatures come in and go out: [from, to, a step inwards]. Not the back edges: the house, the
+// woodpile and the big old stump stand along them, and the stream is behind. The garden's far edges once the garden is open.
+function yardEdges() {
+  const e = [[[1.06, 0.18], [1.06, 0.92], [-0.1, 0]], [[0.18, 1.06], [0.9, 1.06], [0, -0.1]]];
+  if (G.gardenOpen()) { e[1] = [[1.06, 1.1], [1.06, 1.92], [-0.1, 0]]; e.push([[0.18, 2.06], [0.9, 2.06], [0, -0.1]]); }
+  return e;
+}
+function bedFoot() {   // the seed bed as a footprint for creatures: the fence ring and a little more, from the day it is dug
+  if (!onBed('0,0', PROPS.find(q => q.name === 'seedbed').gx, PROPS.find(q => q.name === 'seedbed').gy)) return null;
+  const f = bedFrame(), S = 1.12, [gx, gy] = fromRing(0, 0, f), reach = Math.max(...[0, 1, 2, 3].map(k => { const p = fromRing(Math.cos(k * 1.571) * S, Math.sin(k * 1.571) * S, f); return Math.hypot(p[0] - gx, p[1] - gy); })) * 1.2;
+  return { name: 'seed bed', gx, gy, reach, to: (x, y) => { const [u, v] = toRing(x, y, f); return [u / S, v / S]; }, from: (u, v) => fromRing(u * S, v * S, f) };
+}
+Walk.use({ footprints, bed: bedFoot, edges: yardEdges });
+function drawFeet() {   // the test view (#test&feet): footprints in red, the bed's creature edge in blue, the wild edges in green, a visitor's path dotted
+  ctx.save(); ctx.lineWidth = 2;
+  for (const o of Walk.obstacles({ creature: true })) { ctx.strokeStyle = o.hard ? 'rgba(40,90,220,0.9)' : 'rgba(220,40,40,0.9)'; ctx.fillStyle = o.hard ? 'rgba(40,90,220,0.12)' : 'rgba(220,40,40,0.18)'; ctx.beginPath();
+    for (let i = 0; i <= 40; i++) { const t = i / 40 * Math.PI * 2, [x, y] = toWorld(...o.from(Math.cos(t), Math.sin(t))); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.fill(); ctx.stroke(); }
+  ctx.strokeStyle = 'rgba(30,160,60,0.9)'; ctx.lineWidth = 5; for (const [a, b] of yardEdges()) { ctx.beginPath(); ctx.moveTo(...toWorld(...a)); ctx.lineTo(...toWorld(...b)); ctx.stroke(); }
+  for (const w of [visitor, RABBIT.on, ...gnomes].filter(Boolean)) { const pts = [[w.gx, w.gy], [w.tx, w.ty], ...(w.path || w.route || [])]; ctx.strokeStyle = 'rgba(255,255,255,0.95)'; ctx.setLineDash([6, 6]); ctx.lineWidth = 2.5; ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(...toWorld(...p)) : ctx.moveTo(...toWorld(...p))); ctx.stroke(); ctx.setLineDash([]); }
   ctx.restore();
 }
 
@@ -1934,15 +1994,16 @@ function drawVisitor(v, now) {
 }
 function spawnVisitor(forced) {
   const def = forced || G.pickVisitor(); if (!def) return;
-  const edge = Math.random() < 0.5; const from = edge ? [Math.random() < 0.5 ? -0.05 : 1.05, Math.random()] : [Math.random(), Math.random() < 0.5 ? -0.05 : 1.05];
   let to = [0.25 + Math.random() * 0.5, 0.25 + Math.random() * 0.5];
   const trouble = /trouble/.test(hash) && def.trouble ? def.trouble : G.troubleFor(def.id);
   const hungry = !trouble && G.dishBuilt() && G.wantsFood(def.id);
   if (hungry) to = [FEEDER.gx - 0.05, FEEDER.gy + 0.05];
   const perch = def.id === 'owl' || (trouble && def.id === 'possum');
   if (perch) { const l = PROPS.find(p => p.name === 'firewood'); to = [l.gx - 0.02, l.gy - 0.02]; }   // up on the woodpile
-  visitor = { def, gx: from[0], gy: from[1], tx: to[0], ty: to[1], phase: 'in', t: 0, stay: trouble ? 1e9 : 18 + Math.random() * 15, perch: 0, hungry, trouble,
+  const from = Walk.edge(to[0], to[1]), how = visitorWalk(def, perch);   // in from the nearest wild edge of the yard, round whatever is in the way
+  visitor = { def, gx: from[0], gy: from[1], phase: 'in', t: 0, stay: trouble ? 1e9 : 18 + Math.random() * 15, perch: 0, hungry, trouble,
               speed: def.speed || 0.06, faceR: to[0] - to[1] > from[0] - from[1] };
+  Walk.go(visitor, to[0], to[1], how);
   G.arrive(def.id);
 }
 // ---------- the rabbit: a cheeky regular (code stand-in until a painted rabbit exists) ----------
@@ -1977,11 +2038,11 @@ function updateRabbit(dt) {
     const done = st.find(x => typeof x === 'function'); if (done) done();
     r.act = null; r.i++; r.fast = r.fast ? 2.4 : 1; return;
   }
-  const dx = st[0] - r.gx, dy = st[1] - r.gy, d = Math.hypot(dx, dy), sp = 0.12 * (r.fast || 1) * dt;
+  if (r.leg !== r.i) { r.leg = r.i; Walk.go(r, st[0], st[1], { creature: true }); }   // round things, and never into the bed (it nibbles from the edge)
+  const sp = 0.12 * (r.fast || 1) * dt;
   r.hop += dt * 5 * (r.fast || 1);
-  const [ax] = toWorld(r.gx, r.gy), [bx] = toWorld(st[0], st[1]); if (Math.abs(bx - ax) > 2) r.flip = bx < ax;
-  if (d <= sp) { r.gx = st[0]; r.gy = st[1]; r.hop = 0; if (st[2]) { r.act = st[2]; r.t = st[3]; if (r.say) { toast(r.say); r.say = null; } } else r.i++; return; }
-  r.gx += dx / d * sp; r.gy += dy / d * sp;
+  const [ax] = toWorld(r.gx, r.gy), [bx] = toWorld(r.tx, r.ty); if (Math.abs(bx - ax) > 2) r.flip = bx < ax;
+  if (Walk.step(r, sp)) { r.hop = 0; if (st[2]) { r.act = st[2]; r.t = st[3]; if (r.say) { toast(r.say); r.say = null; } } else r.i++; return; }
 }
 const RABBIT_PIX = 0.75, RABBIT_POSE = { eat: 'dish', nibble: 'nibble', berry: 'berry', sniff: 'sit', nap: 'nap' };   // painted poses (art day 10); hopping uses the low crouch
 function drawRabbit(now) {
@@ -1998,11 +2059,14 @@ function updateVisitor(dt) {
   const v = visitor; v.t += dt;
   const dx = v.tx - v.gx, dy = v.ty - v.gy, d = Math.hypot(dx, dy);
   if (d > 0.005) v.faceR = dx - dy > 0;   // screen x grows with gx - gy
-  if (v.phase === 'in') { if (d < 0.01) { v.phase = v.hungry && G.wantsFood(v.def.id) ? 'eat' : 'stay'; v.t = 0; v.perch = 1; } else { const s = Math.min(d, v.speed * dt); v.gx += dx / d * s; v.gy += dy / d * s; } }
+  if (v.phase === 'in') { if (Walk.step(v, v.speed * dt)) { v.phase = v.hungry && G.wantsFood(v.def.id) ? 'eat' : 'stay'; v.t = 0; v.perch = 1; } }
   else if (v.phase === 'eat') { if (v.t > 6) { v.hungry = false; v.phase = 'stay'; v.t = 0; ate(v); } }
-  else if (v.phase === 'stay') { if (v.def.id === 'mouse' && !v.trouble && Math.random() < dt * 0.4) { v.tx = Math.min(0.95, Math.max(0.05, v.gx + (Math.random() - 0.5) * 0.2)); v.ty = Math.min(0.95, Math.max(0.05, v.gy + (Math.random() - 0.5) * 0.2)); v.phase = 'in'; } if (v.t > v.stay) { v.phase = 'out'; v.tx = Math.random() < 0.5 ? -0.1 : 1.1; v.ty = Math.random(); v.perch = 0; } }
-  else { if (d < 0.02) visitor = null; else { const s = Math.min(d, v.speed * 1.5 * dt); v.gx += dx / d * s; v.gy += dy / d * s; } }
+  else if (v.phase === 'stay') {
+    if (v.def.id === 'mouse' && !v.trouble && Math.random() < dt * 0.4) { Walk.go(v, Math.min(0.95, Math.max(0.05, v.gx + (Math.random() - 0.5) * 0.2)), Math.min(0.95, Math.max(0.05, v.gy + (Math.random() - 0.5) * 0.2)), visitorWalk(v.def)); v.phase = 'in'; }   // a scurry, never under anything
+    if (v.t > v.stay) { const [ex, ey] = Walk.edge(v.gx, v.gy); v.phase = 'out'; v.perch = 0; Walk.go(v, ex, ey, Object.assign({ exact: true }, visitorWalk(v.def))); } }   // off by the nearest wild edge
+  else if (Walk.step(v, v.speed * 1.5 * dt)) visitor = null;
 }
+function visitorWalk(def, perch) { return { creature: true, fly: !!(def.fly || def.spirit || perch), exact: !!perch }; }   // fliers go over things (never landing in the bed); walkers go round
 function ate(v) {   // the visitor finished at the dish
   const out = G.feed(v.def.id); if (!out) return;
   const [x, y] = toWorld(v.gx, v.gy), name = G.met(v.def.id) ? v.def.name : 'Someone new';
@@ -2320,7 +2384,7 @@ const WOOD = { 1: 190, 2: 120, 3: 230, 4: 140, 5: 175, 6: 90, 7: 160, 8: 175, 9:
 const WOOD_PLANTS = [1, 2, 4, 5, 6, 7, 8, 9, 10, 1, 5, 9], WOOD_LOW = [2, 4, 6, 10, 13, 14, 15, 16, 17, 18];
 // the yard: [piece, gx, gy, land stage it appears with (1 green, 2 meadow, 3 wood)]; kept to the margins so the yard stays open
 const YARD_WOOD = [[11, 0.0, 0.40, 1], [12, 0.58, 0.0, 1], [1, 0.02, 0.45, 1], [3, 0.03, 0.66, 2], [13, 0.0, 0.86, 1], [4, 0.10, 0.97, 1], [7, 0.34, 0.99, 2], [15, 0.64, 0.99, 1], [16, 0.97, 0.88, 2],
-  [5, 0.97, 0.62, 1], [9, 0.93, 0.42, 2], [8, 0.86, 0.02, 2], [14, 0.60, 0.01, 1], [17, 0.46, 0.0, 3], [2, 0.08, 0.06, 2], [6, 0.12, 0.90, 3], [18, 0.97, 0.30, 3]];
+  [5, 0.98, 0.52, 1], [9, 0.93, 0.42, 2], [8, 0.86, 0.02, 2], [14, 0.60, 0.01, 1], [17, 0.46, 0.0, 3], [2, 0.08, 0.06, 2], [6, 0.12, 0.90, 3], [18, 0.97, 0.30, 3]];
 // the big red toadstool at the yard's front edge: in the way once the garden opens, so you cast "Give the toadstool legs" (Bryce) and it walks off on little root legs
 const TOAD_FROM = [0.64, 0.99], TOAD_TO = [0.24, 1.78];   // to the garden's far-left corner (yard layout plan's G 0.08, 0.88, a step in from the wood's edge so it stands clear)
 const TOAD_WALK = 45000;   // ms the walk takes, so you can watch it go
@@ -2730,7 +2794,7 @@ const MAKE_DRAW = {
     pts.forEach(([gx, gy], i) => { const [x, y] = toWorld(gx, gy); pebble(x, y, 5.5, ['#d8d2c2', '#e6dcc4', '#cfc8b6'][i % 3], i);
       if (i === 5) snailShell(x, y - 0.5, 2.6); else blob(x + (rnd(i) - 0.5) * 2, y - 0.5, 1.8, 1.3, ['#b14c37', '#4f6b2a', '#3d6a8a', '#e2b33a', '#7a4a8a'][i % 5]); }); },
 };
-const MAKE_TWICE = { potstools: [0.58, 0.40] };   // a second one at another spot (home grid)
+const MAKE_TWICE = { potstools: [0.67, 0.49] };   // a second one at another spot (home grid): across the fire from the first, clear of the bench end (placement check, 2026-10-27)
 const MAKE_PARTS = {   // makes spread over a few spots (home grid), so each piece sorts in depth with the gnomes
   ferns: () => [[0.04, 1.24, 'kit-wood-01', 74], [0.10, 1.30, 'kit-wood-02', 52], [0.06, 1.36, 'kit-wood-10', 40], [0.14, 1.26, 'kit-wood-16', 44]],
   border: () => [[0.40, 1.14, 'kit-wood-03', 46], [0.50, 1.15, 'kit-wood-09', 30], [0.395, 1.22, 'kit-wood-09', 28], [0.495, 1.23, 'kit-wood-03', 44], [0.39, 1.30, 'kit-wood-03', 42], [0.49, 1.31, 'kit-wood-09', 30], [0.385, 1.37, 'kit-wood-09', 26]],
@@ -3185,6 +3249,12 @@ function farmItems(items, now) {   // every farm's beds, plants, props and edge,
     if (est >= 1 && C.farms.list[fid].look === 'moon' && dusk()) put(0.78, 0.72, false, (x, y) => { for (let j = 0; j < 3; j++) { const t = now / 900 + j * 2.1; iblob(x + Math.cos(t) * 30 + j * 10, y - 30 + Math.sin(t * 1.6) * 10, 3 * (0.4 + 0.6 * Math.abs(Math.sin(now / 80 + j))), 2, 'rgba(225,215,190,0.95)'); } });   // soft pale moths round the primroses
   }
 }
+Walk.add(() => {   // the farms' standing things (fruit trees, the scarecrow, the trellis) as footprints; the beds are walked into to work them
+  const out = []; for (const fid of G.farms()) { if (taskProg(`farm:${fid}:0`) <= 0) continue; const k = G.folkState(fid).tile, L = farmLook(fid);
+    for (const [gx, gy] of L.props || []) { const [ux, uy] = glob(k, gx, gy); out.push({ name: 'farm ' + fid, gx: ux, gy: uy, r: 0.03 }); }
+    if (taskProg(`farm:${fid}:1`) > 0) for (const [gx, gy, kind] of L.plants) if (['apple', 'pear', 'plum'].includes(kind)) { const [ux, uy] = glob(k, gx, gy); out.push({ name: kind + ' tree', gx: ux, gy: uy, r: 0.04 }); } }
+  return out;
+});
 // how each farm job moves the gnome about: from bed to bed (dig), plant to plant (plant, then water), round the edge, and picking
 // with the basket carried back to the neighbour's door between plants
 function farmWork(id, p, g) {
@@ -3308,6 +3378,7 @@ function frame(now) {
   festItems(items, now);
   items.sort((a, b) => a.d - b.d);
   for (const it of items) it.draw();
+  if (/feet/.test(hash)) drawFeet();   // test view: every footprint walkers go round
   drawParticles(ph);
 
   const night = 1 - ph.light;

@@ -200,7 +200,7 @@ window.CONTENT = {
       blurb:'Hazel paints it in her best lettering: The Gnomestead. Wendel stands underneath and reads it aloud, twice.' },
     { id:'cushion', make:'yard', stage:'wood', at:[0.62, 0.40], name:'A moss cushion on the bench', short:'stuffing the cushion', who:'either', act:'craft', cost:{ moss:8, feather:2 }, mins:25, green:0, needs:['bench'],
       blurb:'Softer. Greener. Slightly damp.' },
-    { id:'sign', make:'yard', stage:'wood', at:[0.95, 0.60], name:'Carve a welcome sign', short:'carving the sign', who:'either', act:'build', cost:{ twig:6, feather:2, berry:2, stone:2 }, mins:45, green:0,
+    { id:'sign', make:'yard', stage:'wood', at:[0.90, 0.55], name:'Carve a welcome sign', short:'carving the sign', who:'either', act:'build', cost:{ twig:6, feather:2, berry:2, stone:2 }, mins:45, green:0,
       blurb:'"All Creatures Welcome. Please Wipe Paws." The second line took three tries.' },
 
     { id:'gstones', make:'garden', stage:'green', at:[0.45, 0.20], name:'Stepping stones into the garden', short:'laying stepping stones', who:'either', act:'dig', cost:{ stone:5 }, mins:45, green:0,
