@@ -209,7 +209,7 @@ const G = {
     const tiles = Object.keys(s.tiles).filter(k => s.tiles[k].state !== 'revealed' || Math.random() < 0.3);
     const tile = home ? '0,0' : tiles[(Math.random() * tiles.length) | 0];
     let gx, gy, n = 0; do { gx = 0.1 + Math.random() * 0.8; gy = 0.1 + Math.random() * 0.8; } while (this.spotTaken && this.spotTaken(tile, gx, gy) && ++n < 12);   // not on the dug seed bed
-    s.offers.push({ id: Math.random().toString(36).slice(2, 8), kind, tile, gx, gy, at: t });
+    const o = { id: Math.random().toString(36).slice(2, 8), kind, tile, gx, gy, at: t }; s.offers.push(o); return o;
   },
   gather(id) {
     const s = this.s, i = s.offers.findIndex(o => o.id === id); if (i < 0) return null;
@@ -557,7 +557,8 @@ const G = {
 
   // ---- magic ----
   magicLevel() { const d = this.s.days.length; let L = 1; C.magicLevels.forEach((m, i) => { if (d >= m.days) L = i + 1; }); return L; },
-  magicInfo() { const L = this.magicLevel(), m = C.magicLevels[L - 1], next = C.magicLevels[L]; return { level: L, name: m.name, days: this.s.days.length, nextDays: next ? next.days : null, spells: C.magicLevels.slice(0, L).map(x => x.unlock).filter(Boolean) }; },
+  magicInfo() { const L = this.magicLevel(), m = C.magicLevels[L - 1], next = C.magicLevels[L]; return { level: L, name: m.name, days: this.s.days.length, nextDays: next ? next.days : null, spells: C.magicLevels.slice(0, L).map(x => x.unlock).filter(id => id && this.spellTaught(id)) }; },
+  spellTaught(id) { const n = C.story.lessons.findIndex(l => l.spell === id) + 1; return !n || n in this.s.spirit.taught; },   // first-time review: a spell is yours once the Wood spirit has taught it, not just when the days come round
   canCast(id) {
     const sp = C.spells[id]; if (!(sp.heal ? this.healTaught(sp.heal) : sp.special ? this.gardenOpen() : this.magicInfo().spells.includes(id))) return { ok: false, why: 'not yet learned' };
     if (sp.heal && !this.healSpellFor(sp.heal).length && !(sp.heal === 'nursery' && this.seedlingsWaiting().length)) return { ok: false, why: sp.heal === 'nursery' ? 'no seedlings are waiting to wake' : 'it helps a job that is under way: start it first' };   // special spells come with what they are for, not with days
