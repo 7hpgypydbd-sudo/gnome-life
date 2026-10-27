@@ -1,6 +1,6 @@
 # Farm art: the neighbours' farms and the platypus (written 2026-10-27, thread "Build the neighbours' farms and the platypus")
 
-Pictures for a future art day. Until they are painted, v60 draws stand-ins in code (`FARM_PLANT`, `FARM_EDGE`, `FARM_PROP` in index.html; the platypus in `drawPlatypus`), so nothing waits on them. Wiring a painting in is a small job on the art day: each stand-in draw function gets a "use the painting if there is one" line, like the bare-tile pictures.
+Pictures for a future art day. Until they are painted, v61 draws stand-ins in code (`FARM_PLANT`, `FARM_EDGE`, `FARM_PROP` in index.html; the platypus in `drawPlatypus`), so nothing waits on them. Wiring a painting in is a small job on the art day: each stand-in draw function gets a "use the painting if there is one" line, like the bare-tile pictures.
 
 Rules (same as every art day): nothing glows (Juniper's moonflowers are pale, not lit); a hidden snail where it says; flat magenta #FF00FF behind cut-outs; a new Gemini chat per picture; paste the reference first (`sprites/stonebench.webp` for the view, a gnome sprite for size: a gnome is about knee-high to a fence post). Farms are small: a whole farm fits beside a gnome home, and a plant is about the size of a gnome's hat or smaller (fruit trees and willows a little taller than a gnome when grown).
 
@@ -57,7 +57,7 @@ Generate an image: A wide 16:9 picture. [Style paragraph]. Separate pieces with 
 Cut/wire: -> `sprites/farm-trellis.webp`, `farm-moon-1..2.webp`, `farm-moon-open.webp`, `farm-primrose.webp`.
 
 ## 9. The platypus
-Already on the healing list (`docs/ART-HEALING.md` picture 3, `vis-platypus`): only its back, flat tail and duck bill showing, with a few ripples. It is now built (v60): the painting slots straight in with no code change (art slot `vis-platypus`). A journal portrait for it would be nice too: *a platypus at the surface of a quiet creek at dawn, mist on the water, reeds, one ripple ring* -> `sprites/portrait-platypus.webp`.
+Already on the healing list (`docs/ART-HEALING.md` picture 3, `vis-platypus`): only its back, flat tail and duck bill showing, with a few ripples. It is now built (v61): the painting slots straight in with no code change (art slot `vis-platypus`). A journal portrait for it would be nice too: *a platypus at the surface of a quiet creek at dawn, mist on the water, reeds, one ripple ring* -> `sprites/portrait-platypus.webp`.
 
 ## Small things that can stay as code
 The dug beds, the frog puddle (it reuses the pond picture), the clover, sedges and lemon myrtle hedge can stay as code stand-ins unless Bryce wants them painted.
