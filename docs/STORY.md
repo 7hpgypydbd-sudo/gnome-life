@@ -39,7 +39,7 @@ They arrive, clear the rubbish, light their first fire, find water and plant the
 ### 1.1 The end of the road
 *Opens the very first time the game is played, before the "How it works" tips.*
 
-They came up the old logging track at the end of a long, hot afternoon, with the cicadas going like tiny saws in the grass. Wendel pushed the wheelbarrow. Hazel carried the little oak in its pot, because she did not trust him with it. Everything they owned was in that barrow, and most of it was pots.
+They came up the old logging track at the end of a long, hot afternoon, with the cicadas going like tiny saws in the grass. Wendel pushed the wheelbarrow. Hazel carried the little oak in its pot, and talked to it now and then to keep its spirits up. Everything they owned was in that barrow, and most of it was pots.
 
 Twenty steps from the top, the wheel came off. It bowled away down the hill, bouncing as it went, and they stood and watched it go. Then they carried the rest.
 
@@ -47,7 +47,7 @@ The clearing at the top was not what the travelling pedlar had promised. The log
 
 Wendel looked at it all for a long while. "Well," he said gently. "It's got a lovely view."
 
-"It'll have a lovely everything," said Hazel, "once we've done it." She set the little oak down beside the biggest stump, as if that settled it. And it did.
+Hazel slipped her hand into his. "It's got us now, too," she said. She set the little oak down beside the biggest stump, and that was where they would make their home.
 
 Gnomes have a gift, you see. Wherever they live and dig and plant, the land slowly remembers how to be alive. But it is slow work for two small gnomes on a very bare hill, and so they were not quite alone. Something had followed them up the track that evening: a small, kindly luck, the sort that makes a stick turn up just when you need one. They could not see it, and they would never quite know it was there. That luck is you.
 
@@ -58,7 +58,7 @@ Gnomes have a gift, you see. Wherever they live and dig and plant, the land slow
 
 They had lit a fire the moment they arrived, in the loggers' old ring of stones, but it was a poor, smoky thing made of whatever sticks were lying about. Tonight was different. Tonight there was a woodpile.
 
-Wendel had stacked it bark side up, the way his grandfather used to, and he stood back to admire it for so long that Hazel built the fire herself. It caught at once and crackled, as if it knew it was the first real fire in their first real home.
+Wendel had stacked it bark side up, the way his grandfather used to, and while he stood back to admire it, Hazel quietly laid the fire, because she knew how much he had been looking forward to this. It caught at once and crackled, as if it knew it was the first real fire in their first real home.
 
 They sat on an upturned pot each and shared the last of the travelling bread. A beetle came out of the woodpile to see what all the fuss was about. Wendel bowed to him and named him Gerald.
 
@@ -73,13 +73,13 @@ He looked at the fire, and at the first stars coming out over the stumps, and at
 ### 1.3 Water under the rubbish
 *Opens when "Look for water" is finished and the spring is running.*
 
-Wendel walked the whole clearing with a forked twig held out in front of him, very serious, eyes half shut. Hazel followed with the trowel and said nothing at all, which took some doing.
+Wendel walked the whole clearing with a forked twig held out in front of him, eyes half shut, the way his grandfather had taught him. Hazel walked softly behind with the trowel, because dowsing wants quiet, and every gnome knows it.
 
 Under the very last of the loggers' crates, the twig gave a twitch.
 
 "There," he whispered. "Water. I can feel it."
 
-"You can feel a twig," said Hazel. But she knelt down and started to dig.
+Hazel was already on her knees with the trowel. "Then let's say hello to it," she said.
 
 Three stones and a great deal of mud later, a thread of clear water came up out of the ground, cold as a secret. It filled a hollow no bigger than a teacup, then a saucer, then a little pool with the sky in it.
 
@@ -128,7 +128,7 @@ The first carrots came out of the ground small and crooked and very, very orange
 
 They washed them in the spring and ate them by the fire with a pinch of salt. Nothing had ever tasted so good, because nothing had ever been so much their own. And where the carrots had grown, the soil was a little darker than before, as if it had learned something.
 
-Wendel put the carrot tops aside for the rabbit. Hazel licked her fingers and looked over at the old canvas shelter, in the way Wendel had learned to be a little nervous of.
+Wendel put the carrot tops aside for the rabbit. Hazel licked her fingers and looked over at the old canvas shelter, which sagged in the middle like a tired hammock.
 
 "Now then," she said. "About that roof."
 
@@ -177,7 +177,7 @@ Now, at last, it went into real ground at the front corner of the yard. Hazel du
 
 "We could carve our names on it."
 
-"We could not." But she let him scratch a very small W and H on the empty pot, and he has kept it ever since.
+"Not on the tree, love," said Hazel. "It's got enough to do." But she let him scratch a very small W and H on the empty pot, and he has kept it ever since.
 
 **Button:** Grow tall
 
@@ -188,7 +188,7 @@ Now, at last, it went into real ground at the front corner of the yard. Hazel du
 
 Seven days. We have a roof (moss, no leaks). *(once the roof is on)* We have a fire every night (Wendel's woodpile, he is very proud of it). *(once the woodpile is made)* We have a spring we found ourselves (Wendel found it, he would like that written down). *(once the spring is found)* We have a seed bed, and we have eaten from it. *(once the bed is dug)* We have a fence, and a rabbit who thinks the fence is a suggestion. *(once the fence is up)*
 
-And the land is waking. There's a haze of green at the edges now. Wendel says I'm imagining it. I'm not.
+And the land is waking. There's a haze of green at the edges now. Wendel says he can smell it coming, like rain.
 
 I think somebody is helping us. Things turn up just where we need them: twigs by the door, stones by the bed, dew in the morning. I don't know who you are, or what you are. But thank you.
 
@@ -203,9 +203,9 @@ The garden next door opens, the toadstool walks off and the mice move in, and th
 ### 3.0 A house for winter (the stump house quest)
 *Opens the first time "Hollow out the old stump" can be started (usually week two, so often before 3.1). It starts a quest, "A proper home", shown at the top of the Journal with four steps that tick off as they are done.*
 
-*(In spring and summer, by the phone's date:)* It was a grey morning, the first in weeks. Not cold, just damp enough that the canvas sagged and dripped. Wendel's cold toes found Hazel's under the blanket, and were told to go away.
+*(In spring and summer, by the phone's date:)* It was a grey morning, the first in weeks. Not cold, just damp enough that the canvas sagged and dripped. Wendel's cold toes found Hazel's under the blanket, and she let them stay.
 
-*(Otherwise:)* It was the first cold morning. Not very cold: just enough that Hazel's breath made a little cloud in the air. Wendel's cold toes found hers under the blanket, and were told to go away.
+*(Otherwise:)* It was the first cold morning. Not very cold: just enough that Hazel's breath made a little cloud in the air. Wendel's cold toes found hers under the blanket, and she let them stay.
 
 Hazel sat up and looked at the drooping canvas, and the moss roof, and the big old stump the shelter leaned against.
 
