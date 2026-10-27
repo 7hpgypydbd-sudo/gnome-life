@@ -33,7 +33,7 @@ Full review with pictures: https://claude.ai/artifact/PXGnkUXTJjaCHwTwExeskX . V
 - **Seasons:** colour tints and overlays done in code (autumn tones, winter mist, spring blossom) plus seasonal visitors and events. No seasonal tile sets.
 
 ## The couple
-- Names **Wendel** and **Hazel**. Personalities as above; gentle comedy between them, both kind.
+- Names **Wendel** and **Hazel**. Personalities as above; gentle comedy between them, both kind. **Tone rule (Bryce, 2026-10-27):** Wendel is gentle, caring and understanding, like David the gnome in nature, never stubborn or curmudgeonly. Any conflict between the couple comes from good-natured misunderstandings or outside events, not from Wendel being awful. Applies to every future revision (a few STORY.md lines, e.g. page 1.5's stick-waving, may be softened when next revised).
 - They **age slowly** over many months: young now, middle-aged around the village stage, old in the long tail. Three character art sets over time.
 - **Children:** maybe later; leave room in story and save, build nothing yet.
 - **Daily rhythm on the real clock:** wake, breakfast by the fire, work, an evening sit (Wendel's pipe, Hazel's knitting), sleep. Visit at night and you find them asleep or by the fire.

@@ -2,6 +2,10 @@
 
 Design doc, no code yet. Written for Bryce and for the build chat that wires it. The tone is the storybook's: warm, small, a little funny, and nobody is ever in real danger. This sits beside `STORY.md` (Wendel and Hazel's marriage) and `DECORATIONS.md` (the little makes). The animals' stories are the second thread of the game; the first is the couple.
 
+## Tone rule (Bryce, 2026-10-27)
+
+Wendel is gentle, caring and understanding, like David the gnome in nature: a dreamer who notices small things and is kind to every creature. He is never stubborn, grumpy or the cause of trouble. Any conflict between the couple comes from a good-natured misunderstanding or an outside event, and both of them are kind throughout. Use this for every future revision, here and in `STORY.md`.
+
 ## The pattern every animal follows
 
 The concept review fixed one five-beat pattern. Steps 1-4 are already built for most animals; step 5 is the new part this doc supplies.
@@ -40,16 +44,16 @@ After an animal's closing page, one **gift** appears on the doorstep the next mo
 
 ## 1. The rabbit: "that rabbit"
 
-The cheeky foil. Wendel starts out cross; Hazel sees it is hungry, and it ends as a family. **Chapter 1 to a full year.**
+The cheeky foil. Wendel is worried about his seedlings and Hazel sees first that it is hungry; both soften together, and it ends as a family. **Chapter 1 to a full year.**
 
 **Already built:** R1 it empties the dish (day 2-3), R2 it nibbles a few sprouts, R3 the fence appears. Later visits: peers through the fence, naps by the woodpile, pinches a berry. Page 1.5 "The thief" is written and live.
 
 | Beat | When | What the player sees | Card or toast text |
 |---|---|---|---|
-| **R4 The truce** (new) | After the fence is built and the rabbit has eaten from the dish on 3 different days | The rabbit now sits politely at the gate, nose twitching, instead of testing the fence. The sprout nibbling stops for good. It still naps and pinches a berry now and then. | Toast: *"The rabbit sat by the gate for an hour, perfectly good. Wendel does not trust it. Wendel has also stopped carrying the stick."* |
-| **R5 A hole of its own** (new) | After the garden tile opens, the truce is made, and the player builds the garden make **"Heap a soft earth bank"** (creature corner, Wendel, 40 min, 2 stones + 1 moss, 0 green) | A little mound of loose earth by the garden's creature corner. Two nights later the rabbit has dug a burrow into it: a round dark door with a few crumbs of soil. It **moves in (+1 green)**. | Card, button "Welcome home": *Hazel patted the earth bank flat for the third time and said it was a bit much. Wendel said a rabbit does what a rabbit wants. In the morning there was a round door in the side of it, and the sound of someone very pleased with themselves, thumping.* |
+| **R4 The truce** (new) | After the fence is built and the rabbit has eaten from the dish on 3 different days | The rabbit now sits politely at the gate, nose twitching, instead of testing the fence. The sprout nibbling stops for good. It still naps and pinches a berry now and then. | Toast: *"The rabbit sat by the gate for an hour, perfectly good. Wendel is keeping an eye on it. Wendel has also put the stick away and made it a little seat by the gate."* |
+| **R5 A hole of its own** (new) | After the garden tile opens, the truce is made, and the player builds the garden make **"Heap a soft earth bank"** (creature corner, Wendel, 40 min, 2 stones + 1 moss, 0 green) | A little mound of loose earth by the garden's creature corner. Two nights later the rabbit has dug a burrow into it: a round dark door with a few crumbs of soil. It **moves in (+1 green)**. | Card, button "Welcome home": *Hazel patted the earth bank flat for the third time and said it was a bit much. Wendel said a rabbit should have a proper home, and patted it flat a fourth time. In the morning there was a round door in the side of it, and the sound of someone very pleased with themselves, thumping.* |
 | **R6 Rabbit's row** (new, optional make) | Garden, any stage after R5 | Hazel sows a little clover strip outside the fence "so it stops asking". Rabbits sometimes graze it at dawn. | Make blurb: *"Clover for the rabbit's side of the fence. Peace costs three seeds."* |
-| **R7 Four small noses** (the closing page) | The first **spring morning** (southern spring, September to November by the phone's date) once the burrow is at least 3 weeks old. If the burrow is older when spring comes, it fires on the first spring visit. | Dawn. A row of four tiny baby rabbits sits along the inside of the garden fence with their noses through the gaps, looking at the vegetables. The mother rabbit sits behind them looking pleased and ashamed. The babies stay as small regulars (up to three on screen), hopping and napping in a heap. | **Page "Four small noses"**, button "Not the lettuce": *Wendel counted them twice. Hazel counted them once and put the kettle on. "They'll want something," she said. "They'll want all of it," said Wendel. The smallest of the four had a dandelion seed stuck on one ear and did not know. It was the best morning of the spring.* Then the gift appears next day. |
+| **R7 Four small noses** (the closing page) | The first **spring morning** (southern spring, September to November by the phone's date) once the burrow is at least 3 weeks old. If the burrow is older when spring comes, it fires on the first spring visit. | Dawn. A row of four tiny baby rabbits sits along the inside of the garden fence with their noses through the gaps, looking at the vegetables. The mother rabbit sits behind them looking pleased and ashamed. The babies stay as small regulars (up to three on screen), hopping and napping in a heap. | **Page "Four small noses"**, button "Not the lettuce": *Wendel counted them twice. Hazel counted them once and put the kettle on. "They'll want something," she said. "We'll plant extra," said Wendel, beaming. The smallest of the four had a dandelion seed stuck on one ear and did not know. It was the best morning of the spring.* Then the gift appears next day. |
 
 **Small touches (Bryce loves these):**
 - One baby always has a dandelion seed on its ear. It stays there in every later sighting. Tap that baby: *"Still wearing it."*
@@ -69,7 +73,7 @@ One thing to fix in the build: the mouse's `nest:'burrow'` in `content.js` would
 
 | Beat | When | What the player sees | Card or toast text |
 |---|---|---|---|
-| **M5 The mouse door** (new) | The mouse children get through the fence (3-5 days after M4), at the first sprout or harvest | Small mice slip through the gaps. Wendel patches the gap with sticks; next day there is another. On the third patch, a tiny **hinged flap** (a mouse door, a bit of bark on a leather hinge) appears low in the fence, and the mice use it. Make: **"Cut a mouse door in the fence"** (Wendel, 20 min, 1 twig, 0 green). | Toast: *Wendel patched the fence three times. On the fourth morning, Hazel was watching, and she cut a small door in it herself. "Rent," she said.* |
+| **M5 The mouse door** (new) | The mouse children get through the fence (3-5 days after M4), at the first sprout or harvest | Small mice slip through the gaps. Wendel patches the gap with sticks, a little apologetically; next day there is another. On the third patch, a tiny **hinged flap** (a mouse door, a bit of bark on a leather hinge) appears low in the fence, and the mice use it. Make: **"Cut a mouse door in the fence"** (Wendel, 20 min, 1 twig, 0 green). | Toast: *Wendel patched the fence three times, saying sorry to the gap each time. On the fourth morning, Hazel cut a small door in it herself, and Wendel held the bark flap while she tied the hinge. "Rent," she said.* |
 | **M6 One sock** (new) | A week after M4 | Wendel looks for a sock (the single detail: he stands scratching his head by the clothesline). A close look at the toadstool window shows a small grey cloth: his sock, as a hammock and curtain. | Toast: *"Have you seen my other sock?" said Wendel. Hazel did not look up. "Leave it," she said.* |
 | **M7 The button** (closing page) | A cold winter dusk (southern winter) at least 2 weeks after M4, or the first winter evening | The toadstool window glows, lit by a tiny lamp, and a thread of smoke from a cap-sized chimney. Three little silhouettes in the window. | **Page "The window with the sock in it"**, button "Goodnight, tenants": *It was the first really cold night, and the toadstool had a light in it. Through the window, three small mice and one grey sock. Wendel stood with his hands in his pockets for a long time. "It's a good sock," he said. "It's doing very well." The next morning on the doorstep, someone had left a single button.* Gift next day. |
 
@@ -102,9 +106,9 @@ The hedgehog's trouble is secretly its story. **From the first dusk to spring.**
 
 | Beat | When | What the player sees | Card or toast text |
 |---|---|---|---|
-| **H5 It was shopping** (new, card on the first autumn dusk after H4, southern autumn is March to May) | The first autumn after it moves in | At dusk the hedgehog comes up the path wearing a **thick coat of dry leaves** on its spines, trundles into the shelter and shakes them off into a neat heap. Repeats a few nights. | **Card (page)**, button "Of course": *"That wasn't stuck at all," said Hazel. "It was shopping." Wendel remembered picking those leaves off, very carefully, in the dusk. "I took its groceries," he said. "It was very polite about it."* |
-| **H6 Do not disturb** (new) | The first winter after H5 | The hedgehog stops coming. The shelter has a small bark sign leaning at the door that Wendel made: "ASLEEP". Tapping the shelter shows a card; the journal shows "Asleep until spring". | Card: *Wendel made a sign in his best handwriting. It said ASLEEP. Hazel said that was obvious from the snoring, and then made him tell the possum.* |
-| **H7 Thin and cross** (closing page) | The first warm spring morning | The hedgehog stumbles out of the leaf shelter, thin and grumpy, and walks straight to the feeding dish at a very early hour. It eats everything. Then it sits in the sun with its eyes shut. | **Page "Thin and cross"**, button "Eat up": *It came out at six in the morning, thin as a stick with a prickle on it, and went directly to the dish without so much as a good morning. Hazel filled it twice. Wendel took down the sign and kept it. "For next year," he said.* Gift (acorn cap of berries) next day. |
+| **H5 It was shopping** (new, card on the first autumn dusk after H4, southern autumn is March to May) | The first autumn after it moves in | At dusk the hedgehog comes up the path wearing a **thick coat of dry leaves** on its spines, trundles into the shelter and shakes them off into a neat heap. Repeats a few nights. | **Card (page)**, button "Of course": *"That wasn't stuck at all," said Hazel. "It was shopping." Wendel remembered picking those leaves off, very carefully, in the dusk. "I took its groceries," he said, stricken, and put a berry in the dish by way of an apology.* |
+| **H6 Do not disturb** (new) | The first winter after H5 | The hedgehog stops coming. The shelter has a small bark sign leaning at the door that Wendel made: "ASLEEP". Tapping the shelter shows a card; the journal shows "Asleep until spring". | Card: *Wendel made a sign in his best handwriting. It said ASLEEP. Hazel said that was obvious from the snoring, and then helped him paint a small leaf on it.* |
+| **H7 Thin and cross** (closing page) | The first warm spring morning | The hedgehog stumbles out of the leaf shelter, thin and sleepy, and walks straight to the feeding dish at a very early hour. It eats everything. Then it sits in the sun with its eyes shut. | **Page "Thin and cross"**, button "Eat up": *It came out at six in the morning, thin as a stick with a prickle on it, and went directly to the dish without so much as a good morning. Hazel filled it twice. Wendel took down the sign, dusted it and kept it. "For next year," he said.* Gift (acorn cap of berries) next day. |
 
 ---
 
@@ -116,7 +120,7 @@ Everyone in the roster gets one small beat 5, so none of them are only a card. S
 |---|---|---|---|
 | **Robin** (nest in the yard) | *"Hazel's red thread turned up in the nest, woven in very neatly. She said that was a compliment."* In spring two chicks peep from the nest, mouths wide. | First spring after it nests | Red thread end |
 | **Fairy-wren** (birdbath, nest) | *"It bathed for ten minutes, then sang, then bathed again. Wendel says it is practising."* In spring, a pair of wrens, the male bright blue, the female brown, crosses the yard together. | First spring after it nests | Blue tail feather |
-| **Green tree frog** (pond) | *"It sings off-key and with total confidence. Wendel has started to hum along. Hazel pretends not to hear."* After rain the frog is louder, and a second small voice answers. | Rainy night after the pond has been in 2 weeks | Smooth pebble |
+| **Green tree frog** (pond) | *"It sings off-key and with total confidence. Wendel has started to hum along. Hazel hums back when he isn't listening."* After rain the frog is louder, and a second small voice answers. | Rainy night after the pond has been in 2 weeks | Smooth pebble |
 | **Blue-tongue** (doorstep, stones) | *"It sunbathed on the doorstep so long that Hazel just stepped over it. Then Wendel did. Then the postie-gnome did."* A shed skin lies perfect on the doorstep one morning. | After moving in under the stones | Shed skin |
 | **Possum** (woodpile) | The trouble (too proud to climb down) becomes a running gag: after, it comes down the twig ladder frontwards every time, very slowly. | Any night after helped | none |
 | **Bandicoot** (burrow) | *"Every cone-shaped hole was a favour. The lawn is the best-aerated in the valley."* | After moving in | none |
@@ -137,14 +141,19 @@ Only creatures moving into gnome-made homes green the land: the **rabbit's earth
 
 Flags to add (all new, all in `game.js` state): `flags.rabbitTruce`, `flags.rabbitBurrow`, `flags.rabbitBabies`, `flags.mouseDoor`, `flags.mouseSock`, `flags.owlBox`, `flags.owlHoo`, `flags.hogShopping`, `flags.hogAsleep`, and one list `gifts` (animal id -> opened). New jobs/makes: Heap a soft earth bank (garden), Sow a clover strip (garden), Cut a mouse door in the fence (yard), Hang an owl box in the oak (yard). Each plays through the existing `s.pages.cards` queue so pages open one at a time. Season checks use the phone's date (southern hemisphere), as the seasons already do. The doorstep gift is one new pick-up type with `inked()`. Test panel: add "Skip to next animal beat". Beats are not in a hurry: the earliest closing page is the hedgehog's first autumn, the rabbit's babies the first spring after the burrow.
 
-## 8. Maybe pile
+## 8. Accepted extras (Bryce, 2026-10-27: "The lyrebird, rabbit and platypus ideas are all good")
 
-Ideas for Bryce to take or leave. None of them are in the beats above.
-- **A lyrebird** (new Australian visitor, winter, in the meadow stage): it mimics Wendel's hammering and his humming. On a quiet night it hums his tune back. Nice with the "no sound yet" rule, because the text does the work. Needs one new creature portrait and sprite.
-- **The rabbit gets a name** at the babies page (Hazel names it; Wendel refuses to use it).
-- **Platypus at the stream**, only after the stream heals, shy; the one creature that never moves in, just passes by in the dawn.
+These are in, to be written into beats and wired by the build chat. The remaining items are still a maybe pile.
+- **IN: the lyrebird** (new Australian visitor, winter, in the meadow stage): it mimics Wendel's hammering and his humming. On a quiet night it hums his tune back. Nice with the "no sound yet" rule, because the text does the work. Needs one new creature portrait and sprite.
+- **IN: the rabbit gets a name** at the babies page (Hazel names it; Wendel refuses to use it).
+- **IN: platypus at the stream**, only after the stream heals, shy; the one creature that never moves in, just passes by in the dawn.
 - **A visitor's family tree** page in the Journal: who is whose parent (the rabbit babies, the mouse children, the wren pair).
 - **More gifts** for the "none" creatures above.
+
+**First-draft beats for the three extras:**
+- **Lyrebird** (winter, meadow stage, a rare visitor): it perches on the fence and copies the hammering, then Wendel's hum, a beat late. Hazel hears her own name in it. Card: *Wendel hummed three notes to see what would happen. Three notes came back. He tried a fourth. The lyrebird improved it.* Closing: it leaves one long tail feather on the doorstep (gift, 1 feather).
+- **Rabbit's name** (on the "Four small noses" page): Hazel proposes a name; Wendel loves it at once and uses it ever after. Bryce to pick the name.
+- **Platypus** (after the stream heals, dawn only, very rare): it glides past the stream tile and dives; the journal says *"Seen once. Will not be rushed."* It never moves in, never eats from the dish, and gives no gift; its page is one line in the Journal. Greens nothing.
 
 ## 9. Pictures needed (also in `docs/PLAN.md`)
 
@@ -163,4 +172,5 @@ New art for these stories. Each page painting is a storybook scene with a hidden
 | 9 | Hedgehog in a leaf coat; "ASLEEP" sign on the leaf shelter | H5, H6 |
 | 10 | Page: "Thin and cross" and page: "It was shopping" (two small pages) | H5, H7 |
 | 11 | Eight gift icons on cream paper-cut edges (dandelion clock, button, feather, acorn cap, red thread, blue feather, pebble, shed skin) | Doorstep gifts |
-| 12 | Robin chicks in the nest; wren pair; frog pair (three small portrait redos) | Section 5 |
+| 12 | Lyrebird (perched, tail up) with portrait; platypus in the stream with portrait | Section 8 |
+| 13 | Robin chicks in the nest; wren pair; frog pair (three small portrait redos) | Section 5 |
