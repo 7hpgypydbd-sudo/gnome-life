@@ -73,17 +73,17 @@ By evening the bed was dark and damp and very still. By morning it was not. Tiny
 **Button:** Grow, little ones
 
 ### 1.5 The thief
-*Opens right after the rabbit's raid (or on the next visit, if it happened while you were away), just before "Fence the seed bed" appears in Jobs. The existing raid line ("Right," said Wendel. "A fence.") stays as the toast.*
+*Opens right after the rabbit's raid (or on the next visit, if it happened while you were away), just before "Fence the seed bed" appears in Jobs. The raid line is now gentler: "Oh, you poor hungry thing," said Wendel. "All right. A fence, then, so we can share."*
 
 Somebody had been in the seed bed. Somebody with long ears, a white tail and no shame at all. The feeding dish was licked clean, and three of the sprouts were bitten off at the bottom.
 
-Wendel was cross. He marched up and down with a stick and made a speech about thieves.
+Wendel stood over the bitten stalks with a stick in his hand, ready to make a very stern speech about thieves. He had got as far as "Now, see here" when he noticed how small the footprints were.
 
-Hazel was not cross. She had seen the rabbit from the doorway: thin as a rake, sitting up with a sprout in its mouth, chewing as fast as it could in case someone took it away.
+Hazel had seen the rabbit from the doorway: thin as a rake, sitting up with a sprout in its mouth, chewing as fast as it could in case someone took it away.
 
 "It's hungry, love," she said. "Same as us when we got here."
 
-Wendel put the stick down. Then he picked it up again, and a few more, and started measuring. "A low fence," he said. "With a gate. It can have the dish. It can't have the carrots."
+Wendel put the stick down and was quiet for a moment. Then he picked it up again, and a few more, and started measuring. "A low fence," he said softly. "With a gate. It can have the dish. We'll just have to ask it to leave the carrots."
 
 **Button:** Fair's fair
 
@@ -202,9 +202,9 @@ Hazel stood at the edge of the yard with her hands on her hips and looked at the
 
 "Gerald lives in it."
 
-There was only one problem. Right in the middle of her garden stood the biggest, reddest, most stubborn toadstool either of them had ever seen. Wendel pushed it. Hazel pulled it. It did not so much as wobble.
+There was only one problem. Right in the middle of her garden stood the biggest, reddest, most stubborn toadstool either of them had ever seen. Wendel pushed it, very politely. Hazel pulled it. It did not so much as wobble.
 
-"It's not going anywhere," said Wendel.
+"Sorry, old fellow," said Wendel, patting the cap. "We don't mean to be rude. You're just in the way of the roses."
 
 Neither of them noticed what drifted out of the trees just then, soft and green as new leaves, and settled beside the toadstool as if it had been waiting for exactly this. But you did.
 
@@ -249,7 +249,7 @@ There was a tower, for the stars. A round room at the top with a telescope. A wo
 
 Hazel looked at the plans for a long time. Then she said, "No," and it was not her happy no.
 
-They ate supper without talking much. Wendel went to bed early, and Hazel sat up by the fire. In the morning, she found him already outside, drawing again. This time it was a small lean-to against the side of the house, all his own, with a workbench and a hook for every tool and a little window that looked at the stars.
+Wendel looked at the plans too, and then at her face, and understood at once. "You wanted somewhere for us," he said. "Not somewhere for my bits and pieces." They ate supper without talking much, but it was a thinking quiet, not a cross one. In the morning, she found him already outside, drawing again. This time it was a small lean-to against the side of the house, all his own, with a workbench and a hook for every tool and a little window that looked at the stars.
 
 "Your mess can live in there," said Hazel, and kissed the top of his head. "And the spare room stays spare."
 
@@ -270,7 +270,9 @@ Wendel insisted on doing it properly. He scooped Hazel up at the doorstep, took 
 
 "Welcome home, you great lump," said Hazel.
 
-That night, for the first time, they slept under a real roof in a real house in a valley that was learning to be green again. And far down the old track, a small lantern was bobbing up the hill. Somebody else was coming.
+Neither of them noticed the little board over the door yet, painted in Hazel's best lettering. THE GNOMESTEAD, it said, with a tiny snail underneath, taking the last letter very slowly.
+
+That night, for the first time, they slept under a real roof in a real house, The Gnomestead, in a valley that was learning to be green again. And far down the old track, a small lantern was bobbing up the hill. Somebody else was coming.
 
 **Button:** The end of chapter three
 

@@ -37,7 +37,7 @@ Each patch of land (tile) earns its own little makes as it heals. Every time a t
 | Young meadow | Plank over the spring trickle | Spring path | "So nobody has to hop." |
 | Young woodland | Hammock | Between the oak and the big stump | "Built for one. Used by two." |
 | Young woodland | Snail-shell wind chime | Under the eaves | "Every shell was empty when they found it. They checked." |
-| Young woodland | A name board over the door | Door | "The house needs a name." (Bryce names it.) |
+| Young woodland | A name board over the door | Door | "The house needs a name." Named by Bryce 2026-10-27: The Gnomestead. |
 | Young woodland | Moss cushion on the bench | Bench | "Softer. Greener. Slightly damp." |
 | Young woodland | Welcome sign *(already a job: `sign`)* | Where the yard meets the village path | "All Creatures Welcome. Please Wipe Paws." |
 
