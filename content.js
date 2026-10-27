@@ -508,6 +508,10 @@ window.CONTENT = {
       note:'A clumsy, shining gold-green beetle that blundered into the lantern light, apologised, and did it again.' },
     { id:'cockatoo',  name:'Yellow-tailed black cockatoo', hours:[7,16], weight:1, h:60, faces:'L', icon:'🐦‍⬛', fly:36, speed:0.15, seasons:['winter'], stage:'meadow',
       note:'A slow pair came over, wailing. Old gnomes say that means rain. It rained.' },
+    // the platypus (docs/ANIMALS.md section 8): never spawned like the others (hours 0-0). It only glides past on the last healed
+    // stretch of the creek at dawn, once the whole creek is healed (index.html PLATY). It never moves in, eats nothing, gives no gift.
+    { id:'platypus', name:'Platypus', hours:[0,0], weight:0, h:22, faces:'L', icon:'🦫', speed:0.05, dawn:true,
+      note:'Seen once. Will not be rushed.' },
     { id:'wisp',      name:'Will-o\'-wisp', hours:[21,24], weight:1, h:30, icon:'💫', fly:40, speed:0.08, stage:'green', alsoHours:[0,4], spirit:true,
       note:'A small cold light that bobbed just out of reach and left a little brighter than it came.' },
   ],
@@ -534,7 +538,7 @@ window.CONTENT = {
     waveGapDays: 1,           // after waving a traveller on, someone else comes after about this long
     favourEvery: 360,         // minutes between small favours (only one waiting at a time)
     questAfterDays: 1,        // a neighbour's story begins about a day after their trade building is finished
-    // where homes go, nearest first: plain healed tiles (not the stream row or the path). A home needs one of these to be green.
+    // where homes go, nearest first: plain healed tiles (not the stream row or the path). A home needs one of these grown to young meadow.
     lots: ['-1,0', '-1,1', '2,0', '-2,0', '2,1', '-2,1', '0,2', '-1,2', '0,-2', '-1,-2', '2,-2', '-2,-2', '2,2', '-2,2'],
     order: ['mabel', 'tobias', 'fernsby', 'pebbleworth', 'clem', 'barnaby', 'nettle', 'juniper'],   // who comes next (waved-on travellers go to the back)
   },
@@ -685,6 +689,171 @@ window.CONTENT = {
         story:{ title:'The lamp in the window', text:'After supper, Juniper said, "Do you know why I stopped here? I came over the hill at night, and I saw your window. It was the only light for miles, and someone was laughing behind it." Hazel looked at Wendel. They had both been right, it turned out. She had been homesick and lonely, both. "Well," said Hazel, "now it\'s your window too."' },
         reward:{ light:4 } } },
   ],
+
+  // ---------- the neighbours' farms (docs/PLAN.md "Neighbour farms"; built 2026-10-27) ----------
+  // Farming only happens where neighbours live. Once a neighbour's trade building is up, their lot gets a farm that suits
+  // their trade, in its own shape (patches, a curve, a few trees; never the oval). Three jobs in order (dig, plant, then
+  // something for the wild things round its edge), either gnome. Digging gives 0 green; the planting and the edge give the
+  // green, mostly later, as things grow (later: like the bare tiles). That takes the lot on from first green to young woodland.
+  // Once the farm has grown, "pick" comes back once a day: the gnomes help pick, and the neighbour pays them back (give).
+  // swap: a pantry swap, once a day, from the farm card (this is where the seed bed's veg gets used).
+  // look: how index.html draws it (FARM_LOOK). hours: pick only then (the moonflowers open at dusk).
+  farms: {
+    pickEvery: 1440,   // minutes between pickings (once a day)
+    list: {
+      mabel: { name:'Mabel\'s herb and rhubarb patch', patch:'Mabel\'s herb patch', look:'herbs',
+        card:'Three little beds by the oven: thyme and sage and parsley, and in the biggest one, rhubarb. "For pies," says Mabel, "and for anybody who looks peaky."',
+        steps:[
+          { id:'dig', name:'Dig Mabel\'s herb beds', short:'digging herb beds', cost:{ twig:1 }, mins:90, act:'dig',
+            blurb:'Three small beds by the oven, each a different shape, because Mabel says herbs do not like to be bossed about.' },
+          { id:'plant', name:'Plant the herbs and rhubarb crowns', short:'planting herbs', cost:{ water:2, seed:1 }, mins:120, act:'dig', green:2,
+            blurb:'Cuttings from Mabel\'s travelling pots, and three knobbly rhubarb crowns she has carried all the way in her apron.',
+            later:[ { after:180, green:3, ev:'sprout', note:'The herbs in Mabel\'s beds have taken. The whole patch smells of thyme when the sun is on it.' },
+                    { after:1440, green:5, ev:'grown', note:'Mabel\'s rhubarb has come up red and enormous. She has started talking about pies.' },
+                    { after:2880, green:4, ev:'full', note:'The herbs by Mabel\'s oven are in flower, and the bees have found them.' } ] },
+          { id:'edge', name:'Plant a lemon myrtle hedge behind the beds', short:'planting a hedge', cost:{ acorn:1, water:1 }, mins:90, act:'dig', green:2,
+            blurb:'A row of little lemon myrtles behind the herb beds, to keep the wind off and give the wrens a hedge to live in.',
+            later:[ { after:360, green:3, ev:'edge1', note:'A pair of wrens has moved into the lemon myrtle hedge by Mabel\'s herb beds.' },
+                    { after:1440, green:3, ev:'edge2', note:'The lemon myrtle hedge has filled out. Mabel puts a leaf in her tea.' } ] } ],
+        pick:{ name:'Help Mabel pick rhubarb and herbs', short:'picking rhubarb', cost:{}, mins:60, act:'pickup', give:{ bread:2 },
+          blurb:'Pull the rhubarb, never cut it; snip the herbs, never pull them. Mabel explains this every time, and bakes a pie with it.',
+          thanks:'Mabel sent the gnomes home with a rhubarb pie, still warm, and a bunch of thyme for Hazel.' },
+        swap:{ give:{ carrot:3 }, get:{ bread:2 }, text:'Three carrots from your seed bed, and Mabel bakes a carrot cake. Two slices for you, one for the baker.' } },
+
+      tobias: { name:'Tobias\'s willow bed', patch:'Tobias\'s willow bed', look:'willow',
+        card:'A handful of willow stools by the workshop, cut back every year for wands. "Willow is the only wood that grows faster than I can use it," says Tobias, "and believe me, I have tried."',
+        steps:[
+          { id:'dig', name:'Dig the soft ground for Tobias\'s willow', short:'digging for the willow', cost:{ twig:1 }, mins:90, act:'dig',
+            blurb:'Willow likes its feet wet. A long, curving patch of soft ground, dug deep and watered well.' },
+          { id:'plant', name:'Push in the willow whips', short:'planting willow', cost:{ water:3 }, mins:90, act:'dig', green:2,
+            blurb:'Bare willow sticks pushed straight into the wet earth. It looks like nothing at all. It is not nothing.',
+            later:[ { after:180, green:3, ev:'sprout', note:'Every one of Tobias\'s willow sticks has sprouted leaves. He pretends he never doubted it.' },
+                    { after:1440, green:5, ev:'grown', note:'Tobias\'s willows are taller than a gnome, all long whippy wands.' },
+                    { after:2880, green:4, ev:'full', note:'Catkins on Tobias\'s willows, soft as mouse ears.' } ] },
+          { id:'edge', name:'Plant sedges and a tea-tree round the willow', short:'planting sedges', cost:{ seed:1, water:1 }, mins:90, act:'dig', green:2,
+            blurb:'Tussocks of sedge and one little tea-tree at the wet end, for the frogs and the small brown birds.',
+            later:[ { after:360, green:3, ev:'edge1', note:'Frogs have moved into the sedges round Tobias\'s willow bed.' },
+                    { after:1440, green:3, ev:'edge2', note:'The tea-tree by the willow bed is in flower, white as frost.' } ] } ],
+        pick:{ name:'Cut willow wands with Tobias', short:'cutting willow', cost:{}, mins:60, act:'gather', give:{ twig:3, plank:1 },
+          blurb:'The longest wands cut low and tied in bundles. The stools will grow back by tomorrow, near enough.',
+          thanks:'Tobias kept the wands for baskets and gave the gnomes the offcuts, and a plank he said was "in the way".' },
+        swap:{ give:{ carrot:2 }, get:{ plank:1 }, text:'Two carrots for Tobias, who eats them like a horse, and a good plank in return.' } },
+
+      fernsby: { name:'The Fernsbys\' family veg patch', patch:'the Fernsbys\' veg patch', look:'veg',
+        card:'Four little patches of everything, because every Fernsby has a favourite, and a scarecrow the twins made that looks quite a lot like Wendel.',
+        steps:[
+          { id:'dig', name:'Dig the Fernsbys\' veg patches', short:'digging veg patches', cost:{ twig:1 }, mins:90, act:'dig',
+            blurb:'Four small patches, one for each Fernsby. The twins help. The twins help a great deal. Meanwhile, they make a scarecrow.' },
+          { id:'plant', name:'Sow the Fernsbys\' patches', short:'sowing veg', cost:{ seed:2, water:2 }, mins:120, act:'dig', green:2,
+            blurb:'Cabbages for Rowan, peas for Ivy, strawberries for Posy, and for Pip, an entire patch of radishes, because Pip likes saying "radish".',
+            later:[ { after:180, green:3, ev:'sprout', note:'The Fernsbys\' veg patches are up. Pip has counted every radish twice.' },
+                    { after:1440, green:5, ev:'grown', note:'The Fernsbys\' cabbages are as round as the twins.' },
+                    { after:2880, green:4, ev:'full', note:'Strawberries in Posy\'s patch. She has eaten most of them.' } ] },
+          { id:'edge', name:'Dig the twins a frog puddle', short:'digging a frog puddle', cost:{ stone:2, water:2 }, mins:90, act:'dig', green:2,
+            blurb:'A little puddle at the corner of the veg patch, lined with stones. Frogs eat the slugs. The twins watch the frogs. Everyone is busy.',
+            later:[ { after:360, green:3, ev:'edge1', note:'Frogs have found the twins\' puddle by the veg patch. Pip has named all of them Pip.' },
+                    { after:1440, green:3, ev:'edge2', note:'Reeds round the frog puddle, and a dragonfly that Posy says is hers.' } ] } ],
+        pick:{ name:'Help the Fernsbys pick', short:'picking with the twins', cost:{}, mins:60, act:'pickup', give:{ berry:2, water:1 },
+          blurb:'Ivy picks, Rowan carries, and the twins pick one, eat one. The gnomes are given a punnet for their trouble.',
+          thanks:'Ivy sent the gnomes home with a punnet of strawberries and a jug of well water. Two strawberries were missing. Nobody knows anything.' },
+        swap:{ give:{ lettuce:2 }, get:{ berry:2, feather:1 }, text:'Two lettuces for the twins\' sandwiches, and back come strawberries and a feather the twins found.' } },
+
+      pebbleworth: { name:'The Pebbleworths\' orchard', patch:'the Pebbleworths\' orchard', look:'orchard',
+        card:'Three more fruit trees beyond the first ring, apple and pear and a plum for Mags. "We will not see them at their best," says Bert. "That is not what an orchard is for."',
+        steps:[
+          { id:'dig', name:'Dig holes for the Pebbleworths\' fruit trees', short:'digging tree holes', cost:{ twig:1 }, mins:90, act:'dig',
+            blurb:'Three wide holes, well apart, so the trees will have room to grow old. Bert supervises from a chair.' },
+          { id:'plant', name:'Plant the apple, the pear and the plum', short:'planting fruit trees', cost:{ water:3, moss:2 }, mins:120, act:'dig', green:2,
+            blurb:'Three young trees from the cuttings Bert and Mags carried here in wet moss, staked and mulched and watered in.',
+            later:[ { after:180, green:3, ev:'sprout', note:'The Pebbleworths\' new fruit trees are in leaf.' },
+                    { after:1440, green:5, ev:'grown', note:'Blossom on the Pebbleworths\' fruit trees. Mags sat under them all afternoon.' },
+                    { after:2880, green:4, ev:'full', note:'The first fruit on the Pebbleworths\' trees, and two old ladders leaning in them already.' } ] },
+          { id:'edge', name:'Sow clover under the fruit trees', short:'sowing clover', cost:{ seed:2 }, mins:60, act:'pickup', green:2,
+            blurb:'White clover under the trees, to feed the soil and the bees, and to make the orchard soft to sit in.',
+            later:[ { after:360, green:3, ev:'edge1', note:'Clover has come up under the Pebbleworths\' fruit trees, and the bees with it.' },
+                    { after:1440, green:3, ev:'edge2', note:'A ringtail possum has moved into the Pebbleworths\' orchard. Bert says it may have one pear. One.' } ] } ],
+        pick:{ name:'Help the Pebbleworths pick fruit', short:'picking fruit', cost:{}, mins:60, act:'pickup', give:{ berry:3 },
+          blurb:'Up the old ladders for the high ones, gently, one hand for the tree. Bert holds the ladder. Mags holds Bert.',
+          thanks:'Mags sent the gnomes home with a basket of fruit, and the first apple for Hazel, because Bert says the first one always goes to the lady.' },
+        swap:{ give:{ bean:3 }, get:{ berry:3 }, text:'Three beans for Bert\'s bean soup, which is good for knees, and a basket of windfalls back.' } },
+
+      clem: { name:'Clem\'s lavender', patch:'Clem\'s lavender', look:'lavender',
+        card:'Lavender in long curving rows round the skeps, so the bees step straight out of the door into breakfast.',
+        steps:[
+          { id:'dig', name:'Dig Clem\'s lavender rows', short:'digging lavender rows', cost:{ twig:1, stone:1 }, mins:90, act:'dig',
+            blurb:'Two long curves round the skeps, dug light and stony, because lavender likes its feet dry and its head in the sun.' },
+          { id:'plant', name:'Plant out the lavender', short:'planting lavender', cost:{ water:2, seed:1 }, mins:120, act:'dig', green:2,
+            blurb:'Little grey-green bushes from Clem\'s cuttings, set out along the curves a gnome\'s stride apart.',
+            later:[ { after:180, green:3, ev:'sprout', note:'Clem\'s lavender has rooted. It smells of summer already.' },
+                    { after:1440, green:5, ev:'grown', note:'The first purple spikes on Clem\'s lavender. The bees have stopped going anywhere else.' },
+                    { after:2880, green:4, ev:'full', note:'Clem\'s lavender rows are a haze of purple, humming.' } ] },
+          { id:'edge', name:'Plant a bottlebrush for Clem\'s bees', short:'planting a bottlebrush', cost:{ acorn:1, water:1 }, mins:90, act:'dig', green:2,
+            blurb:'A bottlebrush at the end of the rows, for the bees in the months the lavender rests, and for the honeyeaters all year.',
+            later:[ { after:360, green:3, ev:'edge1', note:'A honeyeater has found Clem\'s bottlebrush, and is very rude to the bees about it.' },
+                    { after:1440, green:3, ev:'edge2', note:'Clem\'s bottlebrush is in flower, red as a robin.' } ] } ],
+        pick:{ name:'Help Clem cut lavender', short:'cutting lavender', cost:{}, mins:60, act:'pickup', give:{ honey:1, seed:1 },
+          blurb:'Only half of every bush, so the bees are not cross. Bunches hung up to dry in Clem\'s doorway.',
+          thanks:'Clem gave the gnomes a pot of lavender honey and a little bag of seed heads for Hazel\'s pillow.' },
+        swap:{ give:{ bean:2 }, get:{ honey:1 }, text:'Two beans, because bean flowers are her bees\' favourite, she says, and a pot of honey back.' } },
+
+      barnaby: { name:'Barnaby\'s wheat', patch:'Barnaby\'s wheat', look:'wheat',
+        card:'Two long golden strips beside his stump, for flour. "Mabel bakes it. I grind it. Wheat grows it," says Barnaby. "Mm." That is the most he has ever said about anything.',
+        steps:[
+          { id:'dig', name:'Turn the ground for Barnaby\'s wheat', short:'turning the ground', cost:{ twig:2 }, mins:90, act:'dig',
+            blurb:'Two long curving strips, turned over and raked fine. Barnaby walks up and down them, nodding.' },
+          { id:'plant', name:'Sow Barnaby\'s wheat', short:'sowing wheat', cost:{ seed:3, water:1 }, mins:90, act:'pickup', green:2,
+            blurb:'Seed scattered from the hand in wide sweeps, the old way, and raked in. The birds watch with interest.',
+            later:[ { after:180, green:3, ev:'sprout', note:'A green fuzz on Barnaby\'s wheat strips. He stood and looked at it for a long time.' },
+                    { after:1440, green:5, ev:'grown', note:'Barnaby\'s wheat is up to the gnomes\' knees and rippling.' },
+                    { after:2880, green:4, ev:'full', note:'Barnaby\'s wheat has turned gold. Mabel came to look at it and went all quiet.' } ] },
+          { id:'edge', name:'Sow wildflowers along the wheat', short:'sowing wildflowers', cost:{ seed:2 }, mins:60, act:'pickup', green:2,
+            blurb:'Paper daisies and blue bells along the field edges, for the beetles that keep the wheat clean.',
+            later:[ { after:360, green:3, ev:'edge1', note:'Paper daisies along the edge of Barnaby\'s wheat. He said "Mm," but nicely.' },
+                    { after:1440, green:3, ev:'edge2', note:'A quail and her chicks are living in the edge of Barnaby\'s wheat. He walks round them.' } ] } ],
+        pick:{ name:'Help Barnaby cut the wheat', short:'cutting wheat', cost:{}, mins:90, act:'gather', give:{ seed:3, bread:1 },
+          blurb:'A strip cut and stood in sheaves, and the rest left to grow on. Barnaby says thank you with his eyebrows.',
+          thanks:'Barnaby gave the gnomes a sack of seed and a loaf Mabel had made from last time\'s flour. "Mm," he said. It meant a lot.' },
+        swap:{ give:{ bean:2 }, get:{ seed:3 }, text:'Two beans for Barnaby\'s soup, and back comes a little sack of seed.' } },
+
+      nettle: { name:'Nettle\'s flax and dye plants', patch:'Nettle\'s dye garden', look:'flax',
+        card:'Flax for linen, and the plants for colour: woad for blue, weld for yellow, and a native indigo bush. "Colours do not come from nowhere," says Nettle. "They come from here. Do not touch."',
+        steps:[
+          { id:'dig', name:'Dig Nettle\'s flax patch', short:'digging the flax patch', cost:{ twig:1 }, mins:90, act:'dig',
+            blurb:'One long patch for the flax and two small beds for the dye plants, all exactly where Nettle has drawn them.' },
+          { id:'plant', name:'Sow the flax and the dye plants', short:'sowing flax', cost:{ seed:2, water:2 }, mins:120, act:'pickup', green:2,
+            blurb:'Flax seed sown thick, and the dye plants set out in their beds. Nettle checks every one and moves two.',
+            later:[ { after:180, green:3, ev:'sprout', note:'Nettle\'s flax is up, thin and green as grass.' },
+                    { after:1440, green:5, ev:'grown', note:'Nettle\'s flax is tall and swaying, and the woad has gone yellow with flowers.' },
+                    { after:2880, green:4, ev:'full', note:'The flax in Nettle\'s patch is in flower, the palest blue. Even Nettle smiled.' } ] },
+          { id:'edge', name:'Plant a native indigo bush', short:'planting the indigo', cost:{ acorn:1, water:1 }, mins:90, act:'dig', green:2,
+            blurb:'A native indigo at the corner of the dye garden, with its little purple pea flowers. It gives a blue, and a home to butterflies.',
+            later:[ { after:360, green:3, ev:'edge1', note:'Blue butterflies on the native indigo by Nettle\'s dye garden.' },
+                    { after:1440, green:3, ev:'edge2', note:'The native indigo by Nettle\'s dye garden has filled out. She has called it "adequate".' } ] } ],
+        pick:{ name:'Help Nettle pull flax', short:'pulling flax', cost:{}, mins:60, act:'gather', give:{ yarn:1, seed:1 },
+          blurb:'Flax is pulled, not cut, roots and all, and laid out in rows. Nettle inspects every row. Most of them pass.',
+          thanks:'Nettle gave the gnomes a skein of yarn and the flax seed for next time. "Use it properly," she said, which from Nettle is a hug.' },
+        swap:{ give:{ carrot:2 }, get:{ yarn:1 }, text:'Two carrots, because carrot tops make a good yellow-green, and a ball of yarn dyed with them.' } },
+
+      juniper: { name:'Juniper\'s moonflowers', patch:'Juniper\'s moonflower garden', look:'moon',
+        card:'A little trellis of moonflowers by the hollow tree. They open at dusk, white and wide, when Juniper goes out with her jars. Pale, never glowing: they just catch the light.',
+        steps:[
+          { id:'dig', name:'Dig Juniper\'s moonflower bed', short:'digging the bed', cost:{ twig:1 }, mins:60, act:'dig',
+            blurb:'A curved bed along a little stick trellis by the hollow tree, so the vines have something to climb.' },
+          { id:'plant', name:'Plant the moonflower seeds', short:'planting moonflowers', cost:{ seed:2, water:2 }, mins:90, act:'dig', green:2,
+            blurb:'Big pale seeds soaked overnight in a jar, then planted by the trellis feet. Juniper whispers to each one.',
+            later:[ { after:180, green:3, ev:'sprout', note:'Juniper\'s moonflowers are up and reaching for the trellis.' },
+                    { after:1440, green:5, ev:'grown', note:'Juniper\'s moonflowers have climbed the trellis. Big buds, waiting for dusk.' },
+                    { after:2880, green:4, ev:'full', note:'Juniper\'s moonflowers opened at dusk, all at once, white as plates. Moths came.' } ] },
+          { id:'edge', name:'Sow evening primroses by the trellis', short:'sowing primroses', cost:{ seed:1, water:1 }, mins:60, act:'pickup', green:2,
+            blurb:'Evening primroses along the bed, pale yellow, that also open at dusk, so the moths have more than one supper.',
+            later:[ { after:360, green:3, ev:'edge1', note:'Moths at dusk round Juniper\'s evening primroses, big soft ones.' },
+                    { after:1440, green:3, ev:'edge2', note:'A little owlet-nightjar sits on Juniper\'s trellis at dusk and watches the moths.' } ] } ],
+        pick:{ name:'Gather moonflower seed with Juniper', short:'gathering at dusk', cost:{}, mins:60, act:'pickup', give:{ light:1, seed:1 }, hours:[17, 22], hoursWhy:'the moonflowers only open at dusk',
+          blurb:'At dusk, when the moonflowers open, the old seed pods are gathered and a little of the evening light caught in a jar.',
+          thanks:'Juniper gave the gnomes a jar with a little evening light in it, and a few moonflower seeds for their own fence.' },
+        swap:{ give:{ lettuce:2 }, get:{ light:1 }, text:'Two lettuces, so Juniper remembers to eat, and a wisp of light back in a jar.' } },
+    },
+  },
 
   // ---------- seasons (southern hemisphere, from the phone's date) ----------
   // Code tints and drifting things in index.html (SEASON_LOOK); seasonal visitors (seasons on a visitor) and events (seasons on an event).

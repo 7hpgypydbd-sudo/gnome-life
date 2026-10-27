@@ -200,7 +200,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v61</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v62</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -219,16 +219,16 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 61;
+const BUILD = 62;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=61"></script>
-<script src="game.js?v=61"></script>
-<script src="walk.js?v=61"></script>
+<script src="content.js?v=62"></script>
+<script src="game.js?v=62"></script>
+<script src="walk.js?v=62"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -396,7 +396,7 @@ const WORKPATH = {
   fence: p => { const f = bedFrame(), a = Math.PI / 2 + (0.5 + p * (FENCE_N - 0.5)) * 2 * Math.PI / FENCE_N; return [...fromRing(Math.cos(a) * 1.18, Math.sin(a) * 1.18, f), 'build']; },   // round the ring panel by panel, gate last
   bedwater: (p, g) => workLoop(g, 'bedwater', c => [[SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3], [...wetPatchAt(Math.min(WET_PATCHES.length - 1, Math.floor(bedWet() * WET_PATCHES.length)), 0.75), 'water', 'can', 5]]),   // to and fro: fill the can at the spring pool, water a different bit of the bed each time
 };
-function workFn(id) { return WORKPATH[id] || (id && id.startsWith('heal:') ? (p, g) => healWork(id, p, g) : null); }   // jobs that move the gnome about as they go (the healing jobs: healWork)
+function workFn(id) { return WORKPATH[id] || (id && id.startsWith('heal:') ? (p, g) => healWork(id, p, g) : id && id.startsWith('farm:') ? (p, g) => farmWork(id, p, g) : null); }   // jobs that move the gnome about as they go (the healing jobs: healWork)
 function woodTaken(i) { const [k, t] = segOf(taskProg('woodpile'), WOOD_ITEMS.length); return taskProg('woodpile') >= 1 || k > i ? 1 : k < i ? 0 : sstep(0.25, 0.6, t); }   // 0..1: how much of that lot Wendel has picked up
 function woodStage() {   // the woodpile grows in 3 steps, one per lot of wood he brings
   const p = taskProg('woodpile'); if (p >= 1) return 3; const [k, t] = segOf(p, WOOD_ITEMS.length); return k + (t >= 0.85 ? 1 : 0);
@@ -533,7 +533,7 @@ const hash = location.hash.slice(1);
 for (const tok of hash.split(/[#&]/)) if (/^(day|night|dawn|dusk|morning|evening)$/.test(tok)) tod = tok;
 if (/reset/.test(hash)) { G.reset(); }
 window.addEventListener('hashchange', () => location.reload());
-if (/test/.test(hash)) window.DBG = { feet: () => footprints(), walk: Walk, visitor: () => visitor, spawn: id => spawnVisitor(C.visitors.find(v => v.id === id)), patch: k => openPatch(k), jobs: f => openTasks(f || ''), magic: () => openMagic(), lesson: n => openLesson(n), cam, gnomes, IM, seat: BENCH_SEAT, dishFill: f => startDishFill(f), art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spirit: n => openLesson(n || 3), get allDone() { return ALLDONE; }, groundReady: () => !NEWGROUND || !groundMissing(), spiritAt: () => SPIRIT_HINT.screen, spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
+if (/test/.test(hash)) window.DBG = { feet: () => footprints(), walk: Walk, visitor: () => visitor, spawn: id => spawnVisitor(C.visitors.find(v => v.id === id)), patch: k => openPatch(k), farm: f => openFarm(f), platy: () => PLATY, swap: f => G.swap(f), jobs: f => openTasks(f || ''), magic: () => openMagic(), lesson: n => openLesson(n), cam, gnomes, IM, seat: BENCH_SEAT, dishFill: f => startDishFill(f), art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spirit: n => openLesson(n || 3), get allDone() { return ALLDONE; }, groundReady: () => !NEWGROUND || !groundMissing(), spiritAt: () => SPIRIT_HINT.screen, spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
 
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -2146,7 +2146,8 @@ class Folk {
       this.wait -= dt; if (this.wait > 0) return;
       this.wait = 3 + Math.random() * 6;
       if (this.home.camp || Math.random() < 0.35) { this.dir = Math.random() < 0.7 ? 'front' : 'side'; this.flip = Math.random() < 0.5; return; }
-      const [sx, sy] = this.home.tile ? glob(this.home.tile, ...LOT.spots[(Math.random() * LOT.spots.length) | 0]) : [this.gx, this.gy];
+      const fid = this.home.tile && G.farmOn(this.home.tile), fp = fid && taskProg(`farm:${fid}:1`) >= 1 ? farmLook(fid).plants : [];   // once their farm is planted, they potter about in it too
+      const sp = [...LOT.spots, ...fp.map(q => [q[0] - 0.03, q[1] + 0.02])], [sx, sy] = this.home.tile ? glob(this.home.tile, ...sp[(Math.random() * sp.length) | 0]) : [this.gx, this.gy];
       this.tx = sx + (Math.random() - 0.5) * 0.06; this.ty = sy + (Math.random() - 0.5) * 0.06; this.walking = true; return;
     }
     const dx = this.tx - this.gx, dy = this.ty - this.gy, d = Math.hypot(dx, dy);
@@ -2475,7 +2476,7 @@ function landItems(items, now) {
     else {
       if (k !== '0,1' && (!tl.kind || G.stageIndex(k) >= 3)) for (let c = 0; c < 2; c++) {   // two little woodland corners (not on the couple's garden tile) on the tile, away from the stream, the path and the homes
         const [gx, gy] = [[0.14, 0.84], [0.84, 0.16], [0.52, 0.92], [0.9, 0.62], [0.2, 0.2], [0.08, 0.5]][Math.floor(rnd(seed + c * 9) * 6)], [ux, uy] = glob(k, gx, gy);
-        if (!openGround(ux, uy) || (homes[k] && Math.hypot(gx - LOT.home[0], gy - LOT.home[1]) < 0.25) || (k === CAMP.tile && Math.hypot(gx - CAMP.gx, gy - CAMP.gy) < 0.3)) continue;
+        if (!openGround(ux, uy) || inFarm(k, gx, gy) || (homes[k] && Math.hypot(gx - LOT.home[0], gy - LOT.home[1]) < 0.25) || (k === CAMP.tile && Math.hypot(gx - CAMP.gx, gy - CAMP.gy) < 0.3)) continue;
         const cnt = 3 + Math.floor(rnd(seed + c * 5 + 1) * 2);
         for (let i = 0; i < cnt; i++) { const pool = i === 0 && rnd(seed + c + 2) < 0.35 ? [13, 15, 17, 14, 16, 18] : WOOD_PLANTS;
           woodPiece(items, pool[Math.floor(rnd(seed * 3 + c * 11 + i) * pool.length)], ux + (rnd(seed + c * 13 + i * 3) - 0.5) * 0.16, uy + (rnd(seed + c * 7 + i * 5) - 0.5) * 0.16, vb, 0.85 + 0.3 * rnd(seed + i * 19), rnd(seed + i * 23 + c) < 0.5); }
@@ -2487,7 +2488,7 @@ function landItems(items, now) {
     for (const [dx, dy, ga, gb, gc, back] of [[0, -1, 0, 1, 0.02, true], [-1, 0, 1, 0, 0.02, true], [0, 1, 0, 1, 0.97, false], [1, 0, 1, 0, 0.97, false]]) {
       if (G.s.tiles[`${tx + dx},${ty + dy}`]) continue;
       for (let i = 0; i < 4; i++) { const t = 0.12 + 0.76 * (i + rnd(seed + i * 7 + dx * 3 + dy)) / 4, a = dx ? gc : t, b = dx ? t : gc, [ux, uy] = glob(k, a, b);
-        if (!openGround(ux, uy)) continue;
+        if (!openGround(ux, uy) || inFarm(k, a, b)) continue;
         const n = back ? (i === 1 && rnd(seed + 3) < 0.45 ? (rnd(seed + i) < 0.5 ? 12 : 11) : i % 2 ? WOOD_LOW[Math.floor(rnd(seed + i * 5) * WOOD_LOW.length)] : WOOD_PLANTS[Math.floor(rnd(seed + i * 5) * WOOD_PLANTS.length)]) : WOOD_LOW[Math.floor(rnd(seed + i * 5) * WOOD_LOW.length)];   // a tall trunk only now and then: they stop at the top of the picture
         if (n >= 11 && n <= 12 && home) continue; woodPiece(items, n, ux, uy, vb, 0.8 + 0.4 * rnd(seed + i * 11), rnd(seed + i * 3) < 0.5); }
     }
@@ -3072,8 +3073,12 @@ function healWork(id, p, g) {
   const [x, y] = at(i), a = d.tree ? (sg < 0.6 ? 'dig' : 'water') : act;
   return [x + 0.05, y - 0.03, a, false, 0, [x, y]];
 }
-function healStageCard(c) {   // a healing tile reached a new stage
-  const tl = G.s.tiles[c.tile]; if (!tl || !tl.kind) return; const K = C.heal.kinds[tl.kind], st = C.landStages.find(s => s.key === c.key);
+function healStageCard(c) {   // a healing tile (or a neighbour's farm) reached a new stage
+  const tl = G.s.tiles[c.tile], fid = G.farmOn(c.tile); if (!tl) return;
+  if (fid) { const st = C.landStages.find(s => s.key === c.key), F = C.farms.list[fid];
+    return openSheet('land', `<div class="jpage card"><p class="meta" style="margin:0">The land is waking · ${F.patch}, ${G.tileWhere(c.tile)}</p><h2>${cap(st.name)}</h2><p class="lore">${C.heal.stageText[c.key].replace('{patch}', F.patch)}</p></div>
+      <p style="text-align:center"><button class="act" data-a="farm" data-id="${fid}">See the farm</button> <button class="act quiet" data-a="close">Have a look</button></p>`); }
+  if (!tl.kind) return; const K = C.heal.kinds[tl.kind], st = C.landStages.find(s => s.key === c.key);
   openSheet('land', `<div class="jpage card"><p class="meta" style="margin:0">The land is waking · ${K.name.toLowerCase()}, ${G.tileWhere(c.tile)}</p><h2>${st.name[0].toUpperCase() + st.name.slice(1)}</h2><p class="lore">${C.heal.stageText[c.key].replace('{patch}', K.patch)}</p></div>
     <p style="text-align:center"><button class="act" data-a="patch" data-id="${c.tile}">See the patch</button> <button class="act quiet" data-a="close">Have a look</button></p>`);
 }
@@ -3092,6 +3097,214 @@ function openPatch(k) {   // tap a healing tile: what this patch needs, in Hazel
     ${names.length ? `<p class="meta">Wendel has named the trees here: ${names.join(', ')}. He has a quiet word with each one when he passes.</p>` : ''}</div>`;
   const id = `heal:${k}:${at}`; html += `<p style="text-align:center">${G.healOpen(k) ? `<button class="act" data-a="jobs" data-id="${id}">See the job</button> ` : ''}<button class="act quiet" data-a="close">Back to the garden</button></p>`;
   openSheet('patch:' + k, html);
+}
+
+// ---------- the neighbours' farms (CONTENT.farms; docs/PLAN.md "Neighbour farms") ----------
+// Each farm has its own shape on the lot (tile grid), on the front-right, clear of the home (LOT.home) and the trade building (LOT.build):
+//   beds: dug earth [gx, gy, rx, ry] (the dig job); plants: [gx, gy, kind] (the plant job, then sprout, grown, full);
+//   props: things that come with the digging (the twins' scarecrow, Juniper's trellis); edge: the wild things round it [gx, gy, kind].
+// Code stand-ins until painted (art list: docs/ART-FARMS.md). Ripe things twinkle now and then, never glow.
+const FARM_ZONE = [0.74, 0.70, 0.24], FARM_S = 1.6;   // centre and radius on the lot (woodland corners and map-edge plants keep out of it); FARM_S: how big the stand-ins are drawn
+const along = (a, b, n, kind, r) => Array.from({ length: n }, (_, i) => { const t = n > 1 ? i / (n - 1) : 0.5, bow = Math.sin(t * Math.PI) * 0.035; return r ? [a[0] + (b[0] - a[0]) * t - bow, a[1] + (b[1] - a[1]) * t + bow, ...r] : [a[0] + (b[0] - a[0]) * t - bow, a[1] + (b[1] - a[1]) * t + bow, kind]; });   // a gentle curve, never a ruled row
+const FARM_LOOK = {
+  herbs: { beds:[[0.64, 0.60, 46, 20], [0.83, 0.64, 40, 17], [0.72, 0.80, 56, 23]],
+    plants:[[0.62, 0.58, 'herb'], [0.67, 0.61, 'herb'], [0.61, 0.63, 'sage'], [0.66, 0.565, 'herb'], [0.81, 0.62, 'sage'], [0.85, 0.66, 'herb'], [0.80, 0.665, 'herb'], [0.69, 0.78, 'rhubarb'], [0.75, 0.80, 'rhubarb', 'snail'], [0.71, 0.84, 'rhubarb']],
+    edge:[[0.58, 0.47, 'myrtle'], [0.70, 0.46, 'myrtle'], [0.82, 0.49, 'myrtle'], [0.90, 0.56, 'myrtle']] },
+  willow: { beds: along([0.60, 0.60], [0.88, 0.76], 5, null, [38, 17]),
+    plants:[...along([0.60, 0.60], [0.88, 0.76], 5, 'willow'), [0.70, 0.78, 'willow']],
+    edge:[[0.58, 0.72, 'sedge'], [0.80, 0.86, 'sedge'], [0.88, 0.62, 'sedge'], [0.88, 0.86, 'teatree']] },
+  veg: { beds:[[0.62, 0.61, 40, 18], [0.80, 0.59, 40, 18], [0.66, 0.79, 40, 18], [0.84, 0.77, 40, 18]],
+    plants:[[0.60, 0.60, 'cabbage'], [0.64, 0.62, 'cabbage'], [0.62, 0.635, 'cabbage'], [0.78, 0.58, 'peas'], [0.83, 0.60, 'peas'],
+      [0.64, 0.78, 'straw'], [0.68, 0.80, 'straw'], [0.66, 0.815, 'straw'], [0.82, 0.76, 'radish'], [0.86, 0.78, 'radish'], [0.84, 0.795, 'radish']],
+    props:[[0.73, 0.69, 'scarecrow']],
+    edge:[[0.88, 0.88, 'puddle']] },
+  orchard: { beds:[[0.63, 0.59, 24, 10], [0.84, 0.65, 24, 10], [0.70, 0.82, 24, 10]],
+    plants:[[0.63, 0.59, 'apple'], [0.84, 0.65, 'pear'], [0.70, 0.82, 'plum']],
+    edge:[[0.72, 0.67, 'clover'], [0.60, 0.72, 'clover'], [0.86, 0.80, 'clover'], [0.76, 0.56, 'clover']] },
+  lavender: { beds:[...along([0.58, 0.64], [0.88, 0.58], 5, null, [24, 11]), ...along([0.62, 0.80], [0.92, 0.73], 5, null, [24, 11])],
+    plants:[...along([0.58, 0.64], [0.88, 0.58], 5, 'lavender'), ...along([0.62, 0.80], [0.92, 0.73], 5, 'lavender')],
+    edge:[[0.88, 0.86, 'bottlebrush']] },
+  wheat: { beds:[...along([0.56, 0.58], [0.90, 0.63], 5, null, [36, 16]), ...along([0.60, 0.76], [0.93, 0.81], 5, null, [36, 16])],
+    plants:[...along([0.56, 0.58], [0.90, 0.63], 5, 'wheat'), ...along([0.60, 0.76], [0.93, 0.81], 5, 'wheat')],
+    edge:[[0.58, 0.67, 'daisies'], [0.74, 0.69, 'daisies'], [0.90, 0.71, 'daisies'], [0.70, 0.88, 'daisies']] },
+  flax: { beds:[...along([0.60, 0.60], [0.82, 0.66], 4, null, [34, 15]), [0.66, 0.81, 30, 13], [0.83, 0.82, 30, 13]],
+    plants:[...along([0.60, 0.60], [0.82, 0.66], 4, 'flax'), [0.645, 0.80, 'woad'], [0.675, 0.825, 'woad'], [0.82, 0.81, 'weld'], [0.85, 0.83, 'weld']],
+    edge:[[0.89, 0.72, 'indigo']] },
+  moon: { beds: along([0.60, 0.62], [0.90, 0.66], 4, null, [30, 13]),
+    plants: along([0.60, 0.62], [0.90, 0.66], 4, 'moonvine'),
+    props:[[0.75, 0.62, 'trellis']],
+    edge:[[0.64, 0.74, 'primrose'], [0.77, 0.76, 'primrose'], [0.89, 0.78, 'primrose']] },
+};
+function iblob(x, y, rx, ry, col) { if (rx >= 2.5 && ry >= 2) blob(x, y, rx + 0.7, ry + 0.7, 'rgba(42,21,16,0.38)'); blob(x, y, rx, ry, col); }   // a blob with a thin ink edge, so the stand-ins read as drawn
+function farmLook(fid) { return FARM_LOOK[C.farms.list[fid].look]; }
+function farmStage(fid) { return G.farmEv(fid, 'full') ? 3 : G.farmEv(fid, 'grown') ? 2 : G.farmEv(fid, 'sprout') ? 1 : 0; }
+function farmEdgeStage(fid) { return G.farmEv(fid, 'edge2') ? 2 : G.farmEv(fid, 'edge1') ? 1 : 0; }
+function inFarm(k, gx, gy) { const fid = G.farmOn(k); return !!fid && taskProg(`farm:${fid}:0`) > 0 && Math.hypot(gx - FARM_ZONE[0], gy - FARM_ZONE[1]) < FARM_ZONE[2]; }
+const dusk = () => { const h = dayPhase().h; return h >= 17.5 || h < 5.5; };
+function shrub(x, y, s, leaf, dots, dotCol, seed) {   // a small native bush: clustered leaf blobs, with flowers when it has filled out
+  shadow(x, y, 14 * s, 4 * s);
+  for (let i = 0; i < 9; i++) { const r = rnd(seed + i), t = rnd(seed + i + 9) * 6.3; iblob(x + Math.cos(t) * r * 13 * s, y - 13 * s + Math.sin(t) * r * 9 * s - (i > 5 ? 6 * s : 0), 7 * s, 5 * s, i % 3 ? leaf : 'rgba(60,82,40,0.95)'); }
+  if (dots) for (let i = 0; i < dots; i++) iblob(x + (rnd(seed + i * 3 + 40) - 0.5) * 24 * s, y - 8 * s - rnd(seed + i * 5 + 41) * 18 * s, 2 * s, 2 * s, dotCol);
+}
+const FARM_PLANT = {   // (x, y) is where it meets the ground; st 0 seedling, 1 coming up, 2 grown, 3 full; ripe 0 just picked .. 1 ready
+  herb(x, y, st, ripe, i) { const s = [0.35, 0.6, 1, 1.1][st]; for (let j = 0; j < 7; j++) iblob(x + (rnd(i * 9 + j) - 0.5) * 18 * s, y - 4 * s - rnd(i * 9 + j + 3) * 12 * s, 4 * s, 3 * s, j % 2 ? '#6f8a4a' : '#5c7a3c');
+    if (st >= 3) for (let j = 0; j < 4 * ripe; j++) iblob(x + (rnd(i * 7 + j + 50) - 0.5) * 18, y - 12 - rnd(i * 7 + j + 51) * 6, 1.5, 1.5, j % 2 ? '#b9a3d0' : '#efe9f2'); },
+  sage(x, y, st, ripe, i) { const s = [0.35, 0.6, 1, 1.1][st]; for (let j = 0; j < 6; j++) iblob(x + (rnd(i * 5 + j) - 0.5) * 16 * s, y - 5 * s - rnd(i * 5 + j + 2) * 10 * s, 4.5 * s, 2.6 * s, j % 2 ? '#93a283' : '#7d8f6e'); },
+  rhubarb(x, y, st, ripe, i, now, q) { const s = [0.3, 0.55, 1, 1.25][st] * (st >= 2 ? 0.55 + 0.45 * ripe : 1); ctx.save(); ctx.lineCap = 'round';
+    for (let j = 0; j < 4; j++) { const a = -2.4 + j * 0.55 + (rnd(i + j) - 0.5) * 0.3, len = 26 * s, ex = x + Math.cos(a) * len, ey = y + Math.sin(a) * len * 0.8;
+      ctx.strokeStyle = '#a8343a'; ctx.lineWidth = 2.6 * s + 0.6; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(ex, ey); ctx.stroke(); for (let m = 0; m < 3; m++) iblob(ex + (m - 1) * 6 * s, ey - 4 * s + (m === 1 ? -3 * s : 0), 8 * s, 6 * s, (j + m) % 2 ? '#4f6e2c' : '#5d7d34'); ctx.strokeStyle = 'rgba(160,60,60,0.5)'; ctx.lineWidth = 0.8; for (let m = -1; m <= 1; m++) { ctx.beginPath(); ctx.moveTo(ex, ey - 1); ctx.lineTo(ex + m * 9 * s, ey - 9 * s); ctx.stroke(); } }
+    ctx.restore(); if (q[3] === 'snail' && st >= 2) snailShell(x + 10, y - 22 * s, 2.4); },   // the hidden snail, as always, on a rhubarb leaf
+  willow(x, y, st, ripe, i, now) { const full = [12, 34, 92, 108][st], h = st >= 2 ? 18 + (full - 18) * ripe : full, sway = Math.sin(now / 1500 + i) * 2; ctx.save(); ctx.lineCap = 'round';
+    iblob(x, y - 3, 7, 4, '#6a4e36'); for (let j = 0; j < 7; j++) { const dx = (j - 3) * (st ? 3.2 : 0.8), tip = x + dx * 2.2 + sway, th = h * (0.75 + 0.25 * rnd(i * 7 + j));
+      ctx.strokeStyle = '#8a6a3a'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(x + dx * 0.4, y - 4); ctx.quadraticCurveTo(x + dx * 2.6, y - th * 0.7, tip + dx * 1.4, y - th * 0.9); ctx.stroke();
+      if (st >= 1) for (let l = 0.3; l < 1; l += 0.14) { const lx = x + dx * 0.4 + (tip + dx * 1.4 - x - dx * 0.4) * l * l, ly = y - 4 - (th * 0.9 - 4) * l; blob(lx - 2, ly + 1, 3.4, 1.1, j % 2 ? '#7f9a52' : '#8fa860'); blob(lx + 2, ly + 1.5, 3.4, 1.1, j % 2 ? '#8fa860' : '#7f9a52'); }
+      if (st >= 3 && ripe > 0.8) iblob(tip, y - th + 3, 1.8, 2.6, '#e8dfa8'); }
+    ctx.restore(); },
+  cabbage(x, y, st, ripe, i) { const s = [0.3, 0.55, 1, 1.15][st] * (st >= 2 ? 0.45 + 0.55 * ripe : 1); shadow(x, y, 10 * s, 3 * s); iblob(x, y - 6 * s, 13 * s, 8 * s, '#6f8f4a'); iblob(x, y - 8 * s, 8 * s, 6 * s, '#a9c27a'); iblob(x - 2 * s, y - 10 * s, 3 * s, 2 * s, 'rgba(230,240,200,0.6)'); },
+  peas(x, y, st, ripe, i) { const h = [8, 22, 44, 48][st]; post(x, y, h + 6, 2.2, '#8a6a48'); for (let j = 0; j < [2, 5, 10, 12][st]; j++) iblob(x + (rnd(i * 4 + j) - 0.5) * 12, y - 4 - (j / 12) * h, 3.5, 2.6, j % 2 ? '#6f9a44' : '#5e8a3a');
+    if (st >= 3) for (let j = 0; j < 4 * ripe; j++) iblob(x + (j % 2 ? 6 : -6), y - 12 - j * 8, 1.6, 4, '#8fbf5a'); },
+  straw(x, y, st, ripe, i) { const s = [0.35, 0.6, 1, 1][st]; for (let j = 0; j < 5; j++) iblob(x + (rnd(i * 3 + j) - 0.5) * 16 * s, y - 3 - rnd(i * 3 + j + 1) * 5 * s, 4 * s, 2.6 * s, '#5d8a3a');
+    if (st >= 3) for (let j = 0; j < 4 * ripe; j++) iblob(x + (rnd(i * 5 + j + 20) - 0.5) * 18, y - 1 - rnd(i + j) * 3, 2, 2.2, '#c83a2e'); else if (st === 2) iblob(x + 3, y - 6, 1.6, 1.6, '#f3efe2'); },
+  radish(x, y, st, ripe, i) { const s = [0.35, 0.6, 1, 1][st]; ctx.save(); ctx.strokeStyle = '#5d8a3a'; ctx.lineWidth = 2.4 * s; ctx.lineCap = 'round'; for (let j = -1; j <= 1; j++) { ctx.beginPath(); ctx.moveTo(x, y - 2); ctx.lineTo(x + j * 6 * s, y - 12 * s); ctx.stroke(); } ctx.restore();
+    if (st >= 2 && ripe > 0.5) iblob(x, y - 1, 4, 2.6, '#c8506a'); },
+  apple(x, y, st, ripe, i, now, q) { fruitTree(x, y, st, ripe, i, now, '#b8402e'); }, pear(x, y, st, ripe, i, now) { fruitTree(x, y, st, ripe, i, now, '#c9b84a'); }, plum(x, y, st, ripe, i, now) { fruitTree(x, y, st, ripe, i, now, '#6a3a5a'); },
+  lavender(x, y, st, ripe, i) { const s = [0.35, 0.6, 1, 1.1][st]; shadow(x, y, 11 * s, 3 * s); for (let j = 0; j < 11; j++) { const u = rnd(i * 11 + j) - 0.5, v = rnd(i * 11 + j + 5); iblob(x + u * 22 * s, y - 3 * s - v * 11 * s * (1 - Math.abs(u)), 4.2 * s, 3.2 * s, j % 3 ? '#8e9c80' : j % 2 ? '#a3b094' : '#7d8c70'); }
+    const n = st >= 3 ? 9 : st === 2 ? 4 : 0; ctx.save(); ctx.lineCap = 'round'; for (let j = 0; j < n * (0.3 + 0.7 * ripe); j++) { const px = x + (j - n / 2) * 2.6 * s, top = y - 18 * s - rnd(i * 4 + j) * 8; ctx.strokeStyle = '#7a8a6a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px, y - 10 * s); ctx.lineTo(px + (j - n / 2) * 0.8, top); ctx.stroke(); iblob(px + (j - n / 2) * 0.8, top, 1.8, 4, '#7d62a8'); } ctx.restore(); },
+  wheat(x, y, st, ripe, i, now) { const full = [7, 18, 40, 46][st], h = st >= 2 ? 6 + (full - 6) * ripe : full, gold = st >= 3 ? 1 : 0, sway = Math.sin(now / 1100 + x * 0.05) * (h / 18);
+    ctx.save(); ctx.lineCap = 'round'; for (let j = 0; j < 24; j++) { const px = x + (rnd(i * 24 + j) - 0.5) * 50, py = y + (rnd(i * 24 + j + 7) - 0.5) * 18, hh = h * (0.75 + 0.25 * rnd(j + i)), tx = px + sway + (rnd(j + 3) - 0.5) * 3;
+      ctx.strokeStyle = gold ? (j % 3 ? '#c9a24a' : '#b08a3a') : (j % 3 ? '#7a9a44' : '#6a8a3a'); ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(px, py); ctx.quadraticCurveTo(px, py - hh * 0.6, tx, py - hh); ctx.stroke();
+      if (st >= 2 && ripe > 0.6) { ctx.save(); ctx.translate(tx, py - hh - 2); ctx.rotate(0.25 + sway * 0.05); blob(0, 0, 1.4, 3.8, gold ? '#d9b45a' : '#94b05a'); ctx.restore(); } }
+    ctx.restore(); },
+  flax(x, y, st, ripe, i, now) { const h = [7, 18, 36, 40][st] * (st >= 2 ? 0.4 + 0.6 * ripe : 1); ctx.save(); ctx.lineCap = 'round'; for (let j = 0; j < 12; j++) { const px = x + (rnd(i * 12 + j) - 0.5) * 46, py = y + (rnd(i * 12 + j + 5) - 0.5) * 16, sw = Math.sin(now / 1300 + j) * 1.2;
+      ctx.strokeStyle = '#6f8f4a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + sw, py - h); ctx.stroke(); if (st >= 3 && ripe > 0.5) iblob(px + sw, py - h - 1, 2.2, 1.6, '#8fb0d8'); } ctx.restore(); },
+  woad(x, y, st, ripe, i) { const s = [0.35, 0.6, 1, 1.1][st]; for (let j = 0; j < 5; j++) iblob(x + (j - 2) * 4 * s, y - 4 * s, 3 * s, 6 * s, '#6f8a5a');
+    if (st >= 2) { stem(x, y - 6, 18 * s); for (let j = 0; j < 6 * ripe; j++) iblob(x + (rnd(i + j) - 0.5) * 12, y - 22 * s - rnd(i + j + 3) * 8, 2.2, 1.8, '#e2c33a'); } },
+  weld(x, y, st, ripe, i) { const s = [0.35, 0.6, 1, 1.1][st]; iblob(x, y - 4 * s, 8 * s, 4 * s, '#6f8a4a'); if (st >= 2) { ctx.save(); ctx.strokeStyle = '#b8b45a'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x, y - 6); ctx.lineTo(x + 2, y - 6 - 30 * s * (0.5 + 0.5 * ripe)); ctx.stroke(); ctx.restore(); } },
+  moonvine(x, y, st, ripe, i, now) { const h = [6, 22, 58, 64][st]; ctx.save(); ctx.strokeStyle = '#4f6e2c'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(x, y); for (let t = 0; t <= 1; t += 0.1) ctx.lineTo(x + Math.sin(t * 9 + i) * 4, y - t * h); ctx.stroke(); ctx.restore();
+    for (let t = 0.2; t <= 1; t += 0.2) iblob(x + Math.sin(t * 9 + i) * 4 + 4, y - t * h, 4.2, 3.2, '#5d7d34');
+    if (st >= 2) { const open = st >= 3 && dusk(); for (let j = 0; j < 3 * (0.4 + 0.6 * ripe); j++) { const fy = y - h * (0.45 + j * 0.2), fx = x + (j % 2 ? 9 : -7);   // pale moonflowers: wide open at dusk, twisted buds by day (pale, never glowing)
+      if (open) { iblob(fx, fy, 7, 6, '#f6f3e6'); iblob(fx, fy, 2.4, 2, '#e8e2c4'); } else { iblob(fx, fy, 2.2, 4.5, '#ece6cf'); } } } },
+};
+function fruitTree(x, y, st, ripe, i, now, fruit) {   // a young fruit tree with a stake: leaves, blossom when grown, fruit when full (and an old ladder leaning in it)
+  const h = [24, 52, 100, 124][st], sway = Math.sin(now / 1600 + i) * 1.2; shadow(x, y, 6 + h * 0.2, 3 + h * 0.06);
+  ctx.save(); ctx.lineCap = 'round'; if (st < 3) post(x - 7, y, h * 0.55, 2.4, '#9a7a50');
+  ctx.strokeStyle = INK; ctx.lineWidth = st >= 2 ? 6 : 3.4; ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x - 2, y - h * 0.4, x + sway, y - h * 0.6); ctx.stroke(); ctx.strokeStyle = '#6a4e36'; ctx.lineWidth = st >= 2 ? 3.8 : 1.8; ctx.stroke();
+  const n = [4, 10, 30, 34][st], R = [7, 14, 32, 38][st], top = y - h * 0.72;
+  for (let j = 0; j < n; j++) { const r = rnd(i * 20 + j), t = rnd(i * 20 + j + 30) * 6.3; iblob(x + sway + Math.cos(t) * r * R, top + Math.sin(t) * r * R * 0.7, [3, 4.5, 6.5, 7][st], [2.2, 3.4, 5, 5.4][st], j % 4 === 0 ? '#7a9c4c' : j % 3 ? '#5f8a3c' : '#4e7834'); }
+  if (st === 2) for (let j = 0; j < 9; j++) iblob(x + sway + (rnd(i * 7 + j + 60) - 0.5) * R * 1.7, top + (rnd(i * 7 + j + 70) - 0.5) * R * 1.1, 2.4, 2.2, j % 2 ? '#f6eaf0' : '#f3dfe6');
+  if (st >= 3) { for (let j = 0; j < 8 * ripe; j++) iblob(x + sway + (rnd(i * 7 + j + 60) - 0.5) * R * 1.6, top + 4 + (rnd(i * 7 + j + 70) - 0.5) * R * 1.0, 3.2, 3.4, fruit);
+    if (i !== 1) { ctx.strokeStyle = '#8a6a48'; ctx.lineWidth = 2; const lx = x + 18, ly = y + 4, tx = x + 6, ty = y - h * 0.62; for (const d of [-4, 4]) { ctx.beginPath(); ctx.moveTo(lx + d, ly); ctx.lineTo(tx + d, ty); ctx.stroke(); }
+      for (let t = 0.15; t < 1; t += 0.17) { ctx.beginPath(); ctx.moveTo(lx - 4 + (tx - lx) * t, ly + (ty - ly) * t); ctx.lineTo(lx + 4 + (tx - lx) * t, ly + (ty - ly) * t); ctx.stroke(); } } }   // Bert's old ladder
+  ctx.restore();
+}
+function stem(x, y, h, col = '#6f8a4a') { ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 1.1; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + 1.5, y - h * 0.5, x + 0.5, y - h); ctx.stroke(); ctx.restore(); }
+const FARM_EDGE = {   // (x, y) ground; st 0 planted, 1 filled out a bit (edge1), 2 grown (edge2)
+  myrtle(x, y, st, i) { shrub(x, y, [0.55, 0.8, 1.05][st], '#5f7a3a', st >= 2 ? 6 : 0, '#f1ecd6', i * 11); },
+  teatree(x, y, st, i) { shrub(x, y, [0.6, 0.85, 1.1][st], '#6a8a46', st >= 2 ? 14 : 0, '#f6f3ea', i * 13); },
+  bottlebrush(x, y, st, i) { shrub(x, y, [0.6, 0.9, 1.15][st], '#56763a', 0, '', i * 7); if (st >= 2) for (let j = 0; j < 6; j++) iblob(x + (rnd(j + 80) - 0.5) * 26, y - 14 - rnd(j + 81) * 16, 2.2, 5, '#b8342e'); },
+  indigo(x, y, st, i) { shrub(x, y, [0.55, 0.85, 1.05][st], '#5d7d44', st >= 1 ? 10 : 0, '#7d5aa8', i * 5); },
+  sedge(x, y, st, i) { const h = [10, 18, 24][st]; ctx.save(); ctx.strokeStyle = '#7a8a4a'; ctx.lineWidth = 1.2; ctx.lineCap = 'round'; for (let j = 0; j < 11; j++) { const a = -1.57 + (j - 5) * 0.16; ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + Math.cos(a) * h * 0.5, y + Math.sin(a) * h * 0.7, x + Math.cos(a) * h * 0.9 + (j - 5) * 1.5, y + Math.sin(a) * h); ctx.stroke(); } ctx.restore(); },
+  clover(x, y, st, i) { const n = [4, 9, 14][st]; for (let j = 0; j < n; j++) { const px = x + (rnd(i * 20 + j) - 0.5) * 50, py = y + (rnd(i * 20 + j + 9) - 0.5) * 18; iblob(px, py - 2, 3.4, 2, '#6f9a44'); if (st >= 1 && j % 2) iblob(px + 1, py - 4, 1.8, 1.8, '#f3efe2'); } },
+  daisies(x, y, st, i) { const n = [3, 7, 11][st]; for (let j = 0; j < n; j++) { const px = x + (rnd(i * 20 + j) - 0.5) * 40, py = y + (rnd(i * 20 + j + 9) - 0.5) * 14, h = 8 + rnd(j) * 6; stem(px, py, h); if (st >= 1) iblob(px, py - h, 2.4, 2, j % 3 ? '#efe4a8' : '#8fa8d8'); } },
+  primrose(x, y, st, i) { const n = [3, 6, 9][st], open = dusk(); for (let j = 0; j < n; j++) { const px = x + (rnd(i * 20 + j) - 0.5) * 36, py = y + (rnd(i * 20 + j + 9) - 0.5) * 12, h = 10 + rnd(j + 3) * 8; stem(px, py, h); iblob(px, py - h, open ? 3.2 : 1.4, open ? 2.6 : 2.4, '#efe6a2'); } },
+  puddle(x, y, st, i, now) { ctx.save(); ctx.translate(x, y); ctx.scale(0.42, 0.42); drawPond(0, 0, 1, now); ctx.restore(); },
+};
+const FARM_PROP = {
+  scarecrow(x, y, now) {   // the twins' scarecrow, which looks quite a lot like Wendel (red hat, blue coat, a straw beard); the hidden snail rides on its arm
+    shadow(x, y, 8, 3); post(x, y, 70, 3.4, '#7a5a3a'); ctx.save(); ctx.strokeStyle = INK; ctx.lineWidth = 1.3; const sw = Math.sin(now / 1800) * 1.5;
+    ctx.fillStyle = '#8a6a48'; ctx.fillRect(x - 27, y - 53, 54, 3.5); ctx.strokeRect(x - 27, y - 53, 54, 3.5);
+    ctx.fillStyle = '#4a6a96'; ctx.beginPath(); ctx.moveTo(x - 24, y - 49); ctx.lineTo(x - 9, y - 47); ctx.lineTo(x - 13, y - 24); ctx.quadraticCurveTo(x, y - 21, x + 13, y - 24); ctx.lineTo(x + 9, y - 47); ctx.lineTo(x + 24, y - 49); ctx.lineTo(x + 24, y - 56); ctx.lineTo(x - 24, y - 56); ctx.closePath(); ctx.fill(); ctx.stroke();   // Wendel's blue coat, a bit big
+    ctx.strokeStyle = '#c9b06a'; ctx.lineWidth = 1; for (const [sx, sy, dx] of [[-25, -52, -1], [25, -52, 1], [-8, -23, 0], [0, -22, 0], [8, -23, 0]]) for (let j = -1; j <= 1; j++) { ctx.beginPath(); ctx.moveTo(x + sx, y + sy); ctx.lineTo(x + sx + dx * 5 + j * 2, y + sy + (dx ? j * 3 : 6)); ctx.stroke(); }   // straw poking out
+    ctx.strokeStyle = INK; ctx.lineWidth = 1.3; iblob(x, y - 62, 7, 7, '#e8d8b8'); iblob(x, y - 55, 8, 7, '#efe6cc'); iblob(x - 2.5, y - 63, 0.9, 0.9, '#2a1d14'); iblob(x + 2.5, y - 63, 0.9, 0.9, '#2a1d14');   // button eyes, a straw beard
+    ctx.fillStyle = '#b8402e'; ctx.beginPath(); ctx.ellipse(x, y - 67, 11, 3, 0, 0, 7); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x - 8, y - 67); ctx.lineTo(x + 8, y - 67); ctx.quadraticCurveTo(x + 3, y - 80, x + sw + 4, y - 90); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+    snailShell(x + 20, y - 55, 2.4); },
+  trellis(x, y, now, k) {   // Juniper's stick trellis along the moonflower bed
+    const pts = farmLook(G.farmOn(k)).plants.map(q => toWorld(...glob(k, q[0], q[1]))); ctx.save(); ctx.lineCap = 'round';
+    for (const [w, c] of [[4, INK], [2.2, '#8a6a48']]) { ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); for (const [px, py] of pts) { ctx.moveTo(px - 2, py + 2); ctx.lineTo(px - 2, py - 106); }
+      for (const f of [46, 80, 104]) pts.forEach(([px, py], j) => j ? ctx.lineTo(px - 2, py - f) : ctx.moveTo(px - 2, py - f)); ctx.stroke(); }
+    ctx.restore(); },
+};
+function farmItems(items, now) {   // every farm's beds, plants, props and edge, depth-sorted with everything else
+  const vb = viewBox(); vb.x0 -= 160; vb.x1 += 160; vb.y0 -= 260; vb.y1 += 80;
+  for (const fid of G.farms()) {
+    const k = G.folkState(fid).tile, L = farmLook(fid), dig = taskProg(`farm:${fid}:0`); if (dig <= 0) continue;
+    const plant = taskProg(`farm:${fid}:1`), edge = taskProg(`farm:${fid}:2`), st = farmStage(fid), est = farmEdgeStage(fid);
+    const pk = G.s.tasks[`farm:${fid}:pick`], picking = pk && !pk.done && pk.endsAt > G.now(), pp = picking ? taskProg(`farm:${fid}:pick`) : 0, ripe = G.farmRipe(fid), ready = st >= 2 && !pk;
+    const put = (gx, gy, flat, fn) => { const [ux, uy] = glob(k, gx, gy); items.push({ d: depthOf(ux, uy) + (flat ? -0.25 : 0), draw: () => { const [x, y] = toWorld(ux, uy); if (x < vb.x0 || x > vb.x1 || y < vb.y0 || y > vb.y1) return; fn(x, y); } }); };
+    const nb = L.beds.length; L.beds.forEach(([gx, gy, rx, ry], j) => { const a = sstep((j + 0.1) / nb, (j + 0.7) / nb, dig); if (a <= 0) return;   // dug earth, darker where it has been watered in
+      put(gx, gy, true, (x, y) => { ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.scale(1.4, 1.4 * ry / rx);
+        const g = ctx.createRadialGradient(0, 0, rx * 0.2, 0, 0, rx); g.addColorStop(0, plant > 0 ? 'rgba(70,46,28,0.9)' : 'rgba(110,79,52,0.85)'); g.addColorStop(0.8, plant > 0 ? 'rgba(80,56,34,0.75)' : 'rgba(125,92,62,0.7)'); g.addColorStop(1, 'rgba(125,92,62,0)');
+        ctx.fillStyle = g; ctx.beginPath(); for (let t = 0; t < 6.3; t += 0.35) { const r = rx * (0.86 + 0.14 * rnd(j * 30 + t * 3)); t ? ctx.lineTo(Math.cos(t) * r, Math.sin(t) * r) : ctx.moveTo(r, 0); } ctx.closePath(); ctx.fill(); ctx.restore(); }); });
+    for (const [gx, gy, kind] of L.props || []) { const a = sstep(0.4, 1, dig); if (a > 0) put(gx, gy, kind === 'trellis', (x, y) => { ctx.save(); ctx.globalAlpha *= a; if (kind === 'trellis') FARM_PROP[kind](x, y, now, k); else { ctx.translate(x, y); ctx.scale(FARM_S * 0.85, FARM_S * 0.85); FARM_PROP[kind](0, 0, now, k); } ctx.restore(); }); }
+    const np = L.plants.length; L.plants.forEach((q, j) => { const [gx, gy, kind] = q, a = sstep((j + 0.1) / np, (j + 0.6) / np, plant); if (a <= 0) return;
+      const r = picking ? (pp < (j + 0.5) / np ? 1 : 0) : ripe;   // picked one plant after another while the job runs, then growing back over the day
+      put(gx, gy, false, (x, y) => { ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.scale(FARM_S, FARM_S); FARM_PLANT[kind](0, 0, st, r, j, now, q); ctx.restore();
+        if (ready && j % 3 === 0) { const ph = ((now / 1000 + j * 1.7) % 5) / 5; if (ph < 0.14) twinkle(x + 8, y - 38, Math.sin(ph / 0.14 * Math.PI), 2.2); } }); });   // ripe for picking: an occasional glint, never a glow
+    const ne = L.edge.length; L.edge.forEach(([gx, gy, kind], j) => { const a = sstep((j + 0.1) / ne, (j + 0.6) / ne, edge); if (a <= 0) return;
+      put(gx, gy, kind === 'clover' || kind === 'puddle', (x, y) => { ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.scale(FARM_S, FARM_S); FARM_EDGE[kind](0, 0, est, j, now); ctx.restore(); }); });
+    const h = dayPhase().h, [cx, cy] = [FARM_ZONE[0], FARM_ZONE[1] - 0.02];   // the creatures the farm brings in
+    if (st >= 2 && ['lavender', 'herbs'].includes(C.farms.list[fid].look) && h >= 8 && h < 18) put(cx, cy, false, (x, y) => HEAL_DRAW.bees(x, y, 1, {}, now));
+    if (est >= 1 && C.farms.list[fid].look === 'flax' && h >= 9 && h < 17) put(0.90, 0.68, false, (x, y) => HEAL_DRAW.butterflies(x, y, 1, {}, now));
+    if (est >= 1 && C.farms.list[fid].look === 'veg') put(0.88, 0.88, false, (x, y) => { const im = healPic('vis-frog'); if (im) { const hh = 14, w = hh * im.width / im.height; ctx.drawImage(im, x - w / 2, y - hh - Math.max(0, Math.sin(now / 600)) * 3, w, hh); } });
+    if (est >= 1 && C.farms.list[fid].look === 'moon' && dusk()) put(0.78, 0.72, false, (x, y) => { for (let j = 0; j < 3; j++) { const t = now / 900 + j * 2.1; iblob(x + Math.cos(t) * 30 + j * 10, y - 30 + Math.sin(t * 1.6) * 10, 3 * (0.4 + 0.6 * Math.abs(Math.sin(now / 80 + j))), 2, 'rgba(225,215,190,0.95)'); } });   // soft pale moths round the primroses
+  }
+}
+Walk.add(() => {   // the farms' standing things (fruit trees, the scarecrow, the trellis) as footprints; the beds are walked into to work them
+  const out = []; for (const fid of G.farms()) { if (taskProg(`farm:${fid}:0`) <= 0) continue; const k = G.folkState(fid).tile, L = farmLook(fid);
+    for (const [gx, gy] of L.props || []) { const [ux, uy] = glob(k, gx, gy); out.push({ name: 'farm ' + fid, gx: ux, gy: uy, r: 0.03 }); }
+    if (taskProg(`farm:${fid}:1`) > 0) for (const [gx, gy, kind] of L.plants) if (['apple', 'pear', 'plum'].includes(kind)) { const [ux, uy] = glob(k, gx, gy); out.push({ name: kind + ' tree', gx: ux, gy: uy, r: 0.04 }); } }
+  return out;
+});
+// how each farm job moves the gnome about: from bed to bed (dig), plant to plant (plant, then water), round the edge, and picking
+// with the basket carried back to the neighbour's door between plants
+function farmWork(id, p, g) {
+  const d = G.taskDef(id); if (!d) return null;
+  const k = d.farmTile, L = farmLook(d.farm), pts = (d.stepId === 'dig' ? L.beds : d.stepId === 'edge' ? L.edge : L.plants).map(q => glob(k, q[0], q[1]));
+  const [i, sg] = segOf(p, pts.length), [x, y] = pts[i];
+  if (d.stepId === 'pick') { const door = glob(k, LOT.home[0] + 0.10, LOT.home[1] + 0.18); return workLoop(g, id + ':' + i, () => [[x + 0.05, y - 0.03, d.act, false, 6, [x, y]], [door[0], door[1], 'pickup', true, 2.5, door]]); }
+  return [x + 0.05, y - 0.03, d.stepId === 'plant' ? (sg < 0.6 ? 'dig' : 'water') : d.act, false, 0, [x, y]];
+}
+function farmStageName(fid) { return ['just planted', 'coming up', 'grown', C.farms.list[fid].look === 'orchard' ? 'in fruit' : C.farms.list[fid].look === 'wheat' ? 'gold' : 'in flower'][farmStage(fid)]; }
+function openFarm(fid) {   // tap a neighbour's farm: how it is coming on, the next job, the picking and the pantry swap
+  const F = C.farms.list[fid], f = G.folkDef(fid), fs = G.folkState(fid), k = fs.tile, steps = G.farmSteps(fid), at = G.farmAt(fid), lst = G.landStage(k), nx = C.landStages[C.landStages.indexOf(lst) + 1];
+  let html = `<div class="jpage card"><p class="meta" style="margin:0">A neighbour's farm · ${G.tileWhere(k)}</p>${folkPor(f, true)}<h2>${F.name}</h2><p class="lore">${F.card}</p>
+    <p class="meta">${cap(lst.name)} · ${G.s.tiles[k].green} green${nx ? ` (${nx.name} at ${nx.at})` : ''}${taskProg(`farm:${fid}:1`) >= 1 ? ` · the farm is ${farmStageName(fid)}` : ''}</p><ul class="mlist">`;
+  steps.forEach((s, i) => { if (i < at) html += `<li>${s.name} <i class="meta">done</i></li>`; else if (i === at) html += `<li><b>${s.name}</b></li>`; else html += `<li class="meta">${s.name}</li>`; });
+  html += `</ul>`;
+  if (G.farmGrown(fid)) { const pv = G.taskView(G.taskDef(`farm:${fid}:pick`));
+    html += `<p class="meta">${pv.state === 'ready' || pv.state === 'locked' ? `Ready to pick. ${pv.locked ? `(${pv.why})` : ''}` : pv.state === 'running' ? 'Being picked now.' : `Picked today. It grows back by tomorrow.`}</p>`;
+    const sw = F.swap; html += `<h3>A pantry swap</h3><div class="row"><div class="t"><b>${sw.text}</b><span class="cost">${costHtml(sw.give)} for ${costHtml(sw.get)}</span>${!G.swapOpen(fid) ? `<br><span class="meta">Swapped today. Come back tomorrow.</span>` : G.can(sw.give) ? '' : `<br><span class="bad">Needs ${G.missing(sw.give).join(', ')} from your seed bed.</span>`}</div>${G.swapOpen(fid) && G.can(sw.give) ? `<button class="act" data-a="swap" data-id="${fid}">Swap</button>` : ''}</div>`; }
+  else if (at > 1) html += `<p class="meta">Growing. Once it has grown there will be picking to help with, and a pantry swap.</p>`;
+  html += `</div><p style="text-align:center">${at < steps.length || G.farmGrown(fid) ? `<button class="act" data-a="jobs" data-id="farm:${fid}:${at < steps.length ? at : 'pick'}">See the job</button> ` : ''}<button class="act quiet" data-a="folk" data-id="${fid}">Talk to ${f.short}</button></p>`;
+  openSheet('farm:' + fid, html);
+}
+
+// ---------- the platypus (docs/ANIMALS.md section 8) ----------
+// Once every stretch of the creek has healed, at dawn on some days (G.platypusDay) it glides along the stretch that healed last, dives
+// twice and is gone; then again a few minutes later while the dawn lasts. Tap it to note it in the journal. Stand-in until painted (vis-platypus).
+const PLATY = { on: null, next: 0, force: false };
+function platyDawn() { const h = dayPhase().h; return h >= 5.2 && h < 7.4; }
+function updatePlatypus(dt) {
+  const t = performance.now();
+  if (!PLATY.on) { if (t < PLATY.next) return;
+    if (!(PLATY.force || (platyDawn() && G.platypusDay()))) { PLATY.next = t + 20000; return; }
+    PLATY.next = t + (PLATY.force ? 45 : 150 + Math.random() * 120) * 1000; const k = G.platypusTile() || '0,-1'; if (!G.s.tiles[k]) return;
+    const dir = Math.random() < 0.5; PLATY.on = { k, u: dir ? 0.06 : 0.94, dir: dir ? 1 : -1, t: 0, dives: [0.32 + Math.random() * 0.1, 0.66 + Math.random() * 0.1] }; return; }
+  const p = PLATY.on; p.t += dt; p.u += p.dir * dt / 34;   // about half a minute along the stretch
+  if (p.u < 0.03 || p.u > 0.97) PLATY.on = null;
+}
+function platyUnder(p) { const f = p.dir > 0 ? p.u : 1 - p.u; for (const d of p.dives) if (f > d && f < d + 0.12) return Math.sin((f - d) / 0.12 * Math.PI); return 0; }   // 0 at the surface, 1 right under
+function drawPlatypus(now) {
+  const p = PLATY.on; if (!p) return; const [gx, gy] = healLocal(p.k, { c: [p.u, -0.45] }), [x, y] = toWorld(...glob(p.k, gx, gy)), under = platyUnder(p), face = p.dir;
+  ctx.save(); ctx.strokeStyle = 'rgba(220,235,235,0.7)'; ctx.lineWidth = 1;   // ripples behind it, and rings where it dives
+  for (let j = 1; j <= 3; j++) { ctx.globalAlpha = 0.5 / j; ctx.beginPath(); ctx.ellipse(x - face * j * 12, y, 6 + j * 5, 2 + j * 1.6, 0, 0, 7); ctx.stroke(); }
+  if (under > 0.05) { ctx.globalAlpha = 0.6 * under; for (const r of [10, 18]) { ctx.beginPath(); ctx.ellipse(x, y, r * (1.2 - under * 0.2), r * 0.4, 0, 0, 7); ctx.stroke(); } }
+  ctx.restore(); if (under > 0.8) { p.screen = null; return; }
+  const a = 1 - under, img = art('vis-platypus');
+  ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y + under * 6); if (face < 0) ctx.scale(-1, 1);
+  if (img) { const h = 22, w = h * img.width / img.height; ctx.drawImage(img, -w / 2, -h * 0.6, w, h); }
+  else { blob(0, -1, 15, 4.6, '#5a4232'); blob(-2, -2.4, 9, 2.4, 'rgba(140,110,80,0.5)'); blob(-17, 0, 7, 2.6, '#4a3628'); blob(15, -1, 6, 2.6, '#3e3a34'); blob(18, -1.6, 4, 1.8, '#4e4a42'); blob(9, -3, 1, 1, '#1c140e'); }   // back, flat tail, duck bill: only the top shows above the water
+  ctx.restore(); p.screen = { x, y, w: 50, h: 24 };
 }
 
 function jobSpot(job) {
@@ -3117,7 +3330,7 @@ function frame(now) {
   tickAcc += dt; if (tickAcc > 0.5) { tickAcc = 0; G.tick(); cardCheck(); allDoneCheck(now); }
   easeCam(dt);
   for (const g of gnomes) g.update(dt);
-  updateVisitor(dt); updateRabbit(dt);
+  updateVisitor(dt); updateRabbit(dt); updatePlatypus(dt);
   for (const p of folkOnLand) p.update(dt);
   spawnParticles(dt, ph); updateParticles(dt);
   if (NEWGROUND) groundUpdate();
@@ -3158,6 +3371,8 @@ function frame(now) {
   villageItems(items, now);
   if (NEWGROUND) landItems(items, now);
   healItems(items, now);
+  farmItems(items, now);
+  if (PLATY.on) { const [gx, gy] = healLocal(PLATY.on.k, { c: [PLATY.on.u, -0.45] }); items.push({ d: depthOf(...glob(PLATY.on.k, gx, gy)) - 0.2, draw: () => drawPlatypus(now) }); }
   spiritItem(items, now);
   makeItems(items, now);
   festItems(items, now);
@@ -3275,6 +3490,7 @@ function tap(cx, cy) {
   for (const p of [...folkOnLand].reverse()) if (hit(p.screen, wx, wy)) return G.folkState(p.f.id) ? openFolk(p.f.id) : openTraveller();
   if (G.s.village.traveller && hit(CAMP.screen, wx, wy)) return openTraveller();
   for (const [fid, fs] of Object.entries(G.s.village.folk)) { const f = G.folkDef(fid); if (f.screenHome && hit(f.screenHome, wx, wy)) return openFolk(fid); }
+  if (PLATY.on && hit(PLATY.on.screen, wx, wy)) { const isNew = G.noteVisitor('platypus'); float(isNew ? '✎ new entry' : '✎', PLATY.on.screen.x, PLATY.on.screen.y); return openGreeting('platypus', isNew); }
   if (visitor && hit(visitor.screen, wx, wy)) {
     if (visitor.trouble) return openHelp();
     const id = visitor.def.id, isNew = G.noteVisitor(id); float(isNew ? '✎ new entry' : '✎', visitor.screen.x, visitor.screen.y);
@@ -3300,6 +3516,7 @@ function tap(cx, cy) {
     for (const p of PROPS) { if (p.gone && taskProg(p.gone) >= 1) continue; const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s, h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 4 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
     if (best) { if (best.name === 'seedbed') { if (propAlpha(best) >= 1 && bedReady()) return openSeedbed(); const t = C.tasks.find(t => t.spot === 'clearing' && !(G.s.tasks[t.id] && G.s.tasks[t.id].done)); return openTasks(t ? t.id : ''); } if (best.name === 'shelter' && !wantsTap(best)) return openRoom(); if (best.name === 'barrel' && G.drawBarrel()) { const [bx, by] = toWorld(best.gx, best.gy); float(`+${C.barrel.give.water} ${C.resources.water.name}`, bx, by - 60); return; } const task = C.tasks.find(t => t.spot === best.name && !t.retired); if (task) return openTasks(task.id); }
   } else if (f.tile === festTile() && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openFestGreen();
+  else if (G.farmOn(f.tile) && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openFarm(G.farmOn(f.tile));
   else if (G.s.tiles[f.tile] && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return G.s.tiles[f.tile].kind ? openPatch(f.tile) : openTasks('regrow:' + f.tile);
 }
 
@@ -3469,6 +3686,9 @@ sheet.addEventListener('click', e => {
   if (a === 'pagedone') { closeSheet(); if (id === '3.4' || id === '3.0') { const t = id === '3.0' ? 'house1' : 'leanto'; if (G.taskView(G.taskDef(t)).state === 'ready') return openTasks(t); } return; }
   if (a === 'lesson') return openLesson(isNaN(+id) ? id : +id, true);
   if (a === 'patch') return openPatch(id);
+  if (a === 'farm') return openFarm(id);
+  if (a === 'swap') { if (G.swap(id)) toast(`Swapped. ${Object.entries(C.farms.list[id].swap.get).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(', ')}`); }
+  if (a === 'tplaty') { closeSheet(); PLATY.force = true; PLATY.next = 0; PLATY.on = null; updatePlatypus(0); if (PLATY.on) { const [gx, gy] = healLocal(PLATY.on.k, { c: [0.5, 0] }), [x, y] = toWorld(...glob(PLATY.on.k, gx, gy)); cam.x = x; cam.y = y; } else toast('The creek needs to be on the map first.'); return; }
   if (a === 'tskip') return G.skipDays(+b.dataset.n);
   if (a === 'tfinish') { G.finishAll(); toast('Every job finished.'); }
   if (a === 'tpack') { G.fillPack(); toast('Pack filled up.'); }
@@ -3486,7 +3706,7 @@ function openTest() {
   <h3>Start again</h3><p><button class="act" data-a="reset">Start the game over from the beginning</button></p>
   <h3>Jump ahead in time</h3><p><button class="act" data-a="tskip" data-n="1">+1 day</button> <button class="act" data-a="tskip" data-n="3">+3 days</button> <button class="act" data-a="tskip" data-n="7">+1 week</button></p>
   <h3>Speed things up</h3><p><button class="act" data-a="tfinish">Finish every job now</button></p><p><button class="act" data-a="tpack">Fill my pack (20 of everything)</button></p>
-  <h3>Call someone</h3><p><button class="act" data-a="tvisit">A creature visits</button> <button class="act" data-a="ttrav">A traveller arrives</button> <button class="act" data-a="tsecret">Hide a little find</button></p>
+  <h3>Call someone</h3><p><button class="act" data-a="tvisit">A creature visits</button> <button class="act" data-a="ttrav">A traveller arrives</button> <button class="act" data-a="tsecret">Hide a little find</button> <button class="act" data-a="tplaty">The platypus (dawn only, normally)</button></p>
   <h3>Seasons</h3><p>${['spring', 'summer', 'autumn', 'winter'].map(k => `<button class="act${season() === k ? '' : ' quiet'}" data-a="tseason" data-id="${k}">${C.seasons[k].name}</button>`).join(' ')} <button class="act quiet" data-a="tseason" data-id="">The phone's own</button></p>
   <h3>The festival</h3><p><button class="act" data-a="tfest" data-n="0">Start the festival plans now</button> <button class="act" data-a="tfest" data-n="1">Festival night now</button></p>
   <p class="meta">A normal play-through order: fill the pack, start jobs in the Jobs list, tap "Finish every job now", repeat. "+1 day" brings the daily things back.</p>
@@ -3494,7 +3714,7 @@ function openTest() {
 }
 let titleTaps = 0, titleTapAt = 0;
 function testPeek(x, y) { if (x < 200 && y < 80 + 20) { const n = performance.now(); titleTaps = n - titleTapAt < 900 ? titleTaps + 1 : 1; titleTapAt = n; if (titleTaps >= 5) { titleTaps = 0; openTest(); return true; } } return false; }
-function refreshSheet() { if (sheetKind === 'test') return; if (sheetKind && sheetKind.startsWith('folk:')) openFolk(sheetKind.slice(5)); else if (sheetKind === 'traveller') G.s.village.traveller ? openTraveller() : closeSheet(); else if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); else if (sheetKind === 'fest') openFestGreen(); else if (sheetKind && sheetKind.startsWith('patch:')) openPatch(sheetKind.slice(6)); renderInv(); renderHud(); }
+function refreshSheet() { if (sheetKind === 'test') return; if (sheetKind && sheetKind.startsWith('folk:')) openFolk(sheetKind.slice(5)); else if (sheetKind === 'traveller') G.s.village.traveller ? openTraveller() : closeSheet(); else if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); else if (sheetKind === 'fest') openFestGreen(); else if (sheetKind && sheetKind.startsWith('patch:')) openPatch(sheetKind.slice(6)); else if (sheetKind && sheetKind.startsWith('farm:')) openFarm(sheetKind.slice(5)); renderInv(); renderHud(); }
 function openSeedbed() {
   const p = G.plot(), c = C.crops[p.crop]; let body = '';
   const stageName = pr => pr < 0.25 ? 'Just up' : pr < 0.6 ? 'Leafing out' : pr < 0.9 ? 'Filling out' : 'Nearly there';
@@ -3529,7 +3749,7 @@ const JOB_PIC = { ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roo
   woodpile: 'firewood', doorstep: 'yard-doorstep', rainbarrel: 'barrel-full', clothesline: 'washing-line', lantern: 'lanternstump', stump: 'lanternstump', windowbox: 'yard-windowbox', wormlantern: 'worm-lantern',
   wormlamp: 'worm-lamp', house1: 'house-hollowed', house2: 'house-windows', house3: 'house-finished', hedgehoghouse: 'nest-leafpile', nestbox: 'nest-nest', bridge: 'bld-bridge' };
 function jobPic(d) {   // a small painted picture of what the job makes, for the parchment job cards ('' if there is none)
-  const [kind, f] = d.id.split(':'), k = JOB_PIC[d.id] || (d.healTile ? STEP_PIC[d.stepId] : '') || (kind === 'home' ? 'home-' + f : kind === 'trade' ? 'bld-' + f : kind === 'quest' ? 'folk-' + f : kind === 'regrow' ? 'sapling' : d.make ? 'make-' + d.id : '');
+  const [kind, f] = d.id.split(':'), k = JOB_PIC[d.id] || (d.healTile ? STEP_PIC[d.stepId] : '') || (kind === 'home' ? 'home-' + f : kind === 'trade' ? 'bld-' + f : kind === 'quest' || kind === 'farm' ? 'folk-' + f : kind === 'regrow' ? 'sapling' : d.make ? 'make-' + d.id : '');
   return k ? `<img class="jpic" src="sprites/${k}.webp" alt="" onerror="this.remove()">` : '';
 }
 function makesLine() { return Object.keys(C.makes).filter(k => C.makes[k].tile === '0,0' || G.gardenOpen()).map(k => { const n = G.makesCount(k); return `${C.makes[k].name}: ${n.done} of ${n.total}`; }).join(' · '); }
@@ -3734,6 +3954,7 @@ function openFolk(fid) {
   const tv = G.taskView(G.taskDef('trade:' + fid)), b = tv.def;
   if (tv.state !== 'done') html += `<h3>${b.name}</h3><div class="row"><div class="t"><span>${b.blurb}</span><br><span>` + (tv.state === 'running' ? `<span class="who" data-w="${b.who}">${C.names[b.who]}</span> is on it · ${G.timeLeft(tv.endsAt)} to go` : `<span class="who" data-w="${b.who}">${C.names[b.who]}</span> needs <span class="cost">${costHtml(b.cost)}</span> · ${hours(b.mins)}` + (tv.can ? '' : `<br><span class="bad">You are short ${tv.missing.join(', ')}.</span>`)) + `</span></div>${tv.state === 'ready' ? `<button class="act" data-a="start" data-id="${b.id}" ${tv.can ? '' : 'disabled'}>Start</button>` : ''}</div>`;
   else html += `<p><small>${b.giftText.replace(/\.$/, '')}: every day.</small></p>`;
+  if (C.farms.list[fid] && G.farms().includes(fid)) html += `<p><button class="act quiet" data-a="farm" data-id="${fid}">${C.farms.list[fid].name}</button></p>`;
   html += folkStory(fid);
   openSheet('folk:' + fid, html);
 }

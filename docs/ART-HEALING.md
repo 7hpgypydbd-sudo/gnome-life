@@ -25,7 +25,7 @@ Cut/wire: -> `sprites/heal-deadtree.webp`, `heal-deadtree-home.webp`; replace `H
 ```text
 Generate an image: A wide 16:9 picture. [Style paragraph]. Four separate animals in one row with wide clear magenta gaps, side view, naturalistic Australian animals drawn gently: 1) a round, solid, sleepy common wombat standing; 2) the same wombat curled up asleep; 3) a white-faced heron standing on one leg, grey and very still; 4) a platypus swimming at the surface, only its back, flat tail and duck bill showing, with a few ripples. Avoid pink and purple anywhere.
 ```
-Cut/wire: -> `sprites/vis-wombat.webp`, `vis-wombat-sleep.webp`, `vis-heron.webp`, `vis-platypus.webp` (the platypus is for the last creek stretch at dawn, not built yet).
+Cut/wire: -> `sprites/vis-wombat.webp`, `vis-wombat-sleep.webp`, `vis-heron.webp`, `vis-platypus.webp` (the platypus: built in v62, it glides along the last healed creek stretch at dawn; slots straight in).
 
 ## 4. heal-homes: small things the gnomes build for the creatures (hidden snail)
 
