@@ -286,7 +286,7 @@ window.CONTENT = {
     kinds: {
       meadow: { name:'The rubbish heap', patch:'the old rubbish heap', spell:'wind',
         card:{ who:'her', text:'Loggers\' junk and a fence that fences nothing. Clear it, soften the ground, and let the wildflowers have it. They\'ll know what to do.' },
-        lesson:{ title:'Ask the wind', text:`"Seeds are travellers. They only need a lift. The wind goes everywhere and sees everything, and it loves to be asked a favour. Throw your seeds, little spirit, and ask the wind to carry them to the corners nobody can reach."` },
+        lesson:{ title:'Ask the wind', text:`"Seeds are travellers. They only need a lift. The wind goes everywhere and sees everything, and it loves to be asked a favour. Throw your seeds, little luck, and ask the wind to carry them to the corners nobody can reach."` },
         steps:[
           { id:'rubbish', name:'Pick up the loggers\' rubbish', short:'picking up rubbish', cost:{}, give:{ twig:2, stone:2 }, mins:60, act:'pickup',
             blurb:'Rusty tins, a cracked teacup, coils of old wire. Piece by piece it goes. Some of it might come in useful one day, or so Wendel says about everything.' },
@@ -445,11 +445,11 @@ window.CONTENT = {
   landStages: [
     { at:0, key:'barren', name:'bare ground',  sub:'a bare patch of ground, waiting' },
     { at:4, key:'green',  name:'first green',  sub:'a haze of green over the bare earth',
-      explain:'You would have to kneel to see it. A haze of green over the bare brown earth, so faint that Hazel thought it was her eyes. It isn\'t. Every living thing the gnomes grow here teaches the soil to grow again. The spring brought the water back, and each crop leaves a little more life behind. Keep growing things, and it will spread.' },
+      explain:`You'd have to kneel down to see it: a haze of green over the bare brown earth, so faint that Hazel thought it was her eyes. It isn't. Every living thing the gnomes grow here teaches the soil to grow again. The spring brought the water back, and each crop leaves a little more life behind. Keep things growing, and the green will spread.` },
     { at:12,key:'meadow', name:'young meadow', sub:'grass, clover and the first daisies',
-      explain:'One morning there was grass round the house. Not a haze any more: real grass, with clover in it, and the first daisies, and a magpie strutting about on it as if he had planted it himself. The ground remembers now. Plant things that stay, like trees and bushes and flowers, and the woods will start to come home.' },
+      explain:`One morning there was grass round the house. Not a haze any more, but real grass, with clover in it, and the first daisies, and a magpie strutting about as if he had planted it all himself. The ground remembers now. Plant things that stay, like trees and bushes and flowers, and the woods will start to come home.` },
     { at:26,key:'wood',   name:'young woodland', sub:'young trees coming up all round',
-      explain:'Young trees are coming up all round the yard now, some planted and some that came by themselves, and the little oak has put on a new crown of leaves. The creatures who left long ago are finding their way back, one by one, following the green. This is not a clearing any more. It is the beginning of a wood.' },
+      explain:`Young trees are coming up all round the yard now, some planted and some that came by themselves, and the little oak has a new crown of leaves. The creatures who left long ago are finding their way back, one by one, following the green. This isn't a clearing any more. It's the beginning of a wood.` },
   ],
 
   // Magic grows with the days you visit (level by distinct days visited). It only grows the magic: spells, and jobs go a little faster. The story decides the jobs.
@@ -927,6 +927,26 @@ window.CONTENT = {
     yearly: { title:'Another year', text:'The bunting came out of the chest again this morning, a little faded, and the lanterns went back up round the green. "{years}," said Hazel. "Doesn\'t feel like it," said Wendel. "Feels like longer," said Hazel, and kissed him, to show she meant it nicely. Tonight there is a festival on the green.' },
   },
 
+  // The welcome screen, before page 1.1 (docs/STORY.md "Before chapter one"): what this is, who you are, how to play.
+  // Words only; index.html draws the screen. how: one line each, may hold <b>.
+  welcome: {
+    title: `Welcome to Gnome Life`,
+    text: [
+      `This is a little storybook that grows a page at a time, a little more each day you visit.`,
+      `It is about two gnomes, Wendel and Hazel. They have just been married, and they have come to live on a bare hillside where the loggers cut down every tree. Over many days they will dig and plant and build, and slowly turn it back into a green, cosy home, and one day a whole village.`,
+      `<b>And you?</b> You are the luck of this place. The gnomes can't see you, and they will never quite know you are there, but they feel it whenever things go their way. You don't dig or carry: Wendel and Hazel do all of that themselves. You gather the little things the land leaves lying about, you choose what they work on next, and later a spirit of the woods will teach you a little gentle magic.` ],
+    howTitle: `How to play`,
+    how: [
+      `👆 <b>Swipe</b> to look around. <b>Pinch</b> to zoom in close.`,
+      `✨ <b>Tap the little things lying about</b> (twigs, stones, seeds). Your luck carries them to the gnomes' store (🧺 Store).`,
+      `🔨 <b>Jobs shows what they can do next.</b> If you are ever unsure what to do, look in Jobs. A dot on it means a job is ready to start.`,
+      `👀 <b>Tap anything</b>, the gnomes included, to see what it is.`,
+      `🕰️ <b>Jobs take real time.</b> Start one, put your phone down, and come back later. A short visit or two a day is plenty.`,
+      `🌿 <b>There is no hurry</b>, and nothing can go wrong. Nothing dies and nobody loses.` ],
+    button: `Open the story`,
+    after: `Wendel and Hazel are waiting to start. Open 🔨 Jobs to see what they can do first.`,   // a small pointer once page 1.1 closes
+  },
+
   // Side mystery placeholder: a magic staff one of the gnomes finds. Bryce is writing this story himself;
   // nothing here is plot, only the shape: ordered beats with a trigger and a flag the engine can set.
   // The first month's story (docs/STORY.md is the master for the words). Each page opens once, from something the player
@@ -939,125 +959,129 @@ window.CONTENT = {
     chapters: { 1:'Chapter one: The bare clearing', 2:'Chapter two: Putting down roots', 3:'Chapter three: A proper home' },
     pages: [
       { id:'1.1', ch:1, when:'welcome', title:'The end of the road', button:`Let's begin`, text:[
-        `They came up the old logging track at the end of a long, hot afternoon: Wendel pushing the old wheelbarrow, Hazel carrying the little oak in its pot, because she did not trust him with it. Everything they owned was in that barrow. Most of it was pots. Twenty steps from the top, the wheel came off and rolled away down the hill, and they carried the rest.`,
-        `The clearing at the top of the hill was not what the travelling pedlar had promised. The loggers had taken every tree but the stumps, and left their rubbish behind: tins, broken crates, a wheel with no cart. Nothing grew. Even the creek had given up.`,
-        `"Well," said Wendel. "It's got a lovely view."`,
-        `"It's got a lovely everything," said Hazel, "once we've done it." She set the oak down by the biggest stump, as if that settled it. It did.`,
-        `Gnomes have a gift, you see. Wherever they live and tend and grow things, the land slowly remembers how to be alive. And they are not quite alone. Someone small and unseen has followed them up the hill to help. That's you.` ] },
+        `They came up the old logging track at the end of a long, hot afternoon, with the cicadas going like tiny saws in the grass. Wendel pushed the wheelbarrow. Hazel carried the little oak in its pot, because she did not trust him with it. Everything they owned was in that barrow, and most of it was pots.`,
+        `Twenty steps from the top, the wheel came off. It bowled away down the hill, bouncing as it went, and they stood and watched it go. Then they carried the rest.`,
+        `The clearing at the top was not what the travelling pedlar had promised. The loggers had taken every tree but the stumps and left their rubbish behind: rusty tins, broken crates, a cartwheel with no cart. Nothing grew. The creek was a dry bed of stones, and not one bird was singing.`,
+        `Wendel looked at it all for a long while. "Well," he said gently. "It's got a lovely view."`,
+        `"It'll have a lovely everything," said Hazel, "once we've done it." She set the little oak down beside the biggest stump, as if that settled it. And it did.`,
+        `Gnomes have a gift, you see. Wherever they live and dig and plant, the land slowly remembers how to be alive. But it is slow work for two small gnomes on a very bare hill, and so they were not quite alone. Something had followed them up the track that evening: a small, kindly luck, the sort that makes a stick turn up just when you need one. They could not see it, and they would never quite know it was there. That luck is you.` ] },
       { id:'1.2', ch:1, when:'evening:woodpile', title:'The first fire', button:'Goodnight, you two', text:[
-        `Wendel stacked the woodpile bark side up, the way his grandfather did, and stood back to admire it for so long that Hazel lit the fire herself.`,
-        `It was their first fire in their first home, and it crackled as if it knew. They sat on an upturned pot each and ate the last of the travelling bread. A beetle came out of the woodpile to see what the fuss was. Wendel named him Gerald.`,
-        `"I had a speech," said Wendel, patting his pockets. "About new beginnings. It's written down somewhere. With my pipe."`,
-        `Hazel took his pipe out of her apron pocket, where it had been since the bottom of the hill, and handed it over. "Do the speech," she said.`,
-        `He looked at the fire, and at the stars coming out over the stumps, and at her. "We're here," he said. That was the whole speech. She said it was the best one she had ever heard.` ] },
-      { id:'1.3', ch:1, when:'done:spring', title:'Water under the rubbish', button:'The land noticed', text:[
-        `Under the very last of the loggers' crates, Wendel's forked twig gave a twitch.`,
-        `"There," he said. "Water. I can feel it."`,
-        `"You can feel a twig," said Hazel. But she fetched the trowel.`,
-        `Three stones and a great deal of mud later, a thread of clear water came up out of the ground, cold as a secret, and filled a hollow no bigger than a teacup. Then a saucer. Then a little pool.`,
-        `They knelt either side of it and watched it the way other people watch a sleeping baby. It was the first water this land had held in years. Somewhere, very faintly, the land noticed.` ] },
+        `They had lit a fire the moment they arrived, in the loggers' old ring of stones, but it was a poor, smoky thing made of whatever sticks were lying about. Tonight was different. Tonight there was a woodpile.`,
+        `Wendel had stacked it bark side up, the way his grandfather used to, and he stood back to admire it for so long that Hazel built the fire herself. It caught at once and crackled, as if it knew it was the first real fire in their first real home.`,
+        `They sat on an upturned pot each and shared the last of the travelling bread. A beetle came out of the woodpile to see what all the fuss was about. Wendel bowed to him and named him Gerald.`,
+        `"I had a speech," said Wendel, patting his pockets. "About new beginnings. I wrote it down. I think it's with my pipe."`,
+        `Hazel took his pipe out of her apron pocket, where it had been since the bottom of the hill, and gave it to him. "Do the speech, love," she said.`,
+        `He looked at the fire, and at the first stars coming out over the stumps, and at her. "We're here," he said. That was the whole speech. Hazel said it was the best one she had ever heard.` ] },
+      { id:'1.3', ch:1, when:'done:spring', title:'Water under the rubbish', button:`Things can grow now`, text:[
+        `Wendel walked the whole clearing with a forked twig held out in front of him, very serious, eyes half shut. Hazel followed with the trowel and said nothing at all, which took some doing.`,
+        `Under the very last of the loggers' crates, the twig gave a twitch.`,
+        `"There," he whispered. "Water. I can feel it."`,
+        `"You can feel a twig," said Hazel. But she knelt down and started to dig.`,
+        `Three stones and a great deal of mud later, a thread of clear water came up out of the ground, cold as a secret. It filled a hollow no bigger than a teacup, then a saucer, then a little pool with the sky in it.`,
+        `They knelt on either side of it, muddy to the elbows, and watched it the way you might watch a sleeping baby. It was the first water this hill had held in years. And where there is water, things can grow. Somewhere deep down, very faintly, the land noticed.` ] },
       { id:'1.4', ch:1, when:'seedlings', title:'Rows and wiggles', button:'Grow, little ones', text:[
-        `Planting day. Hazel opened the seed tin her mother had pressed into her hands the day they set off: carrots, beans, a pinch of lettuce, and one enormous pumpkin seed that Wendel was saving "for something special".`,
-        `"Rows," said Hazel.`,
-        `"Wiggles," said Wendel.`,
-        `They planted in rows, with one wiggle at the end, which is how most marriages work.`,
-        `By evening the bed was dark and damp and very still. By morning it was not. Tiny green shoots stood up all over it, looking surprised to be there.` ] },
+        `On planting day, Hazel opened the seed tin her mother had pressed into her hands the morning they set off. Inside, in little twists of paper, were carrots, beans, a pinch of lettuce, and one enormous pumpkin seed. Wendel took that one out and put it in his top pocket. "For something special," he said.`,
+        `"Rows," said Hazel, drawing a straight line in the soil with her finger.`,
+        `"Wiggles," said Wendel, drawing a curly one beside it.`,
+        `So they planted in rows, with one wiggle at the end, and both of them were happy, which is how most marriages work.`,
+        `By evening the bed lay dark and damp and very still. By morning it was not. Tiny green shoots stood up all over it, looking surprised to be there, and Wendel went along the rows on his knees, saying good morning to each one.` ] },
       { id:'1.5', ch:1, when:'flag:rabbit', pic:'rabbit', title:'The thief', button:`Fair's fair`, text:[
-        [ `Somebody had been in the seed bed. Somebody with long ears, a white tail and no shame at all.`,
-          { if:'flag:rabbitDish', text:`The feeding dish was licked clean, and three of the sprouts were bitten off at the bottom.`, else:`Three of the sprouts were bitten off at the bottom.` } ],
-        `Wendel stood over the bitten stalks with a stick in his hand, ready to make a very stern speech about thieves. He had got as far as "Now, see here" when he noticed how small the footprints were.`,
-        `Hazel had seen the rabbit from the doorway: thin as a rake, sitting up with a sprout in its mouth, chewing as fast as it could in case someone took it away.`,
-        `"It's hungry, love," she said. "Same as us when we got here."`,
-        `Wendel put the stick down and was quiet for a moment. Then he picked it up again, and a few more, and started measuring. "A low fence," he said softly. "With a gate. We'll put something out for it, and just ask it to leave the carrots."` ] },
+        [ `Somebody had been in the seed bed. Somebody with long ears, a white tail and no manners at all.`, { if:'flag:rabbitDish', text:`The feeding dish was licked clean, and three of the sprouts were nibbled down to nothing.`,
+          else:`Three of the little sprouts were nibbled down to nothing.` } ],
+        `Wendel knelt by the bitten stalks with a sad face. Then he noticed the footprints in the soft earth: tiny ones, close together, going round and round, as if whoever made them had been too hungry to decide where to start.`,
+        `Hazel had seen it from the shelter: a rabbit as thin as a rake, sitting up with a sprout in its mouth, chewing as fast as it could in case someone took it away.`,
+        `"Poor thing's starving, love," she said. "Same as we were when we got here."`,
+        `"Then we'll share," said Wendel at once. He gathered up a few straight sticks and began to measure. "A little fence round the bed, with a gate. We'll put something out for the rabbit, and just ask it, nicely, to leave the carrots for us."` ] },
       { id:'2.1', ch:2, when:'flag:firstpick', title:'Supper from our own ground', button:'About that roof', text:[
-        `The first carrots came out of the ground small, crooked and very orange. One had two legs. Wendel said it looked like him. Hazel said it was better looking.`,
-        `They washed them in the spring and ate them by the fire with a pinch of salt, and nothing had ever tasted so good, because nothing had ever been theirs before.`,
-        `"Now then," said Hazel, licking her fingers and looking at the shelter in the way Wendel had learned to be nervous of. "About that roof."` ] },
+        `The first carrots came out of the ground small and crooked and very, very orange. One of them had two legs. Wendel held it up and said it looked like him. Hazel said it was better looking.`,
+        `They washed them in the spring and ate them by the fire with a pinch of salt. Nothing had ever tasted so good, because nothing had ever been so much their own. And where the carrots had grown, the soil was a little darker than before, as if it had learned something.`,
+        `Wendel put the carrot tops aside for the rabbit. Hazel licked her fingers and looked over at the old canvas shelter, in the way Wendel had learned to be a little nervous of.`,
+        `"Now then," she said. "About that roof."` ] },
       { id:'2.2', ch:2, when:'done:roof', title:'The night it rained', button:'Snug at last', text:[
-        `It rained the night before the roof was done. Not a gentle rain. A proper hill rain, sideways and cheerful, that found every hole in the old canvas and came through all of them at once.`,
-        `They ended up in the one dry corner, squashed together under Hazel's shawl, with every pot they owned set out to catch the drips. Plink, went the pots. Plonk. Plink.`,
+        `It rained the night before the new roof was finished. Not a gentle rain: a proper hill rain, sideways and cheerful, that found every hole in the old canvas and came through all of them at once.`,
+        `They ended up squashed together in the one dry corner under Hazel's shawl, with every pot they owned set out to catch the drips. Plink, went the pots. Plonk. Plink.`,
         `"This is the worst night of our marriage," said Wendel.`,
-        `"It's the only night of our marriage in this house," said Hazel. "Give it time." And then they were both laughing too hard to hear the drips.`,
-        `In the morning Hazel laid the moss on thick, green and springy, and the shelter has not leaked since. They kept one pot by the door anyway, for luck.` ] },
+        `"It's the only night of our marriage under this roof," said Hazel. "Give it time." And then they were both laughing too hard to hear the drips. Out in the dark, the thirsty ground drank every drop.`,
+        `In the morning Hazel laid the moss on thick, green and springy, and Wendel handed it up to her a piece at a time. The shelter has not leaked since. They keep one pot by the door anyway, for luck.` ] },
       { id:'2.3', ch:2, when:'done:bench', title:'Room for two', button:'Shuffle up', text:[
-        `Wendel had been building something behind the woodpile all afternoon and telling Hazel it was "nothing, a stick thing, go away".`,
-        `It was a bench. A plank on two stout legs, by the fire, just long enough for two gnomes if one of them was Hazel and the other did not mind being sat close to.`,
-        `She sat on it. It wobbled. He wedged a stone under one leg. It stopped wobbling.`,
-        `"Do you like it?" he asked.`,
-        `"No," said Hazel, which is what she says when she likes something so much she cannot talk about it. They sat there until the fire went down to embers.` ] },
+        `All afternoon Wendel had been busy behind the woodpile, and every time Hazel came near he said it was "nothing, just a stick thing, go away".`,
+        `It was a bench: one good plank on two stout legs, set by the fire, just long enough for two gnomes if they did not mind sitting close.`,
+        `She sat on it. It wobbled. He wedged a flat stone under one leg. It stopped wobbling.`,
+        `"Do you like it?" he asked, a little anxiously.`,
+        `"No," said Hazel. That is what she says when she likes something so much she cannot talk about it, and Wendel knew it. He sat down beside her, and they stayed there until the fire was only embers and Gerald had gone to bed.` ] },
       { id:'2.4', ch:2, when:'done:sapling', title:'The little oak', button:'Grow tall', text:[
-        `The little oak had come a long way in its pot. Hazel had picked up the acorn by the side of the road on the morning they were married, and carried it in her pocket all day, and planted it that night in a teacup.`,
-        `Now it went into real ground, at the front corner of the yard, with a can of spring water and both of them patting the soil down round it.`,
-        `"It'll outlive us," said Wendel.`,
-        `"That's the idea," said Hazel. "Someday some other gnome can sit under it and wonder who planted it."`,
-        `"We'll carve our names on it."`,
-        `"We will not." But she did let him carve a very small W and H on the pot, which he kept.` ] },
+        `The little oak had come a long way in its pot. Hazel had picked up the acorn by the roadside on the morning they were married, carried it in her pocket all day, and planted it that night in a teacup.`,
+        `Now, at last, it went into real ground at the front corner of the yard. Hazel dug the hole and set it in, Wendel brought spring water in the can, and then they knelt and patted the soil down round it, both together.`,
+        `"It'll outlive us," said Wendel softly.`,
+        `"That's the idea," said Hazel. "One day some other gnome will sit under it and wonder who planted it."`,
+        `"We could carve our names on it."`,
+        `"We could not." But she let him scratch a very small W and H on the empty pot, and he has kept it ever since.` ] },
       { id:'2.5', ch:2, when:'week', title:'Our first week', sub:`in Hazel's handwriting`, button:'Turn the page', journal:true, text:[
-        [ `Seven days.`, { if:'roof', text:`We have a roof (moss, no leaks)` }, { if:'woodpile', text:`and a fire (Wendel's woodpile, very proud of it).` },
-          { if:'spring', text:`We have a spring that we found ourselves (Wendel found it, he would like that written down).` },
-          { if:'bed', text:`We have a seed bed` }, { if:'fence', text:`a fence, and a rabbit who thinks the fence is a suggestion.` } ],
-        `The land is waking up. There's green at the edges now, I'm sure of it.`,
-        `I think somebody is helping us. Things turn up where we need them. Twigs by the door. Dew in the morning. I don't know who you are, but thank you.`,
+        [ `Seven days.`, { if:'roof', text:`We have a roof (moss, no leaks).` }, { if:'woodpile', text:`We have a fire every night (Wendel's woodpile, he is very proud of it).` }, { if:'spring', text:`We have a spring we found ourselves (Wendel found it, he would like that written down).` }, { if:'bed', text:`We have a seed bed, and we have eaten from it.` }, { if:'fence', text:`We have a fence, and a rabbit who thinks the fence is a suggestion.` } ],
+        `And the land is waking. There's a haze of green at the edges now. Wendel says I'm imagining it. I'm not.`,
+        `I think somebody is helping us. Things turn up just where we need them: twigs by the door, stones by the bed, dew in the morning. I don't know who you are, or what you are. But thank you.`,
         { margin:true, text:`Best week of my life. Lost my pipe four times. Found it in her apron four times.` } ] },
       { id:'3.0', ch:3, when:'next', title:'A house for winter', button:`Let's build a house`, quest:true, text:[
-        { if:'season:spring|summer', text:`It was a grey morning, the first in weeks. Not cold: just damp enough that the canvas sagged and dripped, and Wendel's toes found Hazel's under the blanket and were told to go away.`,
-          else:`It was the first cold morning. Not very cold: just enough that Hazel's breath made a little cloud, and Wendel's toes found hers under the blanket and were told to go away.` },
-        `Hazel sat up and looked at the canvas, and the moss roof, and the big old stump the shelter leaned against.`,
+        { if:'season:spring|summer', text:`It was a grey morning, the first in weeks. Not cold, just damp enough that the canvas sagged and dripped. Wendel's cold toes found Hazel's under the blanket, and were told to go away.`,
+          else:`It was the first cold morning. Not very cold: just enough that Hazel's breath made a little cloud in the air. Wendel's cold toes found hers under the blanket, and were told to go away.` },
+        `Hazel sat up and looked at the drooping canvas, and the moss roof, and the big old stump the shelter leaned against.`,
         `"Wendel," she said. "That stump is hollow."`,
-        `"Mm."`,
-        { if:'season:winter', text:`"A stump that size could be a house. A real one. With a door, and windows, and a chimney, before this winter gets any colder."`,
-          else:`"A stump that size could be a house. A real one. With a door, and windows, and a chimney, before the winter comes."` },
-        `Wendel was out of bed so fast he took the blanket with him. He had been waiting the whole of his life for somebody to say those words.` ] },
+        `"Mm," said Wendel, mostly asleep.`,
+        { if:'season:winter', text:`"A stump that size could be a house. A real one, with a door and windows and a chimney. Before this winter gets any colder."`,
+          else:`"A stump that size could be a house. A real one, with a door and windows and a chimney. Before the winter comes."` },
+        `Wendel sat up so fast he took the whole blanket with him. He had been waiting all his life for someone to say those words, and he already knew where the round windows would go.` ] },
       { id:'3.1', ch:3, when:'garden', title:'Next door', button:'Hello there', text:[
-        `Hazel stood at the edge of the yard with her hands on her hips and looked at the patch next door, which had been grey and bare a week ago and was now, very definitely, green.`,
-        `"A garden," she said. "A real one. Flowers by the path. A corner for the creatures. Somewhere to sit that isn't next to your woodpile."`,
+        `Hazel stood at the edge of the yard with her hands on her hips, looking at the patch of land next door. A week ago it had been grey and bare. Now it was, very definitely, green.`,
+        `"A garden," she said. "A real one. Flowers along the path. A corner for the creatures. Somewhere to sit that isn't next to your woodpile."`,
         `"What's wrong with my woodpile?"`,
         `"Gerald lives in it."`,
-        `There was only one problem. Right in the middle of her garden stood the biggest, reddest, most stubborn toadstool either of them had ever seen. Wendel pushed it, very politely. Hazel pulled it. It did not so much as wobble.`,
-        `"Sorry, old fellow," said Wendel, patting the cap. "We don't mean to be rude. You're just in the way of the roses."`,
-        `Neither of them noticed what drifted out of the trees just then, soft and green as new leaves, and settled beside the toadstool as if it had been waiting for exactly this. But you did.` ] },
+        `There was just one problem. Right in the middle of her garden stood the biggest, reddest, most settled toadstool either of them had ever seen. Hazel gave it a careful tug. Wendel gave it a polite push. It did not so much as wobble.`,
+        `"Sorry, old fellow," said Wendel, patting its cap. "We don't mean to be rude. It's only that you're right where the roses want to go."`,
+        `Neither of them saw what drifted out of the trees just then, soft and green as new leaves, and settled beside the toadstool as if it had been waiting for this very moment. But you did.` ] },
       { id:'3.2', ch:3, when:'toadWalked', title:'The toadstool takes a walk', button:'Just a little magic', text:[
-        `It is not every day you see a toadstool get up.`,
-        `First it shivered. Then four knobbly root legs wriggled out from under its cap, tested the ground one at a time, and stood it up with a creak. It looked about, the way you do when you've slept too long. Then it set off, wobble, wobble, wobble, to the far corner of the garden, and sat down there with a sigh of great satisfaction.`,
-        `Wendel's pipe fell out of his mouth. Hazel picked it up and put it back in without looking.`,
-        `"Did you do that?" Wendel asked her.`,
-        `"No," said Hazel. She looked round at the empty air, the way you look for somebody who has just left the room, and smiled. "Luck lives here," she said. "I'm sure of it."` ] },
+        `It isn't every day you see a toadstool get up.`,
+        `First it shivered. Then four knobbly root legs wriggled out from under its cap, tested the ground one at a time, and stood it up with a creak. It looked about, the way you do when you have slept too long. Then off it went, wobble, wobble, wobble, to the far corner of the garden, where it sat down with a sigh of deep content.`,
+        `Wendel's pipe fell out of his mouth. Hazel picked it up and put it back without looking.`,
+        `"Did you do that?" Wendel whispered.`,
+        `"No," said Hazel. She looked round at the empty air, the way you look for someone who has just stepped out of the room, and she smiled. "There's a luck about this place," she said. "A kind one. I'm sure of it."`,
+        `It was you, of course. But we won't tell them.` ] },
       { id:'3.3', ch:3, when:'flag:miceIn', pic:'mouse', title:`Somebody's moved in`, button:'Welcome home, mice', text:[
-        `On the morning after the toadstool grew its door, there was a tiny line of washing strung between its stalk and a blade of grass.`,
-        { if:'helped:mouse', text:`The field mouse they had once helped out of a bottle had moved in, and brought her family: one husband, very polite, and three small mice who had already found the seed bed. Hazel let them off, the first time.`,
-          else:`A field mouse who had been watching from the long grass had moved in, and brought her family: one husband, very polite, and three small mice who had already found the seed bed. Hazel let them off, the first time.` },
-        `"That's our first neighbours," said Wendel, delighted.`,
-        `"That's our first tenants," said Hazel. "They can pay rent in being sweet." They are very good at it.`,
-        `And look: wherever a creature makes a home, the land takes heart. The grass round the toadstool was greener by lunchtime.` ] },
+        `On the morning after the toadstool grew its little door, there was a tiny line of washing strung between its stalk and a blade of grass.`,
+        { if:'helped:mouse', text:`The field mouse they had once helped out of a bottle had moved in, and brought her family: one husband, very polite, and three small mice who had already found their way into the seed bed. Hazel let them off, the first time.`,
+          else:`A field mouse who had been watching from the long grass had moved in, and brought her family: one husband, very polite, and three small mice who had already found their way into the seed bed. Hazel let them off, the first time.` },
+        `"Our first neighbours!" said Wendel, delighted, and went straight off to find them a crumb of carrot.`,
+        `"Our first tenants," said Hazel. "They can pay their rent in being sweet." They are very good at it.`,
+        `And here is a thing worth knowing: wherever a creature makes its home, the land takes heart. By lunchtime the grass round the toadstool was greener than anywhere else in the garden.` ] },
       { id:'3.4', ch:3, when:'done:house1', title:'Big plans', button:'Back to work', text:[
-        `The old stump was hollow now, with room inside for a bed, a hearth and a table. Wendel had drawn the plans. There were a lot of them.`,
-        `There was a tower, for the stars. A round room at the top with a telescope. A workbench in the kitchen, "so I can be near you", with all his bits and pieces on the shelf where the plates should go.`,
-        `Hazel looked at the plans for a long time. Then she said, "No," and it was not her happy no.`,
-        `Wendel looked at the plans too, and then at her face, and understood at once. "You wanted somewhere for us," he said. "Not somewhere for my bits and pieces." They ate supper without talking much, but it was a thinking quiet, not a cross one. In the morning, she found him already outside, drawing again. This time it was a small lean-to against the side of the house, all his own, with a workbench and a hook for every tool and a little window that looked at the stars.`,
-        `"Your mess can live in there," said Hazel, and kissed the top of his head. "And the spare room stays spare."`,
-        `"What for?"`,
+        `The old stump was hollow now, with room inside for a bed, a hearth and a table. Wendel had drawn up the plans. There were a great many of them.`,
+        `There was a tower, for looking at the stars. A round room at the top with a telescope. A workbench in the kitchen, "so I can be near you, love", with all his bits and pieces on the shelf where the plates should go.`,
+        `Hazel looked at the plans for a long time. Then she said, "No." It was not her happy no.`,
+        `Wendel looked at the plans again, and then at her face, and understood. "You wanted somewhere for us," he said quietly. "Not somewhere for my bits and pieces." They ate supper without saying much, but it was a thinking sort of quiet, not a cross one.`,
+        `In the morning she found him outside already, drawing again. This time it was a little lean-to against the side of the house, all his own: a workbench, a hook for every tool, and a small window that looked at the stars.`,
+        `"Your bits and pieces can live in there," said Hazel, and kissed the top of his head. "And the spare room stays spare."`,
+        `"What's it for?"`,
         `"You never know," said Hazel.` ] },
       { id:'3.5', ch:3, when:'done:house3', title:'Over the threshold', button:'The end of chapter three', text:[
-        `The last shingle went on at sunset. The chimney drew on the first try. The round windows glowed.`,
-        `Wendel insisted on doing it properly. He scooped Hazel up at the doorstep, took one grand step, caught his foot on the doorstep he had laid himself, and they both went through the door in a heap and lay on the new floor laughing until they cried.`,
-        `"Welcome home, my love," said Wendel, from somewhere under her skirts.`,
-        `Neither of them noticed the little board over the door yet, painted in Hazel's best lettering. THE GNOMESTEAD, it said, with a tiny snail underneath, taking the last letter very slowly.`,
+        `The last shingle went on at sunset. The chimney drew on the very first try. The round windows glowed gold.`,
+        `Wendel wanted to do it properly. He scooped Hazel up at the doorstep, took one grand step, caught his toe on the doorstep he had laid himself, and they both went through the door in a heap. They lay on the new floor and laughed until they cried.`,
+        `"Welcome home, my love," said Wendel, from somewhere underneath her skirts.`,
         `"Welcome home, you great lump," said Hazel.`,
-        `That night, for the first time, they slept under a real roof in a real house, The Gnomestead, in a valley that was learning to be green again. And far down the old track, a small lantern was bobbing up the hill. Somebody else was coming.` ] },
+        `Neither of them had noticed the little board over the door yet. Hazel had painted it in her best lettering: THE GNOMESTEAD, with a tiny snail underneath, taking the last letter very slowly.`,
+        `That night, for the first time, they slept under a real roof in a real house, on a hillside that was learning to be green again. And far down the old track, a small lantern was bobbing up the hill. Somebody else was coming.` ] },
     ],
     // the stump house quest, started by page 3.0 and shown at the top of the Journal
     quest: { name:'A proper home', steps:[ ['house1', 'Hollow out the old stump'], ['house2', 'Fit a plank wall and windows'], ['house3', 'Raise the roof and chimney'], ['page:3.5', 'Move in'] ] },
     // The Wood spirit comes five times in the first month, always in this order (game.js spiritLesson), and floats by what it is
     // teaching about until you tap it. Then it comes back to teach each new kind of bare patch. Its one lesson: magic is for
     // asking, not pushing. The gnomes cannot see it; it is the only one who ever talks to you.
-    spiritFirst: `Something soft and green drifts out of the trees, like a handful of new leaves that forgot to fall. It looks at you as if it has always known you were there.`,
+    spiritFirst: `Something soft and green drifts out of the trees, like a handful of new leaves that forgot to fall. It turns and looks straight at you, as if it has always known you were there. The gnomes can't see it. But you can.`,
     lessons: [
-      { n:1, at:'seedbed', spell:'coax', title:'Coax a sprout', text:`"You feel the light you gather, little spirit? That is your magic. It cannot make a thing grow. Nothing can. But it can whisper to a seed that is already trying, and tell it to hurry, because somebody is hungry."` },
-      { n:2, at:'spring', spell:'rain', title:'Call soft rain', text:`"The clouds go over this hill without stopping. They think nothing lives here. Ask them nicely to look down, and they might. Never ask for a storm. A garden needs a drink, not a bath."` },
-      { n:3, at:'toadstool', spell:'legs', title:'Give the toadstool legs', text:`"Big, isn't it? And very settled. You could push it all day and it wouldn't care. But ask it kindly, give it a little light, and it will find its own legs. It might even like the corner better."` },
-      { n:4, at:'edge', spell:'wake', title:'Wake the land', text:`"See out there, past the garden, where the land is still dark? It is not dead. It is asleep, and dreaming of what it was. When the gnomes have done their part, you can wake it a little sooner. Only a little. Waking up is not something you rush."` },
-      { n:5, at:'fire', spell:null, title:'A bright fire', text:`"Your light is strong now, stronger than mine was at your age. There is nothing new to teach you today, only this: you will find light in the dark, in wisps and dew, and you will also find it every time you are kind. Help the small ones when they are in trouble. That is the brightest magic there is."`,
-        after:`"I'll be about. When the valley needs something new, I'll come and show you."` },
+      { n:1, at:'seedbed', spell:'coax', title:'Coax a sprout', text:`"Hello, little luck. I've been watching you help them. The glimmers you gather, the dew and the wisps, are light, and light is your magic. It can't make anything grow. Nothing can. But it can whisper to a seed that is already trying, and tell it to hurry, because somebody is hungry."` },
+      { n:2, at:'spring', spell:'rain', title:'Call soft rain', text:`"The clouds pass over this hill without stopping. They think nothing lives here any more. Ask them nicely to look down, and they might. But never ask for a storm, little luck. A garden wants a drink, not a bath."` },
+      { n:3, at:'toadstool', spell:'legs', title:'Give the toadstool legs', text:`"Big, isn't he? And very settled. You could push him all day and he wouldn't mind you one bit. But ask him kindly, give him a little light, and he'll find his own legs. He might even like the corner better."` },
+      { n:4, at:'edge', spell:'wake', title:'Wake the land', text:`"See out there, past the garden, where the land is still dark? It isn't dead. It's only asleep, dreaming of what it used to be. When the gnomes have done their part, you can help it wake a little sooner. Only a little. Waking up is not something you rush."` },
+      { n:5, at:'fire', spell:null, title:'A bright fire', text:`"Your light is strong now, little luck, stronger than mine was at your age. There's nothing new to teach you today. Only this: you'll find light in the dark, in wisps and dew, and you'll find it every time you are kind. Help the small ones when they're in trouble. That is the brightest magic there is."`,
+        after:`"I'll be about. Whenever this hill needs something new, I'll come and show you."` },
     ],
     // creatures moving into a home the gnomes made bring the land back too (+1 green each), a while after the home is made
     moveIns: [
@@ -1169,75 +1193,75 @@ window.CONTENT = {
     beats: [
       // the rabbit: "that rabbit"
       { id:'rabbitTruce', who:'rabbit', kind:'card', when:{ done:'fence', rabbitFed:3 }, title:'The truce', button:'Good rabbit', text:[
-        `The rabbit sat by the gate for an hour, perfectly good, nose twitching, not so much as looking at the carrots.`,
-        `Wendel is keeping an eye on it. He has also started leaving it the outside leaves of the lettuces.` ] },
+        `The rabbit sat by the gate for a whole hour, as good as gold, nose twitching, not so much as glancing at the carrots.`,
+        `Wendel is very proud of it. He has started saving it the outside leaves of the lettuces, and telling it about his day.` ] },
       { id:'rabbitHome', who:'rabbit', kind:'card', when:{ moved:'burrow' }, title:'A hole of its own', button:'Welcome home', text:[
-        `Hazel patted the earth bank flat for the third time and said it was a bit much. Wendel said a rabbit should have a proper home, and patted it flat a fourth time.`,
-        `In the morning there was a round door in the side of it, and the sound of someone very pleased with themselves, thumping.` ] },
+        `Hazel patted the earth bank flat for the third time and said that was plenty. Wendel said a rabbit ought to have a proper home, and patted it flat a fourth time, just to be sure.`,
+        `In the morning there was a round door in the side of it, and from somewhere inside came the thump, thump of somebody very pleased with themselves.` ] },
       { id:'rabbitBabies', who:'rabbit', kind:'page', gift:'rabbit', when:{ after:'rabbitHome', days:21, season:'spring', hours:[5, 11] }, title:'Four small noses', button:'Not the lettuce', text:[
-        `Dawn, and a row of four tiny rabbits along the inside of the garden fence, noses through the gaps, looking at the vegetables. Their mother sat behind them looking pleased and ashamed.`,
-        `Wendel counted them twice. Hazel counted them once and put the kettle on. "They'll want something," she said. "We'll plant extra," said Wendel, beaming.`,
-        `"She ought to have a name," said Hazel, over her tea, "now she's a mother." She thought about it. "{rabbit}."`,
-        `"{rabbit}," said Wendel at once, as if it had always been her name. He has not called her anything else since.`,
-        `The smallest of the four had a dandelion seed stuck on one ear and did not know. It was the best morning of the spring.` ] },
+        `Dawn, and four tiny rabbits sat in a row along the garden fence, noses poking through the gaps, gazing at the vegetables. Their mother sat behind them, looking proud and a little embarrassed.`,
+        `Wendel counted them twice. Hazel counted them once and put the kettle on. "They'll be wanting something," she said. "Then we'll plant extra," said Wendel, beaming.`,
+        `"She ought to have a name," said Hazel over her tea, "now that she's a mother." She thought about it for a while. "{rabbit}."`,
+        `"{rabbit}," said Wendel at once, as if it had always been her name. He has never called her anything else since.`,
+        `The smallest of the four had a dandelion seed stuck to one ear and did not know. It was the best morning of the whole spring.` ] },
 
       // the field mouse family: "tenants"
       { id:'mouseGap', who:'mouse', kind:'card', when:{ moved:'mice', days:3, done:'fence' }, title:'A gap in the fence', button:'Oh, mice', text:[
-        `The mouse children have found a gap in the seed bed fence. Wendel patched it with a stick, saying sorry to the gap as he did.`,
-        `In the morning there was another gap, and three small mice sitting in it, looking hopeful.` ] },
+        `The mouse children have found a gap in the seed bed fence. Wendel mended it with a stick, saying sorry to the gap as he did.`,
+        `In the morning there was a brand new gap, with three small mice sitting in it, looking hopeful.` ] },
       { id:'mouseDoor', who:'mouse', kind:'card', when:{ done:'mousedoor' }, title:'Rent', button:'Mind the step', text:[
-        `Wendel patched the fence three times, saying sorry to the gap each time. On the fourth morning, Hazel cut a small door in it herself, and Wendel held the bark flap while she tied the hinge.`,
-        `"Rent," she said.` ] },
+        `Wendel mended the fence three times, saying sorry to the gap each time. On the fourth morning Hazel cut a small door in it herself, and Wendel held the little bark flap while she tied on the hinge.`,
+        `"There," said Hazel. "Now they can knock."` ] },
       { id:'mouseSock', who:'mouse', kind:'card', when:{ moved:'mice', days:7 }, title:'One sock', button:'Leave it', text:[
         `"Have you seen my other sock?" said Wendel, scratching his head by the washing line.`,
-        `Hazel did not look up. "Leave it," she said. Beside the toadstool house, strung between two grass stalks, a grey sock is swinging gently. It is far too small for a grown mouse, but the littlest of the mouse babies fits it exactly, with just its ears poking out of the top.` ] },
+        `Hazel did not look up. "Leave it, love," she said. Beside the toadstool house, strung between two grass stalks, a small grey sock is swinging gently in the breeze. The littlest of the mouse babies is curled up inside it, snug as anything, with just its ears poking out of the top.` ] },
       { id:'mouseWinter', who:'mouse', kind:'page', gift:'mouse', when:{ after:'mouseSock', moved:'mice', days:14, season:'winter', hours:[16, 23] }, title:'The window with the sock in it', button:'Goodnight, tenants', text:[
-        `It was the first really cold night, and the toadstool had a light in it. The sock hammock was gone from the grass. Through the window: the littlest mouse, zipped into one grey sock like a sleeping bag, and the rest of the family curled round it.`,
-        `Wendel stood with his hands in his pockets for a long time. "It's a good sock," he said. "It's doing very well."`,
-        `The next morning on the doorstep, someone had left a single button.` ] },
+        `It was the first really cold night, and there was a light in the toadstool. The sock hammock had gone from the grass. Through the tiny window they could see the littlest mouse, tucked into one grey sock like a sleeping bag, with the rest of the family curled up round it.`,
+        `Wendel stood with his hands in his pockets for a long time. "It's a good sock," he said at last. "It's doing very well."`,
+        `In the morning, someone had left a single button on the doorstep.` ] },
 
       // the tawny owl: "says nothing"
       { id:'owlSapling', who:'owl', kind:'card', when:{ done:'sapling', met:'owl', hours:[19, 5] }, title:'The inspector', button:'Carry on', text:[
-        `The owl has taken to sitting on the little oak's stake at night, looking down at it.`,
-        `It has not yet written a report.` ] },
+        `The owl has taken to sitting on the little oak's stake at night, looking down at it very seriously.`,
+        `It has not yet said whether it approves.` ] },
       { id:'owlHome', who:'owl', kind:'card', when:{ moved:'owlbox' }, title:'An owl box', button:'Sleep well', text:[
-        `Wendel put the box up just so. The owl looked at it for three nights. On the fourth, it was in it, fast asleep and as round as a cushion.`,
-        `"That," said Hazel, "is a tenant who knows what they want."` ] },
+        `Wendel put the box up just so. The owl looked at it for three nights. On the fourth night it was inside, fast asleep and as round as a cushion.`,
+        `"Now that," said Hazel, "is a tenant who knows what they want."` ] },
       { id:'owlHoo', who:'owl', kind:'page', gift:'owl', when:{ after:'owlHome', season:'winter', hours:[23, 5] }, title:'Hoo', button:'Goodnight, owl', text:[
-        `Wendel had stayed out to look at the stars, and meant to come in an hour ago. Hazel came out with a blanket instead, and sat beside him on the bench, and neither of them said anything for a long time.`,
-        `Above them, the owl opened one eye. "Hoo," it said, very quietly, and shut it again.`,
+        `Wendel had stayed out to look at the stars, and had meant to come in an hour ago. Hazel came out with a blanket instead, and sat beside him on the bench, and for a long time neither of them said anything at all.`,
+        `Above them, the owl opened one eye. "Hoo," it said, very softly, and closed it again.`,
         `It was the only thing it ever said, and it said it just right.` ] },
 
       // the hedgehog: "the leaf coat"
       { id:'hogShopping', who:'hedgehog', kind:'page', when:{ moved:'leafpile', season:'autumn', hours:[16, 23] }, title:'It was shopping', button:'Of course', text:[
-        `At dusk the hedgehog came up the path wearing a thick coat of dry leaves on its spines, trundled into the leaf-pile shelter, and shook them off into a neat heap.`,
-        `"That wasn't stuck at all," said Hazel. "It was shopping."`,
-        `Wendel remembered picking those leaves off, very carefully, in the dusk. "I took its groceries," he said, stricken, and put a berry in the dish by way of an apology.` ] },
+        `At dusk the hedgehog came trundling up the path wearing a thick coat of dry leaves on its spines. It went straight into the leaf pile and shook them all off into a neat little heap.`,
+        `"It wasn't stuck at all," said Hazel. "It was shopping."`,
+        `Wendel remembered picking those leaves off, ever so carefully, one evening not long ago. "Oh dear," he said. "I took its groceries." And he put an extra berry in the dish to say sorry.` ] },
       { id:'hogAsleep', who:'hedgehog', kind:'card', when:{ after:'hogShopping', season:'winter' }, title:'Do not disturb', button:'Shh', text:[
-        `The hedgehog has stopped coming. Wendel made a sign in his best handwriting and leaned it by the leaf pile. It said ASLEEP.`,
-        `Hazel said that was obvious from the snoring, and then helped him paint a small leaf on it.` ] },
+        `The hedgehog has stopped coming out. Wendel made a sign in his best handwriting and propped it by the leaf pile. It said ASLEEP.`,
+        `Hazel said that was obvious from the snoring. Then she helped him paint a little leaf on it.` ] },
       { id:'hogSpring', who:'hedgehog', kind:'page', gift:'hedgehog', when:{ after:'hogAsleep', season:'spring', hours:[5, 11] }, title:'Thin and cross', button:'Eat up', text:[
-        `It came out at six in the morning, thin as a stick with a prickle on it, and went directly to the dish without so much as a good morning.`,
-        `Hazel filled it twice. Wendel took down the sign, dusted it and kept it. "For next year," he said.` ] },
+        `It came out at six one morning, as thin as a stick with prickles on, and went straight to the dish without so much as a good morning.`,
+        `Hazel filled the dish twice. Wendel took down the sign, dusted it off and put it away carefully. "For next year," he said.` ] },
 
       // the lyrebird: a rare winter visitor
       { id:'lyreHum', who:'lyrebird', kind:'card', gift:'lyrebird', when:{ met:'lyrebird', season:'winter', hours:[7, 17] }, title:'The dance', button:'Bravo', text:[
-        `The lyrebird scratched itself a little round stage in the bare earth, threw its tail up over its head like a silver harp, and danced.`,
-        `Wendel and Hazel watched from behind the woodpile, very still. When it finished, Hazel clapped before she could stop herself. The lyrebird looked straight at her, bowed (they both swear it bowed), and walked back into the ferns.` ] },
+        `The lyrebird scratched itself a little round stage in the earth, threw its tail up over its head like a silver harp, and danced.`,
+        `Wendel and Hazel watched from behind the woodpile, hardly breathing. When it finished, Hazel clapped before she could stop herself. The lyrebird looked straight at her and bowed (they both swear it bowed). Then it strolled back into the ferns.` ] },
 
       // short arcs: one small closing moment each
       { id:'robinChicks', who:'robin', kind:'card', gift:'robin', when:{ nest:'robin', met:'robin', days:14, season:'spring', hours:[6, 18] }, title:'A red thread', button:'Lovely', text:[
-        `Hazel's red thread turned up in the robins' nest, woven in very neatly. She said that was a compliment.`,
-        `Two chicks peep from it now, mouths wide, all day long.` ] },
+        `Hazel's red thread has turned up in the robins' nest, woven in very neatly. She says that is a compliment.`,
+        `Two chicks peep out of it now, beaks wide open, all day long.` ] },
       { id:'wrenPair', who:'wren', kind:'card', gift:'wren', when:{ nest:'wren', season:'spring', hours:[6, 17] }, title:'Practising', button:'Sing on', text:[
-        `It bathed for ten minutes, then sang, then bathed again. Wendel says it is practising.`,
-        `This morning there were two of them crossing the yard together: him bright blue, her soft brown.` ] },
+        `The little wren bathed for ten minutes, then sang, then bathed again. Wendel says he is practising for someone.`,
+        `This morning there were two of them hopping across the yard together: him bright blue, her soft brown.` ] },
       { id:'frogSong', who:'frog', kind:'card', gift:'frog', when:{ moved:'pond', days:14, hours:[19, 5] }, title:'Off-key', button:'Hum along', text:[
-        `It sings off-key and with total confidence. Wendel has started to hum along. Hazel hums back when he isn't listening.`,
-        `Tonight a second small voice answered from the reeds.` ] },
+        `The frog sings off-key, and with total confidence. Wendel has started humming along. Hazel hums too, when she thinks he isn't listening.`,
+        `Tonight, a second small voice answered from the reeds.` ] },
       { id:'lizardSkin', who:'bluetongue', kind:'card', gift:'bluetongue', when:{ nest:'bluetongue', hours:[9, 17] }, title:'Stepped over', button:'Do not ask', text:[
-        `It sunbathed on the doorstep so long that Hazel just stepped over it. Then Wendel did.`,
-        `This morning a shed skin lay on the doorstep, perfect, like a little leaf.` ] },
+        `The blue-tongue lizard sunbathed on the doorstep for so long that Hazel simply stepped over it. Then Wendel did too, saying "excuse me".`,
+        `This morning there was a shed skin on the doorstep, perfect and papery, like a little leaf.` ] },
     ],
     // little moments that come round more than once (no card; a line at the bottom of the screen)
     owlCompany: [ `Wendel gave the owl a nod. The owl gave him nothing.`, `"He's looking at me again," said Wendel. "He's looking at the fire," said Hazel.`, `Hazel says the owl is good company if you do not ask it for conversation.` ],
