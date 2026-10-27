@@ -71,6 +71,7 @@ const G = {
     if (tk.fence) this.s.flags.rabbit = true;
     if (this.s.plots.seedbed.grown) this.s.flags.firstpick = true;   // fenced before the rabbit's raid existed
     if (this.s.plots.seedbed.crop === 'sprout') this.s.plots.seedbed.crop = 'carrot';   // the old generic sprouts were always carrots at heart
+    for (const [k, tl] of Object.entries(this.s.tiles)) if (k !== '0,0' && !tl.kind && tl.state === 'revealed') tl.kind = this.tileKind(k);   // bare tiles from before the healing chains get theirs; green ones stay as they were
     this.away = this.catchUp();
     this.save();
     return this.s;
@@ -121,7 +122,8 @@ const G = {
     for (const [id, tk] of Object.entries(s.tasks)) {
       if (tk.done || tk.endsAt > t) continue;
       tk.done = true; const d = this.taskDef(id);
-      if (d.tile) { const tl = s.tiles[d.tile]; tl.state = 'green'; tl.green = 4; this.reveal(d.tile); this.note(`The land next door has greened.`); }
+      if (d.healTile) this.healDone(d);
+      else if (d.tile) { const tl = s.tiles[d.tile]; tl.state = 'green'; tl.green = 4; this.reveal(d.tile); this.note(`The land next door has greened.`); }
       else this.addGreen(d.green, d.make === 'garden' ? 'garden' : 'yard');
       if (d.folk) this.villageDone(id, d, tk);
       if (id === 'bridge') { for (const k of ['1,-1', '0,-1', '2,-1', '-1,-1']) if (s.tiles[k] && s.tiles[k].state === 'green') this.reveal(k); this.note('The bridge is up. The far side of the stream is reachable at last.'); }
@@ -131,6 +133,7 @@ const G = {
     }
     this.storyTick(t);
     this.moveInTick(t);
+    this.healTick(t);
     this.villageTick(t);
     this.festivalTick(t);
     this.secretTick(t);
@@ -239,6 +242,7 @@ const G = {
 
   // ---- tasks ----
   taskDef(id) {
+    if (id.startsWith('heal:')) return this.healDef(id);
     if (id.startsWith('regrow:')) { const tile = id.slice(7); return Object.assign({ id, tile }, C.regrow, { name: `${C.regrow.name} (${this.tileName(tile)})` }); }
     if (id.startsWith('fest:')) { const j = C.festival.jobs.find(j => j.id === id); return j && Object.assign({ festival: true }, j, { cost: this.festCost(j) }); }
     const [kind, fid, step] = id.split(':'), f = this.folkDef(fid);
@@ -256,7 +260,8 @@ const G = {
   taskList() {   // everything the player could start or is waiting on, in a sensible order
     const s = this.s, out = [];
     for (const d of C.tasks) if (!d.retired) out.push(this.taskView(this.taskDef(d.id)));
-    for (const [k, tl] of Object.entries(s.tiles)) if (tl.state === 'revealed' || tl.state === 'regrowing') out.push(this.taskView(this.taskDef('regrow:' + k)));
+    for (const [k, tl] of Object.entries(s.tiles)) if (!tl.kind && (tl.state === 'revealed' || tl.state === 'regrowing')) out.push(this.taskView(this.taskDef('regrow:' + k)));   // an older garden half-way through the old job
+    for (const k of this.healTiles()) { const i = this.healAt(k); if (i > 0) out.push(this.taskView(this.taskDef(`heal:${k}:${i - 1}`))); if (this.healOpen(k)) out.push(this.taskView(this.taskDef(`heal:${k}:${i}`))); }   // one job at a time on each patch: the next one, and the one just finished
     const v = s.village;
     if (v.traveller) out.push(this.taskView(this.taskDef('home:' + v.traveller.id)));
     for (const [fid, fs] of Object.entries(v.folk)) {
@@ -280,7 +285,7 @@ const G = {
   startTask(id) {
     const d = this.taskDef(id), v = this.taskView(d); if (v.state !== 'ready' || !v.can) return false;
     this.pay(d.cost); const t = now();
-    this.s.tasks[id] = { startedAt: t, endsAt: t + this.dur(d.mins), done: false }; if (C.tasks.some(x => x.id === id && x.who === 'either')) this.s.tasks[id].who = d.who;
+    this.s.tasks[id] = { startedAt: t, endsAt: t + this.dur(d.mins), done: false }; if (d.healTile || C.tasks.some(x => x.id === id && x.who === 'either')) this.s.tasks[id].who = d.who;
     if (d.home || d.claims) this.s.tasks[id].tile = this.freeLot();
     if (d.claims) this.s.festival.tile = this.s.tasks[id].tile;
     if (d.tile) this.s.tiles[d.tile].state = 'regrowing';
@@ -315,21 +320,95 @@ const G = {
     for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
       const kk = `${x + dx},${y + dy}`; if (this.s.tiles[kk] || n >= 2 || Math.abs(x + dx) > 2 || Math.abs(y + dy) > 2) continue;
       if (y + dy < -1 && !this.done('bridge')) continue;   // the far side of the stream waits for the bridge
-      this.s.tiles[kk] = { state: 'revealed', green: 0 }; n++;
+      this.s.tiles[kk] = { state: 'revealed', green: 0, kind: this.tileKind(kk) }; n++;
     }
     if (n) this.note('The mist has drawn back from more bare ground.');
+  },
+
+  // ---- healing the bare tiles (CONTENT.heal; docs/PLAN.md "Healing the bare tiles") ----
+  // Each bare tile has a kind and a chain of jobs that unlock one after another. Jobs are 'heal:<tile>:<step>'. A tile keeps its
+  // own green points (tiles[k].green) and moves through the same land stages as home; at first green it counts as healed
+  // ('green': neighbours can settle, more bare land appears). Life gives the green, often a while after the job (step.later).
+  tileKind(k) {   // fixed per tile: the stream row is the dry creek, the column east of home the old track; the rest from the old bare-tile art
+    const [x, y] = k.split(',').map(Number); if (k === '0,1') return 'meadow';   // the couple's garden-to-be
+    if (y === -1) return 'creek'; if (x === 1) return 'verge';
+    return ['nursery', 'creature', 'meadow', 'creature', 'nursery'][Math.abs(x * 7 + y * 13 + x * y * 3) % 5];   // index.html BARREN: plain, stumps, fence, dead tree, plain
+  },
+  healTiles() { return Object.keys(this.s.tiles).filter(k => this.s.tiles[k].kind); },
+  healSteps(k) { return C.heal.kinds[this.s.tiles[k].kind].steps; },
+  healDef(id) {
+    const [, k, i] = id.split(':'), tl = this.s.tiles[k], st = tl && tl.kind && C.heal.kinds[tl.kind].steps[+i]; if (!st) return null;
+    const d = Object.assign({}, st, { id, healTile: k, heal: tl.kind, step: +i, stepId: st.id, green: st.green || 0, who: 'either', where: `${cap(C.heal.kinds[tl.kind].patch)}, ${this.tileWhere(k)}` });
+    d.who = this.eitherWho(d); if (typeof st.act === 'object') d.act = st.act[d.who];
+    return d;
+  },
+  tileWhere(k) { const [x, y] = k.split(',').map(Number); const ns = y < 0 ? 'behind the house' : y > 0 ? 'in front' : '', ew = x < 0 ? 'to the left' : x > 0 ? 'to the right' : '';
+    return [ns, ew].filter(Boolean).join(' and ') + (Math.abs(x) + Math.abs(y) > 1 ? ', further out' : ''); },
+  healStepDone(k, i) { const st = this.healSteps(k)[i], tk = this.s.tasks[`heal:${k}:${i}`]; return !!(tk && tk.done) || (!!st.once && !tk && !!this.s.flags[st.once]); },
+  healAt(k) { const n = this.healSteps(k).length; let i = 0; while (i < n && this.healStepDone(k, i)) i++; return i; },   // the first job not done yet (n: all done)
+  healClaimed(k) {   // a neighbour's lot, the festival green or the couple's garden: the chain stops at first green and that takes over
+    const s = this.s; if (k === '0,1' || s.festival.tile === k || Object.values(s.village.folk).some(f => f.tile === k)) return true;
+    return Object.entries(s.tasks).some(([id, tk]) => id.startsWith('home:') && tk.tile === k);
+  },
+  healOpen(k) {   // is there a next job to offer on this patch?
+    const i = this.healAt(k); if (i >= this.healSteps(k).length) return false;
+    return !!this.s.tasks[`heal:${k}:${i}`] || !this.healClaimed(k) || this.landStage(k).key === 'barren';
+  },
+  healWait(k, i) {   // the time the job before this one asks it to wait until (seedlings growing in their pots), or 0
+    if (i < 1) return 0; const pr = this.healSteps(k)[i - 1]; if (!pr.wait) return 0;
+    const tl = this.s.tiles[k]; if (tl.woke) return 0;
+    const tk = this.s.tasks[`heal:${k}:${i - 1}`] || Object.entries(this.s.tasks).filter(([id, t]) => id.endsWith(':' + (i - 1)) && id.startsWith('heal:') && t.done && this.healDef(id) && this.healDef(id).stepId === pr.id).map(([, t]) => t)[0];
+    return tk ? tk.endsAt + pr.wait * MIN : 0;
+  },
+  flowing(k) { const tl = this.s.tiles[k]; if (!tl || tl.kind !== 'creek') return false; const i = this.healSteps(k).findIndex(st => st.id === 'stones'); return this.healStepDone(k, i); },
+  canFlow(k) { const [x, y] = k.split(',').map(Number); return ['0,-1', '1,-1', '-2,-1'].includes(k) || this.flowing(`${x - 1},${y}`) || this.flowing(`${x + 1},${y}`); },   // fed by the spring at home, the old spring at the west end, or a flowing stretch next door
+  tileGreen(k, n) {   // green points on one bare tile; a new stage gets its own land card
+    if (!n) return; const tl = this.s.tiles[k], before = this.landStage(k).key; tl.green += n; const st = this.landStage(k);
+    if (st.key === before) return;
+    if (tl.state !== 'green') { tl.state = 'green'; this.reveal(k); }
+    this.note(`${cap(C.heal.kinds[tl.kind].patch)} is now ${st.name}.`); this.s.pages.cards.push({ k: 'tland', tile: k, key: st.key }); this.emit('land', st);
+  },
+  healDone(d) {
+    if (d.once) this.s.flags[d.once] = true;
+    this.tileGreen(d.healTile, d.green);
+  },
+  healTick(t) {   // life coming back after a job: sprouts, creatures moving in, saplings growing (each fires once)
+    for (const k of this.healTiles()) {
+      const tl = this.s.tiles[k], ev = tl.ev || (tl.ev = {});
+      this.healSteps(k).forEach((st, i) => {
+        const tk = this.s.tasks[`heal:${k}:${i}`]; if (!st.later || !tk || !tk.done) return;
+        st.later.forEach((l, j) => { const key = `${i}.${j}`; if (key in ev || t < tk.endsAt + l.after * MIN) return;
+          ev[key] = t; if (l.note) this.note(l.note); this.tileGreen(k, l.green); this.emit('healev', { tile: k, ev: l.ev }); });
+      });
+    }
+  },
+  healEv(k, i, j) { const tl = this.s.tiles[k]; return tl && tl.ev ? tl.ev[`${i}.${j}`] || 0 : 0; },   // when that happened (0: not yet)
+  healTaught(kind) { return ('heal:' + kind) in this.s.spirit.taught; },
+  healSpellFor(kind) { return this.running().filter(r => r.def.healTile && r.def.heal === kind && r.def.spell && r.endsAt > now()); },
+  seedlingsWaiting() { return this.healTiles().filter(k => { const i = this.healAt(k), w = this.healWait(k, i); return w > now(); }); },
+  healCast(id, t) {
+    const kind = C.spells[id].heal;
+    for (const r of this.healSpellFor(kind)) this.s.tasks[r.id].endsAt = t + (r.endsAt - t) / 2;
+    if (kind === 'nursery') for (const k of this.seedlingsWaiting()) this.s.tiles[k].woke = true;
+    this.note({ wind: 'The wind lifted the seed balls and carried them into the far corners.', cloud: 'A small grey cloud stopped over the cracked earth and rained there, and only there.', seedwake: 'The seedlings in their pots stretched, as if somebody had opened the curtains.', sing: 'The trickle found its way round the stones, humming.' }[id]);
+  },
+  treeNames(k) {   // the names Wendel has given the trees on this patch
+    const tl = this.s.tiles[k]; if (!tl.kind) return []; const [x, y] = k.split(',').map(Number), N = C.heal.treeNames, out = [];
+    this.healSteps(k).forEach((st, i) => { if (st.tree && this.healStepDone(k, i)) for (let n = 0; n < (st.green >= 4 ? 2 : 1); n++) out.push(N[Math.abs(x * 5 + y * 11 + i * 3 + n * 7) % N.length]); });
+    return out;
   },
 
   // ---- magic ----
   magicLevel() { const d = this.s.days.length; let L = 1; C.magicLevels.forEach((m, i) => { if (d >= m.days) L = i + 1; }); return L; },
   magicInfo() { const L = this.magicLevel(), m = C.magicLevels[L - 1], next = C.magicLevels[L]; return { level: L, name: m.name, days: this.s.days.length, nextDays: next ? next.days : null, spells: C.magicLevels.slice(0, L).map(x => x.unlock).filter(Boolean) }; },
   canCast(id) {
-    const sp = C.spells[id]; if (!(sp.special ? this.gardenOpen() : this.magicInfo().spells.includes(id))) return { ok: false, why: 'not yet learned' };   // special spells come with what they are for, not with days
+    const sp = C.spells[id]; if (!(sp.heal ? this.healTaught(sp.heal) : sp.special ? this.gardenOpen() : this.magicInfo().spells.includes(id))) return { ok: false, why: 'not yet learned' };
+    if (sp.heal && !this.healSpellFor(sp.heal).length && !(sp.heal === 'nursery' && this.seedlingsWaiting().length)) return { ok: false, why: sp.heal === 'nursery' ? 'no seedlings are waiting to wake' : 'it helps a job that is under way: start it first' };   // special spells come with what they are for, not with days
     if (!this.can(sp.cost)) return { ok: false, why: `needs ${this.missing(sp.cost).join(', ')}` };
     if (id === 'legs' && this.s.flags.toadWalk) return { ok: false, why: 'it has already walked off' };
     if (id === 'coax' && this.plot().stage !== 'growing') return { ok: false, why: 'nothing is growing' };
     if (id === 'rain' && this.plot().stage !== 'planted') return { ok: false, why: 'nothing is waiting for water' };
-    if (id === 'wake' && !this.running().some(r => r.def.tile)) return { ok: false, why: 'no patch is regrowing' };
+    if (id === 'wake' && !this.running().some(r => r.def.tile || r.def.healTile)) return { ok: false, why: 'no patch is regrowing' };
     return { ok: true };
   },
   cast(id) {
@@ -337,7 +416,8 @@ const G = {
     if (id === 'coax') { this.plot().readyAt = t; this.note(`A warm hush over the bed, and ${this.cropName(this.plot().crop)} fill out all at once.`); }
     if (id === 'rain') { const p = this.plot(); p.stage = 'growing'; p.readyAt = t + this.dur(C.crops[p.crop].grow); this.give({ water: 2 }); this.note('Soft rain falls on the bed and beads on the stones.'); }
     if (id === 'legs') { this.s.flags.toadWalk = t; this.note('The big toadstool shivered, sprouted little root legs and walked off to the far corner of the garden.'); }
-    if (id === 'wake') { for (const r of this.running()) if (r.def.tile) this.s.tasks[r.id].endsAt = t + (r.endsAt - t) / 2; this.note('The ground stirs under the mist.'); }
+    if (C.spells[id].heal) this.healCast(id, t);
+    if (id === 'wake') { for (const r of this.running()) if (r.def.tile || r.def.healTile) this.s.tasks[r.id].endsAt = t + (r.endsAt - t) / 2; this.note('The ground stirs under the mist.'); }
     this.s.spellsUsed[id] = dayKey(t); this.emit('spell', id); this.tick(); return true;
   },
 
@@ -436,6 +516,8 @@ const G = {
     if (busy) return `${C.names[d.who]} is busy with ${lc(this.taskDef(busy[0]).name)}`;
     if (d.home && !this.freeLot()) return 'needs a healed patch next door for their home';
     if (d.claims && !this.s.tasks[d.id] && !this.freeLot()) return 'needs a healed patch with no home on it';
+    if (d.healTile) { const w = this.healWait(d.healTile, d.step); if (w > now()) return `the tree seedlings are still growing (ready in ${this.timeLeft(w)})`;
+      if (d.needsFlow && !this.canFlow(d.healTile)) return 'the water cannot reach this stretch yet: clear the creek next to it first'; }
     if (d.needsTile && !(this.s.tiles[d.needsTile] && this.s.tiles[d.needsTile].state === 'green')) return 'after the stepping-stone patch of the stream heals';
     return '';
   },
@@ -611,6 +693,7 @@ const G = {
   spiritLesson() {   // the lesson it is waiting by now (its number), or 0
     const s = this.s, sp = s.spirit.taught, L = this.magicLevel(), h = new Date(now()).getHours();
     if (!(3 in sp) && this.gardenOpen() && !s.flags.toadWalk) return 3;   // when the garden opens and the toadstool is in the way
+    for (const k of this.healTiles()) { const kind = this.s.tiles[k].kind, L = C.heal.kinds[kind].lesson; if (L && !this.healTaught(kind) && this.healAt(k) < this.healSteps(k).length) return 'heal:' + kind; }   // the first time a kind of bare tile appears, it comes to teach that tile's spell
     for (const [n, ok] of [[1, L >= 2 && this.done('bed')], [2, L >= 3 && this.done('spring')], [4, L >= 4], [5, L >= 5 && (h >= 17 || h < 5)]]) {
       if (n in sp) continue; return ok ? n : 0;   // in order: a later lesson waits for the one before
     }

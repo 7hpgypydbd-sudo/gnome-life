@@ -200,7 +200,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v56</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v57</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -219,15 +219,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 56;
+const BUILD = 57;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=56"></script>
-<script src="game.js?v=56"></script>
+<script src="content.js?v=57"></script>
+<script src="game.js?v=57"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -395,6 +395,7 @@ const WORKPATH = {
   fence: p => { const f = bedFrame(), a = Math.PI / 2 + (0.5 + p * (FENCE_N - 0.5)) * 2 * Math.PI / FENCE_N; return [...fromRing(Math.cos(a) * 1.18, Math.sin(a) * 1.18, f), 'build']; },   // round the ring panel by panel, gate last
   bedwater: (p, g) => workLoop(g, 'bedwater', c => [[SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3], [...wetPatchAt(Math.min(WET_PATCHES.length - 1, Math.floor(bedWet() * WET_PATCHES.length)), 0.75), 'water', 'can', 5]]),   // to and fro: fill the can at the spring pool, water a different bit of the bed each time
 };
+function workFn(id) { return WORKPATH[id] || (id && id.startsWith('heal:') ? (p, g) => healWork(id, p, g) : null); }   // jobs that move the gnome about as they go (the healing jobs: healWork)
 function woodTaken(i) { const [k, t] = segOf(taskProg('woodpile'), WOOD_ITEMS.length); return taskProg('woodpile') >= 1 || k > i ? 1 : k < i ? 0 : sstep(0.25, 0.6, t); }   // 0..1: how much of that lot Wendel has picked up
 function woodStage() {   // the woodpile grows in 3 steps, one per lot of wood he brings
   const p = taskProg('woodpile'); if (p >= 1) return 3; const [k, t] = segOf(p, WOOD_ITEMS.length); return k + (t >= 0.85 ? 1 : 0);
@@ -521,7 +522,7 @@ const hash = location.hash.slice(1);
 for (const tok of hash.split(/[#&]/)) if (/^(day|night|dawn|dusk|morning|evening)$/.test(tok)) tod = tok;
 if (/reset/.test(hash)) { G.reset(); }
 window.addEventListener('hashchange', () => location.reload());
-if (/test/.test(hash)) window.DBG = { cam, gnomes, IM, seat: BENCH_SEAT, dishFill: f => startDishFill(f), art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spirit: n => openLesson(n || 3), get allDone() { return ALLDONE; }, groundReady: () => !NEWGROUND || !groundMissing(), spiritAt: () => SPIRIT_HINT.screen, spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
+if (/test/.test(hash)) window.DBG = { patch: k => openPatch(k), jobs: f => openTasks(f || ''), magic: () => openMagic(), lesson: n => openLesson(n), cam, gnomes, IM, seat: BENCH_SEAT, dishFill: f => startDishFill(f), art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spirit: n => openLesson(n || 3), get allDone() { return ALLDONE; }, groundReady: () => !NEWGROUND || !groundMissing(), spiritAt: () => SPIRIT_HINT.screen, spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
 
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -563,12 +564,12 @@ class Gnome {
     }
     this.routine = null;
     if (job) {
-      const wp = WORKPATH[job.id] && WORKPATH[job.id](taskProg(job.id), this);
+      const wf = workFn(job.id), wp = wf && wf(taskProg(job.id), this);
       const sp = jobSpot(job) || wp || WORKSPOT['job:' + job.id] || WORKSPOT[job.def.spot] || SPOTS.fire; this.job = job.id;
       this.plan = (wp && wp[2]) || job.def.act || SPOT_ACT[job.def.spot] || (job.def.tile ? 'dig' : 'carry'); this.carryWalk = (wp && wp[3]) || false;
-      if (WORKPATH[job.id] && this.plan === 'carry') this.plan = 'pickup';   // gathering: she bends down to each piece, painted pick-up strip (art day 9)
-      this.pace = this.plan === 'carry' && !WORKPATH[job.id] ? [[sp[0], sp[1]], [sp[0] - 0.12, sp[1] + 0.06]] : null;
-      this.goto(sp[0], sp[1]); this.faceTowards(sp[0], sp[1], JOB_FACE[job.id] || (job.def.make ? makeAt(job.def) : null)); return;
+      if (wf && this.plan === 'carry') this.plan = 'pickup';   // gathering: she bends down to each piece, painted pick-up strip (art day 9)
+      this.pace = this.plan === 'carry' && !wf ? [[sp[0], sp[1]], [sp[0] - 0.12, sp[1] + 0.06]] : null;
+      this.goto(sp[0], sp[1]); this.faceTowards(sp[0], sp[1], JOB_FACE[job.id] || (job.def.make ? makeAt(job.def) : null) || (wp && wp[5]) || null); return;
     }
     const sat = this.onBench; this.job = null; this.plan = null; this.act = null; this.carryWalk = false; this.sitFor = 0;
     if (benchReady() && !sat && !DISH_FILL) {   // a sit on the bench: more likely if the other one is already sitting there alone
@@ -617,8 +618,8 @@ class Gnome {
         if (this.wait <= 0) {
           if (/^(sleep|fest)$/.test(routineFor(dayPhase().h))) { this.pick(); return; }
           if (this.pace) { this.pace.reverse(); const [x, y] = this.pace[0]; this.goto(x, y); this.wait = 0.6; return; }   // carrying: to and fro
-          const wp = WORKPATH[this.job];
-          if (wp) { const [x, y, act, carry] = wp(taskProg(this.job), this); if (Math.hypot(x - this.gx, y - this.gy) > 0.04) { this.act = null; if (act) this.plan = act; this.carryWalk = carry || false; this.goto(x, y); this.faceTowards(x, y, JOB_FACE[this.job] || null); this.wait = 0.6; return; }
+          const wp = workFn(this.job);
+          if (wp) { const [x, y, act, carry, , face] = wp(taskProg(this.job), this); if (Math.hypot(x - this.gx, y - this.gy) > 0.04) { this.act = null; if (act) this.plan = act; this.carryWalk = carry || false; this.goto(x, y); this.faceTowards(x, y, JOB_FACE[this.job] || face || null); this.wait = 0.6; return; }
             if (act && this.act !== act) { this.act = this.plan = act; this.aframe = 0; this.at = 0; } }   // a new task on the same spot (kneel, then tamp down)
           this.wait = 1;
         }
@@ -658,7 +659,7 @@ class Gnome {
     const carrying = this.walking && (this.pace || this.carryWalk) && this.dir === 'side';   // carrying wood: use the carry strip instead of the walk
     const act = this.act || (carrying ? (this.carryWalk === 'can' && this.who === 'him' ? 'canwalk' : 'carry') : null);   // carryWalk 'can': he walks with the watering can
     let img, cw, ch, f, flip;
-    const twig = this.job === 'spring' && taskProg('spring') < SPRING_FOUND && (act === 'dowse' || (!act && this.dir === 'side'));   // Look for water: a dowsing twig (code stand-in until him-dowse is painted)
+    const twig = (this.job === 'spring' && taskProg('spring') < SPRING_FOUND && (act === 'dowse' || (!act && this.dir === 'side'))) || (act === 'dowse' && !!this.job && this.job.startsWith('heal:'));   // (and pegging out the bare plain)   // Look for water: a dowsing twig (code stand-in until him-dowse is painted)
     if (act === 'dowse' && !this.acts.dowse) { img = IM[`${this.who}-side`]; [cw, ch] = this.cell; f = 0; flip = this.flip; }
     else if (act) { const a = this.acts[act] || this.acts.carry; img = IM[`${this.who}-${this.acts[act] ? act : 'carry'}`]; [cw, ch] = a.cell; f = (carrying ? this.frame : this.aframe) % a.n; flip = this.flip; }
     else { img = IM[`${this.who}-${this.dir}`]; [cw, ch] = this.cell; f = this.walking ? this.frame : 0; flip = this.dir === 'side' && this.flip; }
@@ -1003,6 +1004,10 @@ function groundMat(k) {
   const tl = G.s.tiles[k]; if (!tl) return null;
   if (k === '0,0') { const st = G.landStage().key, gp = G.s.tiles['0,0'].green; return { g: Math.round(20 * Math.min(1, Math.pow(gp / 12, 1.3))) / 20,   // green creeps in point by point (1 point is a faint haze; meadow at 12)
      kind: st === 'meadow' ? 1 : st === 'wood' ? 2 : 0, wet: 0, path: 0, wash: 0 }; }
+  if (tl.kind) {   // a healing tile: green creeps in point by point as on the home tile; the creek fills as its stones go; the old track always shows
+    const gp = tl.green, st = G.landStage(k).key, wet = tl.kind === 'creek' ? Math.round(10 * (0.45 * healProg(k, 'stones') + 0.55 * healProg(k, 'channel'))) / 10 : 0;
+    return { g: Math.round(20 * Math.min(1, Math.pow(gp / 12, 1.3))) / 20, kind: st === 'meadow' ? 1 : st === 'wood' ? 2 : 0, wet, path: tl.kind === 'verge' || MAP[k] === 'tile-crossing' ? 1 : 0, wash: tl.state === 'revealed' && !G.healAt(k) && !G.s.tasks[`heal:${k}:0`] ? 1 : 0 };
+  }
   let p = 0;
   if (tl.state === 'green') p = 1;
   else if (tl.state === 'regrowing') { const tk = G.s.tasks['regrow:' + k]; p = tk ? Math.round(10 * (1 - Math.max(0, tk.endsAt - G.now()) / (tk.endsAt - tk.startedAt))) / 10 : 0; }
@@ -2282,6 +2287,7 @@ function mouseHouse(x, y, w, h, now) {   // the toadstool turns into a mouse hou
 // The Wood spirit's lessons (CONTENT.story.lessons): it floats by what it is teaching about until you tap it. The gnomes cannot see it.
 let SPIRIT_N = 0, spiritAt = 0;
 function spiritSpot(n) {   // [gx, gy] on the home grid it hovers over, and how far to the side
+  if (typeof n === 'string') { const kind = n.slice(5), k = G.healTiles().find(t => G.s.tiles[t].kind === kind && G.healAt(t) < G.healSteps(t).length) || '0,0'; const [gx, gy] = glob(k, 0.5, 0.42); return [gx, gy, 0]; }   // a new kind of bare tile: over that patch
   if (n === 1) { const sb = PROPS.find(p => p.name === 'seedbed'); return [sb.gx, sb.gy - 0.04, 30]; }
   if (n === 2) return [SPRING.at[0], SPRING.at[1], 50];
   if (n === 3) { const [x, y] = toadAt(); return [x, y, 95]; }
@@ -2296,7 +2302,7 @@ function spiritItem(items, now) {
     ctx.drawImage(spi, x - ww / 2, fy - hh, ww, hh); ctx.drawImage(spi, x - ww / 2, fy - hh, ww, hh); SPIRIT_HINT.screen = { x, y: fy, w: ww, h: hh }; } });
 }
 function openLesson(n, again) {
-  const L = C.story.lessons[n - 1], v = G.visitorDef('spirit'), first = !again && G.teach(n), sp = L.spell && C.spells[L.spell];
+  const L = typeof n === 'string' ? Object.assign({ spell: C.heal.kinds[n.slice(5)].spell }, C.heal.kinds[n.slice(5)].lesson) : C.story.lessons[n - 1], v = G.visitorDef('spirit'), first = !again && G.teach(n), sp = L.spell && C.spells[L.spell];
   if (!again) { SPIRIT_N = 0; SPIRIT_HINT.screen = null; }
   openSheet(again ? 'lessonagain' : 'lesson', `<div class="jpage card"><p class="meta" style="margin:0">${first ? 'A new friend!' : 'The Wood spirit'}</p>${v ? portraitHtml(v, true) : ''}<h2>${L.title}</h2>
     ${first ? `<p class="lore">${C.story.spiritFirst}</p>` : ''}<p class="lore">${L.text}</p>${L.after ? `<p class="lore">${L.after}</p>` : ''}
@@ -2322,7 +2328,7 @@ function landItems(items, now) {
     const seed = tx * 31 + ty * 17 + 5;
     if (home) { for (const [n, gx, gy, st] of YARD_WOOD) if (lvl >= st) { if (n === 15) { toadItem(items, now, vb); } else woodPiece(items, n, gx, gy, vb); } }
     else {
-      if (k !== '0,1') for (let c = 0; c < 2; c++) {   // two little woodland corners (not on the couple's garden tile) on the tile, away from the stream, the path and the homes
+      if (k !== '0,1' && (!tl.kind || G.stageIndex(k) >= 3)) for (let c = 0; c < 2; c++) {   // two little woodland corners (not on the couple's garden tile) on the tile, away from the stream, the path and the homes
         const [gx, gy] = [[0.14, 0.84], [0.84, 0.16], [0.52, 0.92], [0.9, 0.62], [0.2, 0.2], [0.08, 0.5]][Math.floor(rnd(seed + c * 9) * 6)], [ux, uy] = glob(k, gx, gy);
         if (!openGround(ux, uy) || (homes[k] && Math.hypot(gx - LOT.home[0], gy - LOT.home[1]) < 0.25) || (k === CAMP.tile && Math.hypot(gx - CAMP.gx, gy - CAMP.gy) < 0.3)) continue;
         const cnt = 3 + Math.floor(rnd(seed + c * 5 + 1) * 2);
@@ -2664,6 +2670,284 @@ function makeItems(items, now) {
   if (garden && taskProg('pond') > 0) { const [px, py] = glob(POND.tile, POND.gx, POND.gy); items.push({ d: depthOf(px, py) - 0.3, draw: () => { const [x, y] = toWorld(px, py); drawPond(x, y, taskProg('pond'), now); } }); }
 }
 
+// ---------- healing the bare tiles (CONTENT.heal; docs/PLAN.md "Healing the bare tiles") ----------
+// Each kind of bare tile has a layout of pieces (tile grid, 0..1). A piece belongs to one job of that tile's chain (s = its id):
+//   go: there from the start, and goes one by one while that job runs; otherwise it comes, one by one, while the job runs.
+//   until: goes again while that later job runs. ev: appears when that bit of life comes back (CONTENT.heal later.ev); gone: goes then.
+//   always: part of the tile's hurt that stays (the dead tree). flat: lies on the ground. fade: soaks away as the patch greens.
+//   home: on the home tile (home grid). pic: a painting (IM key or art slot), else draw: a stand-in in HEAL_DRAW. h: height (world px).
+//   grow: a sapling's [knee-high, gnome-tall] events. day: creatures only show between those hours.
+// Creek pieces are placed by c: [along the stretch 0..1, side] (0 in the bed, +-1 on the banks, +-2 further out); track pieces by
+// v: [side, along 0..1]. Plain, rubbish and cracked tiles keep what stays on the right and along the front (clear of where a
+// neighbour would build), and every other one is mirrored corner to corner, so no two patches look the same.
+const ROLL_AT = [0.24, 0.88], SHELF_AT = [0.32, 0.84];   // at home: where the seed balls are rolled, and the nursery shelf (Hazel's growing corner, near the oak)
+const HEAL_LOOK = {
+  meadow: [
+    { s:'rubbish', go:1, pic:'kit-leftovers-01', at:[0.30, 0.42], h:52 }, { s:'rubbish', go:1, pic:'kit-leftovers-11', at:[0.52, 0.30], h:44 },
+    { s:'rubbish', go:1, pic:'kit-leftovers-04', at:[0.44, 0.62], h:44, flat:1 }, { s:'rubbish', go:1, pic:'kit-leftovers-03', at:[0.68, 0.50], h:34 },
+    { s:'rubbish', go:1, pic:'kit-leftovers-06', at:[0.22, 0.70], h:47 }, { s:'rubbish', go:1, pic:'kit-leftovers-12', at:[0.62, 0.78], h:44 },
+    { s:'fence', go:1, draw:'oldfence', at:[0.16, 0.22], h:58 }, { s:'fence', go:1, draw:'oldfence', at:[0.34, 0.17], h:54 },
+    { s:'fence', go:1, draw:'oldfence', at:[0.54, 0.14], h:58, broken:1 }, { s:'fence', go:1, draw:'oldfence', at:[0.74, 0.16], h:52 },
+    { s:'fence', pic:'fence-fallen', at:[0.85, 0.66], h:60 },   // the good posts, stacked to use again
+    ...[[0.40, 0.46], [0.57, 0.57], [0.30, 0.60], [0.50, 0.36], [0.68, 0.68]].flatMap(at => [{ s:'fork', pic:'g-st-patch-07', at, h:94, flat:1, fade:1 }]),
+    ...[[0.40, 0.46], [0.57, 0.57], [0.30, 0.60], [0.50, 0.36], [0.68, 0.68]].flatMap(at => [{ s:'water', draw:'wet', at, flat:1, fade:1 }]),
+    { s:'roll', home:1, draw:'balls', at:ROLL_AT, until:'toss' },
+    ...[[0.36, 0.50], [0.52, 0.62], [0.27, 0.64], [0.47, 0.37], [0.63, 0.72], [0.74, 0.42]].flatMap((at, i) => [{ s:'toss', draw:'dots', at, flat:1, gone:'sprout' + (i + 1) }, { ev:'sprout' + (i + 1), draw:'sprout', at, n:i }]),
+    { s:'logpile', pic:'kit-wood-13', at:[0.84, 0.74], h:54 },
+    { ev:'beetles', pic:'vis-beetle', at:[0.80, 0.77], h:9, crawl:1 }, { ev:'skink', pic:'vis-bluetongue', at:[0.86, 0.70], h:11, day:[9, 17], crawl:1 },
+    { s:'sapling', draw:'tree', tree:'gum', at:[0.80, 0.34], grow:['knee', 'tall'] },
+    { s:'beestone', draw:'beestone', at:[0.72, 0.88] }, { ev:'bees', draw:'bees', at:[0.72, 0.88], day:[8, 18] },
+    { ev:'butterflies', draw:'butterflies', at:[0.56, 0.66], day:[9, 17] },
+    { ev:'flowers', pic:'kit-wood-09', at:[0.64, 0.92], h:40 }, { ev:'flowers', pic:'kit-wood-04', at:[0.81, 0.90], h:43 }, { ev:'flowers', pic:'kit-wood-09', at:[0.70, 0.80], h:35 },
+  ],
+  creature: [
+    { always:1, draw:'deadtree', at:[0.78, 0.30] },
+    { always:1, pic:'kit-stumps-rocks-01', at:[0.64, 0.60], h:76 },   // a low, sound stump (the seed dish goes on it)
+    ...[[0.36, 0.40], [0.52, 0.54], [0.30, 0.66], [0.58, 0.32], [0.44, 0.76]].map((at, i) => ({ s:'mulch', go:1, draw:'cracks', at, flat:1, n:i })),
+    { s:'branches', go:1, pic:'kit-stumps-rocks-04', at:[0.40, 0.44], h:68 }, { s:'branches', go:1, pic:'kit-stumps-rocks-05', at:[0.56, 0.66], h:53, flat:1 },
+    { s:'branches', go:1, pic:'kit-stumps-rocks-10', at:[0.30, 0.56], h:76 }, { s:'branches', go:1, pic:'kit-stumps-rocks-04', at:[0.64, 0.42], h:61, flip:1 },
+    { s:'branches', pic:'stick-pile', at:[0.88, 0.60], h:51 },   // the heap at the edge
+    { s:'stump', go:1, pic:'kit-stumps-rocks-02', at:[0.46, 0.50], h:106 }, { s:'stump', draw:'clods', at:[0.46, 0.50], flat:1, fade:1 },
+    ...[[0.36, 0.40], [0.52, 0.54], [0.30, 0.66], [0.58, 0.32], [0.44, 0.76]].map((at, i) => ({ s:'mulch', pic:i % 2 ? 'g-st-patch-03' : 'g-st-patch-05', at, h:54, flat:1, fade:1 })),
+    { s:'log', pic:'kit-wood-14', at:[0.83, 0.80], h:64 },
+    { ev:'wombat', draw:'wombat', at:[0.74, 0.86] }, { ev:'burrow', pic:'nest-burrow', at:[0.90, 0.88], h:45 },
+    { s:'rocks', pic:'nest-stones', at:[0.60, 0.88], h:51 }, { ev:'skink', pic:'vis-bluetongue', at:[0.62, 0.84], h:11, day:[9, 17], crawl:1 },
+    { s:'dish', draw:'seeddish', at:[0.64, 0.60] },
+    { ev:'birdsprouts', draw:'sprout', at:[0.58, 0.66], n:1 }, { ev:'birdsprouts2', draw:'sprout', at:[0.70, 0.66], n:2 },
+    { s:'saplings', draw:'tree', tree:'wattle', at:[0.88, 0.44], grow:['knee', 'tall'] }, { s:'saplings', draw:'tree', tree:'gum', at:[0.72, 0.72], grow:['knee', 'tall'] },
+    { ev:'ferns1', pic:'kit-wood-02', at:[0.82, 0.50], h:40 }, { ev:'ferns1', pic:'kit-wood-01', at:[0.67, 0.76], h:46 },
+    { ev:'ferns2', pic:'kit-wood-01', at:[0.92, 0.38], h:40 }, { ev:'ferns2', pic:'kit-wood-02', at:[0.76, 0.66], h:35 },
+  ],
+  nursery: [
+    { s:'walk', draw:'peg', at:[0.80, 0.34], until:'holes' }, { s:'walk', draw:'peg', at:[0.84, 0.66], until:'holes' }, { s:'walk', draw:'peg', at:[0.64, 0.84], until:'holes' },
+    { s:'stones', go:1, pic:'kit-stumps-rocks-03', at:[0.46, 0.40], h:46 }, { s:'stones', go:1, pic:'kit-stumps-rocks-03', at:[0.62, 0.56], h:38, flip:1 },
+    { s:'stones', go:1, pic:'kit-stumps-rocks-03', at:[0.34, 0.62], h:42 }, { s:'stones', go:1, pic:'kit-stumps-rocks-03', at:[0.72, 0.42], h:34 },
+    ...[0.38, 0.50, 0.62, 0.74, 0.86].map(x => ({ s:'stones', draw:'wall', at:[x, 0.94] })),
+    { s:'holes', draw:'hole', at:[0.80, 0.34], until:'plant1' }, { s:'holes', draw:'hole', at:[0.84, 0.66], until:'plant2' }, { s:'holes', draw:'hole', at:[0.64, 0.84], until:'plant2' },
+    { s:'plant1', draw:'tree', tree:'gum', at:[0.80, 0.34], grow:['knee1', 'tall1'] },
+    { s:'plant2', draw:'tree', tree:'gum', at:[0.84, 0.66], grow:['knee2', 'tall2'] }, { s:'plant2', draw:'tree', tree:'wattle', at:[0.64, 0.84], grow:['knee2', 'tall2'] },
+    ...[[0.50, 0.50], [0.66, 0.42], [0.56, 0.70], [0.72, 0.58]].map((at, i) => ({ ev:'grass' + (i + 1), draw:'grass', at, n:i })),
+    { s:'birdbath', draw:'birdbath', at:[0.56, 0.93] }, { ev:'wrens', pic:'vis-wren', at:[0.47, 0.93], h:12, day:[6, 18], hop:1 },
+    ...[[0.80, 0.34], [0.84, 0.66], [0.64, 0.84]].map(at => ({ s:'mulch', pic:'g-st-patch-03', at, h:72, flat:1 })),
+    { ev:'moss', pic:'kit-wood-10', at:[0.88, 0.40], h:42 }, { ev:'moss', pic:'kit-wood-02', at:[0.72, 0.88], h:35 },
+    { ev:'moss2', pic:'kit-wood-01', at:[0.90, 0.72], h:40 }, { ev:'moss2', pic:'kit-wood-10', at:[0.76, 0.30], h:35 },
+  ],
+  creek: [
+    { s:'junk', go:1, pic:'kit-leftovers-01', c:[0.24, 0], h:44 }, { s:'junk', go:1, pic:'kit-leftovers-06', c:[0.66, 0], h:42 }, { s:'junk', go:1, draw:'wheel', c:[0.84, 0.4] },
+    { s:'stones', go:1, pic:'kit-stumps-rocks-03', c:[0.32, 0], h:57 }, { s:'stones', go:1, pic:'kit-stumps-rocks-03', c:[0.42, -0.3], h:49, flip:1 }, { s:'stones', go:1, pic:'kit-stumps-rocks-03', c:[0.74, 0.2], h:53 },
+    { s:'channel', go:1, draw:'slump', c:[0.58, 0.1], flat:1 },
+    { s:'reeds', pic:'kit-wood-05', c:[0.18, 1], h:57 }, { s:'reeds', pic:'kit-wood-05', c:[0.38, -1], h:51, flip:1 }, { s:'reeds', pic:'kit-wood-05', c:[0.64, 1], h:59 }, { s:'reeds', pic:'kit-wood-05', c:[0.82, -1], h:54 },
+    { ev:'reeds2', pic:'kit-wood-05', c:[0.28, -1], h:46, flip:1 }, { ev:'reeds2', pic:'kit-wood-05', c:[0.74, 1], h:49 },
+    { s:'flat', draw:'flatstones', c:[0.28, 0], flat:1 }, { s:'flat', draw:'flatstones', c:[0.70, 0], flat:1, n:1 },
+    { s:'pond', draw:'pond', c:[0.76, 2.4], flat:1 },
+    { ev:'frogs', pic:'vis-frog', c:[0.66, 2.1], h:14, hop:1 }, { ev:'dragonflies', draw:'dragonflies', c:[0.78, 2.4], day:[10, 17] }, { ev:'lilies', draw:'lily', c:[0.80, 2.5], flat:1 },
+    { s:'sapling', draw:'tree', tree:'wattle', c:[0.20, -2.4], grow:['knee', 'tall'] },
+    { s:'perch', draw:'perch', c:[0.46, -1] }, { ev:'kingfisher', pic:'vis-kingfisher', c:[0.46, -1], h:24, day:[6, 16], perch:1 },
+    { ev:'heron', draw:'heron', c:[0.88, 0.1], day:[6, 18] },
+  ],
+  verge: [
+    ...[0.20, 0.50, 0.80].map(y => ({ s:'ruts', go:1, pic:'kit-marks-01', v:[0, y], h:74, flat:1 })),
+    ...[0.20, 0.50, 0.80].map(y => ({ s:'ruts', pic:'kit-marks-03', v:[0, y], h:67, flat:1, fade:1 })),
+    ...[0.10, 0.26, 0.42, 0.58, 0.74, 0.90].map((y, i) => ({ s:'stones', draw:'step', v:[0.15 * (i % 2 ? 1 : -1), y], flat:1, n:i })),
+    ...[[-1, 0.16], [1, 0.30], [-1, 0.48], [1, 0.62], [-1, 0.80], [1, 0.92]].flatMap(([sd, y], i) => [{ s:'balls', draw:'dots', v:[sd, y], flat:1, gone:'verge' + (1 + (i % 4)) }, { ev:'verge' + (1 + (i % 4)), draw:'flowersv', v:[sd, y], n:i }]),
+    { s:'sapling', draw:'tree', tree:'gum', v:[-2.6, 0.28], grow:['knee', 'tall'] },
+    { s:'birdbox', draw:'birdbox', v:[-2.2, 0.62] }, { ev:'robins', pic:'vis-robin', v:[-2.2, 0.62], h:12, day:[6, 18], onbox:1 },
+    ...[0.76, 0.86, 0.96].map((y, i) => ({ s:'hedge', draw:'wattlebush', v:[-2.4 + i * 0.3, y], n:i })),
+  ],
+};
+// which job a piece belongs to, as a step index, and which "later" an ev name is (filled in once)
+const HEAL_IDX = {};
+for (const [kind, K] of Object.entries(C.heal.kinds)) { const st = {}, ev = {}; K.steps.forEach((s, i) => { st[s.id] = i; (s.later || []).forEach((l, j) => { ev[l.ev] = [i, j]; }); }); HEAL_IDX[kind] = { st, ev }; }
+const HP = {};   // extra painted pieces, loaded when first needed (never blocks the start)
+function healPic(name) { if (IM[name] && IM[name].width) return IM[name]; const a = art(name); if (a) return a; if (!name.startsWith('kit-')) return null;
+  if (!HP[name]) { const im = new Image(); im.src = `sprites/kit/${name.slice(4)}.webp`; HP[name] = im; } return HP[name].complete && HP[name].width ? HP[name] : null; }
+function healProg(k, s) { const i = HEAL_IDX[G.s.tiles[k].kind].st[s]; if (i == null) return 0; if (G.healStepDone(k, i)) return 1; return taskProg(`heal:${k}:${i}`); }
+function healEvAt(k, name) { const e = HEAL_IDX[G.s.tiles[k].kind].ev[name]; return e ? G.healEv(k, e[0], e[1]) : 0; }
+function healSwap(k) { const kind = G.s.tiles[k].kind, [tx, ty] = k.split(',').map(Number); return (kind === 'meadow' || kind === 'creature' || kind === 'nursery') && ((tx + ty) & 1) !== 0; }
+function healLocal(k, q) {   // a piece's spot on its tile (tile grid)
+  const [tx, ty] = k.split(',').map(Number);
+  if (q.c) { let gx = q.c[0]; if (k === '-2,-1') gx = 0.52 + gx * 0.44; const u = tx + gx, sd = q.c[1], v = streamV(u) + Math.sign(sd) * (Math.abs(sd) <= 1 ? Math.abs(sd) * (streamHW(u) + 16) : streamHW(u) + 16 + (Math.abs(sd) - 1) * 52) / LEY; return [gx, v - ty]; }
+  if (q.v) { const v = ty + q.v[1], u = pathU(v) + q.v[0] * 46 / LEX; return [u - tx, q.v[1]]; }
+  return healSwap(k) ? [q.at[1], q.at[0]] : q.at;
+}
+function healPieces(k) {   // every piece of this tile with how much of it shows now (a) and where it is (home grid)
+  const tl = G.s.tiles[k], L = HEAL_LOOK[tl.kind]; if (!L) return [];
+  const claimed = G.healClaimed(k) && tl.state === 'green', green = tl.green, out = [], cnt = {}, idx = [];
+  for (const q of L) { if (q.ev || q.always || q.home) { idx.push(0); continue; } const key = q.s + (q.go ? '-' : '+'); idx.push(cnt[key] = (cnt[key] || 0) + 1); }
+  L.forEach((q, n) => {
+    let a;
+    if (q.always) a = 1;
+    else if (q.ev) { const t = healEvAt(k, q.ev); a = t ? Math.min(1, (G.now() - t) / 4000) : 0; }
+    else { const p = healProg(k, q.s), all = cnt[q.s + (q.go ? '-' : '+')] || 1, j = idx[n] - 1;
+      a = q.go ? 1 - sstep((j + 0.4) / all, (j + 0.9) / all, p) : q.home ? sstep(0, 0.3, p) : sstep((j + 0.1) / all, (j + 0.6) / all, p); }
+    if (a > 0 && q.until) a *= 1 - sstep(0, 0.4, healProg(k, q.until));
+    if (a > 0 && q.gone && healEvAt(k, q.gone)) a = 0;
+    if (a > 0 && q.fade) a *= 1 - 0.85 * sstep(6, 16, green);
+    if (a > 0 && q.day) { const h = dayPhase().h; if (h < q.day[0] || h >= q.day[1]) a = 0; }
+    if (claimed && !q.flat && !q.go) a = 0;   // a neighbour's lot or the garden: what the gnomes made gives way to the home that goes there
+    const [gx, gy] = q.home ? q.at : healLocal(k, q), G2 = q.home ? [gx, gy] : glob(k, gx, gy);
+    out.push(Object.assign({ a, G: G2, local: [gx, gy], k }, q));
+  });
+  return out;
+}
+function healTreeSize(q) {   // a sapling: seedling, knee-high, then taller than a gnome (two days on)
+  const k = q.k; if (healEvAt(k, q.grow[1])) return 2; if (healEvAt(k, q.grow[0])) return 1; return 0;
+}
+const HEAL_DRAW = {
+  oldfence(x, y, a, q) {   // a grey, leaning loggers' fence: three posts and sagging wire
+    const h = q.h, lean = q.broken ? 0.28 : 0.1; ctx.save(); ctx.lineCap = 'round';
+    const posts = [[-34, 0], [0, -4], [34, -8]].map(([dx, dy], i) => [x + dx, y + dy, h * (i === 1 && q.broken ? 0.55 : 1 - i * 0.06), lean * (i - 1) + (q.broken && i === 2 ? 0.5 : 0)]);
+    for (const [px, py, ph, ln] of posts) { shadow(px, py, 7, 2.5); ctx.strokeStyle = INK; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + Math.sin(ln) * ph, py - Math.cos(ln) * ph); ctx.stroke(); ctx.strokeStyle = '#a19a8c'; ctx.lineWidth = 3.6; ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(90,70,55,0.75)'; ctx.lineWidth = 1;
+    for (const f of [0.45, 0.8]) { ctx.beginPath(); let lx = 0, ly = 0; posts.forEach(([px, py, ph, ln], i) => { const ex = px + Math.sin(ln) * ph * f, ey = py - Math.cos(ln) * ph * f;   // the wire sags between posts
+      if (i) ctx.quadraticCurveTo((ex + lx) / 2, (ey + ly) / 2 + 9, ex, ey); else ctx.moveTo(ex, ey); lx = ex; ly = ey; }); ctx.stroke(); }
+    ctx.restore();
+  },
+  wet(x, y) { ctx.save(); ctx.translate(x, y); ctx.scale(1, 0.5); const g = ctx.createRadialGradient(0, 0, 4, 0, 0, 52); g.addColorStop(0, 'rgba(40,26,16,0.34)'); g.addColorStop(0.7, 'rgba(40,26,16,0.16)'); g.addColorStop(1, 'rgba(40,26,16,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 52, 0, 7); ctx.fill(); ctx.restore(); },
+  balls(x, y) { for (let i = 0; i < 9; i++) { const r = rnd(i + 900), t = rnd(i + 910) * 6.3; pebble(x + Math.cos(t) * r * 12, y + Math.sin(t) * r * 5 - (i > 6 ? 4 : 0), 3.2, i % 3 ? '#7a5a3e' : '#8a6a48', i); } },
+  dots(x, y, a, q) { const s = (q.n || 0) + q.local[0] * 50; for (let i = 0; i < 9; i++) { const r = rnd(s + i), t = rnd(s + i + 40) * 6.3; pebble(x + Math.cos(t) * r * 26, y + Math.sin(t) * r * 10, 3, i % 2 ? '#6e4f34' : '#7d5c3e', i); } },
+  sprout(x, y, a, q) { const s = (q.n || 0) * 7 + q.local[1] * 30; for (let i = 0; i < 6; i++) { const r = rnd(s + i), t = rnd(s + i + 40) * 6.3, px = x + Math.cos(t) * r * 22, py = y + Math.sin(t) * r * 9;
+      ctx.save(); ctx.strokeStyle = '#4f6b2a'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, py - 6); ctx.stroke(); blob(px - 3, py - 7, 3.2, 1.6, '#7a9a3c'); blob(px + 3, py - 8, 3.2, 1.6, '#6f8f34'); ctx.restore(); } },
+  grass(x, y, a, q) { for (let i = 0; i < 5; i++) { const px = x + (rnd(q.n * 9 + i) - 0.5) * 50, py = y + (rnd(q.n * 9 + i + 20) - 0.5) * 20, im = healPic('g-st-' + GSTICK.grass[(q.n * 3 + i) % GSTICK.grass.length]); if (im) { const w = im.width * 0.55, h = im.height * 0.55; ctx.drawImage(im, px - w / 2, py - h * 0.85, w, h); } } },
+  flowersv(x, y, a, q) { for (let i = 0; i < 3; i++) { const im = healPic('g-st-' + GSTICK.meadow[(q.n * 4 + i) % 12]); if (!im) continue; const w = im.width * 0.6, h = im.height * 0.6, px = x + (i - 1) * 14, py = y + (i % 2) * 6; ctx.drawImage(im, px - w / 2, py - h * 0.85, w, h); } },
+  tree(x, y, a, q, now) {   // a gum (pale trunk, drooping grey-green leaves) or a wattle (dark trunk, feathery green with gold puffs), with a ring of sticks until it is tall
+    const sz = healTreeSize(q), h = [24, 48, 135][sz], gum = q.tree === 'gum', sway = Math.sin(now / 1400 + x * 0.01) * (sz === 2 ? 2 : 1);
+    shadow(x, y, 6 + h * 0.18, 3 + h * 0.05);
+    ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = INK; ctx.lineWidth = sz === 2 ? 7 : 3.5; ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x - 2, y - h * 0.5, x + sway, y - h * 0.82); ctx.stroke();
+    ctx.strokeStyle = gum ? '#d8cbb2' : '#6a4e36'; ctx.lineWidth = sz === 2 ? 4.5 : 2; ctx.stroke();
+    if (sz === 2) { ctx.lineWidth = 2.4; ctx.strokeStyle = gum ? '#c9bba0' : '#5e4430'; for (const [bx, by, ex, ey] of [[0, -0.55, -0.22, -0.78], [0, -0.62, 0.2, -0.84], [0, -0.72, -0.06, -0.96]]) { ctx.beginPath(); ctx.moveTo(x + bx * h, y + by * h); ctx.lineTo(x + ex * h + sway, y + ey * h); ctx.stroke(); } }
+    const leaves = sz === 0 ? 3 : sz === 1 ? 7 : 16, top = y - h * 0.8, spread = [8, 16, 42][sz];
+    for (let i = 0; i < leaves; i++) { const r = rnd(i + x * 0.3), t = rnd(i + 30 + x * 0.3) * 6.3, lx = x + sway + Math.cos(t) * r * spread, ly = top - (sz === 2 ? 14 : 3) + Math.sin(t) * r * spread * 0.62;
+      if (gum) blob(lx, ly + 3, [3, 5, 11][sz], [5, 8, 15][sz] * 0.7, i % 3 ? 'rgba(122,140,108,0.95)' : 'rgba(96,118,90,0.95)');
+      else { blob(lx, ly, [3.5, 6, 12][sz], [2, 3.5, 8][sz], i % 3 ? 'rgba(86,118,58,0.95)' : 'rgba(70,100,46,0.95)'); if (sz > 0 && i % 3 === 0) blob(lx + 2, ly - 2, [0, 2.2, 3.6][sz], [0, 2.2, 3.6][sz], '#e2c33a'); } }
+    if (sz < 2) for (let i = 0; i < 4; i++) { const ang = i / 4 * 6.3 + 0.4, gx = x + Math.cos(ang) * 11, gy = y + Math.sin(ang) * 4.5; ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + Math.cos(ang) * 2, gy - 30); ctx.stroke(); ctx.strokeStyle = '#8a6a48'; ctx.lineWidth = 1.6; ctx.stroke(); }
+    ctx.restore();
+  },
+  beestone(x, y) { flatStone(x, y, 16, 3); ctx.save(); ctx.fillStyle = '#b8b2a6'; ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(x + 2, y - 4, 9, 3.6, 0, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(120,170,175,0.9)'; ctx.beginPath(); ctx.ellipse(x + 2, y - 4.4, 6.5, 2.3, 0, 0, 7); ctx.fill(); ctx.restore(); snailShell(x - 13, y - 2, 2.6); },   // the hidden snail, as always
+  bees(x, y, a, q, now) { const im = healPic('vis-nativebee'); for (let i = 0; i < 3; i++) { const t = now / 900 + i * 2.1, bx = x + Math.cos(t) * 26, by = y - 22 + Math.sin(t * 1.7) * 9;
+      if (im) { const w = 9 * im.width / im.height; ctx.drawImage(im, bx - w / 2, by - 4.5, w, 9); } else blob(bx, by, 2.5, 2, '#3a3020'); } },
+  butterflies(x, y, a, q, now) { const im = healPic('vis-butterfly'); for (let i = 0; i < 2; i++) { const t = now / 1700 + i * 3, bx = x + Math.cos(t) * 40 + i * 30, by = y - 34 + Math.sin(t * 2.3) * 14, f = 0.4 + 0.6 * Math.abs(Math.sin(now / 90 + i));
+      if (im) { const h = 14, w = h * im.width / im.height; ctx.save(); ctx.translate(bx, by); ctx.scale(f, 1); ctx.drawImage(im, -w / 2, -h / 2, w, h); ctx.restore(); } } },
+  cracks(x, y, a, q) { ctx.save(); ctx.strokeStyle = 'rgba(70,48,30,0.55)'; ctx.lineCap = 'round'; const s = q.n * 13 + 5;
+    for (let b = 0; b < 4; b++) { let px = x, py = y, ang = rnd(s + b) * 6.3; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(px, py); for (let i = 0; i < 5; i++) { ang += (rnd(s + b * 7 + i) - 0.5) * 1.2; px += Math.cos(ang) * 11; py += Math.sin(ang) * 4.5; ctx.lineTo(px, py); ctx.lineWidth = 2.2 - i * 0.35; } ctx.stroke(); }
+    ctx.restore(); },
+  clods(x, y) { for (let i = 0; i < 6; i++) blob(x + (rnd(i + 70) - 0.5) * 40, y + (rnd(i + 80) - 0.5) * 14, 5 + rnd(i + 90) * 3, 3 + rnd(i + 95) * 2, i % 2 ? '#6e4f34' : '#7d5c3e'); },
+  deadtree(x, y, a, q, now) {   // a tall grey dead gum (it stays: something will want to live in it); the nest box, the possum and its tiny knocker come later
+    const k = q.k, h = 240; shadow(x, y, 40, 11);
+    ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const limb = (x0, y0, x1, y1, w) => { ctx.strokeStyle = INK; ctx.lineWidth = w + 2.5; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); ctx.strokeStyle = '#a8a196'; ctx.lineWidth = w; ctx.stroke(); };
+    limb(x - 14, y + 3, x - 3, y - h * 0.55, 20); limb(x + 12, y + 3, x - 1, y - h * 0.55, 17); limb(x - 2, y - h * 0.5, x + 3, y - h, 12); limb(x - 22, y + 4, x - 8, y - 14, 8); limb(x + 20, y + 3, x + 6, y - 12, 7);
+    limb(x - 1, y - h * 0.6, x - 42, y - h * 0.86, 6); limb(x - 30, y - h * 0.79, x - 50, y - h * 0.74, 3); limb(x + 1, y - h * 0.7, x + 38, y - h * 0.95, 5); limb(x + 26, y - h * 0.87, x + 44, y - h * 0.84, 3); limb(x + 2, y - h * 0.86, x + 16, y - h * 1.08, 3);
+    ctx.fillStyle = '#3a2a1e'; ctx.beginPath(); ctx.ellipse(x - 2, y - h * 0.62, 5, 7, 0, 0, 7); ctx.fill();   // the hollow
+    const pos = healEvAt(k, 'possum'), night = dayPhase().h >= 17 || dayPhase().h < 7;
+    if (pos) { blob(x + 3.5, y - h * 0.62 + 2, 1.6, 1.6, '#c9a14a'); if (night) { const im = healPic('vis-possum'); if (im) { const hh = 22, w = hh * im.width / im.height; ctx.save(); ctx.beginPath(); ctx.ellipse(x - 2, y - h * 0.62, 6, 8, 0, 0, 7); ctx.rect(x - 30, y - h * 0.62 - 40, 60, 38); ctx.clip(); ctx.drawImage(im, x - 2 - w / 2, y - h * 0.62 - hh + 6, w, hh); ctx.restore(); } } }   // a tiny brass knocker nobody admits to fitting
+    const nb = healProg(k, 'nestbox'); if (nb > 0) { ctx.globalAlpha *= nb; const bx = x + 9, by = y - h * 0.42; ctx.fillStyle = '#8a6a48'; ctx.strokeStyle = INK; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.rect(bx - 7, by - 12, 14, 16); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#6e5238'; ctx.beginPath(); ctx.moveTo(bx - 9, by - 11); ctx.lineTo(bx, by - 18); ctx.lineTo(bx + 9, by - 11); ctx.closePath(); ctx.fill(); ctx.stroke(); blob(bx, by - 5, 2.6, 2.6, '#2a1d14'); }
+    ctx.restore();
+  },
+  seeddish(x, y) { const ty = y - 34; ctx.save(); ctx.fillStyle = '#9a958c'; ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(x, ty, 11, 4, 0, 0, 7); ctx.fill(); ctx.stroke(); for (let i = 0; i < 7; i++) blob(x + (rnd(i + 60) - 0.5) * 14, ty - 1 + (rnd(i + 61) - 0.5) * 3, 1.3, 1, '#b8955a'); ctx.restore(); },
+  wombat(x, y, a, q, now) {   // stand-in: a round, sleepy, very solid wombat (a painting will take over: art list)
+    const b = Math.sin(now / 1300) * 0.6; shadow(x, y, 20, 6); ctx.save(); ctx.strokeStyle = INK; ctx.lineWidth = 1.6;
+    ctx.fillStyle = '#7a6250'; ctx.beginPath(); ctx.ellipse(x, y - 11 + b, 20, 12, 0, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(x - 18, y - 9 + b, 9, 8, 0, 0, 7); ctx.fill(); ctx.stroke(); blob(x - 25, y - 7 + b, 4, 3.2, '#4a3a30');
+    blob(x - 15, y - 17 + b, 2.6, 3.2, '#5d4a3c'); blob(x - 20, y - 11 + b, 1.2, 1.2, '#1c140e'); ctx.restore(); },
+  peg(x, y) { shadow(x, y, 3, 1.2); post(x, y, 16, 2.6, '#9a7a50'); blob(x + 3, y - 14, 3, 1.4, '#c9b48a'); },
+  wall(x, y, a, q) { for (let i = 0; i < 5; i++) stone(x - 24 + i * 12 + (rnd(i + q.local[0] * 40) - 0.5) * 3, y - (i % 2) * 2, 6 + rnd(i + 5 + q.local[0] * 40) * 2); for (let i = 0; i < 3; i++) stone(x - 16 + i * 14, y - 8, 5 + rnd(i + 9) * 1.5); },
+  hole(x, y) { blob(x + 16, y + 1, 11, 5, '#7d5c3e'); blob(x + 14, y - 1, 8, 4, '#8a6a48'); blob(x, y, 10, 4.5, '#3a2a1e'); ctx.save(); ctx.strokeStyle = 'rgba(42,21,16,0.6)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x, y, 10, 4.5, 0, 0, 7); ctx.stroke(); ctx.restore(); },
+  birdbath(x, y) { shadow(x, y, 12, 4); ctx.save(); ctx.fillStyle = '#9a958c'; ctx.strokeStyle = INK; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.rect(x - 4, y - 18, 8, 18); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(x, y - 20, 14, 5, 0, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'rgba(120,170,175,0.9)'; ctx.beginPath(); ctx.ellipse(x, y - 21, 10, 3, 0, 0, 7); ctx.fill(); ctx.restore(); },
+  wheel(x, y) { shadow(x, y, 16, 4); ctx.save(); ctx.translate(x, y - 4); ctx.scale(1, 0.45); ctx.strokeStyle = INK; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(0, 0, 18, 0, 7); ctx.stroke(); ctx.strokeStyle = '#7a5a3a'; ctx.lineWidth = 3.5; ctx.stroke();
+    ctx.lineWidth = 2.2; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(i * 1.05) * 17, Math.sin(i * 1.05) * 17); ctx.stroke(); } blob(0, 0, 4, 4, '#5d4430'); ctx.restore(); },
+  slump(x, y) { const im = healPic('kit-marks-06'); if (im) { const w = 70, h = w * im.height / im.width; ctx.drawImage(im, x - w / 2, y - h / 2, w, h); } else blob(x, y, 30, 10, '#7d5c3e'); },
+  flatstones(x, y, a, q) { for (let i = 0; i < 3; i++) flatStone(x - 16 + i * 16, y + (i % 2 ? 3 : -3), 8 + rnd(i + (q.n || 0) * 5) * 3, i); },
+  pond(x, y, a, q, now) { ctx.save(); ctx.translate(x, y); ctx.scale(0.62, 0.62); drawPond(0, 0, 1, now); ctx.restore(); },
+  lily(x, y) { blob(x, y, 6, 2.6, '#5d7a33'); blob(x + 1, y - 2, 2.6, 1.8, '#f3efe2'); blob(x + 1, y - 2.5, 1, 0.8, '#e2c33a'); },
+  dragonflies(x, y, a, q, now) { const im = healPic('vis-dragonfly'); for (let i = 0; i < 2; i++) { const t = now / 700 + i * 2.5, bx = x + Math.cos(t) * 30 + Math.cos(t * 3.1) * 6, by = y - 26 + Math.sin(t * 1.3) * 8;
+      if (im) { const h = 10, w = h * im.width / im.height; ctx.drawImage(im, bx - w / 2, by - h / 2, w, h); } else blob(bx, by, 4, 1.2, '#3d6a8a'); } },
+  perch(x, y) { ctx.save(); ctx.lineCap = 'round'; for (const [w, c] of [[5, INK], [3, '#7a5a3a']]) { ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x - 6, y); ctx.lineTo(x + 14, y - 34); ctx.lineTo(x + 26, y - 40); ctx.moveTo(x + 14, y - 34); ctx.lineTo(x + 16, y - 46); ctx.stroke(); } ctx.restore(); },
+  heron(x, y, a, q, now) {   // stand-in: a grey heron on one leg in the shallows, perfectly still
+    ctx.save(); ctx.strokeStyle = INK; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 22); ctx.strokeStyle = '#6a6458'; ctx.lineWidth = 1.8; ctx.stroke();
+    ctx.fillStyle = '#9aa3a6'; ctx.strokeStyle = INK; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.ellipse(x + 2, y - 30, 11, 7, -0.4, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x - 6, y - 34); ctx.quadraticCurveTo(x - 12, y - 46, x - 6, y - 54); ctx.strokeStyle = '#9aa3a6'; ctx.lineWidth = 3.5; ctx.stroke();
+    blob(x - 6, y - 55, 4, 3, '#b8bfc0'); ctx.strokeStyle = '#c9a14a'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(x - 9, y - 55); ctx.lineTo(x - 18, y - 53); ctx.stroke(); ctx.restore(); },
+  step(x, y, a, q) { flatStone(x, y, 9 + rnd((q.n || 0) + 300) * 2.5, q.n || 0); },
+  birdbox(x, y) { shadow(x, y, 5, 2); post(x, y, 46, 4, '#8a6a48'); ctx.save(); ctx.fillStyle = '#8a6a48'; ctx.strokeStyle = INK; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.rect(x - 8, y - 62, 16, 16); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#5d7a33'; ctx.beginPath(); ctx.moveTo(x - 10, y - 61); ctx.lineTo(x, y - 69); ctx.lineTo(x + 10, y - 61); ctx.closePath(); ctx.fill(); ctx.stroke(); blob(x, y - 55, 2.6, 2.6, '#2a1d14'); ctx.restore(); },
+  wattlebush(x, y, a, q) { const im = healPic('kit-wood-08'), h = healEvAt(q.k, 'hedge2') ? 62 : 42; if (!im) return; const w = h * im.width / im.height; shadow(x, y, w * 0.25, 4); ctx.drawImage(im, x - w / 2, y - h * 0.94, w, h); },
+};
+function healItems(items, now) {   // the pieces on every healing tile, depth-sorted with everything else
+  const vb = viewBox(); vb.x0 -= 160; vb.x1 += 160; vb.y0 -= 260; vb.y1 += 80;
+  for (const k of G.healTiles()) for (const q of healPieces(k)) {
+    if (q.a <= 0.01) continue; const [ux, uy] = q.G;
+    items.push({ d: depthOf(ux, uy) + (q.flat ? -0.25 : 0), draw: () => { const [x0, y0] = toWorld(ux, uy); if (x0 < vb.x0 || x0 > vb.x1 || y0 < vb.y0 || y0 > vb.y1) return;
+      let x = x0, y = y0; if (q.crawl) x += Math.sin(now / 2400 + ux * 9) * 4; if (q.hop) y -= Math.max(0, Math.sin(now / 600 + ux * 7)) * 3;
+      if (q.perch) { x += 22; y -= 40; } if (q.onbox) y -= 69;
+      ctx.save(); ctx.globalAlpha *= Math.min(1, q.a);
+      if (q.draw) HEAL_DRAW[q.draw](x, y, q.a, q, now);
+      else { const im = healPic(q.pic); if (im) { const w = im.width * q.h / im.height; if (!q.flat && !q.perch && !q.onbox) shadow(x, y, w * 0.32, w * 0.09); if (q.flat && /patch|marks/.test(q.pic)) ctx.globalAlpha *= 0.8;
+        if (q.flip) { ctx.translate(x, 0); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, q.flat ? y - q.h / 2 : y - q.h * 0.92, w, q.h); } else ctx.drawImage(im, x - w / 2, q.flat ? y - q.h / 2 : y - q.h * 0.92, w, q.h); } }
+      ctx.restore(); } });
+  }
+  shelfItem(items, now);
+}
+function shelfStage() {   // the nursery shelf at home: 0 none, then empty pots, potted seeds, or seedlings ready to plant out
+  const ks = G.healTiles().filter(k => G.s.tiles[k].kind === 'nursery'); let made = G.s.flags.nurseryShelf ? 1 : 0, pots = 0, grow = 0;
+  for (const k of ks) { made = Math.max(made, healProg(k, 'shelf')); const i = HEAL_IDX.nursery.st;
+    if (healProg(k, 'pot') > 0 && healProg(k, 'plant2') < 1) { pots = Math.max(pots, healProg(k, 'pot')); const w = G.healWait(k, i.walk); const tk = G.s.tasks[`heal:${k}:${i.pot}`];
+      grow = Math.max(grow, G.healStepDone(k, i.pot) ? (w && tk ? Math.min(1, 1 - (w - G.now()) / (w - tk.endsAt)) : 1) : 0); } }
+  return { made, pots, grow };
+}
+function shelfItem(items, now) {
+  const sh = shelfStage(); if (sh.made <= 0) return; const [gx, gy] = SHELF_AT;
+  items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); ctx.save(); ctx.globalAlpha *= sh.made; shadow(x, y, 30, 7);
+    for (const dx of [-22, 22]) { blob(x + dx, y - 6, 7, 3, '#5d4430'); post(x + dx, y, 14, 12, '#7a5a3a'); }
+    ctx.fillStyle = '#9a7a50'; ctx.strokeStyle = INK; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.rect(x - 32, y - 19, 64, 6); ctx.fill(); ctx.stroke();
+    if (sh.pots > 0) for (let i = 0; i < 4; i++) { const px = x - 22 + i * 15; ctx.globalAlpha = sh.made * Math.min(1, sh.pots * 4 - i);
+      ctx.fillStyle = '#b8643e'; ctx.beginPath(); ctx.moveTo(px - 5, y - 30); ctx.lineTo(px + 5, y - 30); ctx.lineTo(px + 4, y - 19); ctx.lineTo(px - 4, y - 19); ctx.closePath(); ctx.fill(); ctx.stroke(); blob(px, y - 30, 5, 1.6, '#4a3424');
+      if (sh.grow > 0) { const hh = 3 + 9 * sh.grow; ctx.strokeStyle = '#4f6b2a'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(px, y - 30); ctx.lineTo(px, y - 30 - hh); ctx.stroke(); blob(px - 2.5, y - 30 - hh, 2.6 * (0.5 + sh.grow), 1.3, '#6f8f34'); blob(px + 2.5, y - 31 - hh, 2.6 * (0.5 + sh.grow), 1.3, '#7a9a3c'); ctx.strokeStyle = INK; } }
+    ctx.restore(); } });
+}
+// how each job moves the gnome about (default: from piece to piece of that job, working at each one)
+const HEAL_WORK = { 'meadow:water': 'spring', 'creature:mulch': 'edge', 'nursery:gather': 'gather', 'nursery:plant1': 'shelf', 'nursery:plant2': 'shelf', 'creature:ferns': 'creek', 'nursery:mulch': 'edge' };
+const SEED_SPOTS = [[0.92, 0.50], [0.08, 0.30], [0.62, 0.92], [0.94, 0.80], [0.40, 0.08]];   // round the yard's edges for gumnuts, wattle pods and acorns
+function healWork(id, p, g) {
+  const d = G.taskDef(id); if (!d) return null;
+  const k = d.healTile, w = HEAL_WORK[d.heal + ':' + d.stepId], act = d.act || 'dig', ps = healPieces(k).filter(q => q.s === d.stepId && !q.ev && !q.always), n = ps.length;
+  const at = i => { const q = ps[Math.max(0, Math.min(n - 1, i))]; return q ? q.G : glob(k, 0.5, 0.5); };
+  const [i, sg] = segOf(p, Math.max(1, n)), near = ([x, y]) => [x + 0.05, y - 0.03];
+  if (w === 'spring') return workLoop(g, id, c => [[SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3, SPRING.at], [...near(at(i)), 'water', 'can', 5, at(i)]]);
+  if (w === 'edge') { const e = glob(k, ...(healSwap(k) ? [0.95, 0.5] : [0.5, 0.95])); return workLoop(g, id, () => [[e[0], e[1], 'gather', false, 3, e], [...near(at(i)), 'pickup', true, 4, at(i)]]); }
+  if (w === 'creek') { const e = G.s.tiles['0,-1'] ? glob('0,-1', 0.30, 0.62) : [SPRING.at[0], SPRING.at[1] + 0.06]; return workLoop(g, id, () => [[e[0], e[1], 'gather', false, 4, e], [...near(at(i)), 'pickup', false, 4, at(i)]]); }
+  if (w === 'gather') return workLoop(g, id, c => [[...SEED_SPOTS[c % SEED_SPOTS.length], 'pickup', false, 4], [...SEED_SPOTS[(c + 2) % SEED_SPOTS.length], 'pickup', false, 3]]);
+  if (w === 'shelf') return workLoop(g, id + ':' + i, () => [[SHELF_AT[0] + 0.05, SHELF_AT[1] + 0.02, 'pickup', false, 2.5, SHELF_AT], [...near(at(i)), 'dig', true, 6, at(i)], [...near(at(i)), 'water', false, 4, at(i)]]);
+  if (!n) return [...near(glob(k, 0.5, 0.5)), act];
+  const [x, y] = at(i), a = d.tree ? (sg < 0.6 ? 'dig' : 'water') : act;
+  return [x + 0.05, y - 0.03, a, false, 0, [x, y]];
+}
+function healStageCard(c) {   // a healing tile reached a new stage
+  const tl = G.s.tiles[c.tile]; if (!tl || !tl.kind) return; const K = C.heal.kinds[tl.kind], st = C.landStages.find(s => s.key === c.key);
+  openSheet('land', `<div class="jpage card"><p class="meta" style="margin:0">The land is waking · ${K.name.toLowerCase()}, ${G.tileWhere(c.tile)}</p><h2>${st.name[0].toUpperCase() + st.name.slice(1)}</h2><p class="lore">${C.heal.stageText[c.key].replace('{patch}', K.patch)}</p></div>
+    <p style="text-align:center"><button class="act" data-a="patch" data-id="${c.tile}">See the patch</button> <button class="act quiet" data-a="close">Have a look</button></p>`);
+}
+const STEP_PIC = { rubbish:'kit/leftovers-01', fence:'fence-fallen', fork:'kit/patch-07', water:'icon-water', roll:'icon-seed', toss:'icon-seed', logpile:'kit/wood-13', sapling:'sapling', beestone:'kit/stumps-rocks-03',
+  branches:'stick-pile', stump:'kit/stumps-rocks-02', mulch:'kit/patch-05', log:'kit/wood-14', rocks:'nest-stones', nestbox:'nest-nest', dish:'icon-seed', saplings:'sapling', ferns:'kit/wood-02',
+  shelf:'sapling', gather:'icon-acorn', pot:'sapling', walk:'kit/marks-05', stones:'yard-stones', holes:'kit/marks-06', plant1:'oak-planted', plant2:'oak-planted', grass:'kit/patch-08', birdbath:'nest-stones',
+  junk:'kit/leftovers-06', channel:'kit/marks-06', reeds:'kit/wood-05', flat:'yard-stones', pond:'vis-frog', perch:'vis-kingfisher', ruts:'kit/marks-01', balls:'icon-seed', birdbox:'nest-nest', hedge:'kit/wood-08' };
+function openPatch(k) {   // tap a healing tile: what this patch needs, in Hazel's or Wendel's words, and how far it has come
+  const tl = G.s.tiles[k], K = C.heal.kinds[tl.kind], steps = G.healSteps(k), at = G.healAt(k), st = G.landStage(k), nx = C.landStages[C.landStages.indexOf(st) + 1];
+  const names = G.treeNames(k), who = K.card.who;
+  let html = `<div class="jpage card"><p class="meta" style="margin:0">What this patch needs · ${G.tileWhere(k)}</p><div class="por big"><img src="sprites/face-${who}.webp" alt=""></div><h2>${K.name}</h2><p class="lore">"${K.card.text}" <i>· ${C.names[who]}</i></p>
+    <p class="meta">${st.name[0].toUpperCase() + st.name.slice(1)} · ${tl.green} green${nx ? ` (${nx.name} at ${nx.at})` : ''}</p><ul class="mlist">`;
+  steps.forEach((s, i) => { if (i < at) html += `<li>${s.name} <i class="meta">done</i></li>`; else if (i === at) html += `<li><b>${s.name}</b></li>`; });
+  if (at < steps.length - 1) html += `<li class="meta">…and ${steps.length - 1 - at} more after that</li>`;
+  html += `</ul>${at >= steps.length ? `<p class="meta">Everything the gnomes can do here is done. The rest is up to the land.</p>` : !G.healOpen(k) ? `<p class="meta">Someone else will look after this patch from here.</p>` : ''}
+    ${names.length ? `<p class="meta">Wendel has named the trees here: ${names.join(', ')}. He has a quiet word with each one when he passes.</p>` : ''}</div>`;
+  const id = `heal:${k}:${at}`; html += `<p style="text-align:center">${G.healOpen(k) ? `<button class="act" data-a="jobs" data-id="${id}">See the job</button> ` : ''}<button class="act quiet" data-a="close">Back to the garden</button></p>`;
+  openSheet('patch:' + k, html);
+}
+
 function jobSpot(job) {
   const d = job.def;
   if (d.make) return makeWork(d);
@@ -2727,6 +3011,7 @@ function frame(now) {
   }
   villageItems(items, now);
   if (NEWGROUND) landItems(items, now);
+  healItems(items, now);
   spiritItem(items, now);
   makeItems(items, now);
   festItems(items, now);
@@ -2868,7 +3153,7 @@ function tap(cx, cy) {
     for (const p of PROPS) { if (p.gone && taskProg(p.gone) >= 1) continue; const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s, h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 4 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
     if (best) { if (best.name === 'seedbed') { if (propAlpha(best) >= 1 && bedReady()) return openSeedbed(); const t = C.tasks.find(t => t.spot === 'clearing' && !(G.s.tasks[t.id] && G.s.tasks[t.id].done)); return openTasks(t ? t.id : ''); } if (best.name === 'shelter' && !wantsTap(best)) return openRoom(); if (best.name === 'barrel' && G.drawBarrel()) { const [bx, by] = toWorld(best.gx, best.gy); float(`+${C.barrel.give.water} ${C.resources.water.name}`, bx, by - 60); return; } const task = C.tasks.find(t => t.spot === best.name && !t.retired); if (task) return openTasks(task.id); }
   } else if (f.tile === festTile() && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openFestGreen();
-  else if (G.s.tiles[f.tile] && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openTasks('regrow:' + f.tile);
+  else if (G.s.tiles[f.tile] && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return G.s.tiles[f.tile].kind ? openPatch(f.tile) : openTasks('regrow:' + f.tile);
 }
 
 // ---------- UI ----------
@@ -3035,7 +3320,8 @@ sheet.addEventListener('click', e => {
   if (a === 'journal') return openJournal();
   if (a === 'page') return openPage(id, true);
   if (a === 'pagedone') { closeSheet(); if (id === '3.4' || id === '3.0') { const t = id === '3.0' ? 'house1' : 'leanto'; if (G.taskView(G.taskDef(t)).state === 'ready') return openTasks(t); } return; }
-  if (a === 'lesson') return openLesson(+id, true);
+  if (a === 'lesson') return openLesson(isNaN(+id) ? id : +id, true);
+  if (a === 'patch') return openPatch(id);
   if (a === 'tskip') return G.skipDays(+b.dataset.n);
   if (a === 'tfinish') { G.finishAll(); toast('Every job finished.'); }
   if (a === 'tpack') { G.fillPack(); toast('Pack filled up.'); }
@@ -3061,7 +3347,7 @@ function openTest() {
 }
 let titleTaps = 0, titleTapAt = 0;
 function testPeek(x, y) { if (x < 200 && y < 80 + 20) { const n = performance.now(); titleTaps = n - titleTapAt < 900 ? titleTaps + 1 : 1; titleTapAt = n; if (titleTaps >= 5) { titleTaps = 0; openTest(); return true; } } return false; }
-function refreshSheet() { if (sheetKind === 'test') return; if (sheetKind && sheetKind.startsWith('folk:')) openFolk(sheetKind.slice(5)); else if (sheetKind === 'traveller') G.s.village.traveller ? openTraveller() : closeSheet(); else if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); else if (sheetKind === 'fest') openFestGreen(); renderInv(); renderHud(); }
+function refreshSheet() { if (sheetKind === 'test') return; if (sheetKind && sheetKind.startsWith('folk:')) openFolk(sheetKind.slice(5)); else if (sheetKind === 'traveller') G.s.village.traveller ? openTraveller() : closeSheet(); else if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); else if (sheetKind === 'fest') openFestGreen(); else if (sheetKind && sheetKind.startsWith('patch:')) openPatch(sheetKind.slice(6)); renderInv(); renderHud(); }
 function openSeedbed() {
   const p = G.plot(), c = C.crops[p.crop]; let body = '';
   const stageName = pr => pr < 0.25 ? 'Just up' : pr < 0.6 ? 'Leafing out' : pr < 0.9 ? 'Filling out' : 'Nearly there';
@@ -3096,7 +3382,7 @@ const JOB_PIC = { ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roo
   woodpile: 'firewood', doorstep: 'yard-doorstep', rainbarrel: 'barrel-full', clothesline: 'washing-line', lantern: 'lanternstump', stump: 'lanternstump', windowbox: 'yard-windowbox', wormlantern: 'worm-lantern',
   wormlamp: 'worm-lamp', house1: 'house-hollowed', house2: 'house-windows', house3: 'house-finished', hedgehoghouse: 'nest-leafpile', nestbox: 'nest-nest', bridge: 'bld-bridge' };
 function jobPic(d) {   // a small painted picture of what the job makes, for the parchment job cards ('' if there is none)
-  const [kind, f] = d.id.split(':'), k = JOB_PIC[d.id] || (kind === 'home' ? 'home-' + f : kind === 'trade' ? 'bld-' + f : kind === 'quest' ? 'folk-' + f : kind === 'regrow' ? 'sapling' : '');
+  const [kind, f] = d.id.split(':'), k = JOB_PIC[d.id] || (d.healTile ? STEP_PIC[d.stepId] : '') || (kind === 'home' ? 'home-' + f : kind === 'trade' ? 'bld-' + f : kind === 'quest' ? 'folk-' + f : kind === 'regrow' ? 'sapling' : '');
   return k ? `<img class="jpic" src="sprites/${k}.webp" alt="" onerror="this.remove()">` : '';
 }
 function makesLine() { return Object.keys(C.makes).filter(k => C.makes[k].tile === '0,0' || G.gardenOpen()).map(k => { const n = G.makesCount(k); return `${C.makes[k].name}: ${n.done} of ${n.total}`; }).join(' · '); }
@@ -3112,11 +3398,11 @@ function openTasks(focus = '') {
     for (const v of rows) {
       const d = v.def, who = `<span class="who" data-w="${d.who}">${C.names[d.who]}</span>`;
       let right = '', sub = '';
-      if (state === 'running') { const pr = 1 - Math.max(0, v.endsAt - G.now()) / (v.endsAt - v.startedAt); sub = `${who} is on it · ${G.timeLeft(v.endsAt)} to go<div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div>`; if (d.tile && G.magicInfo().spells.includes('wake')) right = `<button class="act" data-a="cast" data-id="wake" ${G.canCast('wake').ok ? '' : 'disabled'}>Wake ✨4</button>`; }
+      if (state === 'running') { const pr = 1 - Math.max(0, v.endsAt - G.now()) / (v.endsAt - v.startedAt); sub = `${who} is on it · ${G.timeLeft(v.endsAt)} to go<div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div>`; if ((d.tile || d.healTile) && G.magicInfo().spells.includes('wake')) right = `<button class="act" data-a="cast" data-id="wake" ${G.canCast('wake').ok ? '' : 'disabled'}>Wake ✨4</button>`; }
       else if (state === 'done') sub = `${who} finished this.`;
       else if (state === 'locked' || (state === 'make' && v.locked)) { sub = `${who} · <span class="bad">${v.why}</span>`; }
       else { sub = `${who} · ` + (Object.keys(d.cost).length ? `<span class="cost">${costHtml(d.cost)}</span>` : `no materials`) + ` · <span class="hrs">${hours(d.mins)}</span>` + (v.can ? '' : `<br><span class="bad">You are short ${v.missing.join(', ')}.</span>`); right = `<button class="act" data-a="start" data-id="${d.id}" ${v.can ? '' : 'disabled'}>Start</button>`; }
-      html += `<div class="row${d.id === focus ? ' hi' : ''}">${jobPic(d)}<div class="t"><b>${d.name}</b><span class="bl">${d.blurb}</span><span>${sub}</span></div>${right}</div>`;
+      html += `<div class="row${d.id === focus ? ' hi' : ''}">${jobPic(d)}<div class="t"><b>${d.name}</b>${d.where ? `<span class="meta">${d.where}</span>` : ''}<span class="bl">${d.blurb}</span><span>${sub}</span></div>${right}</div>`;
     }
   }
   if (C.tasks.some(t => t.id === focus && t.spot === 'shelter')) html = html.replace('</h2>', `</h2><p><button class="act quiet" data-a="room">Look inside the home</button></p>`);
@@ -3127,7 +3413,8 @@ function openMagic() {
   const m = G.magicInfo(); let html = `<h2>Their magic<small>${m.name}</small></h2><div class="meter">${C.magicLevels.map((_, i) => `<i class="${i < m.level ? 'on' : ''}"></i>`).join('')}</div><p>It grows a little with every day you visit. Day ${m.days}${m.nextDays ? `; it will grow again on day ${m.nextDays}` : ''}. Spells burn ✨ light, which the land offers at night.</p>`;
   for (const [id, sp] of Object.entries(C.spells)) {
     if (sp.special && (!G.gardenOpen() || G.s.flags.toadWalk)) continue;   // the toadstool spell shows only while it is needed
-    const known = sp.special || m.spells.includes(id), c = G.canCast(id);
+    if (sp.heal && !G.healTaught(sp.heal)) continue;   // the Wood spirit teaches these on the new patches
+    const known = sp.special || sp.heal || m.spells.includes(id), c = G.canCast(id);
     html += `<div class="row"><div class="t"><b>${sp.name} <span class="cost">${costHtml(sp.cost)}</span></b><span>${sp.blurb}</span>${known ? (c.ok ? '' : `<br><span class="bad">${c.why}</span>`) : `<br><span class="bad">not yet; comes with more days</span>`}</div>${known ? `<button class="act" data-a="cast" data-id="${id}" ${c.ok ? '' : 'disabled'}>Cast</button>` : ''}</div>`;
   }
   html += `<p style="margin-top:14px;font-size:12px">Save v${G.s.v} · ${new Date(G.s.created).toLocaleDateString()} · <a href="#" data-a="reset" style="color:var(--red)">start over</a></p>`;
@@ -3224,7 +3511,7 @@ function openPage(id, again) {
   sheet.scrollTop = 0;
 }
 function ourStoryHtml() {   // every page read so far, to read again, and the Wood spirit's lessons
-  const seen = G.s.pages.seen, pages = C.story.pages.filter(p => p.id in seen), taught = C.story.lessons.filter(L => L.n in G.s.spirit.taught);
+  const seen = G.s.pages.seen, pages = C.story.pages.filter(p => p.id in seen), taught = [...C.story.lessons.filter(L => L.n in G.s.spirit.taught), ...Object.entries(C.heal.kinds).filter(([kind, K]) => K.lesson && G.healTaught(kind)).map(([kind, K]) => ({ n: 'heal:' + kind, title: K.lesson.title }))];
   if (!pages.length && !taught.length) return '';
   let html = `<h3>Our story</h3><div class="slist">`, ch = 0;
   for (const p of pages) { if (p.ch !== ch) { ch = p.ch; html += `<p class="meta">${C.story.chapters[ch]}</p>`; } html += `<button data-a="page" data-id="${p.id}">${p.title}</button>`; }
@@ -3243,7 +3530,7 @@ function cardCheck() {   // open the next waiting card (a story page, a land car
   const c = q[0];
   if (c.k === 'page') return openPage(c.id);
   q.shift(); G.dirty = true;
-  if (c.k === 'land') openLand(C.landStages.find(s => s.key === c.key)); else if (c.k === 'makes') openMakes(c.patch, c.stage);
+  if (c.k === 'land') openLand(C.landStages.find(s => s.key === c.key)); else if (c.k === 'makes') openMakes(c.patch, c.stage); else if (c.k === 'tland') healStageCard(c);
 }
 // ---------- "All done for now": once a visit, when both gnomes are busy (or nothing more can be started) and nothing is left lying about ----------
 const ALLDONE = { done: false, on: false, at: 0, ease: null };
