@@ -76,6 +76,7 @@ const G = {
     if (this.s.plots.seedbed.grown) this.s.flags.firstpick = true;   // fenced before the rabbit's raid existed
     if (this.s.plots.seedbed.crop === 'sprout') this.s.plots.seedbed.crop = 'carrot';   // the old generic sprouts were always carrots at heart
     for (const [k, tl] of Object.entries(this.s.tiles)) if (k !== '0,0' && !tl.kind && tl.state === 'revealed') tl.kind = this.tileKind(k);   // bare tiles from before the healing chains get theirs; green ones stay as they were
+    this.pantryTrim('her', true);   // older gardens with heaps of veg: the spare has quietly gone round the valley
     this.away = this.catchUp();
     this.save();
     return this.s;
@@ -139,6 +140,8 @@ const G = {
       this.note(`${C.names[d.who]} finished: ${lc(d.name)}.`); if (d.doneNote) this.note(d.doneNote);
       this.emit('task', { id, done: true });
     }
+    this.mealTick(t);
+    if (this.barrelFull()) this.drawBarrel();   // the rain barrel tops up the store by itself (nobody's hands)
     this.storyTick(t);
     this.offerTick(t);
     this.moveInTick(t);
@@ -207,7 +210,7 @@ const G = {
     const s = this.s, i = s.offers.findIndex(o => o.id === id); if (i < 0) return null;
     const [o] = s.offers.splice(i, 1);
     if (o.keep) { s.animals.gifts[o.keep] = now(); this.give(C.animals.gifts[o.keep].give); this.note(`${C.animals.gifts[o.keep].name}, from the ${o.keep === 'rabbit' && this.rabbitName() ? this.rabbitName() : this.visitorDef(o.keep).name.toLowerCase()}.`); return o; }   // an animal's keepsake from the doorstep
-    s.inv[o.kind] = (s.inv[o.kind] || 0) + (o.n || 1);
+    s.inv[o.kind] = (s.inv[o.kind] || 0) + (o.n || 1); this.tinFull();
     this.emit('inv', o.kind); return o;
   },
 
@@ -215,43 +218,68 @@ const G = {
   can(cost) { return Object.entries(cost || {}).every(([k, n]) => (this.s.inv[k] || 0) >= n); },
   missing(cost) { return Object.entries(cost || {}).filter(([k, n]) => (this.s.inv[k] || 0) < n).map(([k, n]) => `${n - (this.s.inv[k] || 0)} ${C.resources[k].name}`); },
   pay(cost) { for (const [k, n] of Object.entries(cost || {})) this.s.inv[k] -= n; this.emit('inv'); },
-  give(items) { for (const [k, n] of Object.entries(items || {})) this.s.inv[k] = (this.s.inv[k] || 0) + n; this.emit('inv'); },
+  give(items) { for (const [k, n] of Object.entries(items || {})) this.s.inv[k] = (this.s.inv[k] || 0) + n; this.tinFull(); this.emit('inv'); },
+  tinFull() { if (this.s.inv.seed > C.pantry.seedTin) this.s.inv.seed = C.pantry.seedTin; },   // Hazel's seed tin only holds so much; the spare goes to the birds
 
   // ---- the seed bed ----
   plot() { return this.s.plots.seedbed; },
   cropName(id) { return C.crops[id] ? C.crops[id].name.replace(/^a /, 'the ') : 'the crop'; },
   cropOpen(id) {   // may this crop be sown yet? (needs: flag:x, grown:n harvests, or a finished job)
-    const c = C.crops[id], p = this.plot();
-    if (!this.s.flags.firstpick && id !== 'carrot') return false;   // the very first sowing is carrots (story pages 1.4 and 2.1)
+    const c = C.crops[id], p = this.plot(), F = this.s.flags;
+    if (!F.firstpick && id !== 'carrot') return false;   // the very first sowing is carrots (story pages 1.4 and 2.1)
+    if (c.once && F['sown:' + id] && !(this.s.festival.stage === 'done' && (F[id + 'Year'] || 0) < new Date(now()).getFullYear())) return false;   // Wendel's pumpkin: one until the festival, then one a year
     return (c.needs || []).every(n => n.startsWith('flag:') ? !!this.s.flags[n.slice(5)] : n.startsWith('grown:') ? p.grown >= +n.slice(6) : this.done(n));
   },
   canSow() { return Object.keys(C.crops).some(id => this.cropOpen(id) && this.can(this.cropCost(id))); },   // something in the tin we could sow right now
   cropCost(id) { const c = C.crops[id]; return c.free && !this.s.flags['sown:' + c.free] ? {} : c.plant; },   // Wendel's pumpkin seed is free the first time
-  plant(cropId = 'carrot') {
+  // The gnomes do the sowing, watering and picking (Bryce's rule: the player is unseen luck, never hands). The player chooses and
+  // lends the seed and dew; index.html sends a gnome over to do it (bedErrand), and `who` names them in the log.
+  plant(cropId = 'carrot', who = 'her') {
     const p = this.plot(), c = C.crops[cropId], cost = c && this.cropCost(cropId); if (!c || p.stage || !this.cropOpen(cropId) || !this.can(cost)) return false;
-    this.pay(cost); if (c.free) this.s.flags['sown:' + c.free] = true;
+    this.pay(cost); if (c.free) this.s.flags['sown:' + c.free] = true; if (c.once) this.s.flags[cropId + 'Year'] = new Date(now()).getFullYear();
     p.crop = cropId; p.stage = 'planted'; p.plantedAt = now(); p.readyAt = 0;
-    this.note(cropId === 'pumpkin' && !Object.keys(cost).length ? 'Wendel pressed his one enormous pumpkin seed into the middle of the bed, very solemnly. It wants water.' : `${cap(c.name.replace(/^a /, ''))} sown across the bed. ${c.water > 1 ? 'They want a good drink.' : 'They want water.'}`);
+    this.note(cropId === 'pumpkin' && !Object.keys(cost).length ? 'Wendel pressed his one enormous pumpkin seed into the middle of the bed, very solemnly. It wants water.' : `${C.names[who]} sowed ${c.name.replace(/^a /, 'a ')} across the bed. ${c.water > 1 ? 'They want a good drink.' : 'They want water.'}`);
     this.emit('plot', p); return true;
   },
   waterCost() { const p = this.plot(); return { water: (C.crops[p.crop] || {}).water || 1 }; },
-  water() {
+  water(who = 'him') {
     const p = this.plot(), cost = this.waterCost(); if (p.stage !== 'planted' || !this.can(cost)) return false;
     this.pay(cost); p.stage = 'growing'; p.wateredAt = now(); p.readyAt = now() + this.dur(C.crops[p.crop].grow);
-    this.note('Watered. Now it grows.'); this.emit('plot', p); return true;
+    this.note(`${C.names[who]} watered the bed. Now it grows.`); this.emit('plot', p); return true;
   },
-  harvest() {   // returns what was picked (for the little float), or false
+  harvest(who = 'her') {   // returns what was picked (for the little float), or false
     const p = this.plot(); if (p.stage !== 'ready') return false;
     if (!this.s.flags.rabbit) this.rabbitRaid();   // the rabbit always gets to the first sprouts (even if a spell hurried them)
     const c = C.crops[p.crop], got = Object.assign({}, c.harvest), nib = !!p.nibbled; let k0 = Object.keys(got)[0];
     if (nib && got[k0] > 1) got[k0]--;   // the rabbit had a few
     if (this.done('compost')) got.seed = (got.seed || 0) + 1;   // the compost heap makes the soil rich: one extra seed every harvest
-    this.give(got); this.addGreen(c.green); p.grown++; this.s.flags['picked:' + p.crop] = true;
+    this.give(got); this.addGreen(c.green); p.grown++; this.s.flags['picked:' + p.crop] = true; const spare = this.pantryTrim(who);
     const id = p.crop; p.crop = null; p.stage = null; p.readyAt = 0; p.nibbled = false; this.s.flags.firstpick = true;   // the first crop opens up the home jobs
     this.note(id === 'pumpkin' && !this.s.flags.pumpkin ? 'A pumpkin nearly as big as Wendel. He says it is for the festival, and will not hear otherwise. Hazel has saved every seed.'
-      : `Picked ${c.name.replace(/^a /, 'the ')}${nib ? ' (what the rabbit left)' : ''}. Into the pantry they go, and the ground remembers a little more of how to grow.`);
+      : `${C.names[who]} picked ${c.name.replace(/^a /, 'the ')}${nib ? ' (what the rabbit left)' : ''}. Into the pantry they go, and the ground remembers a little more of how to grow.`);
+    if (spare) this.note(spare);
     if (id === 'pumpkin') this.s.flags.pumpkin = true;
     this.emit('plot', p); return got;
+  },
+
+  // ---- the pantry (fix 3): the shelf holds about a dozen of each; the spare goes over the fence; they eat from it at meals ----
+  pantryKinds() { return Object.keys(C.resources).filter(k => C.resources[k].pantry && k !== 'pumpkin'); },
+  pantryTrim(who = 'her', quiet) {   // over the shelf's worth: the spare goes to a neighbour, or the compost and the creatures. Returns the line to log, or ''
+    const inv = this.s.inv, cap = C.pantry.cap, out = [];
+    for (const k of this.pantryKinds()) if ((inv[k] || 0) > cap) { out.push(C.resources[k].name === 'beans' ? 'beans' : C.resources[k].name + 's'); inv[k] = cap; }
+    if (!out.length || quiet) return '';
+    const what = out.length > 1 ? out.slice(0, -1).join(', ') + ' and ' + out.slice(-1) : out[0], folk = this.settled();
+    if (folk.length) return `The pantry shelf was full, so ${C.names[who]} took the spare ${what} over to ${this.folkDef(folk[(Math.random() * folk.length) | 0]).short}.`;
+    return `The pantry shelf was full, so the spare ${what} went ${this.done('compost') ? 'on the compost heap, and a few to the rabbit' : 'to the rabbit, who could not believe its luck'}.`;
+  },
+  mealTick(t) {   // breakfast and supper: one thing from the pantry each meal (the one they have most of)
+    const s = this.s, M = C.pantry.meals; if (!s.meals) s.meals = t; if (t <= s.meals) return;
+    let n = 0; const d = new Date(s.meals); d.setMinutes(0, 0, 0);
+    for (let i = 0; i < 24 * 3 && d.getTime() <= t; i++, d.setHours(d.getHours() + 1)) if (d.getTime() > s.meals && M.some(m => m[0] === d.getHours())) n++;   // meal hours passed since last time (up to three days back)
+    s.meals = t; if (!n) return;
+    let ate = 0; for (let i = 0; i < n; i++) { const k = this.pantryKinds().filter(k => s.inv[k] > 0).sort((a, b) => s.inv[b] - s.inv[a])[0]; if (k) { s.inv[k]--; ate++; } if (s.inv.bread > 0) { s.inv.bread--; ate++; } }   // and a slice of the neighbours' bread, once there is some
+    if (ate && n === 1) this.note(`${new Date(t).getHours() < 12 ? 'Breakfast' : 'Supper'} from the pantry.`);
+    if (ate) this.emit('inv');
   },
 
   // ---- tasks ----
@@ -502,9 +530,10 @@ const G = {
     if (!tk) return 1; return Math.min(1, (now() - tk.endsAt) / (C.farms.pickEvery * MIN));
   },
   swapOpen(fid) { const fs = this.folkState(fid); return this.farmGrown(fid) && fs.swapDay !== dayKey(now()); },
-  swap(fid) {   // the pantry swap: once a day at each grown farm
+  costWords(cost) { return Object.entries(cost).map(([k, n]) => { const w = C.resources[k].name; return `${n} ${n > 1 && !/^(moss|dew|light|bread|honey|yarn|beans)$/.test(w) ? w.replace(/y$/, 'ie') + 's' : w}`; }).join(' and '); },   // "3 twigs and 2 berries
+  swap(fid, who = 'her') {   // the pantry swap: once a day at each grown farm (a gnome carries the basket over)
     const sw = C.farms.list[fid].swap, fs = this.folkState(fid); if (!this.swapOpen(fid) || !this.can(sw.give)) return false;
-    this.pay(sw.give); this.give(sw.get); fs.swapDay = dayKey(now()); this.note(sw.text); this.emit('inv'); return true;
+    this.pay(sw.give); this.give(sw.get); fs.swapDay = dayKey(now()); this.note(`${C.names[who]} carried the basket over. ${sw.text}`); this.emit('inv'); return true;
   },
   // ---- the platypus (docs/ANIMALS.md section 8): it glides past at dawn on the last stretch of the creek to heal, once every
   // stretch is healed. Never moves in. The first dawn after, it always comes; after that about one dawn in four.
@@ -581,7 +610,7 @@ const G = {
   },
   // ---- the rain barrel: once scrubbed it fills with rain; tap it to draw the water ----
   barrelFull() { const tk = this.s.tasks.rainbarrel; if (!(tk && this.done('rainbarrel'))) return false; return now() - (this.s.barrelAt || tk.endsAt) >= C.barrel.every * MIN; },
-  drawBarrel() { if (!this.barrelFull()) return false; this.s.barrelAt = now(); this.give(C.barrel.give); this.note('Fresh rainwater from the barrel.'); return true; },
+  drawBarrel() { if (!this.barrelFull()) return false; this.s.barrelAt = now(); this.give(C.barrel.give); this.note('The rain barrel filled, and its water went into the store.'); return true; },
   // ---- the rabbit: a cheeky regular, never a real loss ----
   // A rabbit always comes for the first sprouts: if there is food in the dish it eats that first, then nibbles a few sprouts.
   // Only then is "Fence the seed bed" offered. index.html plays the raid when you are watching; catchUp() settles it when you were away.
@@ -624,12 +653,12 @@ const G = {
     if (tr.task && !(this.s.tasks[tr.task] && this.s.tasks[tr.task].done)) return null;
     return Math.random() < C.troubleChance ? tr : null;
   },
-  help(id) {   // a good deed: one light, while today's allowance lasts
+  help(id) {   // a good deed: one light, while today's allowance lasts (a gnome did it, or a little luck: the thanks line says which)
     const d = this.visitorDef(id), e = this.entry(id), dk = dayKey(now()), dd = this.s.deeds;
     if (dd.day !== dk) { dd.day = dk; dd.n = 0; }
     e.helped++; const light = dd.n < C.deedsPerDay ? 1 : 0; dd.n += light;
     if (light) this.give({ light: 1 });
-    this.note(`You helped the ${d.name.toLowerCase()}. ${d.trouble.thanks}`); this.emit('helped', { id, light }); return light;
+    this.note(d.trouble.thanks); this.emit('helped', { id, light }); return light;
   },
 
   // ---- neighbours and the village ----
@@ -663,9 +692,19 @@ const G = {
     if (s.festival.tile) taken.add(s.festival.tile);
     return C.village.lots.find(k => s.tiles[k] && s.tiles[k].state === 'green' && (!s.tiles[k].kind || this.stageIndex(k) >= 2) && !taken.has(k)) || null;   // young meadow (old saves' plain greened tiles still count)
   },
+  savingFor(d) {   // the story comes first (fix 3): while a story job waits for things, the extras (Hazel's list, the optional home jobs) don't spend them
+    if (d.spine || this.s.tasks[d.id] || !C.tasks.includes(this.baseDef(d))) return '';
+    for (const sp of C.tasks) {
+      if (!sp.spine || sp.retired || this.s.tasks[sp.id] || !this.needsMet(sp) || this.can(sp.cost)) continue;
+      const short = Object.keys(d.cost || {}).filter(k => (this.s.inv[k] || 0) < (sp.cost[k] || 0) + d.cost[k] && sp.cost[k]);
+      if (short.length) return `saving the ${short.map(k => C.resources[k].name === 'twig' ? 'twigs' : C.resources[k].name === 'stone' ? 'stones' : C.resources[k].name).join(' and ')} for ${sp.short}`;
+    }
+    return '';
+  },
   gateWhy(d) {   // extra reasons a job cannot start yet, in words ('' = fine)
     const busy = d.who && Object.entries(this.s.tasks).find(([id, tk]) => !tk.done && tk.endsAt > now() && id !== d.id && (this.taskDef(id) || {}).who === d.who);   // one job at a time for each gnome
     if (busy) return `${C.names[d.who]} is busy with ${lc(this.taskDef(busy[0]).name)}`;
+    const save = this.savingFor(d); if (save) return save;
     if (d.home && !this.homeLot(d.folk)) { const k = this.wishOf(d.folk); return k ? `waits for ${this.patchName(k)}, ${this.tileWhere(k)}, to grow to young meadow` : 'needs a patch next door grown to young meadow for their home'; }
     if (d.claims && !this.s.tasks[d.id] && !this.freeLot()) return 'needs a patch grown to young meadow with no home on it';
     if (d.healTile) { const w = this.healWait(d.healTile, d.step); if (w > now()) return `the tree seedlings are still growing (ready in ${this.timeLeft(w)})`;
@@ -742,9 +781,9 @@ const G = {
     }
     this.enterStep(fid); this.emit('quest', fid);
   },
-  questGive(fid) {
+  questGive(fid, who = 'her') {
     const st = this.questStep(fid); if (!st || !st.give || !this.can(st.give)) return false;
-    this.pay(st.give); this.questNext(fid); return true;
+    this.pay(st.give); this.note(`${C.names[who]} took ${this.costWords(st.give)} over to ${this.folkDef(fid).short}.`); this.questNext(fid); return true;
   },
   spawnFind(fid) {   // something to spot on the land: on a healed tile, not too near the middle of things
     const s = this.s, greens = Object.keys(s.tiles).filter(k => s.tiles[k].state === 'green' || k === '0,0');
@@ -756,14 +795,14 @@ const G = {
     const v = this.s.village, i = v.finds.findIndex(x => x.id === id); if (i < 0) return null;
     const [x] = v.finds.splice(i, 1); this.questNext(x.folk); return x;
   },
-  doFavour() {
+  doFavour(who = 'her') {
     const v = this.s.village, fv = v.favour; if (!fv) return false;
     const f = this.folkDef(fv.folk), ask = f.favours[fv.i]; if (!this.can(ask.cost)) return false;
     this.pay(ask.cost); v.favour = null;
     const dd = this.s.deeds, dk = dayKey(now()); if (dd.day !== dk) { dd.day = dk; dd.n = 0; }
     const light = dd.n < C.deedsPerDay ? 1 : 0; dd.n += light;
     const gift = Object.assign({}, this.done('trade:' + fv.folk) ? f.building.gift : {}); if (light) gift.light = (gift.light || 0) + 1;
-    this.give(gift); this.note(`You did ${f.short} a favour. ${ask.thanks}`); this.emit('helped', { folk: fv.folk, light }); return gift;
+    this.give(gift); this.note(`${C.names[who]} took ${this.costWords(ask.cost)} over to ${f.short}. "${ask.thanks}"`); this.emit('helped', { folk: fv.folk, light }); return gift;
   },
 
   // ---- the festival: the soft ending (content in CONTENT.festival) ----
