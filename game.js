@@ -9,6 +9,7 @@ let SKEW = 0; try { SKEW = Number(localStorage.getItem(SKEW_KEY)) || 0; } catch 
 const now = () => Date.now() + SKEW;
 const DAY = () => 1440 * MIN;                     // a real day (a tenth-second-minute day under #fast)
 const lc = (t) => t[0].toLowerCase() + t.slice(1);   // "Build Mabel a home" -> "build Mabel a home" (keeps names capitalised)
+const cap = (t) => t[0].toUpperCase() + t.slice(1);
 const dayKey = (t) => { const d = new Date(t); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; };
 
 // ---------- storage adapter (swap this for a server later) ----------
@@ -69,6 +70,7 @@ const G = {
     const tk = this.s.tasks; if (tk.bedwater && !tk.spring) tk.spring = { startedAt: tk.bedwater.startedAt, endsAt: tk.bedwater.startedAt, done: true };   // watered before the spring job existed: the spring counts as found
     if (tk.fence) this.s.flags.rabbit = true;
     if (this.s.plots.seedbed.grown) this.s.flags.firstpick = true;   // fenced before the rabbit's raid existed
+    if (this.s.plots.seedbed.crop === 'sprout') this.s.plots.seedbed.crop = 'carrot';   // the old generic sprouts were always carrots at heart
     this.away = this.catchUp();
     this.save();
     return this.s;
@@ -98,7 +100,7 @@ const G = {
     }
     // timers that finished while away are reported (they resolve lazily in tick)
     for (const [id, tk] of Object.entries(s.tasks)) if (!tk.done && tk.endsAt <= t) report.finished.push(this.taskDef(id).name);
-    const p = s.plots.seedbed; if (p.stage === 'growing' && p.readyAt <= t) report.finished.push('the sprout is ready');
+    const p = s.plots.seedbed; if (p.stage === 'growing' && p.readyAt <= t) report.finished.push(`${this.cropName(p.crop)} ${p.crop === 'pumpkin' ? 'is' : 'are'} ready`);
     if (gone >= 60 * MIN && !s.flags.rabbit && s.feeder.food && p.stage === 'growing') { this.rabbitRaid(); report.rabbit = C.rabbit.away; }   // the rabbit came while you were away
     if (gone >= 60 * MIN) { const ate = this.awayEater(); if (ate) report.ate = ate; }
     const had = s.village.traveller && s.village.traveller.id, movedBefore = Object.keys(s.moved);
@@ -114,7 +116,7 @@ const G = {
     const s = this.s, t = now(); if (!s) return;   // not loaded yet (the first frame can come before the save is read)
     // crop
     const p = s.plots.seedbed;
-    if (p.stage === 'growing' && p.readyAt <= t) { p.stage = 'ready'; this.note('The sprout is ready to pick.'); this.emit('plot', p); }
+    if (p.stage === 'growing' && p.readyAt <= t) { p.stage = 'ready'; this.note(`${cap(this.cropName(p.crop))} ${p.crop === 'pumpkin' ? 'is' : 'are'} ready to pick.`); this.emit('plot', p); }
     // tasks
     for (const [id, tk] of Object.entries(s.tasks)) {
       if (tk.done || tk.endsAt > t) continue;
@@ -201,23 +203,38 @@ const G = {
 
   // ---- the seed bed ----
   plot() { return this.s.plots.seedbed; },
-  plant(cropId = 'sprout') {
-    const p = this.plot(), c = C.crops[cropId]; if (p.stage || !this.can(c.plant)) return false;
-    this.pay(c.plant); p.crop = cropId; p.stage = 'planted'; p.plantedAt = now(); p.readyAt = 0;
-    this.note('A seed is in the bed. It wants water.'); this.emit('plot', p); return true;
+  cropName(id) { return C.crops[id] ? C.crops[id].name.replace(/^a /, 'the ') : 'the crop'; },
+  cropOpen(id) {   // may this crop be sown yet? (needs: flag:x, grown:n harvests, or a finished job)
+    const c = C.crops[id], p = this.plot();
+    if (!this.s.flags.firstpick && id !== 'carrot') return false;   // the very first sowing is carrots (story pages 1.4 and 2.1)
+    return (c.needs || []).every(n => n.startsWith('flag:') ? !!this.s.flags[n.slice(5)] : n.startsWith('grown:') ? p.grown >= +n.slice(6) : this.done(n));
   },
+  canSow() { return Object.keys(C.crops).some(id => this.cropOpen(id) && this.can(this.cropCost(id))); },   // something in the tin we could sow right now
+  cropCost(id) { const c = C.crops[id]; return c.free && !this.s.flags['sown:' + c.free] ? {} : c.plant; },   // Wendel's pumpkin seed is free the first time
+  plant(cropId = 'carrot') {
+    const p = this.plot(), c = C.crops[cropId], cost = c && this.cropCost(cropId); if (!c || p.stage || !this.cropOpen(cropId) || !this.can(cost)) return false;
+    this.pay(cost); if (c.free) this.s.flags['sown:' + c.free] = true;
+    p.crop = cropId; p.stage = 'planted'; p.plantedAt = now(); p.readyAt = 0;
+    this.note(cropId === 'pumpkin' && !Object.keys(cost).length ? 'Wendel pressed his one enormous pumpkin seed into the middle of the bed, very solemnly. It wants water.' : `${cap(c.name.replace(/^a /, ''))} sown across the bed. ${c.water > 1 ? 'They want a good drink.' : 'They want water.'}`);
+    this.emit('plot', p); return true;
+  },
+  waterCost() { const p = this.plot(); return { water: (C.crops[p.crop] || {}).water || 1 }; },
   water() {
-    const p = this.plot(); if (p.stage !== 'planted' || !this.can({ water: 1 })) return false;
-    this.pay({ water: 1 }); p.stage = 'growing'; p.wateredAt = now(); p.readyAt = now() + this.dur(C.crops[p.crop].grow);
+    const p = this.plot(), cost = this.waterCost(); if (p.stage !== 'planted' || !this.can(cost)) return false;
+    this.pay(cost); p.stage = 'growing'; p.wateredAt = now(); p.readyAt = now() + this.dur(C.crops[p.crop].grow);
     this.note('Watered. Now it grows.'); this.emit('plot', p); return true;
   },
-  harvest() {
+  harvest() {   // returns what was picked (for the little float), or false
     const p = this.plot(); if (p.stage !== 'ready') return false;
-    const c = C.crops[p.crop], got = Object.assign({}, c.harvest), nib = p.nibbled && got.seed > 1; if (nib) got.seed--;   // the rabbit had a few
+    const c = C.crops[p.crop], got = Object.assign({}, c.harvest), nib = !!p.nibbled; let k0 = Object.keys(got)[0];
+    if (nib && got[k0] > 1) got[k0]--;   // the rabbit had a few
     if (this.done('compost')) got.seed = (got.seed || 0) + 1;   // the compost heap makes the soil rich: one extra seed every harvest
-    this.give(got); this.addGreen(c.green); p.grown++;
-    p.crop = null; p.stage = null; p.readyAt = 0; p.nibbled = false; this.s.flags.firstpick = true;   // the first crop opens up the home jobs
-    this.note(`Picked ${c.name}${nib ? ' (what the rabbit left)' : ''}. The bed is clear again, and the ground remembers a little more of how to grow.`); this.emit('plot', p); return true;
+    this.give(got); this.addGreen(c.green); p.grown++; this.s.flags['picked:' + p.crop] = true;
+    const id = p.crop; p.crop = null; p.stage = null; p.readyAt = 0; p.nibbled = false; this.s.flags.firstpick = true;   // the first crop opens up the home jobs
+    this.note(id === 'pumpkin' && !this.s.flags.pumpkin ? 'A pumpkin nearly as big as Wendel. He says it is for the festival, and will not hear otherwise. Hazel has saved every seed.'
+      : `Picked ${c.name.replace(/^a /, 'the ')}${nib ? ' (what the rabbit left)' : ''}. Into the pantry they go, and the ground remembers a little more of how to grow.`);
+    if (id === 'pumpkin') this.s.flags.pumpkin = true;
+    this.emit('plot', p); return got;
   },
 
   // ---- tasks ----
@@ -317,7 +334,7 @@ const G = {
   },
   cast(id) {
     if (!this.canCast(id).ok) return false; this.pay(C.spells[id].cost); const t = now();
-    if (id === 'coax') { this.plot().readyAt = t; this.note('A warm glow, and the sprout unfurls.'); }
+    if (id === 'coax') { this.plot().readyAt = t; this.note(`A warm hush over the bed, and ${this.cropName(this.plot().crop)} fill out all at once.`); }
     if (id === 'rain') { const p = this.plot(); p.stage = 'growing'; p.readyAt = t + this.dur(C.crops[p.crop].grow); this.give({ water: 2 }); this.note('Soft rain falls on the bed and beads on the stones.'); }
     if (id === 'legs') { this.s.flags.toadWalk = t; this.note('The big toadstool shivered, sprouted little root legs and walked off to the far corner of the garden.'); }
     if (id === 'wake') { for (const r of this.running()) if (r.def.tile) this.s.tasks[r.id].endsAt = t + (r.endsAt - t) / 2; this.note('The ground stirs under the mist.'); }
