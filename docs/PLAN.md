@@ -233,8 +233,8 @@ Coordinates are `gx, gy` on a tile (0..1): gx runs down to the RIGHT corner, gy 
 
 ### Growth stages
 1. **Now (one tile):** the zones above, worn tracks for paths, two lamp posts.
-2. **First land opens:** the garden tile joins the yard (see decision). The big toadstool waddles off by magic to G 0.08, 0.88, the feeding dish moves to the creature corner (G 0.78, 0.66) with a birdbath (G 0.90, 0.48), bed 2 (G 0.40, 0.24), compost (G 0.12, 0.12) near the woodpile side, tracks become stepping stones, lamps 3-5.
-3. **Final look:** finished house plus workshop lean-to and spring well-head; bench; grown oak with swing; bed 2 with bean poles; herb corner (G 0.70, 0.26); dew pond (G 0.26, 0.72); hollow-log bee house (G 0.14, 0.42); nest box on a post (G 0.95, 0.30); hedgehog leaf pile (G 0.95, 0.86); berry bush (G 0.52, 0.80); welcome sign where the yard path meets the village path (0.98, 0.62); glow jars along the paths; lamps 6-7.
+2. **First land opens:** the garden tile joins the yard (see decision). The big toadstool waddles off by magic to G 0.08, 0.88, the feeding dish moves to the creature corner (G 0.78, 0.66) with a birdbath (G 0.90, 0.48), bed 2 (G 0.70, 0.22, moved 2026-10-27: its first spot is now under the garden's stepping stones and flower border), compost (G 0.12, 0.12) near the woodpile side, tracks become stepping stones, lamps 3-5.
+3. **Final look:** finished house plus workshop lean-to and spring well-head; bench; grown oak with swing; bed 2 with bean poles; herb corner (G 0.86, 0.40, moved to make room for bed 2); dew pond (G 0.27, 0.50, built there: the mouse house took G 0.26, 0.72); hollow-log bee house (G 0.14, 0.42); nest box on a post (G 0.95, 0.30); hedgehog leaf pile (G 0.95, 0.86); berry bush (G 0.52, 0.80); welcome sign beside the yard path where it meets the village path (0.90, 0.55; not on the path); glow jars along the paths; lamps 6-7.
 
 ### The oak (Bryce, 2026-10-26: a plan for the grown tree and why it goes where it does)
 The little oak in its pot is the acorn Hazel picked up on their wedding morning (STORY.md 2.4). Until it is planted the pot stands just in front of the house, left of the door path (`POT_HOME` 0.31, 0.41), where they set it down when they arrived. "Plant the sapling out": Hazel walks to the pot, lifts it, carries it across the yard in her arms, digs the hole beside the planting spot, sets it in and waters it.
@@ -253,7 +253,7 @@ Worn earth tracks first, stepping stones later (the "Lay a stepping-stone path" 
 - door 0.36, 0.34 -> 0.42, 0.46 (hearth, west side) -> 0.40, 0.60 -> 0.44, 0.80 -> round the bed's left -> gate 0.72, 0.90.
 - hearth 0.56, 0.56 -> lantern 0.76, 0.60 -> 1.0, 0.62 -> out to the village path (u 1.5).
 - hearth 0.50, 0.40 -> 0.66, 0.30 -> spring 0.76, 0.22.
-- garden: 0.46, 0.86 -> G 0.46, 0.10 -> G 0.44, 0.36 -> G 0.56, 0.56 -> creature corner G 0.72, 0.62; loop G 0.44, 0.36 -> G 0.30, 0.52 -> pond G 0.26, 0.62.
+- garden: 0.46, 0.86 -> G 0.46, 0.10 -> G 0.44, 0.36 -> G 0.56, 0.56 -> creature corner G 0.72, 0.62; loop G 0.44, 0.36 -> G 0.36, 0.48 -> the dew pond's edge (pond at G 0.27, 0.50).
 Nothing is ever placed on a route.
 
 ### Rules of thumb (for every later thread)
@@ -269,6 +269,24 @@ Nothing is ever placed on a route.
 
 ### Handed to the job-mechanics thread
 Lamp posts made by a job, unlocking one by one at Bryce's spots; dirt darkening as it is watered; smaller decoration-only wheelbarrow built from resources; a bigger feeding dish; the rain barrel size; the big toadstool's job; moving objects to the positions above. The garden tile `0,1` comes off the neighbour lot list (`CONTENT.village.lots`) and loses its random woodland corners; if a neighbour already lives there in a save, the yard keeps one tile and that neighbour stays.
+
+### Placement check (2026-10-27, thread "Check placements and stop animals walking through things", v60)
+Every fixed thing was checked against every other and against the routes above, at the final look with the garden open (picture: `/mnt/project-files/placement-check/map.png`). Moved in v60:
+1. The second pot stool `MAKE_TWICE.potstools` 0.58, 0.40 -> **0.67, 0.49** (it was squashed against the bench end).
+2. The blue-tongue's hidey-hole `NESTS.bluetongue` 0.10, 0.30 -> **0.05, 0.12** (it was under the wind spinner, against the woodpile).
+3. Where the yard path leaves for the village: the fern `YARD_WOOD` piece 5 0.97, 0.62 -> **0.98, 0.52** and the welcome sign 0.95, 0.60 -> **0.90, 0.55** (both stood on the path).
+4. The robin's nest 0.92, 0.64 -> **0.93, 0.73** (on the same path).
+5. The wren's nest 0.66, 0.94 -> **0.80, 0.95** (on the path round the bed to the gate).
+6. Plan only: bed 2 and the herb corner moved (above); the dew pond's plan spot follows where it was built.
+Left as they are on purpose: the spring sits in the big old stump's roots; the washing line is tied to the big tree at the back; the old stump at 0.13, 0.84 stays where the grown oak's roots will spread (paint `oak-grown` with it at its foot). Nests stay where they were made when the garden opens (grow in place); new creature homes go in the garden's creature corner. The mouse's yard nest (0.16, 0.66) goes once the animal-stories build makes the toadstool its only home.
+
+### Footprints: nobody walks through things (v60, Bryce 2026-10-27)
+Bryce saw a mouse go under the stump house and the echidna inside the fenced seed bed. Now every fixed thing standing on the ground has a round **footprint** (about the size of its base), and everyone who walks goes round them: **`walk.js`** (shared; use it for any new walker).
+- `footprints()` in index.html lists them: house, woodpile, barrel, fire, bench, tub, stumps and rocks, the woodland pieces, the toadstool / mouse house, the dish, nests, every standing little make, the pond, the nursery shelf. Flat things (doormat, stepping stones, paths, the plank) and gates are walked over or through. A new standing thing: add it there (or `Walk.add(fn)` from its own code).
+- **The seed bed is a wall for creatures** from the day it is dug: no creature ever steps inside (the rabbit nibbles from the edge). Gnomes still go in to work it, by the gate once it is fenced (`bedRoute`).
+- Visitors arrive and leave by the yard's **wild edges** only (the front-right edge towards the village path, and the front-left edge, or the garden's far edges once it is open), never through the house or the back woodland.
+- Fliers (birds, butterflies, the spirit) go over things but never land in the bed. The owl still perches on the woodpile.
+- Test view: `#test&feet` draws the footprints (red), the bed's creature edge (blue), the wild edges (green) and everyone's path (dotted).
 
 ### Lamp-spot numbers (from `lamp-spots-numbered.png`, home tile)
 1: 0.20,0.08 · 2: 0.92,0.08 · 3: 0.08,0.20 · 4: 0.56,0.20 · 5: 0.68,0.20 · 6: 0.92,0.20 · 7: 0.56,0.32 · 8: 0.68,0.32 · 9: 0.80,0.32 · 10: 0.92,0.32 · 11: 0.32,0.44 · 12: 0.80,0.44 · 13: 0.92,0.44 · 14: 0.08,0.56 · 15: 0.32,0.56 · 16: 0.44,0.56 · 17: 0.80,0.56 · 18: 0.92,0.56 · 19: 0.08,0.68 · 20: 0.20,0.68 · 21: 0.32,0.68 · 22: 0.80,0.68 · 23: 0.92,0.68 · 24: 0.08,0.80 · 25: 0.32,0.80 · 26: 0.80,0.80 · 27: 0.92,0.80 · 28: 0.08,0.92 · 29: 0.20,0.92 · 30: 0.32,0.92 · 31: 0.44,0.92 · 32: 0.68,0.92 · 33: 0.80,0.92 · 34: 0.92,0.92.
