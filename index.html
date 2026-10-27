@@ -200,7 +200,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v58</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v59</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -219,15 +219,15 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 58;
+const BUILD = 59;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=58"></script>
-<script src="game.js?v=58"></script>
+<script src="content.js?v=59"></script>
+<script src="game.js?v=59"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -1887,7 +1887,7 @@ function spawnVisitor(forced) {
   G.arrive(def.id);
 }
 // ---------- the rabbit: a cheeky regular (code stand-in until a painted rabbit exists) ----------
-// First visit (G.rabbitDue): it hops in, empties the feeding dish, then nibbles a few sprouts until Wendel shoos it off; only then
+// First visit (G.rabbitDue): it hops in, empties the feeding dish, then nibbles a few sprouts until Wendel gently shoos it off; only then
 // is "Fence the seed bed" offered. Once the fence is up it pops back now and then: peering through the fence, napping by the woodpile,
 // or pinching a berry from the dish. Never a real loss.
 const RABBIT = { on: null, next: 0 };
@@ -1905,7 +1905,7 @@ function updateRabbit(dt) {
   if (!r) {
     if (G.rabbitDue()) {   // the first raid
       rabbitGo([[1.05, 0.40], [FEEDER.gx + 0.07, FEEDER.gy - 0.03, 'eat', 7, () => { G.rabbitAte(); toast('A rabbit is eating everything in the dish!'); }],
-        [0.70, 0.62, 'nibble', 8, () => { G.rabbitRaid(); gnomeSays('him', 'Oi! Shoo, you rascal!'); toast('The rabbit nibbled the sprouts. Time for a fence.'); }], [1.06, 0.92]]);
+        [0.70, 0.62, 'nibble', 8, () => { G.rabbitRaid(); gnomeSays('him', 'Oh, you poor hungry thing!'); toast('The rabbit nibbled the sprouts. Time for a fence.'); }], [1.06, 0.92]]);
       RABBIT.on.fast = 2; return;
     }
     const h = dayPhase().h;
@@ -2635,7 +2635,7 @@ const MAKE_DRAW = {
     ctx.strokeStyle = '#b8a476'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(ax, ay - top); ctx.quadraticCurveTo((ax + bx) / 2, (ay + by) / 2 - top + sag + 14, bx, by - top); ctx.stroke(); ctx.restore(); },
   chime(x, y, a, now) { const cx = x, cy = y - 96; plank(cx - 10, cy, cx + 10, cy, 3, '#7a5a3a');   // shells on threads, hung under the eaves
     ctx.save(); for (let k = 0; k < 4; k++) { const sx = cx - 9 + k * 6, len = 12 + (k % 2) * 6, sw = Math.sin(now / 600 + k) * 2; ctx.strokeStyle = 'rgba(60,45,30,0.6)'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(sx, cy); ctx.lineTo(sx + sw, cy + len); ctx.stroke(); snailShell(sx + sw, cy + len + 2.5, 2.8); } ctx.restore(); },
-  nameboard(x, y) { const cx = x, cy = y; plank(cx - 18, cy, cx + 18, cy, 10, '#9a7a50');   // over the door; the name is still to be chosen
+  nameboard(x, y) { const cx = x, cy = y; plank(cx - 18, cy, cx + 18, cy, 10, '#9a7a50');   // over the door; Hazel's lettering reads The Gnomestead
     ctx.save(); ctx.strokeStyle = 'rgba(80,45,25,0.8)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(cx - 12, cy + 1); for (let k = 0; k < 8; k++) ctx.quadraticCurveTo(cx - 10 + k * 3, cy - 3 + (k % 2) * 5, cx - 9 + k * 3, cy); ctx.stroke();
     blob(cx + 13, cy, 1.6, 1.6, '#b14c37'); blob(cx - 15, cy, 1.4, 1.4, '#e8c43a'); ctx.restore(); },
   cushion(x, y) { blob(x + 2, y - 23, 15, 5.5, '#5d7a33'); blob(x - 1, y - 25, 10, 3.2, '#7d9a45'); blob(x + 7, y - 24, 4, 2, '#8fae52'); },
@@ -3186,7 +3186,7 @@ const $ = id => document.getElementById(id);
 // stand-in. The gnomes are drawn on top at these spots, so a painting only has to leave room for them: [x, y (feet), face left?]
 const ROOMS = {
   1: { slot:'room-shelter', title:'Under the old root', light:[493, 560, 330], sleep:{ him:[680, 790], her:[790, 812] } },
-  2: { slot:'room-stump', title:'The stump house', light:[230, 690, 520], sleep:{ him:[700, 760], her:[790, 785] },
+  2: { slot:'room-stump', title:'The Gnomestead', light:[230, 690, 520], sleep:{ him:[700, 760], her:[790, 785] },
        sit:{ him:[300, 815, true], her:[430, 840, true] } },
 };
 const RS = 1.6;   // gnome size in the room
