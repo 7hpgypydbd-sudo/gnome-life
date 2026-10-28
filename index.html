@@ -83,6 +83,7 @@
   .pack { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:6px; }
   .pack div { background:rgba(43,36,24,.06); border-radius:12px; padding:8px 6px; text-align:center; font-size:14px; color:var(--ink2); }
   .pack div.zero { opacity:.45; }
+  .pack small.full { display:block; font-size:11px; color:#8a5a2a; font-style:italic; }
   .pack img { width:40px; height:40px; display:block; margin:0 auto 2px; }
   .pack b { display:block; font-size:19px; color:var(--ink); }
 
@@ -217,7 +218,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v70</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v71</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -238,16 +239,16 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 70;
+const BUILD = 71;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=70"></script>
-<script src="game.js?v=70"></script>
-<script src="walk.js?v=70"></script>
+<script src="content.js?v=71"></script>
+<script src="game.js?v=71"></script>
+<script src="walk.js?v=71"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -524,7 +525,7 @@ Object.assign(ART_SLOTS, { 'feeding-dish': { w: 62 },   /* Bryce: bigger for the
 Object.assign(ART_SLOTS, { 'pond': { w: 146 } });
 for (const k of ['spirit-float', 'spirit-point', 'spirit-settle', 'toad-legs', 'toad-house']) ART_SLOTS[k] = {};   // the Wood spirit's painted poses (art day 14)
 for (const p of C.story.pages) ART_SLOTS['page-' + p.id.replace('.', '-')] = {};
-for (const d of C.tasks) if (d.make && d.id !== 'barrow') ART_SLOTS['make-' + d.id] = { w: 60 };
+for (const d of C.tasks) if (d.make && d.id !== 'barrow' && d.make !== 'track' && !d.season) ART_SLOTS['make-' + d.id] = { w: 60 };   // v70's track makes, season dressings and neighbours' wishes (WISH_DRAW) are stand-ins until the next art day; add their slots then
 // the animals' side stories (docs/ANIMALS.md): a painting for each storybook page (page-a-<beat id>); the rabbit's portrait (not a journal visitor)
 for (const b of C.animals.beats) if (b.kind === 'page') ART_SLOTS['page-a-' + b.id] = {};
 ART_SLOTS['portrait-rabbit'] = {};
@@ -2312,6 +2313,8 @@ class Folk {
       if (seat) { this.dir = 'front'; return; }
       this.wait -= dt; if (this.wait > 0) return;
       this.wait = 3 + Math.random() * 6;
+      const mk = this.i === 0 && this.home.tile && G.wishMaking(this.f.id), wd = mk && G.wishDef(this.f.id, mk);   // v70: making their wish, they stay by it
+      if (wd) { const [sx, sy] = glob(this.home.tile, wd.at[0] + 0.05, wd.at[1] + 0.05); if (Math.hypot(sx - this.gx, sy - this.gy) > 0.02) { this.tx = sx; this.ty = sy; this.walking = true; } else { this.dir = 'side'; this.flip = true; this.wait = 2; } return; }
       if (this.home.camp || Math.random() < 0.35) { this.dir = Math.random() < 0.7 ? 'front' : 'side'; this.flip = Math.random() < 0.5; return; }
       const fid = this.home.tile && G.farmOn(this.home.tile), fp = fid && taskProg(`farm:${fid}:1`) >= 1 ? farmLook(fid).plants : [];   // once their farm is planted, they potter about in it too
       const sp = [...LOT.spots, ...fp.map(q => [q[0] - 0.03, q[1] + 0.02])], [sx, sy] = this.home.tile ? glob(this.home.tile, ...sp[(Math.random() * sp.length) | 0]) : [this.gx, this.gy];
@@ -2351,6 +2354,7 @@ function syncFolk() {
 function folkNeedsYou(fid) {   // a paper "!" over a neighbour: a favour to do, or a new part of their story to read
   const v = G.s.village, fs = v.folk[fid];
   if (v.favour && v.favour.folk === fid) return true;
+  const w = G.wishOpen(fid); if (w && G.can(w.cost)) return true;   // a wish the store can pay for
   return !!(fs && typeof fs.q === 'number' && fs.q >= 0 && fs.seen !== fs.q);
 }
 function bang(x, y, now) {   // the little paper "!" bubble (also used for creatures in trouble)
@@ -2774,11 +2778,48 @@ function villageItems(items, now) {
     const [gx, gy] = buildSpot(fid);
     items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); drawBuilding(fid, x, y, a, now); } });
   }
+  for (const [fid, fs] of Object.entries(v.folk)) for (const w of C.wishes.list[fid] || []) {   // v70: the neighbours' wishes, by their homes (fade in while they make them)
+    const a = G.wishProg(fid, w.id); if (a <= 0) continue; const [gx, gy] = glob(fs.tile, ...w.at);
+    items.push({ d: depthOf(gx, gy) + (WISH_FLAT.has(w.look) ? -0.2 : 0), draw: () => { const [x, y] = toWorld(gx, gy); if (drawSlot('wish-' + w.id, x, y, a)) return; ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y); ctx.scale(1.3, 1.3); (WISH_DRAW[w.look] || WISH_DRAW.shelf)(0, 0, now, w); ctx.restore(); } });
+  }
   const ba = taskProg('bridge'); if (ba > 0) { const [gx, gy] = glob(BRIDGE.tile, BRIDGE.gx, BRIDGE.gy); items.push({ d: depthOf(gx, gy) - 0.3, draw: () => { const [x, y] = toWorld(gx, gy); drawBridge(x, y, ba); } }); }
   for (const p of folkOnLand) items.push({ d: depthOf(p.gx, p.gy), draw: () => { p.draw(now); if (p.screen && p.i === 0 && (folkNeedsYou(p.f.id) || (p.home.camp && !G.s.tasks['home:' + p.f.id]))) bang(p.screen.x, p.screen.y - p.screen.h - 14, now); } });
   for (const fd of v.finds) items.push({ d: depthOf(...glob(fd.tile, fd.gx, fd.gy)), draw: () => drawFind(fd, now) });
   for (const o of G.s.secrets.out) items.push({ d: depthOf(...glob(o.tile, o.gx, o.gy)) - 0.01, draw: () => drawSecret(o, now) });
 }
+// v70: the neighbours' wishes, code stand-ins by look until each is painted (art slot wish-<id>); bottom-centre at (x, y)
+const WISH_FLAT = new Set(['puddle', 'mat', 'beebath', 'flowers', 'dish']);
+const WISH_DRAW = {
+  shelf(x, y) { shadow(x, y, 18, 5); post(x - 14, y, 30, 3.5); post(x + 14, y, 30, 3.5); plank(x - 20, y - 30, x + 20, y - 30, 5, '#8a6a44'); blob(x - 6, y - 36, 8, 4, '#c98a4a'); blob(x - 6, y - 37, 6, 2.5, '#7a3a5a'); blob(x + 9, y - 35, 5, 3, '#c98a4a'); },
+  wreath(x, y) { post(x, y, 34, 3); ctx.save(); ctx.strokeStyle = '#4f6b2a'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y - 42, 8, 0, 7); ctx.stroke(); for (let k = 0; k < 8; k++) { const t = k / 8 * 6.28; blob(x + Math.cos(t) * 8, y - 42 + Math.sin(t) * 8, 2, 2, k % 2 ? '#6f8f3c' : '#b14c37'); } ctx.restore(); },
+  bunting(x, y, now) { post(x - 24, y, 44, 3); post(x + 24, y + 4, 44, 3); ctx.save(); ctx.strokeStyle = '#d8c9a0'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x - 24, y - 42); ctx.quadraticCurveTo(x, y - 30, x + 24, y - 38); ctx.stroke();
+    for (let k = 0; k < 5; k++) { const t = (k + 0.5) / 5, bx = x - 24 + t * 48, by = y - 42 + t * 4 + 12 * 2 * t * (1 - t) * 0.9; ctx.fillStyle = k % 2 ? '#efe6d2' : '#e2d4b4'; ctx.strokeStyle = INK; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(bx - 4, by); ctx.lineTo(bx + 4, by); ctx.lineTo(bx + Math.sin(now / 700 + k), by + 9); ctx.closePath(); ctx.fill(); ctx.stroke(); } ctx.restore(); },
+  sawhorse(x, y) { shadow(x, y, 20, 5); for (const e of [-1, 1]) { plank(x + e * 16, y, x + e * 10, y - 22, 3, '#7a5a3a'); plank(x + e * 4, y + 3, x + e * 10, y - 22, 3, '#7a5a3a'); } plank(x - 22, y - 23, x + 22, y - 23, 6, '#a07e56'); },
+  owl(x, y) { post(x, y, 40, 4); blob(x, y - 50, 8, 11, '#8a6a44'); blob(x, y - 62, 7, 6, '#8a6a44'); blob(x - 3, y - 62, 2.2, 2.2, '#efe2c4'); blob(x + 3, y - 62, 2.2, 2.2, '#efe2c4'); blob(x - 3, y - 62, 1, 1, '#2a1510'); blob(x + 3, y - 62, 1, 1, '#2a1510'); },
+  chime(x, y, now) { post(x, y, 54, 3.5); plank(x, y - 52, x + 18, y - 52, 3, '#7a5a3a'); for (let k = 0; k < 4; k++) { const sx = x + 4 + k * 4.5, sw = Math.sin(now / 700 + k) * 1.5; ctx.save(); ctx.strokeStyle = 'rgba(60,45,30,0.6)'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(sx, y - 52); ctx.lineTo(sx + sw, y - 40 - (k % 2) * 4); ctx.stroke(); ctx.restore(); blob(sx + sw, y - 37 - (k % 2) * 4, 1.6, 3.5, '#a07e56'); } },
+  swing(x, y, now) { const top = y - 70, sw = Math.sin(now / 1100) * 4; post(x - 18, y, 70, 4); post(x + 18, y, 70, 4); plank(x - 22, top, x + 22, top, 4, '#6e4a2c'); ctx.save(); ctx.strokeStyle = '#d2bd8a'; ctx.lineWidth = 1.3; for (const dx of [-8, 8]) { ctx.beginPath(); ctx.moveTo(x + dx, top); ctx.lineTo(x + dx + sw, y - 20); ctx.stroke(); } ctx.restore(); plank(x - 11 + sw, y - 20, x + 11 + sw, y - 20, 4, '#8a6a44'); },
+  puddle(x, y) { for (let i = 0; i < 10; i++) { const t = i / 10 * 6.28; flatStone(x + Math.cos(t) * 22, y + Math.sin(t) * 9, 4.5, i + 30); } blob(x, y, 19, 7, '#7fa3b0'); blob(x - 5, y - 2, 7, 1.6, 'rgba(230,240,240,0.6)');
+    ctx.save(); ctx.fillStyle = '#f3ead6'; ctx.strokeStyle = INK; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(x + 4, y - 1); ctx.lineTo(x + 14, y - 1); ctx.lineTo(x + 12, y + 2); ctx.lineTo(x + 6, y + 2); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x + 9, y - 1); ctx.lineTo(x + 9, y - 9); ctx.lineTo(x + 13, y - 3); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); },
+  chart(x, y) { shadow(x, y, 6, 2); board(x, y, 8, 50, 0, '#b89468'); for (let k = 0; k < 6; k++) { ctx.save(); ctx.strokeStyle = k % 2 ? '#7a4c8a' : '#5a3a6a'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x - 4, y - 14 - k * 5); ctx.lineTo(x + 4, y - 14 - k * 5); ctx.stroke(); ctx.restore(); } },
+  birdtable(x, y) { shadow(x, y, 12, 4); post(x, y, 36, 4); plank(x - 14, y - 36, x + 14, y - 36, 5, '#8a6a44'); blob(x - 5, y - 40, 2.2, 2.2, '#6a4c8a'); blob(x + 2, y - 40, 2.2, 2.2, '#6a4c8a'); blob(x + 7, y - 41, 2, 2, '#b14c37'); },
+  rose(x, y) { ctx.save(); ctx.strokeStyle = '#4f6b2a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y); ctx.bezierCurveTo(x - 10, y - 20, x + 10, y - 40, x - 2, y - 66); ctx.stroke(); ctx.restore();
+    for (let k = 0; k < 9; k++) { const t = k / 8, px = x + Math.sin(t * 6) * 8, py = y - t * 64; blob(px, py, 4, 3, '#5d7a33'); if (k % 2) blob(px + 3, py - 2, 3, 3, '#d88aa0'); } },
+  rug(x, y) { post(x - 10, y, 22, 4, '#7a5a3a'); post(x + 10, y, 22, 4, '#7a5a3a'); ctx.save(); ctx.fillStyle = '#8a4a5a'; ctx.strokeStyle = INK; ctx.lineWidth = 1; ctx.beginPath(); ctx.rect(x - 14, y - 34, 28, 14); ctx.fill(); ctx.stroke(); ctx.strokeStyle = '#e2b33a'; ctx.beginPath(); ctx.moveTo(x - 14, y - 27); ctx.lineTo(x + 14, y - 27); ctx.stroke(); ctx.restore(); plank(x - 16, y - 22, x + 16, y - 22, 4, '#8a6a44'); },
+  stall(x, y) { shadow(x, y, 22, 6); post(x - 18, y, 46, 4); post(x + 18, y, 46, 4); plank(x - 22, y - 18, x + 22, y - 18, 6, '#8a6a44'); plank(x - 24, y - 46, x + 24, y - 46, 5, '#7a5a3a');
+    for (let k = 0; k < 3; k++) { blob(x - 10 + k * 10, y - 26, 4.5, 5, '#c98a3a'); blob(x - 10 + k * 10, y - 31, 4.5, 1.5, '#efe2c4'); } },
+  beebath(x, y) { blob(x, y, 16, 6, '#9d978a'); blob(x, y - 1, 13, 4.5, '#7fa3b0'); for (let k = 0; k < 5; k++) pebble(x - 8 + k * 4, y - 1 + (k % 2) * 2, 2.4, '#e2dccb', k + 60); },
+  sign(x, y) { shadow(x, y, 8, 3); post(x, y, 30, 3.5); board(x, y, 26, 20, 30, '#a6845a'); blob(x, y - 40, 5, 3.5, '#e2b33a'); ctx.save(); ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1; for (const dx of [-2, 2]) { ctx.beginPath(); ctx.moveTo(x + dx, y - 43); ctx.lineTo(x + dx, y - 37); ctx.stroke(); } ctx.restore(); blob(x - 2, y - 44, 3, 2, 'rgba(240,240,250,0.8)'); blob(x + 3, y - 44, 3, 2, 'rgba(240,240,250,0.8)'); },
+  barrow(x, y) { shadow(x, y, 20, 5); ctx.save(); ctx.fillStyle = '#8a6a44'; ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x - 18, y - 22); ctx.lineTo(x + 12, y - 22); ctx.lineTo(x + 8, y - 8); ctx.lineTo(x - 14, y - 8); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+    blob(x - 2, y - 25, 9, 6, '#d6c08c'); blob(x + 5, y - 27, 6, 5, '#cbb37e'); ctx.save(); ctx.fillStyle = '#6e4a2c'; ctx.beginPath(); ctx.arc(x + 14, y - 5, 5, 0, 7); ctx.fill(); ctx.stroke(); ctx.restore(); plank(x - 18, y - 16, x - 30, y - 6, 2.5, '#7a5a3a'); },
+  vane(x, y) { post(x, y, 62, 3); plank(x - 10, y - 50, x + 10, y - 50, 2, '#6e5a42'); ctx.save(); ctx.fillStyle = '#8a6a44'; ctx.strokeStyle = INK; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x - 10, y - 64); ctx.quadraticCurveTo(x, y - 76, x + 8, y - 68); ctx.lineTo(x + 12, y - 62); ctx.lineTo(x - 10, y - 62); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); },
+  bench(x, y) { MAKE_DRAW.trackbench(x, y); },
+  yarnposts(x, y) { const cols = ['#b14c37', '#e2b33a', '#6a8fb5', '#7a4c8a', '#5d7a33']; for (let k = 0; k < 5; k++) { const px = x - 28 + k * 14, py = y + k * 2; post(px, py, 26, 5, '#7a5a3a'); for (let j = 0; j < 4; j++) { ctx.save(); ctx.fillStyle = cols[(k + j) % 5]; ctx.fillRect(px - 3, py - 22 + j * 4, 6, 3); ctx.restore(); } }
+    plank(x - 28, y - 18, x + 28, y - 10, 2, '#7a5a3a'); },
+  dyepot(x, y) { for (const dx of [-9, 0, 9]) stone(x + dx, y + (dx ? 0 : 3), 5); blob(x, y - 12, 13, 10, '#4a4038'); blob(x, y - 20, 11, 3.5, '#6a3a7a'); blob(x + 6, y - 3, 4, 2, 'rgba(120,60,140,0.6)'); },
+  mat(x, y) { ctx.save(); ctx.translate(x, y); ctx.scale(1, 0.45); const cols = ['#b14c37', '#e2b33a', '#6a8fb5', '#7a4c8a']; for (let k = 0; k < 4; k++) { ctx.strokeStyle = cols[k]; ctx.lineWidth = 3.4; ctx.beginPath(); ctx.ellipse(0, 0, 18 - k * 4.2, 18 - k * 4.2, 0, 0, 7); ctx.stroke(); } ctx.restore(); },
+  flowers(x, y) { for (let k = 0; k < 7; k++) { const fx = x + (rnd(k + 70) - 0.5) * 34, fy = y + (rnd(k + 80) - 0.5) * 12; blob(fx, fy - 4, 5, 3, '#5d7a33'); daisy(fx, fy - 9, 4); } },
+  dish(x, y) { flatStone(x, y, 11, 77); blob(x, y - 4, 8, 3, '#d6b26a'); blob(x - 2, y - 5, 3, 1, 'rgba(255,250,230,0.7)'); },
+};
 function drawFind(fd, now) {   // something to spot for a neighbour's story: a cut-out edge and a glint, finger-sized
   const st = G.questStep(fd.folk), it = st && st.find; if (!it) return;
   const [x, y] = toWorld(...glob(fd.tile, fd.gx, fd.gy)), k = Math.max(1, 0.7 / cam.z), b = Math.sin(now / 400) * 2;
@@ -2963,7 +3004,32 @@ function drawPond(x, y, a, now) {
   for (let i = 0; i < 12; i++) { const t = i / 12 * Math.PI * 2; if (Math.sin(t) < -0.2) continue; stone(x + Math.cos(t) * 72, y + Math.sin(t) * 30 + 2, 5 + rnd(i + 700) * 3); }
   ctx.restore();
 }
+// v70: dressing the house for the season, a swag over the door (stand-in until painted; kit season pieces where they fit)
+const GARLAND = { spring: ['#f3e6ea', '#e9b9c8', '#fbf6e6'], summer: ['#c24f5a', '#e2b33a', '#6a8fb5', '#7a4c8a'], autumn: ['#c9822f', '#e2a93a', '#9a5a2a', '#6e4a2c'], winter: ['#b8322e', '#4f6b2a', '#d9cfb8'] };
+function garland(x, y, season, now) {
+  const C2 = GARLAND[season], w = 30;
+  ctx.save(); ctx.strokeStyle = season === 'winter' ? '#4f6b2a' : '#6f8a4a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x - w, y); ctx.quadraticCurveTo(x, y + 16, x + w, y); ctx.stroke();
+  if (season === 'summer') { for (let k = 0; k < 7; k++) { const t = (k + 0.5) / 7, bx = x - w + t * 2 * w, by = y + 16 * 2 * t * (1 - t) * 1; ctx.fillStyle = C2[k % 4]; ctx.strokeStyle = INK; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(bx - 3.5, by); ctx.lineTo(bx + 3.5, by); ctx.lineTo(bx, by + 8); ctx.closePath(); ctx.fill(); ctx.stroke(); } }   // little flags
+  else for (let k = 0; k < 13; k++) { const t = k / 12, bx = x - w + t * 2 * w, by = y + 16 * 2 * t * (1 - t) + (rnd(k + 900) - 0.5) * 3; blob(bx, by, 3.2, 2.6, C2[k % C2.length]); if (season === 'autumn' && k % 3 === 0) blob(bx, by + 4, 2.2, 2.8, '#8a5a2a'); }
+  for (const e of [-1, 1]) { ctx.strokeStyle = C2[0]; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x + e * w, y); ctx.lineTo(x + e * (w + 2), y + 12 + Math.sin(now / 800 + e) * 1.5); ctx.stroke(); }   // ribbon tails
+  ctx.restore();
+}
+function board(x, y, w, h, top, col = '#9a7a54') { ctx.save(); ctx.fillStyle = col; ctx.strokeStyle = INK; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.rect(x - w / 2, y - top - h, w, h); ctx.fill(); ctx.stroke(); ctx.restore(); }
 const MAKE_DRAW = {
+  // the old track (v70)
+  signpost(x, y) { shadow(x, y, 10, 3); post(x, y, 70, 5); ctx.save(); ctx.fillStyle = '#a07e56'; ctx.strokeStyle = INK; ctx.lineWidth = 1.2;
+    for (const [dy, d] of [[-62, 1], [-50, -1]]) { ctx.beginPath(); ctx.moveTo(x, y + dy - 5); ctx.lineTo(x + d * 26, y + dy - 5); ctx.lineTo(x + d * 32, y + dy); ctx.lineTo(x + d * 26, y + dy + 5); ctx.lineTo(x, y + dy + 5); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = 'rgba(42,21,16,0.5)'; ctx.beginPath(); ctx.moveTo(x + d * 6, y + dy); ctx.lineTo(x + d * 22, y + dy); ctx.stroke(); ctx.strokeStyle = INK; } ctx.restore(); },
+  milestone(x, y) { shadow(x, y, 13, 4); ctx.save(); ctx.fillStyle = '#b2ac9f'; ctx.strokeStyle = INK; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(x - 11, y); ctx.lineTo(x - 11, y - 22); ctx.arc(x, y - 22, 11, Math.PI, 0); ctx.lineTo(x + 11, y); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#7a4c8a'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(x - 6, y - 22); ctx.lineTo(x + 5, y - 22); ctx.moveTo(x + 2, y - 25); ctx.lineTo(x + 5, y - 22); ctx.lineTo(x + 2, y - 19); ctx.moveTo(x - 5, y - 14); ctx.lineTo(x + 5, y - 14); ctx.stroke(); blob(x - 6, y - 2, 6, 2.5, 'rgba(100,140,60,0.8)'); ctx.restore(); },
+  trackbench(x, y) { shadow(x, y, 30, 7); post(x - 20, y, 14, 4); post(x + 20, y + 2, 14, 4); plank(x - 28, y - 14, x + 28, y - 12, 6, '#8a6a44'); post(x - 24, y - 12, 18, 3.5); post(x + 24, y - 10, 18, 3.5); plank(x - 26, y - 28, x + 26, y - 26, 4, '#7a5a3a'); },
+  letterbox(x, y) { shadow(x, y, 10, 3); post(x, y, 46, 4.5); board(x, y, 22, 14, 46, '#8c5a3a'); ctx.save(); ctx.fillStyle = '#3a2a1a'; ctx.fillRect(x - 6, y - 54, 12, 2); ctx.fillStyle = '#b14c37'; ctx.fillRect(x + 11, y - 62, 2, 10); ctx.fillRect(x + 11, y - 62, 6, 4); ctx.restore(); },
+  noticeboard(x, y) { shadow(x, y, 20, 5); post(x - 16, y, 58, 4); post(x + 16, y, 58, 4); board(x, y, 40, 28, 26, '#a6845a');
+    for (const [dx, dy, c] of [[-10, -46, '#f3ead6'], [6, -44, '#efe2c4'], [-2, -34, '#f6f0e2']]) { ctx.save(); ctx.fillStyle = c; ctx.strokeStyle = 'rgba(42,21,16,0.5)'; ctx.lineWidth = 0.8; ctx.fillRect(x + dx - 6, y + dy - 6, 12, 10); ctx.strokeRect(x + dx - 6, y + dy - 6, 12, 10); blob(x + dx, y + dy - 6, 1.2, 1.2, '#b14c37'); ctx.restore(); }
+    plank(x - 24, y - 56, x + 24, y - 56, 4, '#7a5a3a'); },
+  trough(x, y) { shadow(x, y, 26, 7); ctx.save(); ctx.fillStyle = '#9d978a'; ctx.strokeStyle = INK; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(x - 24, y - 16); ctx.lineTo(x + 24, y - 16); ctx.lineTo(x + 20, y); ctx.lineTo(x - 20, y); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#7fa3b0'; ctx.beginPath(); ctx.ellipse(x, y - 16, 21, 4, 0, 0, 7); ctx.fill(); ctx.stroke(); blob(x - 6, y - 17, 6, 1.2, 'rgba(230,240,240,0.6)'); ctx.restore(); },
+
   firering(x, y, a) { for (let i = 0; i < 14; i++) { const t = i / 14 * Math.PI * 2; flatStone(x + Math.cos(t) * 54, y - 8 + Math.sin(t) * 23, 7 + rnd(i + 400) * 2.5, i); } },   // a hearth ring of flat stones set round the fire
   potstools(x, y) { const im = IM['kit-leftovers-05']; if (!im || !im.width) return; const w = 30, h = w * im.height / im.width;   // a pot turned upside down: the rim on the ground, the base for a seat
     shadow(x, y, 17, 5); ctx.save(); ctx.translate(x, y + 1); ctx.scale(1, -1); ctx.drawImage(im, -w / 2, 0, w, h); ctx.restore(); },
@@ -3082,7 +3148,7 @@ const MAKE_DEPTH = { firering: -0.012, wreath: 0.06, nameboard: 0.06, chime: 0.0
 function makeItems(items, now) {
   const garden = G.gardenOpen();
   for (const d of C.tasks) {
-    if (!d.make || (d.make === 'garden' && !garden)) continue;
+    if (!d.make || d.season || (d.make !== 'yard' && !G.patchOpen(d.make))) continue;
     const a = taskProg(d.id); if (a <= 0 || d.id === 'barrow') continue;   // the wheelbarrow is a prop already
     const op = d.id === 'swing' && a >= 1 && oakPic(); if (op && !op[0].endsWith('-plain')) continue;   // the bigger oak paintings have the swing in them
     const [hx, hy] = makeAt(d);
@@ -3092,6 +3158,8 @@ function makeItems(items, now) {
       if (drawSlot('make-' + d.id, x, y, a)) return; ctx.save(); ctx.globalAlpha = a; MAKE_DRAW[d.id](x, y, a, now); ctx.restore(); } });
     if (MAKE_TWICE[d.id]) { const [tx, ty] = MAKE_TWICE[d.id]; items.push({ d: depthOf(tx, ty), draw: () => { const [x, y] = toWorld(tx, ty); if (drawSlot('make-' + d.id, x, y, a)) return; ctx.save(); ctx.globalAlpha = a; MAKE_DRAW[d.id](x, y, a, now); ctx.restore(); } }); }
   }
+  const dz = C.tasks.find(d => d.season === G.season(G.now())), da = dz ? taskProg(dz.id) : 0, sh = PROPS.find(q => q.name === 'shelter');   // this season's dressing, over the door
+  if (da > 0 && sh) items.push({ d: depthOf(sh.gx, sh.gy) + 0.012, draw: () => { const [x, y] = toWorld(sh.gx, sh.gy); ctx.save(); ctx.globalAlpha = da; garland(x - 38, y - 98, dz.season, now); ctx.restore(); } });
   if (garden && taskProg('pond') > 0) { const [px, py] = glob(POND.tile, POND.gx, POND.gy); items.push({ d: depthOf(px, py) - 0.3, draw: () => { const [x, y] = toWorld(px, py); drawPond(x, y, taskProg('pond'), now); } }); }
 }
 
@@ -4028,6 +4096,7 @@ sheet.addEventListener('click', e => {
   if (a === 'story') return openStory(id, 'quest');
   if (a === 'wave') { if (b.dataset.sure) { if (G.waveOn()) { toast('They waved goodbye. Someone else will come along.'); return closeSheet(); } } else { b.dataset.sure = 1; b.textContent = 'Yes, wave them on'; return; } }
   if (a === 'qgive') { const g = choreGnome('her'); if (G.questGive(id, g ? g.who : 'her')) { basketTo(g, id); toast(`${C.names[g ? g.who : 'her']} takes it over to ${G.folkDef(id).short}.`); } }
+  if (a === 'wish') { const g = choreGnome('her'), w = G.wishOpen(id); if (w && G.sendWish(id, g ? g.who : 'her')) { basketTo(g, id); toast(`${C.names[g ? g.who : 'her']} takes the basket over. ${G.folkDef(id).short[0].toUpperCase() + G.folkDef(id).short.slice(1)} starts on ${lcName(w.name)}.`); return openFolk(id); } }
   if (a === 'favour') { const g = choreGnome('her'), fid = G.s.village.favour && G.s.village.favour.folk, got = G.doFavour(g ? g.who : 'her');
     if (got) { basketTo(g, fid); toast(`${C.names[g ? g.who : 'her']} takes it over to ${G.folkDef(fid).short}.${Object.keys(got).length ? ' ' + Object.entries(got).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(', ') : ''}`); } }
   if (a === 'entry') return openEntry(id);
@@ -4107,19 +4176,20 @@ function cap(t) { return t[0].toUpperCase() + t.slice(1); }
 function hours(mins) { const h = mins / 60 * G.taskSpeed(); return h < 1 ? `${Math.round(h * 60)} minutes` : h < 1.75 ? '1 hour' : `${Math.round(h)} hours`; }
 function openPack() {
   let html = `<h2>The gnomes' store<small>things the land has left for them</small></h2><p>Tap the little things lying about, and a little luck carries them home: twigs to the woodpile, the rest to Hazel's shelf by the door. Their jobs use them.</p><div class="pack">`;
-  const cell = ([k, r]) => { const n = G.s.inv[k] || 0; return `<div class="${n ? '' : 'zero'}">${iconHtml(k)}<b>${n}</b>${r.name}</div>`; }, all = Object.entries(C.resources);
-  html += all.filter(([, r]) => !r.pantry).map(cell).join('') + `</div>`;
+  const cell = ([k, r]) => { const n = G.s.inv[k] || 0, full = !r.pantry && n >= G.shelf(k); return `<div class="${n ? '' : 'zero'}">${iconHtml(k)}<b>${n}</b>${r.name}${full ? '<small class="full">shelf full</small>' : ''}</div>`; }, all = Object.entries(C.resources);
+  html += all.filter(([, r]) => !r.pantry).map(cell).join('') + `</div><p class="meta">Each shelf holds ${C.store.cap} of a thing from the land, and ${C.store.giftCap} of a neighbour's gift. When a shelf is full, the land leaves something else instead.</p>`;
   if (G.s.plots.seedbed.grown) html += `<h3>The pantry</h3><p>From the seed bed. They eat from it at breakfast and supper, and the shelf holds about ${C.pantry.cap} of each; the spare goes over the fence. Hazel's seed tin holds ${C.pantry.seedTin} seeds.</p><div class="pack">${all.filter(([, r]) => r.pantry).map(cell).join('')}</div>`;   // after the first picking
   openSheet('pack', html);
 }
 const JOB_PIC = { ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'yard-bench', barrow: 'wheelbarrow',
   woodpile: 'firewood', doorstep: 'yard-doorstep', rainbarrel: 'barrel-full', clothesline: 'washing-line', lantern: 'lanternstump', stump: 'lanternstump', windowbox: 'yard-windowbox', wormlantern: 'worm-lantern',
-  wormlamp: 'worm-lamp', house1: 'house-hollowed', house2: 'house-windows', house3: 'house-finished', hedgehoghouse: 'nest-leafpile', nestbox: 'nest-nest', bridge: 'bld-bridge' };
+  wormlamp: 'worm-lamp', house1: 'house-hollowed', house2: 'house-windows', house3: 'house-finished', hedgehoghouse: 'nest-leafpile', nestbox: 'nest-nest', bridge: 'bld-bridge',
+  dress_spring: 'kit/season-07', dress_summer: 'kit/season-08', dress_autumn: 'kit/season-05', dress_winter: 'kit/season-03' };
 function jobPic(d) {   // a small painted picture of what the job makes, for the parchment job cards ('' if there is none)
   const [kind, f] = d.id.split(':'), k = JOB_PIC[d.id] || (d.healTile ? STEP_PIC[d.stepId] : '') || (kind === 'home' ? 'home-' + f : kind === 'trade' ? 'bld-' + f : kind === 'quest' || kind === 'farm' ? 'folk-' + f : kind === 'regrow' ? 'sapling' : d.make ? 'make-' + d.id : '');
   return k ? `<img class="jpic" src="sprites/${k}.webp" alt="" onerror="this.remove()">` : '';
 }
-function makesLine() { return Object.keys(C.makes).filter(k => C.makes[k].tile === '0,0' || G.gardenOpen()).map(k => { const n = G.makesCount(k); return `${C.makes[k].name}: ${n.done} of ${n.total}`; }).join(' · '); }
+function makesLine() { const w = G.wishesCount(); return Object.keys(C.makes).filter(k => G.patchOpen(k) || k === 'yard').map(k => { const n = G.makesCount(k); return `${C.makes[k].name}: ${n.done} of ${n.total}`; }).concat(w.total ? [`The neighbours' wishes: ${w.done} of ${w.total}`] : []).join(' · '); }
 // Jobs (docs/PLAN.md "Progression review", fix 1): the story decides what is offered. No greyed "Not yet" rows: the story's own
 // job sits on top with a ribbon, one "Next:" line says what the story is waiting for, and Hazel's little makes have their own tab.
 function jobRow(v, focus) {
@@ -4341,7 +4411,7 @@ function ourStoryHtml() {   // every page read so far, to read again, and the Wo
   return html + `</div>`;
 }
 function openMakes(patch, stage) {   // Hazel's list: what they could make now this patch has healed a little more
-  const M = C.makes[patch], list = C.tasks.filter(d => d.make === patch && d.stage === stage && !(d.needs || []).some(n => n.startsWith('flag:') && !G.s.flags[n.slice(5)]));
+  const M = C.makes[patch], list = C.tasks.filter(d => d.make === patch && d.stage === stage && !d.season && !(d.needs || []).some(n => n.startsWith('flag:') && !G.s.flags[n.slice(5)]));
   openSheet('makes', `<div class="jpage card"><p class="meta" style="margin:0">Hazel's list · ${M.name.toLowerCase()}</p><div class="por big"><img src="sprites/face-her.webp" alt=""></div><h2>Little makes</h2>
     <p class="lore">"${M.lines[stage]}"</p><ul class="mlist">${list.map(d => `<li>${d.name}</li>`).join('')}</ul>
     <p class="meta">They are in Jobs, on Hazel's list. Each is paid for with things you gather, and appears in its own spot once it is made.</p></div>
@@ -4391,6 +4461,14 @@ function openTraveller() {
   }
   openSheet('traveller', html);
 }
+function folkWish(fid) {   // v70: a little make for their own home (C.wishes); you send the basket, they make it
+  const f = G.folkDef(fid), Sh = f.short[0].toUpperCase() + f.short.slice(1), d = G.wishOpen(fid), m = G.wishMaking(fid), l = (C.wishes.list[fid] || []), done = l.filter(x => G.wishProg(fid, x.id) >= 1);
+  let html = '';
+  if (d) html += `<h3>A wish for home</h3><div class="row"><div class="t"><b>"${d.ask}"</b><span class="cost">${costHtml(d.cost)}</span>${G.can(d.cost) ? '' : `<br><span class="bad">The store is short of ${G.missing(d.cost).join(', ')}.</span>`}</div><button class="act" data-a="wish" data-id="${fid}" ${G.can(d.cost) ? '' : 'disabled'}>Send the basket</button></div>`;
+  if (m) { const w = G.wishDef(fid, m), e = G.wishState(fid).made[m][1]; html += `<p><small>${Sh} is making ${lcName(w.name)} · ${G.timeLeft(e)} to go.</small></p>`; }
+  if (done.length) html += `<p><small>Made for home: ${done.map(x => `${lcName(x.name)} <i>(${x.line})</i>`).join('; ')}</small></p>`;
+  return html;
+}
 function folkStory(fid) {   // the story part of a neighbour's page, in words, with whatever button it needs
   const f = G.folkDef(fid), fs = G.folkState(fid), st = G.questStep(fid);
   if (fs.q === 'done') return `<h3>${f.quest.name}</h3><p>A story that has finished. <button class="act quiet" data-a="story" data-id="${fid}">Read it again</button></p>`;
@@ -4408,6 +4486,7 @@ function openFolk(fid) {
   let html = `<div class="jpage">${folkPor(f, true)}<h2>${f.name}</h2><p class="meta">${f.trade}${f.members ? '' : ''} · neighbours since ${new Date(fs.since).toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}</p><p class="lore">"${pick(f.sayings)}"</p></div>`;
   const fv = G.s.village.favour;
   if (fv && fv.folk === fid) { const ask = f.favours[fv.i]; html += `<h3>A small favour</h3><p class="meta" style="margin:0">${f.short[0].toUpperCase() + f.short.slice(1)} asks over the fence.</p><div class="row"><div class="t"><b>"${ask.ask}"</b><span class="cost">${costHtml(ask.cost)}</span>${G.can(ask.cost) ? '' : `<br><span class="bad">The store is short of ${G.missing(ask.cost).join(', ')}.</span>`}</div><button class="act" data-a="favour" ${G.can(ask.cost) ? '' : 'disabled'}>Send it over</button></div>`; }
+  html += folkWish(fid);
   const tv = G.taskView(G.taskDef('trade:' + fid)), b = tv.def;
   if (tv.state !== 'done') html += `<h3>${b.name}</h3><div class="row"><div class="t"><span>${b.blurb}</span><br><span>` + (tv.state === 'running' ? `<span class="who" data-w="${b.who}">${C.names[b.who]}</span> is on it · ${G.timeLeft(tv.endsAt)} to go` : `<span class="who" data-w="${b.who}">${C.names[b.who]}</span> needs <span class="cost">${costHtml(b.cost)}</span> · ${hours(b.mins)}` + (tv.can ? '' : `<br><span class="bad">The store is short of ${tv.missing.join(', ')}.</span>`)) + `</span></div>${tv.state === 'ready' ? `<button class="act" data-a="start" data-id="${b.id}" ${tv.can ? '' : 'disabled'}>Start</button>` : ''}</div>`;
   else html += `<p><small>${b.giftText.replace(/\.$/, '')}: every day.</small></p>`;
@@ -4500,6 +4579,7 @@ G.onChange((kind, data) => { renderInv(kind === 'inv' && typeof data === 'string
   if (kind === 'story') { btnAlert('bJournal', true); openStory(data.folk, data.kind); }
   if (kind === 'quest') btnAlert('bJournal', true);
   if (kind === 'festival') { if (data === 'ready') toast(G.festText(C.festival.ready).replace('{when}', dayKeyOf(G.s.festival.at) === dayKeyOf(G.now()) ? 'tonight' : 'tomorrow evening')); else festCheck(); }
+  if (kind === 'wish') { const f = G.folkDef(data), d = G.wishOpen(data); if (d) toast(`${f.short[0].toUpperCase() + f.short.slice(1)} has a wish: ${lcName(d.name)}.`); }
   if (kind === 'favour') { const f = G.folkDef(data); toast(`${f.short[0].toUpperCase() + f.short.slice(1)} could use a small favour.`); }
   if (kind === 'offered') toast(`Something new in Jobs: ${lcName(G.taskDef(data).name)}.`);
   if (kind === 'wishready') toast(G.wishText(data, true)); });
