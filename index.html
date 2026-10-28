@@ -230,7 +230,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v72</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v73</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -251,7 +251,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 72;
+const BUILD = 73;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -259,9 +259,9 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=72"></script>
-<script src="game.js?v=72"></script>
-<script src="walk.js?v=72"></script>
+<script src="content.js?v=73"></script>
+<script src="game.js?v=73"></script>
+<script src="walk.js?v=73"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -558,8 +558,8 @@ for (const k of ['herb', 'rhubarb', 'willow', 'fruit', 'lavender', 'wheat']) for
 for (const k of ['cabbage-1', 'cabbage-2', 'cabbage-3', 'peas-1', 'peas-2', 'straw-1', 'straw-2', 'radish', 'scarecrow', 'ladder', 'bottlebrush', 'willow-cut', 'wheat-cut',
   'flax-1', 'flax-2', 'flax-3', 'woad-1', 'woad-2', 'weld', 'indigo', 'trellis', 'moon-1', 'moon-2', 'moon-open', 'moon-closed', 'primrose']) ART_SLOTS['farm-' + k] = {};
 // painted sizes in world px (a gnome stands 111 tall): w = width, h = height, for the little makes cut by tools/cut_day14.py
-const MAKE_SIZE = { firering:{w:100}, potstools:{w:70}, spinner:{h:90}, scraper:{w:46}, doorpots:{w:62}, doormat:{w:58}, scarecrow:{h:105}, pebbles:{w:80}, daisypot:{h:62},
-  sundial:{h:66}, herbpots:{w:66}, wreath:{w:40}, plank:{w:84}, chime:{h:70}, nameboard:{w:52}, cushion:{w:44}, swing:{h:120}, hammock:{w:120}, sign:{h:96},
+const MAKE_SIZE = { firering:{w:100}, potstools:{w:70}, spinner:{h:90}, scraper:{w:46}, doorpots:{w:50}, doormat:{w:42}, scarecrow:{h:105}, pebbles:{w:80}, daisypot:{h:62},
+  sundial:{h:66}, herbpots:{w:66}, wreath:{w:34}, plank:{w:84}, chime:{h:70}, nameboard:{w:40}, cushion:{w:44}, swing:{h:120}, hammock:{w:120}, sign:{h:96},
   gstones:{w:110}, wicket:{w:70}, mousering:{w:70}, sitstone:{w:52}, wildflowers:{w:86}, border:{w:140}, arch:{h:112}, mousetable:{w:40}, stonefrog:{w:42}, birddish:{h:78},
   logbench:{w:120}, ferns:{w:78}, willowseat:{w:74}, pebblepath:{w:120} };
 for (const [id, o] of Object.entries(MAKE_SIZE)) if (ART_SLOTS['make-' + id]) ART_SLOTS['make-' + id] = o;
@@ -1419,7 +1419,7 @@ function drawMorningMist(dt, now) {   // a soft mist over everything while the g
   for (let i = 0; i < 6; i++) { const x = ((now / 90 * (0.4 + i * 0.13) + i * 173) % (W + 400)) - 200, y = H * (0.15 + 0.14 * i);
     const r = ctx.createRadialGradient(x, y, 10, x, y, 220); r.addColorStop(0, 'rgba(255,255,250,.55)'); r.addColorStop(1, 'rgba(255,255,250,0)'); ctx.fillStyle = r; ctx.fillRect(x - 220, y - 220, 440, 440); }
   ctx.globalAlpha = mistA; ctx.fillStyle = 'rgba(80,72,52,.75)'; ctx.font = 'italic 19px "IM Fell English", Georgia, serif'; ctx.textAlign = 'center';
-  ctx.fillText('the morning mist is lifting…', W / 2, H * 0.48);
+  ctx.fillText('the mist is lifting…', W / 2, H * 0.48);
   ctx.restore();
 }
 function drawGroundTile(k, ox, oy, now) {
@@ -1549,6 +1549,8 @@ let FLATSTONE = null;
 function flatStone(x, y, r, i = 0) {   // a stone set into the earth: a ring of darker trodden soil, a shadowed lower rim, a warm grey face with a soft top light
   groundPatch(x, y + 1, r * 1.5, r * 0.72);
   if (offScreen(x, y, r, r)) return;
+  const st = IM['g-st-' + GSTICK.steps[(i * 5 + 1) % GSTICK.steps.length]];   // art review: the painted stepping stones (inked, like the rest), not a plain grey disc
+  if (st && st.width) { const w = r * 2.3, h = w * st.height / st.width; ctx.save(); ctx.translate(x, y); ctx.rotate((rnd(i + 3) - 0.5) * 0.2); if (rnd(i + 9) < 0.5) ctx.scale(-1, 1); ctx.drawImage(st, -w / 2, -h * 0.6, w, h); ctx.restore(); return; }
   if (!FLATSTONE) {   // every stone is the same picture at a different size and tilt, so it is painted once (r = 160, sharp at full zoom) and reused
     const R = 160, c = Object.assign(document.createElement('canvas'), { width: R * 2, height: R }), x2 = c.getContext('2d'); x2.setTransform(R, 0, 0, R, R, R / 2);
     x2.fillStyle = 'rgba(80,64,46,0.45)'; x2.beginPath(); x2.ellipse(0, 0, 1, 0.44, 0, 0, 7); x2.fill();   // the rim where it meets the soil
@@ -3158,6 +3160,11 @@ const MAKE_PARTS = {   // makes spread over a few spots (home grid), so each pie
 const HOUSE_DOOR = { doormat:[-38, -32], doorpots:[-10, -30], scraper:[-68, -28], wreath:[-38, -76], nameboard:[-38, -104] };   // world px from the house's foot (its painted door), drawn in front of the house
 const MAKE_FLAT = new Set(['doormat', 'pebbles', 'plank', 'gstones', 'wildflowers', 'pebblepath', 'clover']);   // things that lie on the ground (drawn under the rest)
 const MAKE_DEPTH = { firering: -0.012, wreath: 0.06, nameboard: 0.06, chime: 0.02, cushion: 0.012, mousering: -0.01, spinner: 0.01 };
+function pebbleEdge(a) {   // "Pebble edging round the seed bed": small clumps of the painted pebbles just outside the fence, with a gap at the gate
+  const f = bedFrame(), n = 14;
+  for (let i = 0; i < n; i++) { const th = Math.PI / 2 + 0.34 + i * (2 * Math.PI - 0.68) / (n - 1), u = Math.cos(th), W = f.W * 1.1, H = f.H * 1.14;
+    drawSlot('make-pebbles', f.cx + u * W, f.cy + Math.sin(th) * H - u * W * 0.22, a * 0.8, { w: 20 + 7 * rnd(i + 700), flat: true }); }   // a little see-through, so the white stones sit down into the earth
+}
 function makeItems(items, now) {
   const garden = G.gardenOpen();
   for (const d of C.tasks) {
@@ -3166,6 +3173,7 @@ function makeItems(items, now) {
     const op = d.id === 'swing' && a >= 1 && oakPic(); if (op && !op[0].endsWith('-plain')) continue;   // the bigger oak paintings have the swing in them
     const [hx, hy] = makeAt(d);
     if (MAKE_PARTS[d.id] && !art('make-' + d.id)) { for (const [gx, gy, k, h] of MAKE_PARTS[d.id]()) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); ctx.save(); ctx.globalAlpha = a; shadow(x, y, h * 0.3, h * 0.08); kitPiece(k, x, y, h); ctx.restore(); } }); continue; }
+    if (d.id === 'pebbles' && art('make-pebbles')) { items.push({ d: depthOf(hx, hy) - 0.25, draw: () => pebbleEdge(a) }); continue; }   // art review: the painted clump is laid round the bed, not dropped in the middle of it
     const hd = HOUSE_DOOR[d.id], sh = hd && PROPS.find(q => q.name === 'shelter');
     items.push({ d: hd ? depthOf(sh.gx, sh.gy) + 0.01 : depthOf(hx, hy) + (MAKE_FLAT.has(d.id) ? -0.25 : MAKE_DEPTH[d.id] || 0), draw: () => { let [x, y] = toWorld(hx, hy); if (hd) { [x, y] = toWorld(sh.gx, sh.gy); x += hd[0]; y += hd[1]; }
       if (drawSlot('make-' + d.id, x, y, a)) return; ctx.save(); ctx.globalAlpha = a; MAKE_DRAW[d.id](x, y, a, now); ctx.restore(); } });
