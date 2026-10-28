@@ -1,0 +1,172 @@
+[
+ {
+  "batch": "1 month one",
+  "id": "m01-month1-makes",
+  "title": "Mouse door in the fence, soft earth bank, clover strip",
+  "refs": [
+   "fence",
+   "him-side",
+   "stonebench"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Three separate pieces in one row, evenly spaced with wide clear magenta gaps, seen from a gentle slanted view from above and to the front, at gnome scale like the pasted gnome (a gnome is about knee high to a person), 1) a short stretch of the pasted woven stick fence (two posts and the woven panel between them) with a tiny arched mouse door cut into the bottom of the panel, a little twig frame round it and a pebble for a doorstep; 2) a low soft mound of heaped brown earth, about as long as a gnome lying down, patted smooth, with a few tufts of grass and a scatter of moss on top, no hole yet; 3) a long low strip of young clover, round three-part leaves and a few small white clover flowers, like a little green rug laid along the ground. Hidden detail: a tiny snail on the earth bank. Do not paint the pasted gnome, bench or buildings. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "2 repaints",
+  "id": "r01-yard-repaints",
+  "title": "Glow jar, glow-worm lantern, stone frog, sitting stone, scarecrow (unlit and inked)",
+  "refs": [
+   "glow-jar",
+   "worm-lantern",
+   "make-stonefrog",
+   "make-sitstone",
+   "farm-scarecrow",
+   "him-side"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Five separate pieces in one row, evenly spaced with wide clear magenta gaps, seen from a gentle slanted view from above and to the front, at gnome scale like the pasted gnome (a gnome is about knee high to a person), redraw the pasted pictures with firm brown ink outlines: 1) a small glass jam jar with a wire handle and a cork, a few tiny dark beetles resting inside, clear glass with cream highlights; 2) a small hanging lantern made of a nutshell cage on a twine loop, a few tiny glow-worms resting inside; 3) a stone frog sitting up, carved from grey speckled granite with moss in the cracks, chipped and weathered, clearly inked, not smooth plaster; 4) a low round flat-topped sitting stone, grey and lichen-spotted, with a few crisp ink cracks; 5) a small gnome-built scarecrow exactly in the style of the pasted farm scarecrow: a stick cross, a sack head with a stitched smile, a patched coat and a battered hat, about as tall as a gnome. Painted UNLIT, as if in daylight with the light switched off: no glow, no halo, no shine, no light beams, no bright yellow inside. Hidden detail: a tiny snail on the sitting stone. Do not paint the pasted gnome, bench or buildings. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "2 repaints",
+  "id": "r02-pebble-line",
+  "title": "Thin line of pebbles for the seed bed fence",
+  "refs": [
+   "make-pebbles",
+   "stonebench"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Three separate long thin strips, one above the other with wide clear magenta gaps, each running straight across almost the full width of the picture, seen from a gentle slanted view from above and to the front: a single neat line of small rounded white and pale grey river pebbles laid side by side on the ground like a garden edging, each pebble about the size of a gnome's fist, only one pebble deep and one pebble high, very long and very low, the pebbles nearly touching each other, small differences in shape and shade. The three strips are variations of the same edging. Not a heap, not a pile, not a ring. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "2 repaints",
+  "id": "r03-her-potwalk",
+  "title": "Hazel walking while carrying the potted oak (4 frames)",
+  "refs": [
+   "her-side",
+   "her-potwalk"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Four frames of Hazel in one row, evenly spaced with wide clear magenta gaps, all the same size and on the same baseline, full body with feet visible, seen from the side facing right, exactly the same gnome as the pasted pictures (same face, cap, hair and dress). She is WALKING while holding a small clay pot with a little oak sapling in both arms against her chest. A clear walk cycle: frame 1 left foot forward with a long stride, frame 2 legs passing under her with the body slightly raised, frame 3 right foot forward with a long stride, frame 4 legs passing again. The legs and skirt must look clearly different in each frame. The pot and sapling stay the same. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "2 repaints",
+  "id": "r04-heal-trees",
+  "title": "Young gums and the old dead tree, firmer ink",
+  "refs": [
+   "heal-gum-1",
+   "heal-gum-2",
+   "heal-gum-3",
+   "heal-deadtree-home",
+   "him-side"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Five separate pieces in one row, evenly spaced with wide clear magenta gaps, seen from a gentle slanted view from above and to the front, at gnome scale like the pasted gnome (a gnome is about knee high to a person), redraw the pasted pictures with FIRM, clear brown ink outlines and richer washes (they came out too faint): 1) a tiny eucalyptus seedling with four grey-green leaves; 2) a knee-high young gum, thin pale trunk, a few drooping grey-green leaves; 3) a young gum tree a little taller than a gnome, smooth pale cream-and-grey bark, drooping sickle-shaped leaves; 4) a tall dead eucalyptus tree, silver-grey weathered wood, bark long gone, a few bare twisting limbs, a dark round hollow halfway up; 5) the same dead tree with a small wooden nest box pegged under the hollow and a brushtail possum peeping out. Hidden detail: a tiny snail on a root of the dead tree. Do not paint the pasted gnome, bench or buildings. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "2 repaints",
+  "id": "r05-wisp",
+  "title": "Will-o'-the-wisp, inked and unlit",
+  "refs": [
+   "vis-wisp",
+   "him-side"
+  ],
+  "prompt": "Generate an image: Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. One small creature in the centre with lots of clear magenta around it: a will-o'-the-wisp as a tiny shy woodland sprite, a soft rounded wisp of pale cream and pale green mist with a small kind face and two little twig-like arms, drawn with fine brown ink outlines like the rest of the book, about the size of a gnome's head. Painted UNLIT, as if in daylight with the light switched off: no glow, no halo, no shine, no light beams, no bright yellow inside. No sparkles. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "2 repaints",
+  "id": "r06-juniper-home",
+  "title": "Juniper's home with its window unlit",
+  "refs": [
+   "home-juniper"
+  ],
+  "prompt": "Generate an image: Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Redraw the pasted home exactly, same shape, same layout, same colours and same view, with one change: the window is painted dark and unlit, a plain window with a dark glass pane and a little curtain, no yellow light, no glow. Painted UNLIT, as if in daylight with the light switched off: no glow, no halo, no shine, no light beams, no bright yellow inside. Hidden detail: a tiny snail on the doorstep. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "2 repaints",
+  "id": "r07-mabel-bakehouse",
+  "title": "Mabel's bakehouse with the oven mouth unlit",
+  "refs": [
+   "bld-mabel"
+  ],
+  "prompt": "Generate an image: Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Redraw the pasted bakehouse exactly, same shape, same layout, same colours and same view, with one change: the oven mouth is painted dark and cold, sooty brick with a little iron door half open, no fire, no orange light, no glow. Painted UNLIT, as if in daylight with the light switched off: no glow, no halo, no shine, no light beams, no bright yellow inside. Hidden detail: a tiny snail on a loaf on the shelf. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "2 repaints",
+  "id": "r08-festival",
+  "title": "Festival lantern unlit, softer ripe pumpkin",
+  "refs": [
+   "fest-lantern",
+   "pumpkin-3"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Two separate pieces side by side with a wide clear magenta gap: 1) redraw the pasted festival lantern exactly, same shape, painted unlit (dark paper or glass, no light inside); 2) redraw the pasted big ripe pumpkin exactly, same shape, but a softer, earthier golden orange, less bright. Painted UNLIT, as if in daylight with the light switched off: no glow, no halo, no shine, no light beams, no bright yellow inside. Hidden detail: a tiny snail on the pumpkin. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "2 repaints",
+  "id": "r09-lavender",
+  "title": "Clem's lavender, four steps, properly lavender coloured",
+  "refs": [
+   "farm-lavender-4",
+   "him-side"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Four separate pieces in one row, evenly spaced with wide clear magenta gaps, seen from a gentle slanted view from above and to the front, at gnome scale like the pasted gnome (a gnome is about knee high to a person), a lavender bush in four steps of growth: 1) a tiny grey-green seedling; 2) a small rounded clump of narrow silvery-grey-green leaves; 3) a bigger clump with a few flower spikes just showing; 4) a full rounded lavender bush covered in tall slender flower spikes. The flowers are true lavender: soft dusty violet-mauve with grey, NOT blue, like real English lavender. This is the one picture where a soft muted violet is wanted, only on the flowers. Hidden detail: a bee and a tiny snail on the big bush. No ground, no shadow. Do not paint the pasted gnome, bench or buildings."
+ },
+ {
+  "batch": "3 decorations",
+  "id": "d01-wishes-mabel-tobias",
+  "title": "Wishes: Mabel and Tobias",
+  "refs": [
+   "home-mabel",
+   "home-tobias",
+   "him-side"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Six separate pieces in two rows of three, evenly spaced with wide clear magenta gaps, seen from a gentle slanted view from above and to the front, at gnome scale like the pasted gnome (a gnome is about knee high to a person), little things the neighbours make for their homes: 1) a little plank shelf on two brackets with three pies cooling on it; 2) a round herb wreath of bay and rosemary leaves tied with twine, to hang on a door; 3) a short string of bunting made of little flags cut from old cream flour sacks; 4) a small wooden sawhorse; 5) a small carved wooden owl for a roof ridge; 6) a short wooden bar hung with little wooden offcut wind chimes on strings. Hidden detail: a tiny snail on the pie shelf. Do not paint the pasted gnome, bench or buildings. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "3 decorations",
+  "id": "d02-wishes-fernsby-pebbleworth",
+  "title": "Wishes: the Fernsbys and the Pebbleworths",
+  "refs": [
+   "home-fernsby",
+   "home-pebbleworth",
+   "him-side"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Six separate pieces in two rows of three, evenly spaced with wide clear magenta gaps, seen from a gentle slanted view from above and to the front, at gnome scale like the pasted gnome (a gnome is about knee high to a person), little things the neighbours make for their homes: 1) a rope tree swing with a plank seat (just the swing and its two ropes); 2) a small round puddle lined with stones with a tiny toy sailing boat on it; 3) a narrow wooden door-frame strip with little marks and notches in berry-red ink, a height chart (marks only, no numbers or letters); 4) a small bird table on a post with crumbs on top; 5) a climbing rose growing up a short length of tree bark, creamy white and apricot roses; 6) a small folded knitted rug in muted ochre, moss green and rust stripes. Hidden detail: a tiny snail on the bird table. Do not paint the pasted gnome, bench or buildings. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "3 decorations",
+  "id": "d03-wishes-clem-barnaby",
+  "title": "Wishes: Clem and Barnaby",
+  "refs": [
+   "home-clem",
+   "home-barnaby",
+   "him-side"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Six separate pieces in two rows of three, evenly spaced with wide clear magenta gaps, seen from a gentle slanted view from above and to the front, at gnome scale like the pasted gnome (a gnome is about knee high to a person), little things the neighbours make for their homes: 1) a tiny wooden honesty stall with a little roof, three honey pots and a tin for buttons; 2) a shallow saucer of pebbles and water, a bee bath; 3) a round wooden door plaque painted with a friendly bee that has five legs; 4) a small two-wheeled sack barrow with a sack on it; 5) a wooden weather vane with a rooster on top (it could be a duck); 6) a simple plank bench. Hidden detail: a tiny snail on the honesty stall. Do not paint the pasted gnome, bench or buildings. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "3 decorations",
+  "id": "d04-wishes-nettle-juniper",
+  "title": "Wishes: Nettle and Juniper",
+  "refs": [
+   "home-nettle",
+   "home-juniper",
+   "him-side"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Six separate pieces in two rows of three, evenly spaced with wide clear magenta gaps, seen from a gentle slanted view from above and to the front, at gnome scale like the pasted gnome (a gnome is about knee high to a person), little things the neighbours make for their homes: 1) a short row of four little fence posts, each wrapped in yarn of a different muted colour (ochre, moss green, rust, cream); 2) a small black dye pot on three stones with a stirring stick, rusty red dye inside; 3) a small round rag rug woven from scraps; 4) a small patch of moonflowers, big pale cream trumpet flowers on twining vines; 5) a round wooden door plaque painted with a simple star chart, little cream stars on dark blue-grey, no glow; 6) a flat stone with a little dish of honey water on it. Hidden detail: a tiny snail beside the dye pot. Do not paint the pasted gnome, bench or buildings. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "3 decorations",
+  "id": "d05-track-makes",
+  "title": "The old track: six makes",
+  "refs": [
+   "stonebench",
+   "him-side"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Six separate pieces in two rows of three, evenly spaced with wide clear magenta gaps, seen from a gentle slanted view from above and to the front, at gnome scale like the pasted gnome (a gnome is about knee high to a person), things the gnomes make along an old track: 1) a wooden signpost with two arrow-shaped arms (blank arms, no words); 2) a small upright milestone with a rough painted mark in berry red (no letters); 3) a simple plank bench; 4) a little wooden letterbox with a tiny roof on a post; 5) a small wooden notice board on two posts with a few blank paper notes pinned to it; 6) a long low stone drinking trough with water in it. Hidden detail: a tiny snail on the milestone. Do not paint the pasted gnome, bench or buildings. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "3 decorations",
+  "id": "d06-garlands",
+  "title": "Four seasonal garlands to hang over the door",
+  "refs": [
+   "house-finished",
+   "make-wreath"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. Four separate long garlands, one above the other with wide clear magenta gaps, each a gently drooping swag about as wide as the round door of the pasted house plus a little extra, made to hang over a door: 1) spring: white and cream blossom and fresh green leaves; 2) summer: bunting of little berry-dyed cloth scraps in muted rust, ochre and moss green on a twine; 3) autumn: golden and brown leaves with acorns strung on twine; 4) winter: a swag of green moss and red berries with a few little knitted bobbles in cream and rust. Hidden detail: a tiny snail on the autumn garland. Do not paint the pasted gnome, bench or buildings. No ground, no shadow. Avoid pink and purple anywhere."
+ }
+]
