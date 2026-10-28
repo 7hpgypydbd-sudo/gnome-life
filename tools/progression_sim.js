@@ -72,6 +72,7 @@ function visit() {
     for (const fid of G.settled()) { const st = G.questStep(fid); if (st && st.give) G.questGive(fid); }
     for (const f of [...G.s.village.finds]) G.found(f.id);
     if (G.s.village.favour) G.doFavour();
+    for (const fid of G.settled()) { const w = G.wishOpen(fid); if (w && G.can(w.cost)) { G.sendWish(fid); ev('WISH', `${fid}: ${w.name}`); } }   // neighbours' wishes (v70): send the basket when the store has it
     // jobs
     const list = G.taskList();
     let pn = 0; const vis = list.filter(v => v.state !== 'done' && !v.def.make && !(v.def.healTile && v.state !== 'running' && ++pn > 3));   // the Jobs tab as drawn (Hazel's list is its own tab; at most three waiting patch jobs, the rest are on each patch's card)
@@ -79,7 +80,7 @@ function visit() {
     const ready = list.filter(v => v.state === 'ready' && v.can);
     const pri = v => v.def.home ? 0 : v.def.folk ? 1 : v.def.festival ? 1 : (!v.def.make && !v.def.healTile && !v.def.farm) ? 2 : v.def.healTile ? 3 : v.def.farm ? 4 : 5;
     ready.sort((a, b) => pri(a) - pri(b));
-    for (const v of ready) { if (G.startTask(v.def.id)) { if (!started.has(v.def.id)) { started.add(v.def.id); if (!v.def.healTile && !v.def.farm && !v.def.make) ev('JOB', `${v.def.id} (${v.def.name}) by ${v.def.who}`); } } }
+    for (const v of ready) { if (G.startTask(v.def.id)) { if (!started.has(v.def.id)) { started.add(v.def.id); if (!v.def.healTile && !v.def.farm) ev(v.def.make ? 'MAKE' : 'JOB', `${v.def.id} (${v.def.name}) by ${v.def.who}`); } } }
     G.tick(); watch();
     clock += 2 * 60000; G.tick(); watch();
   }
@@ -94,10 +95,11 @@ snapshotList('Very first visit');
 for (let d = 0; d < DAYS; d++) {
   for (const h of hours) { const day = new RealDate(t0 + d * 864e5); day.setHours(h, 0, 0, 0); clock = day.getTime(); visit(); }
   if (d === 0 || d === 1 || d === 2 || d === 6 || d === 13) snapshotList(`End of day ${d + 1}`);
-  if ([0,2,6,13,20,29,44,59].includes(d)) invLog.push(`D${d+1} pack: ` + Object.entries(G.s.inv).filter(([k,n])=>n).map(([k,n])=>k+' '+n).join(', '));
+  if ([0,2,6,13,20,29,44,59,74,89].includes(d)) invLog.push(`D${d+1} pack: ` + Object.entries(G.s.inv).filter(([k,n])=>n).map(([k,n])=>k+' '+n).join(', '));
 }
 console.log(log.join('\n'));
 console.log("\nMost rows in the Jobs tab (not done) at once:", maxList, "\n   at", maxAt);
 console.log(listLog.join('\n'));
 console.log('\nIncome:', JSON.stringify(income)); console.log('Spent:', JSON.stringify(spent)); console.log(invLog.join('\n'));
+console.log('Wishes made:', JSON.stringify(G.wishesCount()), ' little makes:', Object.keys(C.makes).map(k => k + ' ' + G.makesCount(k).done + '/' + G.makesCount(k).total).join(', '));
 console.log('\nFinal: green home', G.s.tiles['0,0'].green, 'tiles', Object.keys(G.s.tiles).length, 'neighbours', G.settled().length, 'festival', G.s.festival.stage);

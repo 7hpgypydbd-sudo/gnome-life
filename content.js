@@ -16,10 +16,10 @@ window.CONTENT = {
     berry:   { name:'berry',   icon:'🫐', color:'#6a4c8a' },
     feather: { name:'feather', icon:'🪶', color:'#cdbfa3' },
     // made by neighbours (daily gifts once their trade building is up); emoji until painted icons exist (icon-<kind>)
-    bread: { name:'bread', icon:'🍞' },
-    plank: { name:'plank', icon:'🪵' },
-    honey: { name:'honey', icon:'🍯' },
-    yarn:  { name:'yarn',  icon:'🧶' },
+    bread: { gift:true, name:'bread', icon:'🍞' },
+    plank: { gift:true, name:'plank', icon:'🪵' },
+    honey: { gift:true, name:'honey', icon:'🍯' },
+    yarn:  { gift:true, name:'yarn',  icon:'🧶' },
     // from the seed bed (pantry: shown on their own shelf in the pack; never offered by the land)
     carrot:  { name:'carrot',  icon:'🥕', pantry:true },
     lettuce: { name:'lettuce', icon:'🥬', pantry:true },
@@ -202,11 +202,11 @@ window.CONTENT = {
 
     { id:'hammock', make:'yard', stage:'wood', at:[0.10, 0.70], name:'A hammock', short:'stringing the hammock', who:'either', act:'craft', cost:{ twig:6, moss:4, feather:2 }, mins:45, green:0, needs:['sapling'],
       blurb:'Built for one. Used by two.' },
-    { id:'chime', make:'yard', stage:'wood', at:[0.42, 0.25], name:'A snail-shell wind chime', short:'stringing the chime', who:'either', act:'craft', cost:{ twig:4, stone:5, feather:2 }, mins:40, green:0,
+    { id:'chime', make:'yard', stage:'wood', at:[0.42, 0.25], name:'A snail-shell wind chime', short:'stringing the chime', who:'either', act:'craft', cost:{ twig:4, stone:2, feather:3 }, mins:40, green:0,
       blurb:'Every shell was empty when they found it. They checked.' },
     { id:'nameboard', make:'yard', stage:'wood', at:[0.36, 0.33], name:'A name board over the door', short:'painting the name board', who:'either', act:'build', cost:{ twig:6, stone:2, berry:2, acorn:2 }, mins:45, green:0, needs:['house3'],
       blurb:'Hazel paints it in her best lettering: The Gnomestead. Wendel stands underneath and reads it aloud, twice.' },
-    { id:'cushion', make:'yard', stage:'wood', at:[0.62, 0.40], name:'A moss cushion on the bench', short:'stuffing the cushion', who:'either', act:'craft', cost:{ moss:8, feather:2 }, mins:25, green:0, needs:['bench'],
+    { id:'cushion', make:'yard', stage:'wood', at:[0.62, 0.40], name:'A moss cushion on the bench', short:'stuffing the cushion', who:'either', act:'craft', cost:{ moss:5, feather:3 }, mins:25, green:0, needs:['bench'],
       blurb:'Softer. Greener. Slightly damp.' },
     { id:'sign', make:'yard', stage:'wood', at:[0.90, 0.55], name:'Carve a welcome sign', short:'carving the sign', who:'either', act:'build', cost:{ twig:6, feather:2, berry:2, stone:2 }, mins:45, green:0,
       blurb:'"All Creatures Welcome. Please Wipe Paws." The second line took three tries.' },
@@ -239,8 +239,33 @@ window.CONTENT = {
       blurb:'Ferns like the dark and the damp. So does Gerald.' },
     { id:'willowseat', make:'garden', stage:'wood', at:[0.40, 0.62], name:'A willow seat for two', short:'weaving the willow seat', who:'either', act:'craft', cost:{ twig:8, moss:2, feather:1 }, mins:45, green:0, needs:['pond'],
       blurb:'Woven by Hazel. Sat in mostly by Wendel.' },
-    { id:'pebblepath', make:'garden', stage:'wood', at:[0.64, 0.59], name:'A painted pebble path to the creature corner', short:'painting pebbles', who:'either', act:'craft', cost:{ stone:8, berry:3, feather:1 }, mins:45, green:0,
+    { id:'pebblepath', make:'garden', stage:'wood', at:[0.64, 0.59], name:'A painted pebble path to the creature corner', short:'painting pebbles', who:'either', act:'craft', cost:{ stone:5, berry:4, feather:1 }, mins:45, green:0,
       blurb:'Every pebble painted with a different animal. One is a snail.' },
+
+    // --- the old track (tile 1,0): its own little makes as it greens (a track never grows to woodland, so two stages) (docs/DECORATIONS.md, v70). Mostly planks, which little else uses.
+    { id:'signpost', make:'track', stage:'green', at:[0.30, 0.30], name:'A signpost at the bend', short:'putting up the signpost', who:'either', act:'build', cost:{ plank:2, twig:2 }, mins:40, green:0,
+      blurb:'Two arms. One says Home. One says Everywhere Else.' },
+    { id:'milestone', make:'track', stage:'green', at:[0.72, 0.30], name:'A milestone', short:'setting the milestone', who:'either', act:'dig', cost:{ stone:3, berry:1 }, mins:35, green:0,
+      blurb:'"The Gnomestead, this way." Painted in berry ink, so it will need doing again.' },
+    { id:'trackbench', make:'track', stage:'meadow', at:[0.24, 0.62], name:'A bench at the bend', short:'building the bench', who:'either', act:'build', cost:{ plank:3, moss:2 }, mins:45, green:0,
+      blurb:'For a rest on the way up the hill. Nobody has to stop. Everybody does.' },
+    { id:'letterbox', make:'track', stage:'meadow', at:[0.70, 0.62], name:'A letterbox on a post', short:'putting up the letterbox', who:'either', act:'build', cost:{ plank:2, feather:2 }, mins:35, green:0,
+      blurb:'For notes between neighbours. Hazel checks it twice a day.' },
+    { id:'noticeboard', make:'track', stage:'meadow', at:[0.18, 0.44], name:'A village notice board', short:'putting up the notice board', who:'either', act:'build', cost:{ plank:3, feather:1, berry:1 }, mins:45, green:0,
+      blurb:'Lost: one pencil (Tobias). Found: one pencil (behind Tobias\'s ear).' },
+    { id:'trough', make:'track', stage:'meadow', at:[0.80, 0.80], name:'A drinking trough for travellers', short:'filling the trough', who:'either', act:'dig', cost:{ stone:4, water:4 }, mins:40, green:0,
+      blurb:'For visitors with four legs, or six.' },
+
+    // --- dressing the house for the season (v70): once the house is finished, one each season, every year. Hazel hangs a garland over the
+    // door and along the fence; it stays up until the next season's. season: the season it belongs to (game.js dressTick makes it fresh each year).
+    { id:'dress_spring', make:'yard', stage:'barren', season:'spring', at:[0.36, 0.33], name:'Dress the house for spring', short:'hanging the spring garland', who:'her', act:'craft', cost:{ seed:3, water:3, moss:2 }, mins:40, green:0, needs:['house3'],
+      blurb:'A garland of blossom over the door and along the fence posts. It smells of honey and new grass.' },
+    { id:'dress_summer', make:'yard', stage:'barren', season:'summer', at:[0.36, 0.33], name:'Dress the house for summer', short:'hanging the summer bunting', who:'her', act:'craft', cost:{ yarn:2, berry:3, feather:1 }, mins:40, green:0, needs:['house3'],
+      blurb:'Bunting of berry-dyed scraps along the fence, and a jar of wildflowers on the step.', alt:{ twig:2, berry:3, feather:1 } },
+    { id:'dress_autumn', make:'yard', stage:'barren', season:'autumn', at:[0.36, 0.33], name:'Dress the house for autumn', short:'hanging the autumn garland', who:'her', act:'craft', cost:{ berry:3, acorn:3, twig:2 }, mins:40, green:0, needs:['house3'],
+      blurb:'Gold leaves and acorns strung over the door. Wendel keeps eating the acorns. They are not that kind.' },
+    { id:'dress_winter', make:'yard', stage:'barren', season:'winter', at:[0.36, 0.33], name:'Dress the house for winter', short:'hanging the winter swag', who:'her', act:'craft', cost:{ berry:4, yarn:2, moss:2 }, mins:40, green:0, needs:['house3'],
+      blurb:'A swag of moss and red berries, with knitted bobbles. Cosy, Hazel says. Itchy, says the robin.', alt:{ berry:4, moss:3, feather:1 } },
 
     // --- the animals' side stories (docs/ANIMALS.md): homes and little kindnesses that come up as each animal's story goes on ---
     { id:'earthbank', make:'garden', stage:'green', at:[0.70, 0.74], name:'Heap a soft earth bank', short:'heaping the earth bank', who:'either', act:'dig', cost:{ stone:2, moss:1 }, mins:40, green:0, needs:['flag:rabbitTruce'],
@@ -538,7 +563,9 @@ window.CONTENT = {
   ],
   // the rabbit (game.js rabbitDue/rabbitRaid): a cheeky regular that always comes for the first sprouts. after = minutes the seedlings are up before it comes (it empties the dish first, if there is food in it).
   barrel: { every: 480, give: { water: 1 } },   // the scrubbed rain barrel fills every `every` minutes and tops up the gnomes' store by itself
-  pantry: { cap: 12, seedTin: 30, meals: [[7, 8], [18, 19]] },   // the pantry shelf holds about a dozen of each; at breakfast and supper the gnomes eat one thing from it (fix 3)
+  pantry: { cap: 12, seedTin: 30, meals: [[7, 8], [18, 19]] },
+  store: { cap: 40, giftCap: 20 },   // v70: each shelf of the gnomes' store holds 40 of a land find, 20 of a neighbour's gift (light: no limit). Full: the land leaves something else
+                                     // and a neighbour's gift waits for room. Breakfast is bread and honey once there is honey (game.js mealTick).   // the pantry shelf holds about a dozen of each; at breakfast and supper the gnomes eat one thing from it (fix 3)
   rabbit: { after: 2,
     dish: 'A rabbit hopped up to the feeding dish and ate every last bit. Then it looked about for more.',
     raid: 'The rabbit hopped into the seed bed and nibbled the tops off a few sprouts before Wendel could gently shoo it off. "Oh, you poor hungry thing," said Wendel. "All right. A fence, then, so we can share."',
@@ -1113,11 +1140,54 @@ window.CONTENT = {
       green:`Now the yard's greening, I'd love some flower pots by the door.`,
       meadow:`Grass round the house! A swing for the oak, a sundial, herbs by the barrel. Oh, the things we could make now.`,
       wood:`It's a proper wood now. A house in a wood should have a name, don't you think? And a hammock. Definitely a hammock.` } },
+    track: { name:'The old track', tile:'1,0', lines:{
+      green:`The old track's greening. A signpost, Wendel, so the travellers know they've arrived. And a milestone, so they know how far.`,
+      meadow:`Grass on the old track! A bench at the bend for anyone puffing up the hill, a letterbox and a notice board for the neighbours, and a trough for anyone thirsty.` } },
     garden: { name:'The garden', tile:'0,1', lines:{
       green:`A garden of our own. Stepping stones first, so we don't tread on anything, then a gate, then somewhere to sit and think.`,
       meadow:`The garden's filling out. It wants flowers along the path, and an arch to walk under on the way in.`,
       wood:`Ferns in the shady corner, a log to sit on under the trees, and a seat for two by the pond.` } },
   },
+
+  // Neighbours' wishes (v70, docs/DECORATIONS.md): once a neighbour's trade building is up, now and then they wish for a little make for their
+  // own home. You send the basket (Hazel, or Wendel if she's busy, carries it over); then the NEIGHBOUR makes it, pottering at the spot for
+  // a while, and it stays by their home. One wish at a time; the next comes `every` minutes after the last is made; the third waits for their
+  // patch to be young woodland. at: its spot on their lot (tile grid; home 0.36,0.30, trade building 0.30,0.66, farm round 0.74,0.70).
+  // look: the code stand-in (index.html WISH_DRAW) until a painting named wish-<id> exists. Uses the things that pile up late.
+  wishes: { every: 2880, mins: 120, list: {
+    mabel: [
+      { id:'pieshelf', name:'A pie shelf under her window', ask:'A little shelf under my window, for cooling pies. Two planks would do it, and a few berries for the first pie.', cost:{ plank:2, berry:3 }, at:[0.52, 0.30], look:'shelf', line:'For cooling pies. And for Wendel to walk past, slowly.' },
+      { id:'herbwreath', name:'A herb wreath on the red door', ask:'My door looks bare, dear. A wreath of bay and rosemary, if you\'ve twigs and moss to bind it.', cost:{ twig:2, moss:2, berry:2 }, at:[0.30, 0.38], look:'wreath', line:'Bay and rosemary. Her kitchen smells of it, and now so does her door.' },
+      { id:'flourbunting', name:'Flour-sack bunting', ask:'I\'ve a heap of old flour sacks. With a bit of yarn and a plank for a post, they\'d make lovely bunting.', cost:{ yarn:2, plank:1 }, at:[0.56, 0.44], look:'bunting', wood:true, line:'Old flour sacks cut into flags. Everything smells faintly of bread.' } ],
+    tobias: [
+      { id:'sawhorse', name:'A sawhorse by his door', ask:'A man needs a sawhorse. Three planks and some twigs and I\'ll knock one up.', cost:{ plank:3, twig:2 }, at:[0.56, 0.42], look:'sawhorse', line:'He says it is for work. He mostly sits on it.' },
+      { id:'carvedowl', name:'A carved owl on the roof', ask:'I fancy carving an owl for my roof. Have you a feather to copy, and a couple of planks?', cost:{ plank:2, feather:1 }, at:[0.40, 0.24], look:'owl', line:'To keep the mice honest. The mice are not fooled.' },
+      { id:'clonks', name:'Offcut wind chimes', ask:'All my offcuts, on strings, by the door. Two planks\' worth and a bit of yarn.', cost:{ plank:2, yarn:1 }, at:[0.18, 0.40], look:'chime', wood:true, line:'Little ends of wood on strings. They clonk rather than chime. He likes clonk.' } ],
+    fernsby: [
+      { id:'twinswing', name:'A tree swing for the twins', ask:'The twins want a swing. Rowan says three lots of yarn for a rope and a plank for the seat.', cost:{ yarn:3, plank:1 }, at:[0.58, 0.40], look:'swing', line:'One swing, two twins. There is a rota. Nobody follows it.' },
+      { id:'puddle', name:'A paddling puddle for the toy boat', ask:'The toy boat has never been on water. A stone-lined puddle would do. Plenty of dew to fill it, mind.', cost:{ water:6, stone:3 }, at:[0.50, 0.54], look:'puddle', line:'A stone-lined puddle exactly one boat wide.' },
+      { id:'heightchart', name:'A height chart on the door frame', ask:'We want to measure the twins every month. A plank for the chart and berries for ink?', cost:{ berry:2, plank:1 }, at:[0.24, 0.36], look:'chart', wood:true, line:'Two marks a month, in berry ink. The twins stand on tiptoe.' } ],
+    pebbleworth: [
+      { id:'birdtable', name:'A bird table by their chairs', ask:'Bert would love to watch the birds from his chair. A little table on a post, and some berries to start them off.', cost:{ plank:2, berry:3 }, at:[0.56, 0.40], look:'birdtable', line:'So they can watch the birds from their chairs, which is the point of chairs.' },
+      { id:'climbrose', name:'A climbing rose up the trunk', ask:'Mags has always wanted a rose round the door. Seeds, dew, and a bit of moss to keep it snug.', cost:{ seed:3, water:3, moss:1 }, at:[0.24, 0.32], look:'rose', line:'Mags planted it the day they moved in, in her head. Now it is real.' },
+      { id:'kneerug', name:'A knitted rug for Bert\'s knees', ask:'Mags wants to knit Bert a rug. Three yarns and a couple of feathers for stuffing the cushion bit.', cost:{ yarn:3, feather:2 }, at:[0.48, 0.36], look:'rug', wood:true, line:'Bert says he doesn\'t need it. Bert never takes it off.' } ],
+    clem: [
+      { id:'honeystall', name:'An honesty stall for honey', ask:'I\'d like a little stall by the path, for honey. Three planks, and two pots to stock it.', cost:{ plank:3, honey:2 }, at:[0.56, 0.44], look:'stall', line:'Take a pot, leave a button. The bees keep the accounts.' },
+      { id:'beebath', name:'A bee bath', ask:'My bees get thirsty. A saucer of pebbles with dew in it, so nobody drowns.', cost:{ stone:3, water:3 }, at:[0.50, 0.56], look:'beebath', line:'A saucer of pebbles and water, so no bee goes thirsty or gets its feet wet.' },
+      { id:'paintedbee', name:'A painted bee on her door', ask:'I want a bee on my door. Berries for paint, and a feather for a brush.', cost:{ berry:3, feather:1 }, at:[0.30, 0.38], look:'sign', wood:true, line:'Painted with a feather. It has five legs. Nobody has told her.' } ],
+    barnaby: [
+      { id:'sackbarrow', name:'A sack barrow', ask:'Mm. Sacks are heavy. Barrow. Three planks. Some twigs.', cost:{ plank:3, twig:3 }, at:[0.56, 0.42], look:'barrow', line:'"Mm. Useful."' },
+      { id:'vane', name:'A weather vane on the chimney', ask:'Mm. Want to know the wind. Plank, stone, two feathers for the tail.', cost:{ plank:1, feather:2, stone:1 }, at:[0.44, 0.22], look:'vane', line:'A wooden rooster. Barnaby says it is a duck.' },
+      { id:'mmbench', name:'A bench he says he doesn\'t need', ask:'Don\'t need a bench. Mm. Three planks. Some moss for the seat. Not that I need it.', cost:{ plank:3, moss:3 }, at:[0.20, 0.42], look:'bench', wood:true, line:'He sits on it every evening. "Mm."' } ],
+    nettle: [
+      { id:'postyarn', name:'Yarn round every fence post', ask:'My posts are dreadfully plain. Four balls of yarn and I\'ll dress them properly.', cost:{ yarn:4 }, at:[0.56, 0.44], look:'yarnposts', line:'Every post a different colour. "Disgraceful," she says, proudly.' },
+      { id:'dyepot', name:'A dye pot on three stones', ask:'I need a dye pot. Three stones to stand it on and four berries. Not squashed ones.', cost:{ stone:3, berry:4 }, at:[0.50, 0.56], look:'dyepot', line:'Berries in, purple out. Mostly onto Nettle.' },
+      { id:'ragrug', name:'A rag rug on the step', ask:'A rag rug for my step. Three yarn, and a crust for the mouse who helps me with the knots.', cost:{ yarn:3, bread:1 }, at:[0.34, 0.40], look:'mat', wood:true, line:'Woven from scraps. The bread is for the mouse who helped.' } ],
+    juniper: [
+      { id:'moonflowers', name:'A moonflower patch', ask:'At home we had moonflowers, for the moths. Seeds and dew, and I\'ll plant them by the door.', cost:{ seed:3, water:3 }, at:[0.54, 0.40], look:'flowers', line:'Flowers that open at night, for the moths she misses from home.' },
+      { id:'starchart', name:'A star chart on her door', ask:'I want to paint the stars from home on my door. Berries for paint and a feather to paint with.', cost:{ berry:3, feather:1 }, at:[0.24, 0.40], look:'sign', line:'Painted so she can find home in the sky. It is to the left of the big one.' },
+      { id:'mothpot', name:'A honey pot for the moths', ask:'A dish of honey water on a flat stone, for the night moths. Two pots of honey and two stones.', cost:{ honey:2, stone:2 }, at:[0.48, 0.54], look:'dish', wood:true, line:'A dish of honey water on a flat stone. The moths come every night.' } ],
+  } },
 
   lines: {
     him: ["Bare as a baker's elbow. We'll fix that.", "Did you see? A sprout. Right in the middle.", "There's a beetle living in the woodpile now. I've called him Gerald.", "Kettle's on.", "Tomorrow we dig the bed properly.", "I remember when all this was ferns.",

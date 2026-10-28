@@ -142,6 +142,7 @@ const G = {
       this.emit('task', { id, done: true });
     }
     this.mealTick(t);
+    this.dressTick(t);
     if (this.barrelFull()) this.drawBarrel();   // the rain barrel tops up the store by itself (nobody's hands)
     this.storyTick(t);
     this.offerTick(t);
@@ -175,7 +176,7 @@ const G = {
     for (const e of pool) { r -= w(e); if (r <= 0) { ev = e; break; } }
     s.events.seen[ev.id] = (s.events.seen[ev.id] || 0) + 1;
     if (ev.give) this.give(ev.give);
-    for (const k of ev.offer || []) if (s.offers.length < C.offerCap + 3) { this.spawnOffer(t); s.offers[s.offers.length - 1].kind = k; }
+    for (const k of ev.offer || []) if (s.offers.length < C.offerCap + 3) this.spawnOffer(t, k);
     this.note(ev.text); if (!quiet) this.emit('event', ev); else this.dirty = true;
     return ev;
   },
@@ -202,8 +203,9 @@ const G = {
   // ---- offerings ----
   spawnOffer(t, want, home) {   // want/home: this kind, in the home yard (the seed bed's safety net)
     const s = this.s, h = new Date(t).getHours(), night = h < 6 || h >= 19;
-    const pool = C.offers.map(o => ({ kind: o.kind, w: (night ? o.night : o.day) * (o.kind === 'water' && h >= 5 && h < 10 ? 2.5 : 1) })).filter(o => o.w > 0);
-    let r = Math.random() * pool.reduce((a, o) => a + o.w, 0), kind = pool[0].kind;
+    const pool = C.offers.map(o => ({ kind: o.kind, w: (night ? o.night : o.day) * (o.kind === 'water' && h >= 5 && h < 10 ? 2.5 : 1) })).filter(o => o.w > 0 && !this.shelfFull(o.kind));   // a full shelf: the land leaves something else
+    if (!pool.length && !want) return;
+    let r = Math.random() * pool.reduce((a, o) => a + o.w, 0), kind = pool.length ? pool[0].kind : want;
     for (const o of pool) { r -= o.w; if (r <= 0) { kind = o.kind; break; } }
     if (want) kind = want;
     const tiles = Object.keys(s.tiles).filter(k => s.tiles[k].state !== 'revealed' || Math.random() < 0.3);
@@ -215,7 +217,7 @@ const G = {
     const s = this.s, i = s.offers.findIndex(o => o.id === id); if (i < 0) return null;
     const [o] = s.offers.splice(i, 1);
     if (o.keep) { s.animals.gifts[o.keep] = now(); this.give(C.animals.gifts[o.keep].give); this.note(`${C.animals.gifts[o.keep].name}, from the ${o.keep === 'rabbit' && this.rabbitName() ? this.rabbitName() : this.visitorDef(o.keep).name.toLowerCase()}.`); return o; }   // an animal's keepsake from the doorstep
-    s.inv[o.kind] = (s.inv[o.kind] || 0) + (o.n || 1); this.tinFull();
+    s.inv[o.kind] = (s.inv[o.kind] || 0) + (o.n || 1); this.shelfTrim();
     this.emit('inv', o.kind); return o;
   },
 
@@ -223,8 +225,12 @@ const G = {
   can(cost) { return Object.entries(cost || {}).every(([k, n]) => (this.s.inv[k] || 0) >= n); },
   missing(cost) { return Object.entries(cost || {}).filter(([k, n]) => (this.s.inv[k] || 0) < n).map(([k, n]) => `${n - (this.s.inv[k] || 0)} ${C.resources[k].name}`); },
   pay(cost) { for (const [k, n] of Object.entries(cost || {})) this.s.inv[k] -= n; this.emit('inv'); },
-  give(items) { for (const [k, n] of Object.entries(items || {})) this.s.inv[k] = (this.s.inv[k] || 0) + n; this.tinFull(); this.emit('inv'); },
-  tinFull() { if (this.s.inv.seed > C.pantry.seedTin) this.s.inv.seed = C.pantry.seedTin; },   // Hazel's seed tin only holds so much; the spare goes to the birds
+  give(items) { for (const [k, n] of Object.entries(items || {})) this.s.inv[k] = (this.s.inv[k] || 0) + n; this.shelfTrim(); this.emit('inv'); },
+  // the store's shelves (v70, C.store): 40 of each land find, 20 of each neighbour's gift; Hazel's seed tin 30; the pantry has its own (pantryTrim); light has no limit
+  shelf(k) { const r = C.resources[k] || {}; return k === 'seed' ? C.pantry.seedTin : k === 'light' || r.pantry || !C.store ? Infinity : r.gift ? C.store.giftCap : C.store.cap; },
+  shelfFull(k, lying = true) { return (this.s.inv[k] || 0) + (lying ? this.s.offers.filter(o => o.kind === k && !o.keep).reduce((a, o) => a + (o.n || 1), 0) : 0) >= this.shelf(k); },
+  shelfTrim() { const inv = this.s.inv; for (const k in inv) { const m = this.shelf(k); if (inv[k] > m) inv[k] = m; } },   // over a full shelf: the spare goes to the birds
+  tinFull() { this.shelfTrim(); },
 
   // ---- the seed bed ----
   plot() { return this.s.plots.seedbed; },
@@ -277,12 +283,18 @@ const G = {
     if (folk.length) return `The pantry shelf was full, so ${C.names[who]} took the spare ${what} over to ${this.folkDef(folk[(Math.random() * folk.length) | 0]).short}.`;
     return `The pantry shelf was full, so the spare ${what} went ${this.done('compost') ? 'on the compost heap, and a few to the rabbit' : 'to the rabbit, who could not believe its luck'}.`;
   },
+  dressTick(t) {   // a new season: last year's dressing for this season comes down, so it can be made again (v70)
+    const s = this.s, se = this.season(t); if (s.dressed === se) return;
+    const first = s.dressed === undefined; s.dressed = se; delete s.tasks['dress_' + se];
+    if (!first && this.done('house3')) { this.note(`Hazel: "It's ${se}. Shall we dress the house for it?" (Hazel's list)`); }
+  },
   mealTick(t) {   // breakfast and supper: one thing from the pantry each meal (the one they have most of)
     const s = this.s, M = C.pantry.meals; if (!s.meals) s.meals = t; if (t <= s.meals) return;
     let n = 0; const d = new Date(s.meals); d.setMinutes(0, 0, 0);
-    for (let i = 0; i < 24 * 3 && d.getTime() <= t; i++, d.setHours(d.getHours() + 1)) if (d.getTime() > s.meals && M.some(m => m[0] === d.getHours())) n++;   // meal hours passed since last time (up to three days back)
+    let bf = 0; for (let i = 0; i < 24 * 3 && d.getTime() <= t; i++, d.setHours(d.getHours() + 1)) if (d.getTime() > s.meals && M.some(m => m[0] === d.getHours())) { n++; if (d.getHours() === M[0][0]) bf++; }   // meal hours passed since last time (up to three days back); bf: breakfasts
     s.meals = t; if (!n) return;
     let ate = 0; for (let i = 0; i < n; i++) { const k = this.pantryKinds().filter(k => s.inv[k] > 0).sort((a, b) => s.inv[b] - s.inv[a])[0]; if (k) { s.inv[k]--; ate++; } if (s.inv.bread > 0) { s.inv.bread--; ate++; } }   // and a slice of the neighbours' bread, once there is some
+    for (let i = 0; i < bf; i++) if (s.inv.honey > 0) { s.inv.honey--; ate++; }   // v70: bread and honey at breakfast, once Clem's bees are making it
     if (ate && n === 1) this.note(`${new Date(t).getHours() < 12 ? 'Breakfast' : 'Supper'} from the pantry.`);
     if (ate) this.emit('inv');
   },
@@ -297,7 +309,7 @@ const G = {
     if (f && kind === 'home') return Object.assign({ id, folk: fid, name: `Build ${f.short} a home`, short: 'building a home', green: 0, home: true, act: 'carry' }, f.build);
     if (f && kind === 'trade') return Object.assign({ id, folk: fid, green: 0 }, f.building);   // building gives no green (only life does)
     if (f && kind === 'quest') { const st = f.quest.steps[+step]; return Object.assign({ id, folk: fid, green: 0, blurb: st.say, quest: true }, st.job); }
-    const d = C.tasks.find(t => t.id === id);
+    let d = C.tasks.find(t => t.id === id); if (d && d.alt) d = Object.assign({}, d, { cost: this.festCost(d) });   // alt: what it costs before the village makes that thing
     return d && d.who === 'either' ? Object.assign({}, d, { who: this.eitherWho(d) }) : d;
   },
   eitherWho(d) {   // a job either gnome can do: whoever took it on, else whoever is free (Hazel first if both are)
@@ -407,13 +419,18 @@ const G = {
   stageIndex(k) { return C.landStages.indexOf(this.landStage(k)); },
   // ---- little makes (CONTENT.makes; the makes are tasks with make: yard | garden) ----
   makeTile(d) { return C.makes[d.make].tile; },
-  makeOpen(d) {   // has this make come up yet? its patch is open and green enough, and anything it needs is there
-    const s = this.s, k = this.makeTile(d); if (k !== '0,0' && !this.gardenOpen()) return false;
-    if (d.make === 'yard' && !s.flags.firstpick) return false;   // the first makes come after the first harvest (Hazel's list)
+  patchOpen(patch) {   // can this patch have little makes yet? the yard after the first harvest; the garden once open; the old track once out of the mist
+    if (patch === 'yard') return !!this.s.flags.firstpick;
+    if (patch === 'garden') return this.gardenOpen();
+    const k = C.makes[patch].tile; return !!this.s.tiles[k] && !Object.values(this.s.village.folk).some(f => f.tile === k);
+  },
+  makeOpen(d) {   // has this make come up yet? its patch is open and green enough, it's the right season, and anything it needs is there
+    const s = this.s, k = this.makeTile(d); if (!this.patchOpen(d.make)) return false;
+    if (d.season && d.season !== this.season(now())) return false;
     if (this.stageIndex(k) < C.landStages.findIndex(x => x.key === d.stage)) return false;
     return (d.needs || []).every(n => n.startsWith('flag:') ? !!s.flags[n.slice(5)] : this.done(n));
   },
-  makesCount(patch) { const all = C.tasks.filter(d => d.make === patch); return { done: all.filter(d => this.done(d.id)).length, total: all.length }; },
+  makesCount(patch) { const all = C.tasks.filter(d => d.make === patch && !d.season); return { done: all.filter(d => this.done(d.id)).length, total: all.length }; },
   reveal(k) {   // bare neighbours appear around a greened tile (max 2 at a time so the map grows gently); only from chapter four on
     if (!this.pageHappened('3.5')) return;   // before that it's just the yard and the garden (storyTick)
     const [x, y] = k.split(',').map(Number); let n = 0;
@@ -741,6 +758,7 @@ const G = {
       if (st && st.wait && fs.waitUntil && t >= fs.waitUntil) this.questNext(fid);
       if (st && st.find && !v.finds.some(x => x.folk === fid) && this.inHours(st.find.hours, h)) this.spawnFind(fid);
     }
+    this.wishTick(t);
     // the odd small favour (one at a time; it lapses at the end of the day)
     if (v.favour && v.favour.day !== dk) v.favour = null;
     if (!v.favour && t >= v.favourAt) {
@@ -750,6 +768,33 @@ const G = {
       if (pool.length) { v.favour = Object.assign(pool[(Math.random() * pool.length) | 0], { day: dk }); this.emit('favour', v.favour.folk); }
     }
   },
+  // ---- neighbours' wishes (v70, C.wishes): a little make for their own home; you send the basket, the neighbour makes it ----
+  wishState(fid) { const fs = this.folkState(fid); if (!fs) return null; if (!fs.wishes) fs.wishes = { made: {}, open: null, next: 0 }; return fs.wishes; },
+  wishDef(fid, id) { return ((C.wishes || {}).list[fid] || []).find(w => w.id === id) || null; },
+  wishOpen(fid) { const w = this.wishState(fid); return w && w.open ? this.wishDef(fid, w.open) : null; },
+  wishProg(fid, id) { const m = (this.wishState(fid) || { made: {} }).made[id]; return !m ? 0 : Math.max(0, Math.min(1, (now() - m[0]) / Math.max(1, m[1] - m[0]))); },
+  wishMaking(fid) { const w = this.wishState(fid); return w && Object.keys(w.made).find(id => this.wishProg(fid, id) < 1) || null; },
+  wishTick(t) {
+    const W = C.wishes, v = this.s.village; if (!W) return;
+    for (const fid of this.settled()) {
+      const w = this.wishState(fid), f = this.folkDef(fid);
+      for (const [id, m] of Object.entries(w.made)) if (t >= m[1] && !m[2]) { m[2] = 1; this.note(`${f.short[0].toUpperCase() + f.short.slice(1)} has finished: ${lc(this.wishDef(fid, id).name)}.`); this.emit('wish', fid); }
+      if (w.open || !this.done('trade:' + fid) || t < w.next || t < (v.wishNext || 0) || this.wishMaking(fid)) continue;
+      if (!w.next) { w.next = this.s.tasks['trade:' + fid].endsAt + W.every * MIN; if (t < w.next) continue; }
+      const known = this.knownKinds(), wood = this.stageIndex(this.folkState(fid).tile) >= 3;
+      const nx = (W.list[fid] || []).find(x => !w.made[x.id] && (!x.wood || wood) && Object.keys(x.cost).every(k => known.has(k)));
+      if (!nx) continue;
+      w.open = nx.id; v.wishNext = t + 6 * 60 * MIN;   // at most one new wish in the village every six hours
+      this.note(`${f.short[0].toUpperCase() + f.short.slice(1)} has a wish: ${lc(nx.name)}.`); this.emit('wish', fid);
+    }
+  },
+  sendWish(fid, who = 'her') {   // the basket goes over; the neighbour makes it
+    const w = this.wishState(fid), d = this.wishOpen(fid); if (!d || !this.can(d.cost)) return false;
+    const t = now(), mins = (d.mins || C.wishes.mins) * MIN;
+    this.pay(d.cost); w.made[d.id] = [t, t + mins]; w.open = null; w.next = t + mins + C.wishes.every * MIN;
+    const f = this.folkDef(fid); this.note(`${C.names[who]} took ${this.costWords(d.cost)} over to ${f.short}, who has started on ${lc(d.name)}.`); this.emit('wish', fid); return true;
+  },
+  wishesCount() { let done = 0, total = 0; for (const fid of this.settled()) { const l = (C.wishes.list[fid] || []); total += l.length; done += l.filter(x => this.wishProg(fid, x.id) >= 1).length; } return { done, total }; },
   inHours(hrs, h) { if (!hrs) return true; const [a, b] = hrs; return a < b ? h >= a && h < b : h >= a || h < b; },
   knownKinds() {   // things the player can come by: the land's offerings, plus whatever settled neighbours make
     const k = new Set(C.offers.map(o => o.kind));
@@ -759,8 +804,8 @@ const G = {
   door(fid) { const fs = this.folkState(fid); return { tile: fs.tile, gx: 0.40, gy: 0.40 }; },   // in front of their home (index.html LOT.home)
   dropGift(fid) {
     const s = this.s, f = this.folkDef(fid), d = this.door(fid); let i = 0;
-    for (const [kind, n] of Object.entries(f.building.gift)) { s.offers.push({ id: Math.random().toString(36).slice(2, 8), kind, n, tile: d.tile, gx: d.gx + 0.06 * i, gy: d.gy + 0.05 + 0.04 * i, at: now(), gift: fid }); i++; }
-    this.note(f.building.giftText);
+    for (const [kind, n] of Object.entries(f.building.gift)) { if (this.shelfFull(kind)) continue; s.offers.push({ id: Math.random().toString(36).slice(2, 8), kind, n, tile: d.tile, gx: d.gx + 0.06 * i, gy: d.gy + 0.05 + 0.04 * i, at: now(), gift: fid }); i++; }
+    if (i) this.note(f.building.giftText);   // a full shelf: the gift waits on their step till there's room
   },
   waveOn() {   // send the traveller on their way (they may come back much later); someone else comes soon
     const v = this.s.village, tr = v.traveller; if (!tr || this.s.tasks['home:' + tr.id]) return false;
@@ -877,11 +922,10 @@ const G = {
     if (!s.tiles['0,1'] && this.pageHappened('3.0') && this.stageIndex('0,0') >= 1) { s.tiles['0,1'] = { state: 'revealed', green: 0, kind: this.tileKind('0,1') }; this.note('The mist has drawn back from the patch beside the yard.'); this.emit('reveal', '0,1'); }
     if (!s.tiles['1,0'] && this.pageHappened('3.5')) { s.tiles['1,0'] = { state: 'revealed', green: 0, kind: this.tileKind('1,0') }; this.note('The mist has drawn back from the old track. A lantern is bobbing up it.'); this.emit('reveal', '1,0'); }
     for (const [patch, M] of Object.entries(C.makes)) {   // Hazel's list: a patch reached a new stage, so new little makes are ready
-      if (M.tile !== '0,0' && !this.gardenOpen()) continue;
-      if (patch === 'yard' && !s.flags.firstpick) continue;
+      if (!this.patchOpen(patch)) continue;
       const st = this.landStage(M.tile).key, key = `${patch}:${st}`;
       if (!M.lines[st] || P.makes[key]) continue;
-      P.makes[key] = t; if (C.tasks.some(d => d.make === patch && d.stage === st)) { P.cards.push({ k: 'makes', patch, stage: st }); this.emit('card'); }
+      P.makes[key] = t; if (C.tasks.some(d => d.make === patch && d.stage === st && !d.season)) { P.cards.push({ k: 'makes', patch, stage: st }); this.emit('card'); }
     }
   },
   seePage(id) { this.s.pages.seen[id] = now(); this.s.pages.cards = this.s.pages.cards.filter(c => !(c.k === 'page' && c.id === id)); this.dirty = true; },
