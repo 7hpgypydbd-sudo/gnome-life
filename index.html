@@ -7,6 +7,18 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1c2418">
 <title>Gnome Life</title>
+<meta name="apple-mobile-web-app-title" content="Gnome Life">
+<link rel="apple-touch-icon" href="icon-real.png">
+<script>
+// Two gardens from one page: the real garden (plain address) and the sandbox (?sandbox), each with its own save,
+// its own Home Screen name and icon. Only the sandbox has the test panel, so the real garden can't be reset by a stray tap.
+window.SANDBOX = /[?&]sandbox\b/.test(location.search);
+if (window.SANDBOX) {
+  document.title = 'Gnome Sandbox';
+  document.querySelector('meta[name="apple-mobile-web-app-title"]').content = 'Gnome Sandbox';
+  document.querySelector('link[rel="apple-touch-icon"]').href = 'icon-sandbox.png';
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap">
 <style>
@@ -218,7 +230,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v71</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v72</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -239,16 +251,17 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 71;
+const BUILD = 72;
+if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
-  v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
+  v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=71"></script>
-<script src="game.js?v=71"></script>
-<script src="walk.js?v=71"></script>
+<script src="content.js?v=72"></script>
+<script src="game.js?v=72"></script>
+<script src="walk.js?v=72"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -1353,7 +1366,7 @@ function groundSig(k) {   // everything a tile's picture depends on (itself and 
 // finished ground at once instead of baking it all again. A tile whose signature has changed is simply baked afresh.
 const GDB = { db: null, loaded: false };
 function gdbOpen(cb) {
-  try { const rq = indexedDB.open('gnomelife-ground', 1); rq.onupgradeneeded = () => rq.result.createObjectStore('tiles');
+  try { const rq = indexedDB.open(window.SANDBOX ? 'gnomelife-sandbox-ground' : 'gnomelife-ground', 1); rq.onupgradeneeded = () => rq.result.createObjectStore('tiles');
     rq.onsuccess = () => { GDB.db = rq.result; cb(); }; rq.onerror = () => cb(); } catch (e) { cb(); }
 }
 function gdbLoad() {   // read every kept tile; use the ones still right for the land as it is now
@@ -4143,7 +4156,7 @@ function openTest() {
   <p class="meta">A normal play-through order: fill the pack, start jobs in the Jobs list, tap "Finish every job now", repeat. "+1 day" brings the daily things back.</p>
   <p style="margin-top:14px;font-size:12px"><a href="#" data-a="reset" style="color:var(--red)">start over (wipes this garden)</a></p>`);
 }
-function testPeek(x, y) { if (x < 200 && y < 80 + 20) { openTest(); return true; } return false; }   // Bryce: one tap on the title opens the test panel (five was a chore)
+function testPeek(x, y) { if (window.SANDBOX && x < 200 && y < 80 + 20) { openTest(); return true; } return false; }   // Bryce: one tap on the title opens the test panel (five was a chore)
 function refreshSheet() { if (sheetKind === 'test') return; if (sheetKind && sheetKind.startsWith('folk:')) openFolk(sheetKind.slice(5)); else if (sheetKind === 'traveller') G.s.village.traveller ? openTraveller() : closeSheet(); else if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'barrel') openBarrel(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); else if (sheetKind === 'fest') openFestGreen(); else if (sheetKind && sheetKind.startsWith('patch:')) openPatch(sheetKind.slice(6)); else if (sheetKind && sheetKind.startsWith('farm:')) openFarm(sheetKind.slice(5)); renderInv(); renderHud(); }
 function seedbedBody(inJobs) {   // what the seed bed wants now (shared by the seed bed's own card and the Jobs list); null = nothing to say
   const p = G.plot(), c = C.crops[p.crop]; let body = '';
@@ -4730,7 +4743,7 @@ function start() {
   G.view = () => ({ visitor, cam, W, H }); G.toWorld = toWorld;   // for test scripts
   requestAnimationFrame(frame);
   loadArtSlots(); loadSitArt();
-  if (/test/.test(hash)) { const b = document.createElement('button'); b.className = 'act'; b.textContent = '🧪 Test'; b.style.cssText = 'position:fixed;right:10px;top:calc(env(safe-area-inset-top) + 10px);z-index:5;min-height:40px;padding:8px 12px'; b.onclick = openTest; document.body.appendChild(b); }
+  if (window.SANDBOX && /test/.test(hash)) { const b = document.createElement('button'); b.className = 'act'; b.textContent = '🧪 Test'; b.style.cssText = 'position:fixed;right:10px;top:calc(env(safe-area-inset-top) + 10px);z-index:5;min-height:40px;padding:8px 12px'; b.onclick = openTest; document.body.appendChild(b); }
   if (G.away) openAway(G.away);
   festCheck(); ALLDONE.at = performance.now();
   if (!G.s.flags.welcomed) { G.s.flags.welcomed = true; G.save(); openWelcome(true); }
