@@ -929,23 +929,22 @@ window.CONTENT = {
 
   // The welcome screen, before page 1.1 (docs/STORY.md "Before chapter one"): what this is, who you are, how to play.
   // Words only; index.html draws the screen. how: one line each, may hold <b>.
-  welcome: {
+  welcome: {   // first-time review: one short paragraph and three tips; swiping and pinching are taught by doing, by the Wood spirit
     title: `Welcome to Gnome Life`,
     text: [
-      `This is a little storybook that grows a page at a time, a little more each day you visit.`,
-      `It is about two gnomes, Wendel and Hazel. They have just been married, and they have come to live on a bare hillside where the loggers cut down every tree. Over many days they will dig and plant and build, and slowly turn it back into a green, cosy home, and one day a whole village.`,
-      `<b>And you?</b> You are the luck of this place. The gnomes can't see you, and they will never quite know you are there, but they feel it whenever things go their way. You don't dig or carry: Wendel and Hazel do all of that themselves. You gather the little things the land leaves lying about, you choose what they work on next, and later a spirit of the woods will teach you a little gentle magic.` ],
+      `A little storybook that grows a page at a time, each day you visit. Wendel and Hazel, two newly married gnomes, have come to live on a bare hillside the loggers left behind, and they will slowly make it green again. <b>You are the luck of this place.</b> They can't see you, but they feel it whenever things go their way. They do all the work; you gather what the land leaves lying about, and choose what they do next.` ],
     howTitle: `How to play`,
     how: [
-      `👆 <b>Swipe</b> to look around. <b>Pinch</b> to zoom in close.`,
-      `✨ <b>Tap the little things lying about</b> (twigs, stones, seeds). Your luck carries them to the gnomes' store (🧺 Store).`,
-      `🔨 <b>Jobs shows what they can do next.</b> If you are ever unsure what to do, look in Jobs. A dot on it means a job is ready to start.`,
-      `👀 <b>Tap anything</b>, the gnomes included, to see what it is.`,
-      `🕰️ <b>Jobs take real time.</b> Start one, put your phone down, and come back later. A short visit or two a day is plenty.`,
-      `🌿 <b>There is no hurry</b>, and nothing can go wrong. Nothing dies and nobody loses.` ],
+      `✨ <b>Tap the little things lying about</b> (twigs, stones, seeds). Your luck carries them to the gnomes' store.`,
+      `🔨 <b>Jobs shows what they can do next.</b> Whenever you are unsure, look in Jobs.`,
+      `🕰️ <b>Jobs take real time.</b> Start one, put your phone down, and come back later. There's no hurry, and nothing can go wrong.` ],
+    howMore: [   // shown when How to play is opened again later
+      `👆 <b>Swipe</b> to look around. <b>Pinch</b> to come closer or see it all.`,
+      `👀 <b>Tap anything</b>, the gnomes included, to see what it is.` ],
     button: `Open the story`,
-    after: `Wendel and Hazel are waiting to start. Open 🔨 Jobs to see what they can do first.`,   // a small pointer once page 1.1 closes
+    after: `Wendel and Hazel are ready to start. Open 🔨 Jobs: that's where you'll always find what they can do next.`,   // the Wood spirit says this once the guided first minute is done
   },
+
 
   // Side mystery placeholder: a magic staff one of the gnomes finds. Bryce is writing this story himself;
   // nothing here is plot, only the shape: ordered beats with a trigger and a flag the engine can set.
@@ -1075,6 +1074,7 @@ window.CONTENT = {
     // teaching about until you tap it. Then it comes back to teach each new kind of bare patch. Its one lesson: magic is for
     // asking, not pushing. The gnomes cannot see it; it is the only one who ever talks to you.
     spiritFirst: `Something soft and green drifts out of the trees, like a handful of new leaves that forgot to fall. It turns and looks straight at you, as if it has always known you were there. The gnomes can't see it. But you can.`,
+    spiritBack: `The Wood spirit drifts out of the trees again, the soft green shape from your first day. It looks straight at you, pleased, as if you are old friends already.`,   // its first lesson, when you met it on day 1
     lessons: [
       { n:1, at:'seedbed', spell:'coax', title:'Coax a sprout', text:`"Hello, little luck. I've been watching you help them. The glimmers you gather, the dew and the wisps, are light, and light is your magic. It can't make anything grow. Nothing can. But it can whisper to a seed that is already trying, and tell it to hurry, because somebody is hungry."` },
       { n:2, at:'spring', spell:'rain', title:'Call soft rain', text:`"The clouds pass over this hill without stopping. They think nothing lives here any more. Ask them nicely to look down, and they might. But never ask for a storm, little luck. A garden wants a drink, not a bath."` },
@@ -1142,10 +1142,10 @@ window.CONTENT = {
       { id:'drizzle',   weight:3, text:'A soft drizzle passed over. The dew will be good tomorrow.', give:{ water:2 } },
       { id:'breeze',    weight:3, text:'A breeze rattled the trees and dropped some twigs by the door.', offer:['twig','twig','moss'] },
       { id:'rabbit',    weight:2, text:'A hungry rabbit nibbled the clover and left a seed in apology.', give:{ seed:1 }, stage:'green' },
-      { id:'tea',       weight:3, text:'The two of them took tea on the bench and watched the light change.' },
+      { id:'tea',       weight:3, task:'bench', text:'The two of them took tea on the bench and watched the light change.' },
       { id:'dance',     weight:2, text:'She hummed. He pretended not to dance.', hours:[17,22] },
       { id:'frost',     weight:2, text:'Frost on the moss at dawn. Mugs of tea, and nothing hurt.', hours:[5,9], seasons:['winter'] },
-      { id:'storm',     weight:2, text:'A short, loud storm. The roof held. They counted the thunder together.', give:{ water:3, twig:1 }, seasons:['summer','spring'] },
+      { id:'storm',     weight:2, task:'roof', text:'A short, loud storm. The roof held. They counted the thunder together.', give:{ water:3, twig:1 }, seasons:['summer','spring'] },
       { id:'mushrooms', weight:2, text:'Mushrooms appeared after the rain, in a circle exactly where nobody had looked.', offer:['moss','moss'], seasons:['autumn','winter'] },
       { id:'wattle',    weight:2, text:'Wattle blossom blew in. The whole garden smells of honey.', give:{ seed:1 }, seasons:['spring'] },
       { id:'cicadas',   weight:2, text:'The cicadas started up. Nobody could hear a thing, and nobody minded.', hours:[10,17], seasons:['summer'] },
@@ -1153,8 +1153,8 @@ window.CONTENT = {
       { id:'firefly',   weight:3, text:'Three wisps of light drifted through, as if looking for the gnomes.', give:{ light:1 }, hours:[19,24] },
       { id:'owlcall',   weight:2, text:'An owl called twice in the dark. She called back. It was a very short conversation.', hours:[20,24] },
       { id:'sunrise',   weight:2, text:'They sat up early for the sunrise. It was worth the yawning.', hours:[5,8], give:{ water:1 } },
-      { id:'gift',      weight:2, text:'A small bird left a feather on the doorstep. They think it was a thank-you.', give:{ feather:1 }, stage:'green' },
-      { id:'berries',   weight:2, text:'He found wild berries by the fence and ate half before sharing.', give:{ berry:2 }, hours:[8,17] },
+      { id:'gift',      weight:2, task:'doorstep', text:'A small bird left a feather on the doorstep. They think it was a thank-you.', give:{ feather:1 }, stage:'green' },
+      { id:'berries',   weight:2, task:'fence', text:'He found wild berries by the fence and ate half before sharing.', give:{ berry:2 }, hours:[8,17] },
       { id:'seedwind',  weight:2, text:'The wind carried in a handful of seeds from somewhere green.', give:{ seed:2 }, stage:'green' },
       { id:'moonlit',   weight:1, text:'The moon came out and the whole patch looked, for a minute, like it had always been a garden.', hours:[20,24], stage:'meadow', give:{ light:2 } },
       { id:'neighbours', weight:1, text:'Far off, a window lit up. Other gnomes are out there, somewhere.', hours:[18,24], stage:'meadow' },

@@ -206,15 +206,23 @@
   #pointer::after { content:''; position:absolute; left:var(--ax, 50%); bottom:-11px; margin-left:-11px; border:11px solid transparent; border-bottom:0; border-top-color:#efe2c2; }
   @keyframes bob { 0%,100% { margin-bottom:0 } 50% { margin-bottom:8px } }
   .howto p { margin:6px 0; }
+  #pointer.spirit { text-align:left; } #pointer img { float:left; width:44px; height:44px; border-radius:50%; object-fit:cover; margin:0 10px 2px 0; }
+  #guide { position:fixed; box-sizing:border-box; left:12px; right:12px; top:calc(env(safe-area-inset-top) + 78px); max-width:460px; margin:0 auto; display:flex; gap:10px; align-items:center; padding:9px 12px;
+    background: var(--parch), var(--paper); color:var(--ink); font-family: var(--body); font-size:16px; line-height:1.3; border-radius:6px; box-shadow:0 3px 10px rgba(0,0,0,.35); z-index:6; opacity:0; transition:opacity .5s; pointer-events:none; }
+  #guide.on { opacity:1; pointer-events:auto; }
+  #guide img { width:48px; height:48px; border-radius:50%; object-fit:cover; flex:none; }
+  #guide p { margin:0; flex:1; }
+  #guide button { flex:none; align-self:flex-start; background:none; border:0; padding:2px 0 8px 6px; font:italic 14px var(--body); color:var(--ink2); text-decoration:underline; }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v69</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1>Gnome Life <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v70</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
 <div id="pointer"></div>
+<div id="guide"><img src="sprites/portrait-spirit.webp" alt=""><p></p><button id="guideSkip">Skip</button></div>
 <div id="bar">
   <div id="btns">
     <button class="btn" id="bPack"><span class="ic">🧺</span>Store<i class="dot"></i></button>
@@ -230,16 +238,16 @@
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 69;
+const BUILD = 70;
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?v=' + v + location.hash);
 }).catch(() => {});
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=69"></script>
-<script src="game.js?v=69"></script>
-<script src="walk.js?v=69"></script>
+<script src="content.js?v=70"></script>
+<script src="game.js?v=70"></script>
+<script src="walk.js?v=70"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -2670,7 +2678,7 @@ function animalItems(items, now) {
 let SPIRIT_N = 0, spiritAt = 0;
 function spiritSpot(n) {   // [gx, gy] on the home grid it hovers over, and how far to the side
   if (typeof n === 'string') { const kind = n.slice(5), k = G.healTiles().find(t => G.s.tiles[t].kind === kind && G.healAt(t) < G.healSteps(t).length) || '0,0'; const [gx, gy] = glob(k, 0.5, 0.42); return [gx, gy, 0]; }   // a new kind of bare tile: over that patch
-  if (n === 1) { const sb = PROPS.find(p => p.name === 'seedbed'); return [sb.gx, sb.gy - 0.04, 30]; }
+  if (n === 1) { const sb = PROPS.find(p => p.name === 'seedbed'); return [sb.gx + 0.05, sb.gy - 0.12, 40]; }   // beside the bed, not over it: a tap on the bed is the bed's
   if (n === 2) return [SPRING.at[0], SPRING.at[1], 50];
   if (n === 3) { const [x, y] = toadAt(); return [x, y, 95]; }
   if (n === 4) { const e = [['1,0', [0.95, 0.46]], ['0,1', [0.46, 0.95]], ['-1,0', [0.05, 0.50]], ['0,-1', [0.50, 0.06]]].find(([k]) => !G.s.tiles[k] || G.s.tiles[k].state !== 'green'); const [gx, gy] = e ? e[1] : [0.95, 0.46]; return [gx, gy, 0]; }
@@ -2678,8 +2686,8 @@ function spiritSpot(n) {   // [gx, gy] on the home grid it hovers over, and how 
 }
 function spiritItem(items, now) {
   if (now - spiritAt > 1000) { spiritAt = now; SPIRIT_N = G.spiritLesson(); }
-  const spi = art('vis-spirit'); if (!SPIRIT_N || !spi) { SPIRIT_HINT.screen = null; return; }
-  const t = now / 1000, [gx, gy, side] = spiritSpot(SPIRIT_N), sx = gx + 0.02 * Math.cos(t * 0.6), sy = gy + 0.02 * Math.sin(t * 0.6);
+  const spi = art('vis-spirit'), gd = guideOn() || sheetKind === 'spirithello'; if ((!SPIRIT_N && !gd) || !spi) { SPIRIT_HINT.screen = null; return; }
+  const t = now / 1000, [gx, gy, side] = gd ? [0.62, 0.34, 0] : spiritSpot(SPIRIT_N), sx = gx + 0.02 * Math.cos(t * 0.6), sy = gy + 0.02 * Math.sin(t * 0.6);
   // painted poses (art day 14): mostly floating; every third spell of a few seconds it points at what it is teaching about (or, for the last lesson, settles by the fire)
   const pic = art('spirit-float') ? (Math.floor(t / 4) % 3 === 2 && art(SPIRIT_N === 5 ? 'spirit-settle' : 'spirit-point')) || art('spirit-float') : null;
   items.push({ d: depthOf(sx, sy) + 0.02, draw: () => { const [x0, y] = toWorld(sx, sy), x = x0 + side, im = pic || spi, hh = pic ? 104 : 120, ww = im.width * hh / im.height, fy = y - 30 - Math.sin(t * 2) * 6;
@@ -2687,12 +2695,12 @@ function spiritItem(items, now) {
     SPIRIT_HINT.screen = { x, y: fy, w: ww, h: hh }; } });
 }
 function openLesson(n, again) {
-  const L = typeof n === 'string' ? Object.assign({ spell: C.heal.kinds[n.slice(5)].spell }, C.heal.kinds[n.slice(5)].lesson) : C.story.lessons[n - 1], v = G.visitorDef('spirit'), first = !again && G.teach(n), sp = L.spell && C.spells[L.spell];
+  const L = typeof n === 'string' ? Object.assign({ spell: C.heal.kinds[n.slice(5)].spell }, C.heal.kinds[n.slice(5)].lesson) : C.story.lessons[n - 1], v = G.visitorDef('spirit'), met = !!G.s.flags.spiritHello, first = !again && G.teach(n), sp = L.spell && C.spells[L.spell];
   if (!again) { SPIRIT_N = 0; SPIRIT_HINT.screen = null; }
   const pose = { wind:'spirit-wind', cloud:'spirit-cloud', seedwake:'spirit-seed', sing:'spirit-sing' }[L.spell];   // art day 15: the spirit showing the spell
   const pic = pose && art(pose) ? `<div class="por big pad"><img src="sprites/${pose}.webp" alt=""></div>` : v ? portraitHtml(v, true) : '';
-  openSheet(again ? 'lessonagain' : 'lesson', `<div class="jpage card"><p class="meta" style="margin:0">${first ? 'A new friend!' : 'The Wood spirit'}</p>${pic}<h2>${L.title}</h2>
-    ${first ? `<p class="lore">${C.story.spiritFirst}</p>` : ''}<p class="lore">${L.text}</p>${L.after ? `<p class="lore">${L.after}</p>` : ''}
+  openSheet(again ? 'lessonagain' : 'lesson', `<div class="jpage card"><p class="meta" style="margin:0">${first && !met ? 'A new friend!' : first ? 'An old friend, back again' : 'The Wood spirit'}</p>${pic}<h2>${L.title}</h2>
+    ${first ? `<p class="lore">${met ? C.story.spiritBack : C.story.spiritFirst}</p>` : ''}<p class="lore">${L.text}</p>${L.after ? `<p class="lore">${L.after}</p>` : ''}
     <p class="meta">${sp ? `New in your magic: <b>${sp.name}</b>, for ${costHtml(sp.cost)}.` : 'No new spell. A page about the Wood spirit is in your Journal, and it will come back when the valley needs something new.'}</p></div>
     <p style="text-align:center">${again ? `<button class="act quiet" data-a="journal">Back to the journal</button>` : sp ? `<button class="act" data-a="openmagic">Open your magic</button>` : `<button class="act" data-a="close">Thank you</button>`}</p>`);
 }
@@ -3649,7 +3657,7 @@ function frame(now) {
   lastDraw = now;
   const dt = Math.min(0.05, (now - last) / 1000); last = now; feederSpot(); saplingSpot();
   const ph = dayPhase();
-  tickAcc += dt; if (tickAcc > 0.5) { tickAcc = 0; G.tick(); cardCheck(); allDoneCheck(now); }
+  tickAcc += dt; if (tickAcc > 0.5) { tickAcc = 0; G.tick(); cardCheck(); allDoneCheck(now); guideTick(); spiritWaitCheck(); nudgeTick(); }
   easeCam(dt);
   for (const g of gnomes) g.update(dt);
   updateVisitor(dt); updateRabbit(dt); updatePlatypus(dt);
@@ -3727,11 +3735,13 @@ function frame(now) {
     if (NEWGROUND) { LIT.collect = false; lightLayer(night); }
   }
   seasonGrade(ph);
+  drawHelpRing(now);
   if (ph.warm > 0) { ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = `rgba(255,170,90,${0.28 * ph.warm})`; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); ctx.restore(); }
   ctx.restore();
 
   if (NEWGROUND) drawMorningMist(dt, now);
   // screen-space overlays: "busy" tags over working gnomes, and tap ripples
+  drawNameTags();
   for (const g of gnomes) if ((g.job || g.chore) && g.screen && !g.inside) drawBusyTag(g, now);
   for (let i = ripples.length - 1; i >= 0; i--) {
     const r = ripples[i]; r.t += dt; const k = r.t / 0.45; if (k >= 1) { ripples.splice(i, 1); continue; }
@@ -3763,12 +3773,12 @@ cv.addEventListener('pointermove', e => {
   const p = ptrs.get(e.pointerId);
   if (ptrs.size === 1 && gesture) {
     if (!gesture.dragging && Math.hypot(e.clientX - gesture.x0, e.clientY - gesture.y0) > TAP_SLOP) { gesture.dragging = true; gesture.tapOK = false; p.x = e.clientX; p.y = e.clientY; }
-    if (gesture.dragging) { cam.x -= (e.clientX - p.x) / cam.z; cam.y -= (e.clientY - p.y) / cam.z; }
+    if (gesture.dragging) { cam.x -= (e.clientX - p.x) / cam.z; cam.y -= (e.clientY - p.y) / cam.z; GUIDE.drag += Math.hypot(e.clientX - p.x, e.clientY - p.y); }
   }
   p.x = e.clientX; p.y = e.clientY;
   if (ptrs.size === 2 && pinch0) {
     const pi = pinchInfo(); if (pi.d < 10 || pinch0.d < 10) return;
-    cam.z = clampZ(pinch0.z * pi.d / pinch0.d);
+    cam.z = clampZ(pinch0.z * pi.d / pinch0.d); GUIDE.pinch = Math.max(GUIDE.pinch, Math.abs(Math.log(pi.d / pinch0.d)));
     cam.x = pinch0.wx - (pi.cx - W / 2) / cam.z; cam.y = pinch0.wy - (pi.cy - H / 2) / cam.z;
   }
   clampCam();
@@ -3799,6 +3809,7 @@ function clampCam() {
   for (const k of Object.keys(G.s.tiles)) { const [ox, oy] = tileOrigin(k); x0 = Math.min(x0, ox); y0 = Math.min(y0, oy); x1 = Math.max(x1, ox + PLOT.w); y1 = Math.max(y1, oy + PLOT.h); }
   cam.x = Math.max(x0 - 100, Math.min(x1 + 100, cam.x)); cam.y = Math.max(y0 - 150, Math.min(y1 + 100, cam.y));
 }
+cv.addEventListener('wheel', () => { GUIDE.pinch += 0.07; });   // a mouse wheel counts as a pinch for the guided minute
 cv.addEventListener('wheel', e => { e.preventDefault(); const wx = (e.clientX - W/2)/cam.z + cam.x, wy = (e.clientY - H/2)/cam.z + cam.y; cam.z = clampZ(cam.z * (e.deltaY < 0 ? 1.1 : 0.9)); cam.x = wx - (e.clientX - W/2)/cam.z; cam.y = wy - (e.clientY - H/2)/cam.z; clampCam(); }, { passive: false });
 // hit boxes are never smaller than a fingertip (about 48 screen pixels), however far out you are zoomed
 function hit(s, wx, wy) { if (!s) return false; const m = 48 / cam.z, w = Math.max(s.w, m), h = Math.max(s.h, m), pad = 10 / cam.z; return wx > s.x - w / 2 - pad && wx < s.x + w / 2 + pad && wy > s.y - h - pad && wy < s.y + 8 + pad; }
@@ -3957,9 +3968,9 @@ rc.addEventListener('click', e => {   // tap a gnome in the room for a line (or 
 });
 function toast(t) { toastEl.textContent = t; toastEl.style.opacity = 1; clearTimeout(toast.h); toast.h = setTimeout(() => toastEl.style.opacity = 0, 2200); }
 function btnAlert(id, on) { $(id).classList.toggle('alert', !!on); }
-function renderInv(popKind) {   // the pack lives behind its button now; the badge shows how many things are in it
-  const total = Object.values(G.s.inv).reduce((a, n) => a + (n || 0), 0), b = $('bPack');
-  b.querySelector('.dot').textContent = total; b.classList.toggle('alert', total > 0);
+function renderInv(popKind) {   // the pack lives behind its button; it gives a little hop when something comes in
+  const b = $('bPack');
+  b.querySelector('.dot').textContent = ''; b.classList.remove('alert');   // first-time review: a number on the Store read like messages waiting; the count is inside
   if (popKind) { b.classList.add('pop'); setTimeout(() => b.classList.remove('pop'), 160); }
 }
 function renderHud() {
@@ -3967,7 +3978,7 @@ function renderHud() {
   $('sub').textContent = G.festivalOn() ? `${C.seasons[season()].name} · festival night on the green` : `${C.seasons[season()].name} · ` + (ph.light < 0.3 ? `${st.name}; the fire is lit, everything else sleeps` : st.sub);
   const busy = G.running().map(r => `${C.names[r.def.who]} is busy: ${lcName(shortName(r.def))} (${G.timeLeft(r.endsAt)} to go)`);
   $('busy').textContent = busy.join(' · ');
-  const canStart = G.taskList().filter(v => v.state === 'ready' && v.can).length + (bedReady() && !bedChore() && (G.plot().stage === 'ready' || (G.plot().stage === 'planted' && G.can(G.waterCost())) || (!G.plot().stage && G.canSow())) ? 1 : 0);   // the seed bed counts too (it lives in Jobs)
+  const canStart = G.taskList().filter(v => v.state === 'ready' && v.can && !v.def.make).length + (bedReady() && !bedChore() && (G.plot().stage === 'ready' || (G.plot().stage === 'planted' && G.can(G.waterCost())) || (!G.plot().stage && G.canSow())) ? 1 : 0);   // the seed bed counts too (it lives in Jobs)
   $('bTasks').querySelector('.dot').textContent = canStart; btnAlert('bTasks', canStart > 0);
   $('bMagic').querySelector('.dot').textContent = '!'; btnAlert('bMagic', Object.keys(C.spells).some(id => G.canCast(id).ok));
 }
@@ -3976,8 +3987,9 @@ const sheet = $('sheet'), shade = $('shade');
 let sheetKind = null, cardAt = 0;
 function openSheet(kind, html) { sheetKind = kind; sheet.innerHTML = `<button class="close" data-a="close">×</button>` + html; sheet.classList.add('on'); shade.classList.add('on'); }
 function closeSheet() { const was = sheetKind; sheetKind = null; sheet.classList.remove('on'); shade.classList.remove('on'); cardAt = performance.now() + 1500;
-  if (was === 'welcome' && FIRST_WELCOME) { FIRST_WELCOME = false; const pg = G.pageDef('1.1'); G.seePage('1.1'); openSheet('welcome1', pageHtml(pg) + `<p style="margin-top:12px;text-align:center"><button class="act" data-a="close">${pg.button}</button></p>`); }   // the welcome, then page one,
-  else if (was === 'welcome1') showPointer(welcomeText().after, 'bTasks');   // then a pointer at Jobs
+  if (was === 'welcome' && FIRST_WELCOME) { FIRST_WELCOME = false; const pg = G.pageDef('1.1'); G.seePage('1.1'); G.s.flags.pageVisit = G.s.visits.n; openSheet('welcome1', pageHtml(pg) + `<p style="margin-top:12px;text-align:center"><button class="act" data-a="close">${pg.button}</button></p>`); }   // the welcome, then page one,
+  else if (was === 'welcome1') openSpiritHello();   // then the Wood spirit floats up (Bryce: met on day 1)
+  else if (was === 'spirithello' && guideStep() === 0) guideTo(1);   // closed with the ×: the guided minute starts all the same
 }
 let FIRST_WELCOME = false;
 shade.addEventListener('click', closeSheet);
@@ -3994,6 +4006,9 @@ sheet.addEventListener('click', e => {
   if (a === 'close') return closeSheet();
   if (a === 'welcomepage') return closeSheet();   // closing the first welcome turns to page one (closeSheet)
   if (a === 'howto') return openWelcome(false);
+  if (a === 'guide') { G.s.flags.guide = id === 'skip' ? 4 : 1; closeSheet(); return guideTo(G.s.flags.guide); }
+  if (a === 'showme') return showMe(id);
+  if (a === 'showspirit') return showSpirit();
   if (a === 'lookspring') { closeSheet(); const [x, y] = toWorld(SPRING.at[0], SPRING.at[1]); ALLDONE.ease = { t: 0, z0: cam.z, x0: cam.x, y0: cam.y, z1: clampZ(Math.max(cam.z, 1.6)), x1: x, y1: y }; return; }
   if (a === 'room') return openRoom();
   if (a === 'plant') { const g = choreGnome('her'); if (g && G.plant(id, g.who)) { startBedChore(g, 'sow'); toast(`${C.names[g.who]} goes to sow the ${C.crops[id].name.replace(/^a /, '')}.`); return closeSheet(); } }
@@ -4068,7 +4083,7 @@ function seedbedBody(inJobs) {   // what the seed bed wants now (shared by the s
   if (!sow && p.stage !== 'growing') return `<p>Wendel and Hazel are ${routineFor(dayPhase().h) === 'fest' ? 'dancing on the green' : 'asleep'}. The seed bed can wait till morning.</p>`;
   const stageName = pr => pr < 0.25 ? 'Just up' : pr < 0.6 ? 'Leafing out' : pr < 0.9 ? 'Filling out' : 'Nearly there';
   if (!p.stage) {
-    body = `<p>${inJobs ? 'The bed is empty. ' : ''}What shall ${nm(sow)} sow? Choose, and lend the seed; ${nm(sow)} will kneel along the bed and sow it. One crop fills the whole bed.</p>`;
+    body = `<p>${inJobs ? 'The bed is empty. ' : ''}What shall ${nm(sow)} sow? Choose, and give the seed; ${nm(sow)} will kneel along the bed and sow it. One crop fills the whole bed.</p>`;
     for (const [id, k] of Object.entries(C.crops)) {
       const open = G.cropOpen(id), cost = G.cropCost(id), first = k.free && !Object.keys(cost).length;
       if (!open && (!k.lock || inJobs)) continue;   // lettuces just turn up after the first picking
@@ -4112,12 +4127,12 @@ function jobRow(v, focus) {
   let right = '', sub = '';
   if (v.state === 'running') { const pr = 1 - Math.max(0, v.endsAt - G.now()) / (v.endsAt - v.startedAt); sub = `${who} is on it · ${G.timeLeft(v.endsAt)} to go<div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div>`; if ((d.tile || d.healTile) && G.magicInfo().spells.includes('wake')) right = `<button class="act" data-a="cast" data-id="wake" ${G.canCast('wake').ok ? '' : 'disabled'}>Wake ✨4</button>`; }
   else if (v.state === 'done') sub = `${who} finished this.`;
-  else { sub = `${who} · ` + (Object.keys(d.cost).length ? `<span class="cost">${costHtml(d.cost)}</span>` : `no materials`) + ` · <span class="hrs">${hours(d.mins)}</span>` + (v.locked ? `<br><span class="bad">${v.why}</span>` : v.can ? '' : `<br><span class="bad">The store is short of ${v.missing.join(', ')}.</span>`); right = `<button class="act" data-a="start" data-id="${d.id}" ${v.can && !v.locked ? '' : 'disabled'}>Start</button>`; }
+  else { sub = `${who} · ` + (Object.keys(d.cost).length ? `<span class="cost">${costHtml(d.cost)}</span>` : `no materials`) + ` · <span class="hrs">${hours(d.mins)}</span>` + (v.locked ? `<br><span class="bad">${v.why}</span>` : v.can ? '' : `<br><span class="bad">The store is short of ${v.missing.join(', ')}.</span>${shortHelp(d.cost)}`); right = `<button class="act" data-a="start" data-id="${d.id}" ${v.can && !v.locked ? '' : 'disabled'}>Start</button>`; }
   return `<div class="row${d.id === focus ? ' hi' : ''}${v.story && v.state !== 'done' ? ' story' : ''}">${jobPic(d)}<div class="t">${v.story && v.state !== 'done' ? `<i class="ribbon">for the story</i>` : ''}<b>${d.name}</b>${d.where ? `<span class="meta">${d.where}${d.healTile && G.s.village.traveller && G.s.village.traveller.want === d.healTile ? ` · for ${G.folkDef(G.s.village.traveller.id).short}` : ''}</span>` : ''}<span class="bl">${d.blurb}</span><span>${sub}</span></div>${right}</div>`;
 }
 function openTasks(focus = '') {
   const all = G.taskList(), makes = focus === 'makes' || (C.tasks.some(t => t.id === focus && t.make)), list = all.filter(v => !!v.def.make === makes && !(v.def.make && v.state === 'done' && !makes));
-  const mk = all.filter(v => v.def.make && v.state !== 'done' && v.state !== 'running').length;
+  const mk = all.filter(v => v.def.make && v.state === 'ready' && v.can).length;   // only the ones the store can pay for now
   let html = `<h2>Jobs<small>give the materials; they do the work</small></h2>`;
   if (G.s.flags.firstpick) html += `<p class="tabs"><button class="act${makes ? ' quiet' : ''}" data-a="jobtab" data-id="">Jobs</button> <button class="act${makes ? '' : ' quiet'}" data-a="jobtab" data-id="makes">Hazel's list${mk ? ` (${mk})` : ''}</button></p>`;
   if (makes) {
@@ -4127,6 +4142,7 @@ function openTasks(focus = '') {
   } else {
     const next = G.nextUp(), groups = [['running', 'Happening now', v => v.state === 'running'], ['story', 'For the story', v => v.story && (v.state === 'ready' || v.state === 'locked')],
       ['ready', 'You can start', v => !v.story && (v.state === 'ready' || v.state === 'locked')], ['done', 'Just finished', v => v.state === 'done']];
+    if (SPIRIT_N) html += `<p class="meta next">The Wood spirit is waiting nearby, with something to teach you. <button class="act quiet" style="min-height:30px;padding:3px 10px;font-size:14px" data-a="showspirit">Show me</button></p>`;
     if (bedReady()) { const p = G.plot(); html += `<h3>The seed bed${p.grown ? ` <small>${p.grown} grown so far</small>` : ''}</h3>` + seedbedBody(true); }   // Bryce: Jobs is the "what's next", so the bed's sowing, watering and picking live here too
     else if (!list.some(v => v.state !== 'done') && !next) html += `<p>Nothing to do right now. The gnomes are resting.</p>`;
     for (const [key, title, f] of groups) {
@@ -4147,13 +4163,16 @@ function openTasks(focus = '') {
 }
 function ordinal(n) { return ['zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth'][n] || n + 'th'; }
 function openMagic() {
-  const m = G.magicInfo(); let html = `<h2>Their magic<small>${m.name}</small></h2><div class="meter">${C.magicLevels.map((_, i) => `<i class="${i < m.level ? 'on' : ''}"></i>`).join('')}</div><p>This is your own magic, the unseen helper's: small kindnesses that nudge the land along. It grows a little with every day you visit. Day ${m.days}${m.nextDays ? `; it will grow again on day ${m.nextDays}` : ''}. Spells burn ✨ light, which the land offers at night: tap the little sparks.</p>`;
+  const m = G.magicInfo(); let html = `<h2>Their magic<small>${m.name}</small></h2><div class="meter">${C.magicLevels.map((_, i) => `<i class="${i < m.level ? 'on' : ''}"></i>`).join('')}</div><p>This is your own magic, the unseen helper's: small kindnesses that nudge the land along. It grows a little with every day you visit. Day ${m.days}${m.nextDays ? `; it will grow again on day ${m.nextDays}` : ''}. Spells burn ✨ light. Light comes out after dark: tap the little sparks lying about at night.</p>`;
+  let shown = 0;
   for (const [id, sp] of Object.entries(C.spells)) {
     if (sp.special && (!G.gardenOpen() || G.s.flags.toadWalk)) continue;   // the toadstool spell shows only while it is needed
     if (sp.heal && !G.healTaught(sp.heal)) continue;   // the Wood spirit teaches these on the new patches
-    const known = sp.special || sp.heal || m.spells.includes(id), c = G.canCast(id);
+    const known = sp.special || sp.heal || m.spells.includes(id), c = G.canCast(id); if (!known) continue;   // first-time review: only what the Wood spirit has taught; no greyed list of spells to come
+    shown++;
     html += `<div class="row"><div class="t"><b>${sp.name} <span class="cost">${costHtml(sp.cost)}</span></b><span>${sp.blurb}</span>${known ? (c.ok ? '' : `<br><span class="bad">${c.why}</span>`) : `<br><span class="bad">Not learned yet. It comes on your ${ordinal((C.magicLevels.find(x => x.unlock === id) || {}).days || 2)} day of visiting (the days you've visited: ${m.days}).</span>`}</div>${known ? `<button class="act" data-a="cast" data-id="${id}" ${c.ok ? '' : 'disabled'}>Cast</button>` : ''}</div>`;
   }
+  if (!shown) html += `<p class="meta">No spells yet. ${G.s.spirit && Object.keys(G.s.spirit.taught).length ? 'The Wood spirit will come back with the next one.' : 'The Wood spirit will come and teach you, one spell at a time.'}</p>`;
   html += `<p style="margin-top:14px"><button class="act quiet" data-a="howto">How to play</button></p>`;
   html += `<p style="margin-top:14px;font-size:12px">Save v${G.s.v} · ${new Date(G.s.created).toLocaleDateString()} · <a href="#" data-a="reset" style="color:var(--red)">start over</a></p>`;
   openSheet('magic', html);
@@ -4183,6 +4202,7 @@ function openJournal() {
   if (kept.length) html += `<h3>Gifts</h3><div class="slist">${kept.map(id => `<button data-a="keepsake" data-id="${id}">${C.animals.gifts[id].name}</button>`).join('')}</div>`;
   const log = [...G.s.log].reverse().slice(0, 8);
   if (log.length) html += `<h3>Lately</h3>` + log.map(l => `<p style="margin:2px 0">${l.text}</p>`).join('');
+  html += `<p style="margin-top:14px"><button class="act quiet" data-a="howto">How to play</button></p>`;   // first-time review: a new player looks for help in the book first
   openSheet('journal', html); btnAlert('bJournal', false);
 }
 function openSecret(id, fresh) {   // one little find, pressed into the journal
@@ -4287,7 +4307,7 @@ function pageHtml(pg, again) {
 }
 function openPage(id, again) {
   const pg = G.pageDef(id); if (!pg) return;
-  if (!again) { G.seePage(id); bigDay = true; }
+  if (!again) { G.seePage(id); bigDay = true; G.s.flags.pageVisit = G.s.visits.n; }
   openSheet(again ? 'pageagain' : 'page', pageHtml(pg, again) + `<p style="text-align:center">${again ? `<button class="act quiet" data-a="journal">Back to the journal</button>` : `<button class="act" data-a="pagedone" data-id="${id}">${pg.button}</button>`}</p>`);
   sheet.scrollTop = 0;
 }
@@ -4328,10 +4348,11 @@ function openMakes(patch, stage) {   // Hazel's list: what they could make now t
     <p style="text-align:center"><button class="act" data-a="jobs" data-id="makes">See the little makes</button> <button class="act quiet" data-a="close">Later</button></p>`);
 }
 function cardCheck() {   // open the next waiting card (a story page, a land card, Hazel's list): one at a time, never over an open menu
-  const q = G.s.pages.cards; if (!q.length || sheetKind || roomOn || performance.now() < cardAt || ALLDONE.on) return;
-  const c = q[0];
+  const q = G.s.pages.cards; if (!q.length || sheetKind || roomOn || performance.now() < cardAt || ALLDONE.on || guideOn()) return;
+  const held = G.s.flags.pageVisit === G.s.visits.n, i = held ? q.findIndex(c => c.k !== 'page') : 0; if (i < 0) return;   // first-time review: at most one story page a visit; the next waits for the next visit
+  const c = q[i];
   if (c.k === 'page') return openPage(c.id);
-  q.shift(); G.dirty = true;
+  q.splice(i, 1); G.dirty = true;
   if (c.k === 'beat') return openBeat(c.id);
   if (c.k === 'spring') return openSpringCard();
   if (c.k === 'land') openLand(C.landStages.find(s => s.key === c.key)); else if (c.k === 'makes') openMakes(c.patch, c.stage); else if (c.k === 'tland') healStageCard(c);
@@ -4339,7 +4360,7 @@ function cardCheck() {   // open the next waiting card (a story page, a land car
 // ---------- "All done for now": once a visit, when both gnomes are busy (or nothing more can be started) and nothing is left lying about ----------
 const ALLDONE = { done: false, on: false, at: 0, ease: null };
 function allDoneCheck(now) {
-  if (ALLDONE.done || sheetKind || roomOn || G.s.pages.cards.length || now - ALLDONE.at < 25000 || G.s.offers.length || (visitor && visitor.trouble)) return;
+  if (ALLDONE.done || sheetKind || roomOn || guideOn() || G.s.pages.cards.length || now - ALLDONE.at < 25000 || G.s.offers.length || (visitor && visitor.trouble)) return;
   const run = G.running(), both = ['him', 'her'].every(w => run.some(r => r.def.who === w)), p = G.plot();
   const more = G.taskList().some(v => v.state === 'ready' && v.can) || p.stage === 'ready' || (p.stage === 'planted' && G.can(G.waterCost())) || (!p.stage && bedReady() && G.canSow());
   if (!both && more) return;
@@ -4375,7 +4396,7 @@ function folkStory(fid) {   // the story part of a neighbour's page, in words, w
   if (fs.q === 'done') return `<h3>${f.quest.name}</h3><p>A story that has finished. <button class="act quiet" data-a="story" data-id="${fid}">Read it again</button></p>`;
   if (!st) return taskProg('trade:' + fid) >= 1 ? `<p><small>${f.short[0].toUpperCase() + f.short.slice(1)} will have a story for you before long.</small></p>` : '';
   let btn = '';
-  if (st.give) btn = `<span class="cost">${costHtml(st.give)}</span><br>` + (G.can(st.give) ? `<button class="act" data-a="qgive" data-id="${fid}">Send it over</button>` : `<span class="bad">The store is short of ${G.missing(st.give).join(', ')}.</span>`);
+  if (st.give) btn = `<span class="cost">${costHtml(st.give)}</span><br>` + (G.can(st.give) ? `<button class="act" data-a="qgive" data-id="${fid}">Send it over</button>` : `<span class="bad">The store is short of ${G.missing(st.give).join(', ')}.</span>${shortHelp(st.give)}`);
   else if (st.job) { const v = G.taskView(G.taskDef(`quest:${fid}:${fs.q}`)); btn = v.state === 'running' ? `<span><span class="who" data-w="${st.job.who}">${C.names[st.job.who]}</span> is on it · ${G.timeLeft(v.endsAt)} to go</span>` : `<span class="who" data-w="${st.job.who}">${C.names[st.job.who]}</span> needs <span class="cost">${costHtml(st.job.cost)}</span> · ${hours(st.job.mins)}<br>` + (v.can ? `<button class="act" data-a="start" data-id="${v.def.id}">${st.job.name}</button>` : `<span class="bad">The store is short of ${v.missing.join(', ')}.</span>`); }
   else if (st.find) btn = `<span>Look for <b>${st.find.name}</b> on the land${st.find.hours ? ' (after dark)' : ''}. It will glow softly.</span>`;
   else if (st.wait) btn = `<span>Come back in ${G.timeLeft(fs.waitUntil)}.</span>`;
@@ -4457,20 +4478,23 @@ function neighboursHtml() {   // the journal's neighbours section
 function openAway(r) {
   const mins = Math.round(r.gone / 60000); if (mins < 10 && !r.finished.length && !r.ate && !r.rabbit && !r.season && !r.moved) return r.traveller ? openStory(r.traveller, 'arrived') : undefined;
   const gone = mins < 60 ? `${mins} minutes` : mins < 60 * 36 ? `${Math.round(mins / 60)} hours` : `${Math.round(mins / 1440)} days`;
-  let html = `<h2>While you were away<small>${gone}</small></h2><div class="letter"><p>Dear friend,</p>`;
+  // Bryce (first-time review): a page from Hazel's diary that you peek at. She never writes to you; what you can do goes under it, in plain words
+  let html = `<h2>While you were away<small>${gone}</small></h2><p class="meta" style="margin:0 0 6px">You peek at a page of Hazel's diary.</p><div class="letter"><p>Dear diary,</p>`;
+  const tips = [];
   if (r.season) html += `<p><b>${C.seasons[r.season].name}.</b> ${C.seasons[r.season].arrive.replace(/^\w+\. /, '')}</p>`;
   if (r.event) html += `<p>${r.event}</p>`;
   if (r.rabbit) html += `<p>${r.rabbit}</p>`;
   if (r.moved) for (const m of r.moved) html += `<p>${m}</p>`;
   if (r.ate) html += `<p>The ${r.ate.toLowerCase()} came by and emptied the feeding dish.</p>`;
-  if (r.traveller) { const f = G.folkDef(r.traveller); html += `<p>A traveller has camped by the path: <b>${f.name}</b>, ${f.trade}. Tap their tent to meet them.</p>`; }
-  if (r.newDay) html += `<p>A new day, and the magic has grown a little: ${G.magicInfo().name}.</p>`;
-  if (r.offered) html += `<p>The land has left ${r.offered} thing${r.offered > 1 ? 's' : ''} for you to gather.</p>`;
-  if (r.finished.length) html += `<p>Finished while you were gone:</p><ul class="done">${r.finished.map(f => `<li>${f}</li>`).join('')}</ul>`;
+  if (r.traveller) { const f = G.folkDef(r.traveller); html += `<p>A traveller has camped by the path: <b>${f.name}</b>, ${f.trade}. Wendel has been over twice already to say hello.</p>`; tips.push('Tap the traveller\'s tent to meet them.'); }
+  if (r.newDay) { html += `<p>The luck about this place feels a little stronger today. I can't say how I know. I just do.</p>`; tips.push(`Your magic has grown a little: ${G.magicInfo().name}.`); }
+  if (r.offered) { html += `<p>${r.offered > 1 ? `${r.offered} little things have` : 'Something small has'} turned up about the yard again. Wendel says it's the luck, and I think he's right.</p>`; tips.push(`There ${r.offered > 1 ? `are ${r.offered} things` : 'is something'} lying about to gather. Swipe to look around the yard.`); }
+  if (r.finished.length) html += `<p>Done today:</p><ul class="done">${r.finished.map(f => `<li>${f}</li>`).join('')}</ul>`;
   if (!r.offered && !r.finished.length && !r.newDay) html += `<p>Quiet. The fire kept going.</p>`;
-  openSheet('away', html + `<p class="sign">Love, ${C.names.her}<img src="sprites/face-her.webp" alt=""></p></div><p style="margin-top:10px"><button class="act" data-a="close">Have a look</button></p>`);
+  openSheet('away', html + `<p class="sign">Hazel<img src="sprites/face-her.webp" alt=""></p></div>${tips.map(t => `<p class="meta" style="margin:6px 0 0">${t}</p>`).join('')}<p style="margin-top:10px"><button class="act" data-a="close">Have a look</button></p>`);
 }
-$('bPack').onclick = openPack; $('bTasks').onclick = () => { hidePointer('bTasks'); openTasks(); }; $('bMagic').onclick = openMagic; $('bJournal').onclick = openJournal;
+$('bPack').onclick = openPack; $('guideSkip').onclick = () => guideTo(4);
+$('bTasks').onclick = () => { hidePointer('bTasks'); if (guideStep() === 4) guideTo(9); openTasks(); }; $('bMagic').onclick = openMagic; $('bJournal').onclick = openJournal;
 G.onChange((kind, data) => { renderInv(kind === 'inv' && typeof data === 'string' ? data : null); renderHud(); if (kind === 'task' && data && data.done) { toast('Finished: ' + lcName(G.taskDef(data.id).name) + '.'); } if (kind === 'event') toast(data.text); if (kind === 'movein') toast(data.note);
   if (kind === 'traveller' && data) { btnAlert('bJournal', true); if (!sheetKind) openStory(data, 'arrived'); else toast('A traveller has camped by the path.'); }
   if (kind === 'story') { btnAlert('bJournal', true); openStory(data.folk, data.kind); }
@@ -4491,19 +4515,124 @@ const WELCOME_FALLBACK = { title: 'Welcome to Gnome Life', text: ['A little stor
   howTitle: 'How to play', how: ['👆 <b>Swipe</b> to look around. <b>Pinch</b> to zoom in close.', '✨ <b>Tap the little things lying about</b> (twigs, stones, seeds). Your luck carries them to the gnomes\' store (🧺 Store).', '🔨 <b>Jobs shows what they can do next.</b> If you are ever unsure what to do, look in Jobs.', '👀 <b>Tap anything</b>, the gnomes included, to see what it is.', '🕰️ <b>Jobs take real time.</b> Start one, put your phone down, and come back later.'],
   button: 'Open the story', after: 'Wendel and Hazel are waiting to start. Open 🔨 Jobs to see what they can do first.' };
 function welcomeText() { return Object.assign({}, WELCOME_FALLBACK, C.welcome || {}); }
-function howToHtml() { const W = welcomeText(); return `<div class="howto"><h3>${W.howTitle}</h3>${W.how.map(t => `<p>${t}</p>`).join('')}</div>`; }
+function howToHtml(more) { const W = welcomeText(); return `<div class="howto"><h3>${W.howTitle}</h3>${W.how.concat(more && W.howMore || []).map(t => `<p>${t}</p>`).join('')}</div>`; }
 function openWelcome(first) {   // first visit: the welcome, then page one, then a pointer at Jobs. Later: from the Magic page ("How to play")
   const W = welcomeText(); FIRST_WELCOME = !!first;
-  openSheet('welcome', `<div class="jpage card"><h2>${W.title}</h2>${W.text.map(t => `<p class="lore">${t}</p>`).join('')}</div>${howToHtml()}
+  openSheet('welcome', `<div class="jpage card"><h2>${W.title}</h2>${W.text.map(t => `<p class="lore">${t}</p>`).join('')}</div>${howToHtml(!first)}
     <p style="margin-top:12px;text-align:center">${first ? `<button class="act" data-a="welcomepage">${W.button}</button>` : `<button class="act" data-a="close">Back to the garden</button>`}</p>`);
 }
-function showPointer(text, btn) {   // a little parchment note bobbing over a bottom button, until that button is tapped
+function showPointer(text, btn, spirit) {   // a little parchment note bobbing over a bottom button, until that button is tapped; the Wood spirit's own words carry its face
   const el = $('pointer'), b = $(btn), r = b.getBoundingClientRect(), cx = r.left + r.width / 2, w = Math.min(window.innerWidth * 0.7, 300);
   const left = Math.max(w / 2 + 10, Math.min(window.innerWidth - w / 2 - 10, cx));
-  el.textContent = text; el.style.left = left + 'px'; el.style.width = w + 'px'; el.style.setProperty('--ax', (cx - left + w / 2) + 'px'); el.classList.add('on'); el.dataset.btn = btn;
+  el.innerHTML = spirit ? `<img src="sprites/portrait-spirit.webp" alt="">${text}` : text; el.classList.toggle('spirit', !!spirit); el.style.left = left + 'px'; el.style.width = w + 'px'; el.style.setProperty('--ax', (cx - left + w / 2) + 'px'); el.classList.add('on'); el.dataset.btn = btn;
   btnAlert(btn, true);
 }
 function hidePointer(btn) { const el = $('pointer'); if (!btn || el.dataset.btn === btn) el.classList.remove('on'); }
+// ---------- the first-time player review (Bryce, 2026-10-27) ----------
+// The Wood spirit meets you on day 1, after page one, and walks you through the first minute for real: swipe, pinch, tap a twig,
+// then it points you at Jobs. Each tip goes once it is done; Skip goes straight to Jobs. It is the only one who ever speaks to you.
+// G.s.flags.guide: 0 the hello card, 1 swipe, 2 pinch, 3 a twig, 4 Jobs, 9 done (older saves never have it, and never see it).
+const GUIDE_TEXT = { hello: '"Hello, little luck. Wendel and Hazel can\'t see us, but we can help them, you and I. Let me show you how to look about."',
+  1: 'Drag one finger across the land to look about. Some things lie out of sight.',
+  2: 'Lovely. Now put two fingers down and pinch, apart to come closer, together to see it all.',
+  3: 'Little things lie about: twigs, stones, seeds. Tap the twig in the ring, and your luck carries it home to their store.',
+  bye: 'The Wood spirit drifts back into the trees. "I\'ll be about, little luck."' };
+const GUIDE = { drag: 0, pinch: 0, twig: null };   // how far you have dragged and pinched since the tip came up
+function guideStep() { const g = G.s.flags.guide; return g === undefined ? 9 : g; }
+function guideOn() { const g = guideStep(); return g >= 1 && g <= 4; }
+function openSpiritHello() {
+  G.s.flags.guide = 0; G.s.flags.spiritHello = G.now(); if (!G.met('spirit')) G.noteVisitor('spirit'); G.save();
+  const v = G.visitorDef('spirit');
+  openSheet('spirithello', `<div class="jpage card"><p class="meta" style="margin:0">Someone else is here</p>${v ? portraitHtml(v, true) : ''}<h2>The Wood spirit</h2>
+    <p class="lore">${C.story.spiritFirst}</p><p class="lore">${GUIDE_TEXT.hello}</p></div>
+    <p style="text-align:center"><button class="act" data-a="guide" data-id="go">Show me</button></p><p style="text-align:center;margin:0"><button class="act quiet" data-a="guide" data-id="skip">I know how to play</button></p>`);
+}
+function guideTo(n) {
+  G.s.flags.guide = n; G.dirty = true; GUIDE.drag = GUIDE.pinch = 0; HELP.ring = null;
+  const el = $('guide');
+  if (n >= 1 && n <= 3) { el.querySelector('p').textContent = GUIDE_TEXT[n]; el.classList.add('on'); } else el.classList.remove('on');
+  if (n === 3) {   // a twig on the home patch, in view, with a ring round it
+    let o = G.s.offers.find(o => o.kind === 'twig' && o.tile === '0,0' && !o.keep);
+    if (!o) o = G.spawnOffer(G.now(), 'twig', true);
+    GUIDE.twig = o.id; ringOn({ id: o.id }, 600000); lookAt(o.gx, o.gy, o.tile, Math.max(cam.z, 1.1));
+  }
+  if (n === 4) showPointer(welcomeText().after, 'bTasks', true);
+  if (n === 9) { hidePointer(); toast(GUIDE_TEXT.bye); }
+}
+function guideTick() {
+  const g = guideStep(); if (g < 1 || g > 3 || sheetKind) return;
+  if (g === 1 && GUIDE.drag > 80 && !ptrs.size) guideTo(2);
+  else if (g === 2 && GUIDE.pinch > 0.18 && !ptrs.size) guideTo(3);
+  else if (g === 3 && !G.s.offers.some(o => o.id === GUIDE.twig)) guideTo(4);
+}
+
+// A soft ring round one thing you are being shown: "Show me" in Jobs, the guided twig, the idle nudge. A ring, never a glow.
+const HELP = { ring: null, lastInput: performance.now(), nudgeAt: 0 };
+function ringOn(r, ms) { HELP.ring = Object.assign(r, { until: performance.now() + (ms || 12000) }); liveUntil = Math.max(liveUntil, performance.now() + Math.min(ms || 12000, 15000)); }
+function ringAt() {   // where the ring is, in world px, or null once its thing has gone
+  const r = HELP.ring; if (!r || performance.now() > r.until) return null;
+  if (r.id) { const o = G.s.offers.find(o => o.id === r.id); if (!o) return null; const [x, y] = toWorld(o.gx, o.gy, o.tile); return [x, y - 12, 34]; }
+  if (r.spirit && SPIRIT_HINT.screen) { const q = SPIRIT_HINT.screen; return [q.x, q.y - q.h / 2, Math.max(q.w, q.h) * 0.6]; }
+  return null;
+}
+function drawHelpRing(now) {
+  const at = ringAt(); if (!at) { if (HELP.ring && performance.now() > HELP.ring.until) HELP.ring = null; return; }
+  if (HELP.ring && performance.now() + 1000 > liveUntil) liveUntil = performance.now() + 1500;   // keep it moving while it shows
+  const [x, y, r0] = at, k = (now / 1800) % 1, r = Math.max(r0, 26 / cam.z) * (1 + 0.15 * Math.sin(k * Math.PI * 2));
+  ctx.save(); ctx.lineWidth = 3.5 / cam.z; ctx.strokeStyle = 'rgba(77,92,39,0.85)'; ctx.beginPath(); ctx.arc(x, y, r + 2.5 / cam.z, 0, 7); ctx.stroke();
+  ctx.lineWidth = 2.5 / cam.z; ctx.strokeStyle = '#f6eed6'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.stroke(); ctx.restore();
+}
+function lookAt(gx, gy, tile, z) { const [x, y] = toWorld(gx, gy, tile); ALLDONE.ease = { t: 0, z0: cam.z, x0: cam.x, y0: cam.y, z1: clampZ(z || Math.max(cam.z, 1.2)), x1: x, y1: y }; }
+function nearestOffer(kind) {   // the closest thing of this kind lying about (any kind if none given), from the middle of the view
+  let best = null, bd = 1e9;
+  for (const o of G.s.offers) { if (o.keep || (kind && o.kind !== kind)) continue; const [x, y] = toWorld(o.gx, o.gy, o.tile), d = Math.hypot(x - cam.x, y - cam.y); if (d < bd) { bd = d; best = o; } }
+  return best;
+}
+// "Show me" on a job the store is short for: where the missing thing lies, or when it turns up
+const TURNS_UP = { twig: 'Twigs turn up lying about the land all day.', moss: 'Moss turns up lying about the land, most of all in the daytime.', stone: 'Stones turn up lying about the land in the daytime.',
+  acorn: 'Acorns turn up lying about now and then.', seed: 'Seeds turn up lying about in the daytime.', water: 'Dew settles on the land, most of all in the mornings.', light: 'Light comes out after dark: little sparks lying about at night.',
+  berry: 'Berries turn up lying about in the daytime.', feather: 'Feathers turn up now and then, day or night.', carrot: 'Carrots grow in the seed bed.', lettuce: 'Lettuces grow in the seed bed.', bean: 'Beans grow in the seed bed.', pumpkin: 'The pumpkin grows in the seed bed.' };
+function shortHelp(cost) {
+  const k = Object.keys(cost || {}).find(k => (G.s.inv[k] || 0) < cost[k]); if (!k) return '';
+  if (nearestOffer(k)) return ` <button class="act quiet" style="min-height:30px;padding:3px 10px;font-size:14px" data-a="showme" data-id="${k}">Show me</button>`;
+  return `<br><span class="meta">${TURNS_UP[k] || `${C.resources[k].name[0].toUpperCase() + C.resources[k].name.slice(1)} comes from the neighbours.`}</span>`;
+}
+function showMe(kind) { const o = nearestOffer(kind); if (!o) return; closeSheet(); lookAt(o.gx, o.gy, o.tile, Math.max(cam.z, 1.1)); ringOn({ id: o.id }, 15000); }
+function showSpirit() { closeSheet(); const [gx, gy] = spiritSpot(SPIRIT_N); lookAt(gx, gy, '0,0', Math.max(cam.z, 1.1)); ringOn({ spirit: true }, 15000); }
+// The Wood spirit's first wait: say so once, and ring it (first-time review: it waited silently all week and was never met)
+function spiritWaitCheck() {
+  if (!SPIRIT_N || G.s.flags.spiritWaitSeen || sheetKind || roomOn || guideOn()) return;
+  G.s.flags.spiritWaitSeen = G.now(); G.dirty = true; ringOn({ spirit: true }, 20000);
+  toast(G.s.flags.spiritHello ? 'The Wood spirit is back, and waiting for you. Tap it.' : 'Someone soft and green is waiting for you. Tap it.');
+}
+// The idle nudge, for the first week: after 20 quiet seconds, a ring on the next useful thing (the spirit, Jobs, something lying about)
+function nudgeTick() {
+  const t = performance.now();
+  if (G.s.days.length > 7 || guideOn() || guideStep() === 0 || sheetKind || roomOn || ALLDONE.on || HELP.ring || ptrs.size) return;
+  if (t - HELP.lastInput < 20000 || t - HELP.nudgeAt < 60000) return;
+  HELP.nudgeAt = t;
+  if (SPIRIT_N && SPIRIT_HINT.screen) return ringOn({ spirit: true }, 10000);
+  if ($('bTasks').classList.contains('alert')) { showPointer('Something is ready to start in Jobs.', 'bTasks'); return setTimeout(() => hidePointer('bTasks'), 9000); }
+  const o = nearestOffer(); if (!o) return;
+  const [x, y] = toWorld(o.gx, o.gy, o.tile), sx = (x - cam.x) * cam.z + W / 2, sy = (y - cam.y) * cam.z + H / 2;
+  if (sx < 30 || sx > W - 30 || sy < 120 || sy > H - 150) lookAt(o.gx, o.gy, o.tile, cam.z);
+  ringOn({ id: o.id }, 10000);
+}
+document.addEventListener('pointerdown', () => { HELP.lastInput = performance.now(); }, true);
+// Names under the gnomes for the first few visits (first-time review: nothing said which one was Wendel)
+function drawNameTags() {
+  if (!G.s.visits || G.s.visits.n > 3) return;
+  ctx.save(); ctx.font = 'italic 15px "EB Garamond", Georgia'; ctx.textAlign = 'center';
+  const put = [];
+  for (const g of gnomes) {
+    if (!g.screen || g.inside) continue;
+    const x = (g.screen.x - cam.x) * cam.z + W / 2; let y = (g.screen.y - cam.y) * cam.z + H / 2 + 16; if (x < 0 || x > W || y < 0 || y > H) continue;
+    if (put.some(([px, py]) => Math.abs(px - x) < 80 && Math.abs(py - y) < 22)) y += 24; put.push([x, y]);   // side by side: one name drops below the other
+    const n = C.names[g.who], w = ctx.measureText(n).width + 14;
+    ctx.globalAlpha = 0.9; ctx.fillStyle = '#f1e5c6'; rrect(x - w / 2, y - 12, w, 20, 4); ctx.fill(); ctx.globalAlpha = 1; ctx.fillStyle = '#33251a'; ctx.fillText(n, x, y + 3);
+  }
+  ctx.restore();
+}
 function start() {
   G.spotTaken = onBed;
   G.boot();
@@ -4514,8 +4643,7 @@ function start() {
   gnomes.push(new Gnome('him', 0.46, 0.50), new Gnome('her', 0.40, 0.40));
   gnomes[1].wait = 0.5;
   for (const g of gnomes) g.settleIn();
-  cam.z = clampZ(G.s.flags.welcomed ? Math.max(1.5, minZ * 2.4) : 0.95);   // first visit: far enough out to see the whole yard
-  [cam.x, cam.y] = G.s.flags.welcomed ? toWorld((gnomes[0].gx + gnomes[1].gx) / 2, (gnomes[0].gy + gnomes[1].gy) / 2) : toWorld(0.5, 0.5); clampCam();
+  cam.z = clampZ(0.95); [cam.x, cam.y] = toWorld(0.5, 0.5); clampCam();   // every visit opens far enough out to see the whole yard (first-time review: close up, the things lying about were all off screen)
   renderInv(); renderHud();
   const [a, b] = C.visitorEvery; nextVisitorAt = performance.now() + (G.FAST ? 5 : 25 + Math.random() * 30) * 1000;
   if (/vis=(\w+)/.test(hash)) { const def = C.visitors.find(v => v.id === RegExp.$1); if (def) spawnVisitor(def); }
@@ -4526,6 +4654,7 @@ function start() {
   if (G.away) openAway(G.away);
   festCheck(); ALLDONE.at = performance.now();
   if (!G.s.flags.welcomed) { G.s.flags.welcomed = true; G.save(); openWelcome(true); }
+  else if (guideStep() === 0) openSpiritHello(); else if (guideOn()) guideTo(guideStep());
 }
 })();
 </script>
