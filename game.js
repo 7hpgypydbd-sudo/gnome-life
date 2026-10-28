@@ -4,7 +4,7 @@
 const C = window.CONTENT;
 const FAST = /fast/.test(location.hash);          // #fast: minutes become tenths of a second (3h -> 18s)
 const MIN = FAST ? 100 : 60000;                   // ms per content "minute"
-const SKEW_KEY = 'gnomelife.skew';   // test panel: pretend this many extra days have gone by (whole days; +30 minutes moves the clock on too)
+const SKEW_KEY = window.SANDBOX ? 'gnomelife.sandbox.skew' : 'gnomelife.skew';   // test panel: pretend this many extra days have gone by (whole days; +30 minutes moves the clock on too)
 let SKEW = 0; try { SKEW = Number(localStorage.getItem(SKEW_KEY)) || 0; } catch (e) {}   // whole days, plus any +30 minutes from the test panel
 const now = () => Date.now() + SKEW;
 const DAY = () => 1440 * MIN;                     // a real day (a tenth-second-minute day under #fast)
@@ -15,7 +15,7 @@ const VISIT_GAP = FAST ? 10000 : 10 * 60000;      // away this long (real time) 
 
 // ---------- storage adapter (swap this for a server later) ----------
 const Store = {
-  key: 'gnomelife.save',
+  key: window.SANDBOX ? 'gnomelife.sandbox.save' : 'gnomelife.save',   // the sandbox keeps its own garden
   load() { try { const s = localStorage.getItem(this.key); return s ? JSON.parse(s) : null; } catch (e) { return null; } },
   write(blob) { try { localStorage.setItem(this.key, JSON.stringify(blob)); } catch (e) {} },
   clear() { try { localStorage.removeItem(this.key); } catch (e) {} },
