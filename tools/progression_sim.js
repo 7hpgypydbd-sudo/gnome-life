@@ -37,6 +37,7 @@ function drainCards() {
   }
   G.s.pages.cards = [];
 }
+const doneSeen = new Set();
 let lastFolk = 0, lastTrav = null, festStage = 'waiting', lastTiles = new Set(Object.keys(G.s.tiles)), gardenWas = false, magicWas = 1;
 function watch() {
   drainCards();
@@ -45,6 +46,7 @@ function watch() {
   const n = G.settled().length; if (n !== lastFolk) { ev('VILLAGE', `moved in: ${G.settled().slice(-1)[0]} (${n} neighbours)`); lastFolk = n; }
   if (G.s.festival.stage !== festStage) { festStage = G.s.festival.stage; ev('FEST', festStage); }
   if (G.gardenOpen() !== gardenWas) { gardenWas = G.gardenOpen(); ev('GARDEN', 'garden open'); }
+  if (process.env.DONES) for (const [id, t] of Object.entries(G.s.tasks)) if (t.done && !doneSeen.has(id)) { doneSeen.add(id); ev('DONE', id); }
   const L = G.magicLevel(); if (L !== magicWas) { magicWas = L; ev('MAGIC', `level ${L}`); }
 }
 const started = new Set();
@@ -90,10 +92,10 @@ function snapshotList(label) {
   const mk = G.taskList().filter(v => v.def.make && v.state !== 'done').length, nx = G.nextUp();
   listLog.push(`${label}: Jobs tab: ready ${(by.ready||[]).length}, waiting (gnome busy etc.) ${(by.locked||[]).length}, running ${(by.running||[]).length}; Hazel's list ${mk}${nx ? `; Next: ${nx.name}, ${nx.why}` : ''}\n   ready: ${(by.ready||[]).join(' | ')}\n   waiting: ${(by.locked||[]).join(' | ')}`);
 }
-const hours = process.env.HOURS ? process.env.HOURS.split(',').map(Number) : { 1: [8], 2: [8, 19], 3: [8, 13, 19], 4: [7, 11, 15, 20] }[VPD];   // HOURS=21 for an evening-only player
+const hours = process.env.HOURS && process.env.HOURS.startsWith('every:') ? (([m, a, b]) => { const r = []; for (let h = a; h < b; h += m / 60) r.push(h); return r; })(process.env.HOURS.slice(6).split(':').map(Number)) : process.env.HOURS ? process.env.HOURS.split(',').map(Number) : { 1: [8], 2: [8, 19], 3: [8, 13, 19], 4: [7, 11, 15, 20] }[VPD];   // HOURS=21 for an evening-only player; HOURS=every:5:10:22 = a visit every 5 minutes from 10:00 to 22:00 (first-hour checks); DONES=1 logs each job as it finishes
 snapshotList('Very first visit');
 for (let d = 0; d < DAYS; d++) {
-  for (const h of hours) { const day = new RealDate(t0 + d * 864e5); day.setHours(h, 0, 0, 0); clock = day.getTime(); visit(); }
+  for (const h of hours) { const day = new RealDate(t0 + d * 864e5); day.setHours(Math.floor(h), Math.round(h % 1 * 60), 0, 0); clock = day.getTime(); visit(); }
   if (d === 0 || d === 1 || d === 2 || d === 6 || d === 13) snapshotList(`End of day ${d + 1}`);
   if ([0,2,6,13,20,29,44,59,74,89].includes(d)) invLog.push(`D${d+1} pack: ` + Object.entries(G.s.inv).filter(([k,n])=>n).map(([k,n])=>k+' '+n).join(', '));
 }

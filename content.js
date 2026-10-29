@@ -64,12 +64,12 @@ window.CONTENT = {
   ],
 
   // Crops for the seed bed (Hazel's mother's seed tin, docs/STORY.md page 1.4). One crop fills the whole bed.
-  // plant: what sowing costs; water: dew to start it growing; grow: minutes from watering to ready; harvest: what picking gives
+  // plant: what sowing costs; water: dew to start it growing; grow: minutes from watering to ready (first: the very first sowing, v81, so day one keeps moving); harvest: what picking gives
   // (into the pantry, plus seed back); green: how much life it gives back to the land; needs: when it can be sown
   // (flag:x, a finished job id, or grown:n = after n harvests). free: the first sowing costs nothing (Wendel's one pumpkin seed).
   // look: how index.html draws it (drawCrop). Order here is the order in the seed bed menu.
   crops: {
-    carrot:  { name:'carrots', look:'carrot', plant:{ seed:1 }, water:1, grow:180, harvest:{ carrot:3, seed:1 }, green:1,
+    carrot:  { name:'carrots', look:'carrot', plant:{ seed:1 }, water:1, grow:180, first:15, harvest:{ carrot:3, seed:1 }, green:1,
                blurb:'Feathery tops and orange shoulders. The first thing from the tin, and the quickest to trust.' },
     lettuce: { name:'lettuces', look:'lettuce', plant:{ seed:1 }, water:1, grow:120, harvest:{ lettuce:2, seed:1 }, green:1, needs:['flag:firstpick'],
                blurb:'A pinch of lettuce seed. Up fast, soft green rosettes, and the rabbit has opinions about them.' },
@@ -95,49 +95,51 @@ window.CONTENT = {
 
     // --- chapter one: the bare clearing. The first chain, one job each at a time. Round six (Bryce): water first, because nothing
     // lives without it; then sticks (the stick pile, for fences), then the old stump, chopped into the first firewood ---
+    // v81 (Bryce: "an hour for the first two tasks is momentum killing"): chapter one's jobs take a few minutes each and the first
+    // carrots come up in 15; chapter two's are 20 minutes to an hour and a half; the slow pace (hours) settles in from chapter three
     // stages: the busy tag changes as the job goes on ([how far through, tag]), so the words match what the gnome is doing
-    { id:'spring', name:'Look for water', short:'looking for water', stages:[[0.4, 'clearing the spring']], spine:true, who:'him', act:'dig', spot:'spring', cost:{}, give:{ water:1 }, mins:60, green:1, magic:1,
+    { id:'spring', name:'Look for water', short:'looking for water', stages:[[0.4, 'clearing the spring']], spine:true, who:'him', act:'dig', spot:'spring', cost:{}, give:{ water:1 }, mins:6, green:1, magic:1,
       blurb:'Nothing can live here without water, and the creek is bone dry. Wendel walks the yard with his forked twig, listening for water under the ground. When he finds it, he will pull out the stones and dead leaves that choke it.',
       doneNote:'Wendel found a spring between the roots of the old stump at the back of the yard, choked with stones and dead leaves. He has pulled them out, and clear water is trickling again, the first in this valley for a long time.' },
-    { id:'clear',   name:'Clear the ground', short:'clearing the ground', spine:true, who:'her', act:'carry', spot:'clearing', cost:{}, give:{ twig:3, stone:3 }, mins:90, green:0, magic:1,
+    { id:'clear',   name:'Clear the ground', short:'clearing the ground', spine:true, who:'her', act:'carry', spot:'clearing', cost:{}, give:{ twig:3, stone:3 }, mins:8, green:0, magic:1,
       blurb:'Old tins, broken pots and loggers\' rubbish everywhere. Hazel carries it all off, one piece at a time, and lays the good straight sticks on a stick pile by the house. Sticks make fences.' },
-    { id:'woodpile', name:'Gather the fallen sticks',    short:'gathering sticks', spine:true, who:'him', act:'gather', spot:'firewood', cost:{}, give:{ twig:2 }, mins:60, green:0, magic:1,
+    { id:'woodpile', name:'Gather the fallen sticks',    short:'gathering sticks', spine:true, who:'him', act:'gather', spot:'firewood', cost:{}, give:{ twig:2 }, mins:5, green:0, magic:1,
       needs:['spring'], blurb:'Fallen branches lie all about the yard. Wendel gathers them up, odd sticks and all, and adds them to the stick pile by the house.' },
-    { id:'bed',     name:'Dig a seed bed', short:'digging the seed bed', spine:true, who:'her', act:'dig', spot:'clearing', cost:{ twig:2 },  mins:120, green:0, magic:1,
+    { id:'bed',     name:'Dig a seed bed', short:'digging the seed bed', spine:true, who:'her', act:'dig', spot:'clearing', cost:{ twig:2 },  mins:8, green:0, magic:1,
       needs:['clear'], blurb:'Now the ground is clear, the earth can be turned. Hazel digs it over row by row, until there is a patch of soft dark soil for the vegetables.' },
-    { id:'bedwater', name:'Water the seed bed', short:'fetching water', stages:[[0.12, 'watering the seed bed']], spine:true, who:'him', act:'water', spot:'spring', cost:{}, mins:20, green:0, magic:1,
+    { id:'bedwater', name:'Water the seed bed', short:'fetching water', stages:[[0.12, 'watering the seed bed']], spine:true, who:'him', act:'water', spot:'spring', cost:{}, mins:3, green:0, magic:1,
       needs:['bed', 'spring'], blurb:'A can at a time from the new spring, watered patch by patch, until the fresh soil is dark and damp. Then it is ready for seeds.' },
-    { id:'feeder',  name:'Set out a feeding dish', short:'setting out the dish', spine:true, who:'her', act:'carry', spot:'feeder', cost:{ stone:2, twig:1 }, mins:45, green:0, magic:1, needs:['flag:rabbit'],   // Bryce: the dish is the compromise after the rabbit's raid, beside the fence
+    { id:'feeder',  name:'Set out a feeding dish', short:'setting out the dish', spine:true, who:'her', act:'carry', spot:'feeder', cost:{ stone:2, twig:1 }, mins:4, green:0, magic:1, needs:['flag:rabbit'],   // Bryce: the dish is the compromise after the rabbit's raid, beside the fence
       blurb:'A flat stone dish on a stump. Put out seed or berries and see who comes. Some will come back.' },
     // the rabbit always comes for the first sprouts (game.js rabbitDue); only then is the fence offered
-    { id:'fence', act:'build',   name:'Fence the seed bed', short:'fencing the bed', spine:true, who:'him', spot:'fence',       cost:{ twig:4 },           mins:120, green:0, magic:1,
+    { id:'fence', act:'build',   name:'Fence the seed bed', short:'fencing the bed', spine:true, who:'him', spot:'fence',       cost:{ twig:4 },           mins:10, green:0, magic:1,
       needs:['bed', 'flag:rabbit'], blurb:'That rabbit helped itself to the sprouts. Wendel fetches sticks from the stick pile and weaves a low fence all round the bed, a piece at a time, with a little gate, and something put out for it instead. It is only hungry.' },
 
     // --- chapter two: putting down roots (from page 2.1, the first harvest). The roof first, then the bench, then the oak;
     // the small jobs come a couple at a time, in this order ---
-    { id:'roof',    name:'Moss for the shelter roof', short:'mossing the roof', spine:true, who:'her', spot:'shelter',     cost:{ moss:4 },           needs:['page:2.1'], mins:180, green:0, magic:2,
+    { id:'roof',    name:'Moss for the shelter roof', short:'mossing the roof', spine:true, who:'her', spot:'shelter',     cost:{ moss:4 },           needs:['page:2.1'], mins:45, green:0, magic:2,
       blurb:'The canvas leaks. A thick moss roof keeps the rain out and the warmth in.' },
-    { id:'bench',   name:'Build a bench by the fire', short:'building a bench', spine:true, who:'him', act:'build', spot:'logseat',  cost:{ twig:3 },          needs:['page:2.2'], mins:60,  green:0, magic:1,
+    { id:'bench',   name:'Build a bench by the fire', short:'building a bench', spine:true, who:'him', act:'build', spot:'logseat',  cost:{ twig:3 },          needs:['page:2.2'], mins:20,  green:0, magic:1,
       blurb:'A plank on two stout legs by the campfire, just long enough for two gnomes of an evening.' },
-    { id:'sapling', name:'Plant the sapling out', short:'planting the sapling', spine:true, who:'her', act:'water', spot:'sapling',     cost:{ water:2, moss:2 },  mins:360, green:2, magic:3,
+    { id:'sapling', name:'Plant the sapling out', short:'planting the sapling', spine:true, who:'her', act:'water', spot:'sapling',     cost:{ water:2, moss:2 },  mins:90, green:2, magic:3,
       needs:['clear', 'page:2.3'], blurb:'The little oak they carried from their old home is ready for real ground. Trees bring life back faster than anything. It will outlive us all.' },
-    { id:'doorstep', name:'Lay a flat-stone doorstep', short:'laying the doorstep', who:'him', act:'dig', spot:'shelter',     cost:{ stone:3 },          needs:['page:2.1'], mins:90,  green:0,
+    { id:'doorstep', name:'Lay a flat-stone doorstep', short:'laying the doorstep', who:'him', act:'dig', spot:'shelter',     cost:{ stone:3 },          needs:['page:2.1'], mins:25,  green:0,
       blurb:'So the mud stays outside. Mostly.' },
-    { id:'beanpoles', name:'Raise the bean poles', short:'raising bean poles',     who:'him', act:'build', spot:'seedbed',     cost:{ twig:5 },           mins:120, green:0, needs:['bed', 'page:2.1'],
+    { id:'beanpoles', name:'Raise the bean poles', short:'raising bean poles',     who:'him', act:'build', spot:'seedbed',     cost:{ twig:5 },           mins:30, green:0, needs:['bed', 'page:2.1'],
       blurb:'For the beans, which have strong opinions about climbing.' },
-    { id:'clothesline', act:'build', name:'String up a washing line', short:'stringing the line', who:'her', spot:'fire',      cost:{ twig:3, moss:1 },   needs:['page:2.1'], mins:60,  green:0,
+    { id:'clothesline', act:'build', name:'String up a washing line', short:'stringing the line', who:'her', spot:'fire',      cost:{ twig:3, moss:1 },   needs:['page:2.1'], mins:20,  green:0,
       blurb:'Two tunics, one apron, a very small pair of socks. The sun can do the drying.' },
     // dug out in stages (index.html drawStump): the roots bared, rocked loose and tipped, chopped and carried to the woodpile, the hole filled
-    { id:'stump', name:'Dig out the old stump', short:'digging round the roots', stages:[[0.3, 'rocking the stump loose'], [0.45, 'chopping firewood'], [0.68, 'carrying the firewood'], [0.88, 'filling in the hole']], spine:true, who:'either', act:'dig', spot:'lanternstump', cost:{}, give:{ twig:3 }, mins:60, green:0,
+    { id:'stump', name:'Dig out the old stump', short:'digging round the roots', stages:[[0.3, 'rocking the stump loose'], [0.45, 'chopping firewood'], [0.68, 'carrying the firewood'], [0.88, 'filling in the hole']], spine:true, who:'either', act:'dig', spot:'lanternstump', cost:{}, give:{ twig:3 }, mins:12, green:0,
       needs:['woodpile'], blurb:'An old loggers\' stump stands in the middle of the yard, dry as a bone. Whoever is free digs round its roots, rocks it loose, chops it into firewood and stacks it by the barrel, then fills in the hole. Their first proper firewood.',
       doneNote:'The old stump is gone, chopped and stacked by the barrel. Tonight there is proper firewood.' },
-    { id:'rainbarrel', name:'Scrub the rain barrel', short:'scrubbing the barrel',   who:'either', spot:'barrel',        cost:{ twig:2, stone:1 },  mins:60,  green:0, needs:['roof'],   // after the roof: it catches the rain off it (Bryce: why have a barrel at all?)
+    { id:'rainbarrel', name:'Scrub the rain barrel', short:'scrubbing the barrel',   who:'either', spot:'barrel',        cost:{ twig:2, stone:1 },  mins:20,  green:0, needs:['roof'],   // after the roof: it catches the rain off it (Bryce: why have a barrel at all?)
       blurb:'The old barrel by the house is green with slime. Scrubbed clean, it catches the rain off the roof: a can of water every so often without the walk to the spring. Whoever is free will do it.' },
-    { id:'herbs',   name:'Plant a herb corner', short:'planting herbs',        who:'her', act:'water', spot:'seedbed',     cost:{ seed:2, water:2, moss:1 }, mins:180, green:1, needs:['bed', 'page:2.1'],
+    { id:'herbs',   name:'Plant a herb corner', short:'planting herbs',        who:'her', act:'water', spot:'seedbed',     cost:{ seed:2, water:2, moss:1 }, mins:60, green:1, needs:['bed', 'page:2.1'],
       blurb:'Thyme, mint and the one parsley that will not die. Good for tea and for bees.' },
-    { id:'compost', name:'Start a compost heap', short:'starting the compost',       who:'him', act:'dig', spot:'wheelbarrow', cost:{ twig:2, moss:3, water:1, carrot:1 }, mins:180, green:0, needs:['page:2.1'],
+    { id:'compost', name:'Start a compost heap', short:'starting the compost',       who:'him', act:'dig', spot:'wheelbarrow', cost:{ twig:2, moss:3, water:1, carrot:1 }, mins:60, green:0, needs:['page:2.1'],
       blurb:'Peelings, leaves and patience. Dug into the seed bed, it makes the soil rich: one extra seed every harvest.' },
-    { id:'springring', name:'Ring the spring with stones', short:'ringing the spring', who:'either', act:'dig', spot:'spring', cost:{ stone:5 }, mins:90, green:0, needs:['bedwater', 'page:2.1'],
+    { id:'springring', name:'Ring the spring with stones', short:'ringing the spring', who:'either', act:'dig', spot:'spring', cost:{ stone:5 }, mins:30, green:0, needs:['bedwater', 'page:2.1'],
       blurb:'Flat stones round the spring pool, so the edges don\'t crumble and the birds have somewhere to stand. Not a well. Wells are for villages.' },
     // parked (Bryce, 2026-10-26: the yard by the fire was cramped): the old stump and its lamp post are dug out instead. Kept so old saves still read.
     { id:'lantern', retired:true, act:'build', name:'Mend the old lantern', short:'mending the lantern',       who:'him', spot:'fire',        cost:{ twig:1, stone:1, light:1 }, needs:['flag:firstpick'], mins:90, green:0,
