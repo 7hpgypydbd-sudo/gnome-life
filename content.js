@@ -128,7 +128,7 @@ window.CONTENT = {
     { id:'clothesline', act:'build', name:'String up a washing line', short:'stringing the line', who:'her', spot:'fire',      cost:{ twig:3, moss:1 },   needs:['page:2.1'], mins:60,  green:0,
       blurb:'Two tunics, one apron, a very small pair of socks. The sun can do the drying.' },
     // dug out in stages (index.html drawStump): the roots bared, rocked loose and tipped, chopped and carried to the woodpile, the hole filled
-    { id:'stump', name:'Dig out the old stump', short:'digging round the roots', stages:[[0.3, 'rocking the stump loose'], [0.45, 'chopping firewood'], [0.88, 'filling in the hole']], spine:true, who:'either', act:'dig', spot:'lanternstump', cost:{}, give:{ twig:3 }, mins:60, green:0,
+    { id:'stump', name:'Dig out the old stump', short:'digging round the roots', stages:[[0.3, 'rocking the stump loose'], [0.45, 'chopping firewood'], [0.68, 'carrying the firewood'], [0.88, 'filling in the hole']], spine:true, who:'either', act:'dig', spot:'lanternstump', cost:{}, give:{ twig:3 }, mins:60, green:0,
       needs:['woodpile'], blurb:'An old loggers\' stump stands in the middle of the yard, dry as a bone. Whoever is free digs round its roots, rocks it loose, chops it into firewood and stacks it by the barrel, then fills in the hole. Their first proper firewood.',
       doneNote:'The old stump is gone, chopped and stacked by the barrel. Tonight there is proper firewood.' },
     { id:'rainbarrel', name:'Scrub the rain barrel', short:'scrubbing the barrel',   who:'either', spot:'barrel',        cost:{ twig:2, stone:1 },  mins:60,  green:0, needs:['roof'],   // after the roof: it catches the rain off it (Bryce: why have a barrel at all?)
@@ -297,7 +297,7 @@ window.CONTENT = {
       blurb:'A soft mound of loose earth in the creature corner. A rabbit should have a proper home, Wendel says.' },
     { id:'clover', make:'garden', stage:'green', at:[0.52, 0.82], name:'Sow a clover strip', short:'sowing clover', who:'either', act:'water', cost:{ seed:3 }, mins:30, green:0, needs:['flag:rabbitHome'],
       blurb:'Clover for the rabbit\'s side of the fence. Peace costs three seeds.' },
-    { id:'mousedoor', make:'yard', stage:'barren', at:[0.62, 0.79], name:'Cut a mouse door in the fence', short:'cutting a mouse door', who:'either', act:'build', cost:{ twig:1 }, mins:20, green:0, needs:['flag:mouseGap'],
+    { id:'mousedoor', retired:true, make:'yard', stage:'barren', at:[0.62, 0.79], name:'Cut a mouse door in the fence', short:'cutting a mouse door', who:'either', act:'build', cost:{ twig:1 }, mins:20, green:0, needs:['flag:mouseGap'],
       blurb:'A bark flap on a leather hinge, low in the seed bed fence, so the mouse children can come and go without making new holes.' },
     { id:'owlbox', make:'yard', stage:'wood', at:[0.12, 0.74], name:'Put up an owl box by the oak', short:'putting up the owl box', who:'either', act:'build', cost:{ twig:4, moss:2, feather:1 }, mins:180, green:0, needs:['sapling'],
       blurb:'The little oak is not big enough to hold one yet, so Wendel sets a tall post beside it. A box with a round hole, just so, for the owl.' },
@@ -1362,12 +1362,7 @@ window.CONTENT = {
         `"Red as a ruby," said Hazel, watching them. "Ruby, then," said Wendel. Ruby said nothing at all, but she didn't fly off either.` ] },
 
       // the field mouse family: "tenants"
-      { id:'mouseGap', who:'mouse', kind:'card', when:{ moved:'mice', days:3, done:'fence' }, title:'A gap in the fence', button:'Oh, mice', text:[
-        `The mouse children have found a gap in the seed bed fence. Wendel mended it with a stick, saying sorry to the gap as he did.`,
-        `In the morning there was a brand new gap, with three small mice sitting in it, looking hopeful.` ] },
-      { id:'mouseDoor', who:'mouse', kind:'card', when:{ done:'mousedoor' }, title:'Rent', button:'Mind the step', text:[
-        `Wendel mended the fence three times, saying sorry to the gap each time. On the fourth morning Hazel cut a small door in it herself, and Wendel held the little bark flap while she tied on the hinge.`,
-        `"There," said Hazel. "Now they can knock."` ] },
+      // (v80, Bryce: a door for mice into the crops makes no sense, so the gap-in-the-fence and mouse-door cards are gone, and the job retired)
       { id:'mouseSock', who:'mouse', kind:'card', when:{ moved:'mice', days:7 }, title:'One sock', button:'Leave it', text:[
         `"Have you seen my other sock?" said Wendel, scratching his head by the washing line.`,
         `Hazel did not look up. "Leave it, love," she said. Beside the toadstool house, strung between two grass stalks, a small grey sock is swinging gently in the breeze. The littlest of the mouse babies is curled up inside it, snug as anything, with just its ears poking out of the top.` ] },
