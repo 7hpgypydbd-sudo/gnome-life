@@ -371,7 +371,7 @@ function routineFor(h) {   // what the couple do at this hour when no job needs 
 // to the woodpile, then carries water up from the old creek bed (behind the bench, off the back edge) to the new bed.
 const CLEAR_ITEMS = [];   // filled in below from HOME_KIT: the pieces Hazel clears, in the order she takes them
 const WOOD_ITEMS = [[0.90, 0.44], [0.86, 0.66], [0.34, 0.90]], STICK_PILE = [0.52, 0.30];   // three fallen branches Wendel gathers onto the stick pile; Hazel's good sticks from clearing go there too (round six: sticks are for fences, firewood comes from the old stump)
-const STUMP_AT = [0.75, 0.50], STUMP_ST = { rock: 0.3, chop: 0.45, fill: 0.88 };   // the old stump in the yard, and how far through "Dig out the old stump" each stage starts (content.js stages)
+const STUMP_AT = [0.75, 0.50], STUMP_ST = { rock: 0.3, chop: 0.45, carry: 0.68, fill: 0.88 }, STUMP_PILE = [0.70, 0.53];   // the old stump in the yard, and how far through "Dig out the old stump" each stage starts (content.js stages)
 const WOOD_DROP = [0.43, 0.14], WATER_TRIPS = 3;   // right in front of the woodpile (firewood prop, by the house's right roots), so the wood he sets down lands on it
 // "Look for water": the spring is between the roots of the big old stump at the back of the yard, choked with stones and dead leaves.
 // Wendel searches the yard until SPRING_FOUND, then clears it; the water rises into a little pool and trickles off toward the dry creek.
@@ -381,6 +381,7 @@ function segOf(p, n) { const i = Math.min(n - 1, Math.floor(p * n)); return [i, 
 // A little round of work done over and over in real time while a job runs (so the gnome keeps moving, whatever the job's length):
 // steps(c) gives the round's steps [gx, gy, act, carry on the way, seconds to stay]; c counts the rounds so far.
 // The gnome moves on to the next step once it has stayed long enough at this one.
+function actOr(g, a, b) { const who = g ? g.who : 'him'; return GNOMES[who] && GNOMES[who].acts[a] ? a : b; }   // a painted strip if there is one yet, else a stand-in
 function workLoop(g, key, steps) {
   const first = steps(0)[0]; if (!g) return first;
   const t = performance.now() / 1000; let w = g.wk; if (!w || w.key !== key) w = g.wk = { key, s: 0, arr: 0 };
@@ -435,7 +436,8 @@ const WORKPATH = {
     const [sx, sy] = STUMP_AT, at = [sx, sy];
     if (p < STUMP_ST.rock) return workLoop(g, 'stump-dig', () => [[sx - 0.045, sy + 0.04, 'dig', false, 6, at], [sx + 0.045, sy + 0.045, 'dig', false, 6, at], [sx - 0.06, sy - 0.01, 'dig', false, 5, at]]);
     if (p < STUMP_ST.chop) return [sx - 0.05, sy + 0.035, 'gather', false, 0, at];   // shoulder to it, rocking it loose
-    if (p < STUMP_ST.fill) return workLoop(g, 'stump-chop', () => [[sx - 0.02, sy + 0.07, 'build', false, 6, [sx + 0.03, sy + 0.04]], [WOOD_DROP[0] + 0.02, WOOD_DROP[1] + 0.02, 'putdown', true, 2.5, [0.37, 0.11]]]);
+    if (p < STUMP_ST.carry) return [sx - 0.02, sy + 0.07, actOr(g, 'chop', 'build'), false, 0, [sx + 0.03, sy + 0.04]];   // v80 (Bryce): chopping it up where it fell; the chopped pile grows beside the hole
+    if (p < STUMP_ST.fill) return workLoop(g, 'stump-carry', () => [[STUMP_PILE[0] + 0.03, STUMP_PILE[1] + 0.03, 'pickup', false, 2.5, STUMP_PILE], [WOOD_DROP[0] + 0.02, WOOD_DROP[1] + 0.02, 'putdown', 'logs', 2.5, [0.37, 0.11]]]);   // then armful by armful to the woodpile
     return workLoop(g, 'stump-fill', () => [[sx - 0.03, sy + 0.05, 'dig', false, 6, at], [sx + 0.04, sy + 0.04, 'dig', false, 5, at]]);
   },
   firering: (p, g) => workLoop(g, 'firering', c => {   // round six: he fetches flat stones and sets them round the fire one by one (the ring appears as he goes)
@@ -462,8 +464,8 @@ function choreWork(id, p, g) {
 function workFn(id) { if (id && id.startsWith('chore:')) return (p, g) => choreWork(id, p, g); return WORKPATH[id] || (id && id.startsWith('heal:') ? (p, g) => healWork(id, p, g) : id && id.startsWith('farm:') ? (p, g) => farmWork(id, p, g) : null); }   // jobs that move the gnome about as they go (the healing jobs: healWork)
 function woodTaken(i) { const [k, t] = segOf(taskProg('woodpile'), WOOD_ITEMS.length); return taskProg('woodpile') >= 1 || k > i ? 1 : k < i ? 0 : sstep(0.25, 0.6, t); }   // 0..1: how much of that lot Wendel has picked up
 function woodStage() {   // the firewood pile grows in 3 steps as the old stump is chopped and carried over (round six; a garden from before keeps its pile)
-  if (G.s.flags.oldWoodpile) return 3; const p = taskProg('stump'); if (p >= 1) return 3; if (p < STUMP_ST.chop) return 0;
-  return Math.min(3, Math.floor((p - STUMP_ST.chop) / (STUMP_ST.fill - STUMP_ST.chop) * 3 + 0.8));
+  if (G.s.flags.oldWoodpile) return 3; const p = taskProg('stump'); if (p >= 1) return 3; if (p < STUMP_ST.carry) return 0;
+  return Math.min(3, Math.floor((p - STUMP_ST.carry) / (STUMP_ST.fill - STUMP_ST.carry) * 3 + 0.8));
 }
 function bedWet() { const p = taskProg('bedwater'); if (p >= 1) return 1; const [i, t] = segOf(p, WATER_TRIPS * 2); return (Math.floor(i / 2) + (i % 2 ? t : 0)) / WATER_TRIPS; }
 // Bryce: the earth darkens slowly as it is watered, patch by patch where Wendel pours (ring units: 1 = the fence ring)
@@ -599,7 +601,7 @@ const MAKE_SIZE = { firering:{w:100}, potstools:{w:70}, spinner:{h:90}, scraper:
   gstones:{w:110}, wicket:{w:70}, mousering:{w:70}, sitstone:{w:52}, wildflowers:{w:86}, border:{w:140}, arch:{h:112}, mousetable:{w:40}, stonefrog:{w:42}, birddish:{h:78},
   logbench:{w:120}, ferns:{w:78}, willowseat:{w:74}, pebblepath:{w:120},
   signpost:{h:84}, milestone:{h:40}, trackbench:{w:80}, letterbox:{h:60}, noticeboard:{h:70}, trough:{w:70},   // art day 16: the old track's makes
-  earthbank:{w:110}, clover:{w:118}, mousedoor:{h:32}, dress_spring:{w:66}, dress_summer:{w:66}, dress_autumn:{w:66}, dress_winter:{w:66} };
+  earthbank:{w:110}, clover:{w:118}, dress_spring:{w:66}, dress_summer:{w:66}, dress_autumn:{w:66}, dress_winter:{w:66} };
 for (const [id, o] of Object.entries(MAKE_SIZE)) if (ART_SLOTS['make-' + id]) ART_SLOTS['make-' + id] = o;
 const ART = {};   // name -> loaded Image, only for slots whose file exists
 function art(k) { return ART[k] || null; }
@@ -791,7 +793,7 @@ class Gnome {
     const s = SPR * 0.92;
     const potw = potInHands(this) && this.acts.potwalk && this.dir === 'side' && !this.act;   // carrying the potted oak (art day 15 strip)
     const carrying = potw || (this.walking && (this.pace || this.carryWalk) && this.dir === 'side');   // carrying wood: use the carry strip instead of the walk
-    const act0 = this.act || (potw ? 'potwalk' : carrying ? (this.carryWalk === 'can' && this.who === 'him' ? 'canwalk' : 'carry') : null);   // carryWalk 'can': he walks with the watering can
+    const act0 = this.act || (potw ? 'potwalk' : carrying ? (this.carryWalk === 'can' && this.who === 'him' ? 'canwalk' : this.carryWalk === 'logs' && this.acts.carrylogs ? 'carrylogs' : 'carry') : null);   // 'logs': an armful of chopped wood (its own strip once painted)   // carryWalk 'can': he walks with the watering can
     let img, cw, ch, f, flip;
     const twig = (this.job === 'spring' && taskProg('spring') < SPRING_FOUND && (act0 === 'dowse' || (!act0 && this.dir === 'side'))) || (act0 === 'dowse' && !!this.job && this.job.startsWith('heal:'));   // looking for water, or pegging out the bare plain: the painted dowsing strip (him-dowse), or a code-drawn twig if it is missing
     const dowseWalk = twig && !act0 && this.walking && !!this.acts.dowse, act = dowseWalk ? 'dowse' : act0;   // the strip is also his walk while he searches
@@ -1600,11 +1602,12 @@ function paintedStump(img, x, y, w, h, now) {
     ctx.save(); ctx.globalAlpha *= Math.min(1, al); ctx.translate(x + dx, y); if (rot) ctx.rotate(rot); ctx.drawImage(im, -iw / 2, -ih * 0.82, iw, ih); ctx.restore(); };
   if (p < S.rock) { const dug = sstep(0.05, 0.4, p / S.rock); if (dug < 1) { ctx.save(); ctx.globalAlpha = 1 - dug; shadow(x, y, w * 0.48, w * 0.17); ctx.drawImage(img, x - w / 2, y - h, w, h); ctx.restore(); } pic(1, dug); return; }
   if (p < S.chop) { const rk = (p - S.rock) / (S.chop - S.rock), tip = sstep(0.65, 0.9, rk); pic(1, 1 - tip, 0, 1, rk < 0.7 ? Math.sin(now / 240) * 0.05 * Math.min(1, rk * 2) : 0); pic(2, tip); return; }   // rocked to and fro, then over it goes
-  const fill = sstep(S.fill, 1, p), chop = sstep(S.chop, S.chop + 0.08, p), carried = sstep(S.chop + 0.1, S.fill - 0.02, p);
+  const fill = sstep(S.fill, 1, p), chop = sstep(S.chop, S.chop + 0.04, p), chopped = sstep(S.chop, S.carry, p), carried = sstep(S.carry, S.fill - 0.02, p);
   if (chop > 0 && fill < 1) { pic(4, chop); ctx.save(); ctx.globalAlpha *= chop * (1 - fill); ctx.translate(x, y - w * 0.05); ctx.scale(1, 0.32);   // the hole: a soft dark hollow in the painted patch of dug earth
     const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, w * 0.3); gr.addColorStop(0, 'rgba(40,26,16,0.95)'); gr.addColorStop(0.6, 'rgba(58,40,26,0.8)'); gr.addColorStop(1, 'rgba(90,66,44,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(0, 0, w * 0.3, 0, 7); ctx.fill(); ctx.restore(); }
-  pic(2, 1 - chop);
-  pic(3, chop * (1 - carried * 0.85), -w * 0.5, 1 - carried * 0.5);   // the chopped wood beside the hole, less of it with each trip to the woodpile
+  pic(2, 1 - sstep(0.75, 1, chopped), 0, 1 - chopped * 0.45);   // v80 (Bryce): the fallen stump gets smaller as it is chopped...
+  const [px, py] = toWorld(...STUMP_PILE), lot = chopped * (1 - carried);   // ...and the chopped pile beside it grows, then goes armful by armful to the woodpile
+  if (lot > 0.02) { const im = art('stump-3'), sc = 0.35 + 0.65 * lot, iw = im.width * k * sc, ih = im.height * k * sc; ctx.save(); ctx.globalAlpha *= Math.min(1, lot * 4); ctx.drawImage(im, px - iw / 2, py - ih * 0.82, iw, ih); ctx.restore(); }
   if (fill > 0) pic(4, 1);
 }
 function propAlpha(p) {   // how much of a prop shows: props with "until" appear as that job is done
@@ -1619,7 +1622,8 @@ function drawProp(p) {
   const w = img.width * s, h = img.height * s, a = propAlpha(p), now = performance.now();
   if (a < 1 && BEFORE[p.name] && !drawSlot(BEFORE_ART[p.name], x, y, 1 - a)) BEFORE[p.name](x, y, 1 - a);
   if (p.name === 'lanternstump' && a > 0 && a < 1) return drawStump(img, x, y, w, h, now);   // round six: dug out in stages, not a fade
-  if (p.name === 'lanternstump' && a <= 0 && art('stump-4')) { if (!taskProg('yardbath')) { const im = art('stump-4'), k = w * STUMP_K / art('stump-1').width; ctx.save(); ctx.globalAlpha = G.landStage().key === 'barren' ? 0.9 : 0.5; ctx.drawImage(im, x - im.width * k / 2, y - im.height * k * 0.82, im.width * k, im.height * k); ctx.restore(); } return; }   // the filled-in hole, until the bug bath goes there
+  if (p.name === 'lanternstump' && a <= 0 && art('stump-4')) { const t = G.s.tasks.stump, gone = t ? sstep(0.6, 1, (G.now() - t.endsAt) / 86400000) : 1;   // v80 (Bryce): the filled-in hole settles back into the ground over a day
+    if (gone < 1 && !taskProg('yardbath')) { const im = art('stump-4'), k = w * STUMP_K / art('stump-1').width; ctx.save(); ctx.globalAlpha = 0.9 * (1 - gone); ctx.drawImage(im, x - im.width * k / 2, y - im.height * k * 0.82, im.width * k, im.height * k); ctx.restore(); } return; }
   if (p.name === 'lanternstump' && a <= 0) { if (G.landStage().key === 'barren') { ctx.save(); ctx.globalAlpha = 0.55; kitPiece('g-st-patch-07', x, y + 4, w * 0.3, true); ctx.restore(); } return; }   // round six: a soft patch of filled-in earth where it stood (the clods looked like odd little ovals)
   if (p.gone && a < 1) { ctx.save(); ctx.globalAlpha = (1 - a) * 0.9; groundPatch(x, y, w * 0.5, w * 0.18); for (let i = 0; i < 9; i++) blob(x + (rnd(i + 90) - 0.5) * w * 0.55, y - 2 + (rnd(i + 91) - 0.5) * w * 0.14, (3 + rnd(i + 92) * 4) * 1.2, (2 + rnd(i + 93) * 2) * 1.2, ['#6e5238', '#7d6046', '#5e4632'][i % 3]); ctx.restore(); }   // a few clods of freshly turned earth where it stood
   // no glow on built things or job spots (Bryce: a fence shouldn't glow); only things you pick up glow. The Jobs badge says when there's work.
@@ -1946,10 +1950,7 @@ function fencePanel(p) { return Math.min(FENCE_N - 1, Math.floor(p * FENCE_N)); 
 function fencePanelShow(k) { const p = taskProg('fence'); return p >= 1 ? 1 : sstep(0.3, 0.9, p * FENCE_N - k); }
 FENCE_SEGS.filter(f => !f.gate).forEach(f => { const k = FENCE_SEGS.indexOf(f); EXTRAS.push({ gx: f.gx, gy: f.gy,
   show: () => bedFenceShown() ? fencePanelShow(k) : 0,
-  draw(x, y, al) { drawFenceSeg(bedRing(f.a0), bedRing(f.a1), al); if (k === 0) mouseDoor(al); } }); });
-function mouseDoor(al) {   // art day 16: the painted mouse door goes on with its fence panel, so the panel never hides it
-  const a = taskProg('mousedoor'); if (a <= 0 || !art('make-mousedoor')) return; const sg = FENCE_SEGS[0], [mx, my] = bedRing((sg.a0 + sg.a1) / 2); drawSlot('make-mousedoor', mx, my + 4, al * a);
-}
+  draw(x, y, al) { drawFenceSeg(bedRing(f.a0), bedRing(f.a1), al); } }); });
 EXTRAS.push({ gx: FENCE_GATE.gx, gy: FENCE_GATE.gy, show: () => bedFenceShown() ? fencePanelShow(FENCE_N - 1) : 0, draw(x, y, al) {
   const open = gateOpen(), g = IM['kit-' + (open ? 'gate-open' : 'gate-closed')];
   drawFenceSeg(bedRing(FENCE_GATE.a0), bedRing(FENCE_GATE.a1), al, g, open ? [[43, 377], [271, 546]] : GATE_FOOT); } });
@@ -3372,16 +3373,19 @@ function pebbleSlices(im) {   // the painted strip's stones, as [x0, x1] column 
     if (on && st < 0) st = x; if (!on && st >= 0) { if (x - st > 4) runs.push([st, x]); st = -1; } }
   PEBBLE_SL.set(im, runs.length ? runs : [[0, im.width]]); return PEBBLE_SL.get(im);
 }
+const PEBBLE_BACK = () => Math.min(...FENCE_SEGS.map(f => depthOf(f.gx, f.gy))) - 0.02;   // the sides of the line go down before any fence panel (the back, hidden behind the fence anyway, is not drawn)
+function pebbleLine(items, a) {   // art day 16 (Bryce): a thin line of pebbles flush against the foot of the fence, the painted stones laid one by one,
+  // each turned along the ring and sorted by its own spot, so the ones at the front sit in front of the fence and the ones at the back behind it
+  const f = bedFrame(), line = art('make-pebbleline'), U = 1.025, V = 0.95 * 1.04, ph = 8, k = ph / line.height, sl = pebbleSlices(line);   // the fence stands on (1, 0.95) of the frame
+  const at = th => [f.cx + Math.cos(th) * U * f.W, f.cy + Math.sin(th) * V * f.H - Math.cos(th) * U * f.W * 0.22];
+  let q = 0, j = 0;
+  while (q < 1) { const [x0, x1] = sl[j++ % sl.length], pw = (x1 - x0) * k, th = pebbleAngle(q), [x, y] = at(th), [xn, yn] = at(pebbleAngle(Math.min(1, q + 0.002)));
+    const show = pebbleShow(q, a), [gx, gy] = fromRing(Math.cos(th) * U, Math.sin(th) * V, f), ang = Math.atan2(yn - y, xn - x);
+    if (show > 0 && Math.sin(th) > -0.2) items.push({ d: Math.sin(th) < 0.15 ? PEBBLE_BACK() : depthOf(gx, gy) + 0.004, draw: () => { ctx.save(); ctx.globalAlpha *= show; ctx.translate(x, y); ctx.rotate(ang); ctx.drawImage(line, x0, 0, x1 - x0, line.height, -pw / 2, -ph * 0.7, pw, ph); ctx.restore(); } });
+    q += pw * 0.95 / Math.max(1, Math.hypot(xn - x, yn - y)) * 0.002; }
+}
 function pebbleEdge(a) {   // "Pebble edging round the seed bed": small clumps of the painted pebbles just outside the fence, with a gap at the gate
-  const f = bedFrame(), n = PEBBLE_N, line = art('make-pebbleline');
-  if (line) {   // art day 16 (Bryce): a thin line of pebbles following the fence's curve, the painted stones laid one by one, each turned along it
-    const W = f.W * 1.12, H = f.H * 1.15, at = th => [f.cx + Math.cos(th) * W, f.cy + Math.sin(th) * H - Math.cos(th) * W * 0.22], ph = 8, k = ph / line.height, sl = pebbleSlices(line);
-    let q = 0, j = 0;
-    while (q < 1) { const [x0, x1] = sl[j++ % sl.length], pw = (x1 - x0) * k, th = pebbleAngle(q), [x, y] = at(th), [xn, yn] = at(pebbleAngle(Math.min(1, q + 0.002)));
-      const show = pebbleShow(q, a); if (show > 0) { ctx.save(); ctx.globalAlpha *= show; ctx.translate(x, y); ctx.rotate(Math.atan2(yn - y, xn - x)); ctx.drawImage(line, x0, 0, x1 - x0, line.height, 0, -ph * 0.7, pw, ph); ctx.restore(); }
-      q += pw * 0.95 / Math.max(1, Math.hypot(xn - x, yn - y)) * 0.002; }
-    return;
-  }
+  const f = bedFrame(), n = PEBBLE_N;
   for (let i = 0; i < n; i++) { const th = pebbleAngle(i / (n - 1)), u = Math.cos(th), W = f.W * 1.18, H = f.H * 1.22;
     drawSlot('make-pebbles', f.cx + u * W, f.cy + Math.sin(th) * H - u * W * 0.22, pebbleShow(i / (n - 1), a) * 0.8, { w: 20 + 7 * rnd(i + 700), flat: true }); }   // a little see-through, so the white stones sit down into the earth
 }
@@ -3394,13 +3398,13 @@ function chimePost(x, y, a) {   // round six (makes on the ground): the snail-sh
 function makeItems(items, now) {
   const garden = G.gardenOpen();
   for (const d of C.tasks) {
-    if (!d.make || d.season || (d.make !== 'yard' && !G.patchOpen(d.make))) continue;
+    if (!d.make || d.season || d.retired || (d.make !== 'yard' && !G.patchOpen(d.make))) continue;
     const a = taskProg(d.id); if (a <= 0 || d.id === 'barrow') continue;   // the wheelbarrow is a prop already
     const op = d.id === 'swing' && a >= 1 && oakPic(); if (op && !op[0].endsWith('-plain')) continue;   // the bigger oak paintings have the swing in them
     const [hx, hy] = makeAt(d);
-    if (d.id === 'mousedoor' && art('make-mousedoor')) continue;   // painted: drawn with its fence panel (mouseDoor)
     if (MAKE_PARTS[d.id] && !art('make-' + d.id)) { for (const [gx, gy, k, h] of MAKE_PARTS[d.id]()) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); ctx.save(); ctx.globalAlpha = a; shadow(x, y, h * 0.3, h * 0.08); kitPiece(k, x, y, h); ctx.restore(); } }); continue; }
-    if (d.id === 'pebbles' && (art('make-pebbles') || art('make-pebbleline'))) { items.push({ d: depthOf(hx, hy) - 0.25, draw: () => pebbleEdge(a) }); continue; }
+    if (d.id === 'pebbles' && art('make-pebbleline')) { pebbleLine(items, a); continue; }
+    if (d.id === 'pebbles' && art('make-pebbles')) { items.push({ d: depthOf(hx, hy) - 0.25, draw: () => pebbleEdge(a) }); continue; }
     if (d.id === 'firering' && a < 1 && art('make-firering')) { items.push({ d: depthOf(hx, hy) + MAKE_DEPTH.firering, draw: () => { const [x, y] = toWorld(hx, hy), [w, h] = slotSize('make-firering', art('make-firering')), n = 12, k = Math.ceil(a * n) / n;   // round six (Bryce): the stones go in round the fire one at a time
       ctx.save(); ctx.beginPath(); ctx.moveTo(x, y - h / 2); ctx.arc(x, y - h / 2, w, Math.PI * 0.5, Math.PI * 0.5 + k * Math.PI * 2); ctx.closePath(); ctx.clip(); drawSlot('make-firering', x, y, 1); ctx.restore(); } }); continue; }   // art review: the painted clump is laid round the bed, not dropped in the middle of it
     const hd = HOUSE_DOOR[d.id], sh = hd && PROPS.find(q => q.name === 'shelter');

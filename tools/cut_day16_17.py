@@ -84,14 +84,7 @@ def garlands():
 
 
 def month1():
-    ps = sheet('m01-month1-makes', [None, 'make-earthbank', 'make-clover'])
-    door = crop_alpha(ps[0]).copy()   # the mouse door alone (the game has its own fence): its arch, twig frame and pebble step
-    hole = door[495:705, 425:515]; see = hole[..., 3] < 200   # the arch is painted see-through: a dark way in instead
-    hole[see] = [42, 28, 18, 255]
-    out = door[470:850, 320:600].copy(); H, W = out.shape[:2]; ys, xs = np.mgrid[:H, :W]
-    d = np.hypot((xs - W * 0.52) / (W * 0.5), (ys - H * 0.55) / (H * 0.5)); fade = np.clip((1.0 - d) / 0.25, 0, 1)   # feathered into the game's fence
-    out[..., 3] = (out[..., 3] * np.maximum(fade, (ys > H * 0.68) & (xs > W * 0.2))).astype(np.uint8)   # (the pebble step stays whole)
-    save(out, 'make-mousedoor')
+    sheet('m01-month1-makes', [None, 'make-earthbank', 'make-clover'])   # (the mouse door in the fence: dropped, Bryce v80)
     ps = pieces(key(load('r02-pebble-line')))   # three copies of one line of pebbles: keep the first
     save(ps[0], 'make-pebbleline', k=0.4)
 
