@@ -149,4 +149,4 @@ Each build keeps old saves loading and month one playing the same, and can go li
 
 ## Decisions
 
-_(Bryce's picks go here.)_
+- **Festival timing (2026-10-29): about day 90 (three months)**, for 2-3 visits a day. The week-by-week table above stands.
