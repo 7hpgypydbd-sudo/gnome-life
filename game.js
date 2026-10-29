@@ -73,6 +73,7 @@ const G = {
     const gully = this.s.tasks.ruts; if (gully && !gully.done) gully.endsAt = Math.min(gully.endsAt, now());   // the gully job is retired: one still running just finishes
     const tk = this.s.tasks; if (tk.bedwater && !tk.spring) tk.spring = { startedAt: tk.bedwater.startedAt, endsAt: tk.bedwater.startedAt, done: true };   // watered before the spring job existed: the spring counts as found
     if (tk.fence) this.s.flags.rabbit = true;
+    if (!this.s.flags.r6) { this.s.flags.r6 = true; if (tk.woodpile && !tk.stump) this.s.flags.oldWoodpile = true; }   // round six: firewood now comes from the old stump; a garden that already had its woodpile keeps it
     if (this.s.plots.seedbed.grown) this.s.flags.firstpick = true;   // fenced before the rabbit's raid existed
     if (this.s.plots.seedbed.crop === 'sprout') this.s.plots.seedbed.crop = 'carrot';   // the old generic sprouts were always carrots at heart
     for (const [k, tl] of Object.entries(this.s.tiles)) if (k !== '0,0' && !tl.kind && tl.state === 'revealed') tl.kind = this.tileKind(k);   // bare tiles from before the healing chains get theirs; green ones stay as they were
@@ -906,7 +907,7 @@ const G = {
     if (w === 'next') return true;   // straight after the page before it
     if (w.startsWith('done:')) return this.done(w.slice(5));
     if (w.startsWith('flag:')) return !!s.flags[w.slice(5)];
-    if (w === 'evening:woodpile') return this.done('woodpile') && (h >= 17 || h < 5 || this.done('spring'));   // the first evening, so the stars are out (or, so the book never waits all day, once the spring is found: the page tells of that evening)
+    if (w === 'evening:stump') return this.done('stump') && (h >= 17 || h < 5 || this.done('bedwater'));   // the first evening with real firewood, so the stars are out (or, so the book never waits all day, once the bed is watered: the page tells of that evening)
     if (w === 'seedlings') return !!(p.stage === 'growing' || p.stage === 'ready' || p.grown);
     if (w === 'week') return t - s.created >= 7 * DAY();
     if (w === 'garden') return this.gardenOpen();
