@@ -4,6 +4,19 @@
 
 Design doc, no code yet. Written for Bryce and for the build chat that wires it. The tone is the storybook's: warm, small, a little funny, and nobody is ever in real danger. This sits beside `STORY.md` (Wendel and Hazel's marriage) and `DECORATIONS.md` (the little makes). The animals' stories are the second thread of the game; the first is the couple.
 
+## Round six: the friendship path (v78, 2026-10-29, Bryce's play notes 41, 46, 46b-d, 53, 55-57)
+
+This replaces "random visitors" for month one. Bryce: only the mouse, the robin and the rabbit for now; no animals while the land is bare; the feeding dish (on the open grass left of the yard) is the animals' one meeting place; befriending gives no green, only moving into a gnome-made home does. Numbers and words live in `content.js` (`friends`).
+
+1. **First meeting.** Rabbit: after its raid on the first sprouts, once the dish is built, it creeps up to the new dish. Mouse: first to come back after the land's first green, with an old loggers' bottle stuck on its head; Hazel tips it off (needs a painting: mouse with a bottle on its head). Robin: a day or so after the mouse. Rabbit and robin dash off when a gnome comes over to say hello.
+2. **Its food shows on the dish.** Mouse: seed. Robin: berries. Rabbit: a carrot from the pantry.
+3. **Leave that food out** and it comes 3-8 minutes later (or while you are away). The first time: a small trust card ("A carrot, gone", "Whiskers first", "One berry at a time").
+4. **Fed on three different days: a friend, with a name.** Clover the rabbit ("The truce"), Thimble the mouse, Ruby the robin. The old "no named pets" rule is retired.
+5. **Friends drop by** every 12-25 minutes for half a minute, pottering near whichever gnome is working.
+6. **Friends ask for help at the dish** ("!" over them). First a home: Ruby the nest box, Clover the earth bank (once the garden is open), Thimble the toadstool (once the legs spell is taught). Then a small kindness every day or two (+1 light).
+
+Strangers stay rare: before friendship an animal only turns up for its first meeting and for food left for it. The later beats below (truce aside) carry on unchanged from the homes.
+
 ## Tone rule (Bryce, 2026-10-27)
 
 Wendel is gentle, caring and understanding, like David the gnome in nature: a dreamer who notices small things and is kind to every creature. He is never stubborn, grumpy or the cause of trouble. Any conflict between the couple comes from a good-natured misunderstanding or an outside event, and both of them are kind throughout. Use this for every future revision, here and in `STORY.md`.

@@ -164,7 +164,7 @@ window.CONTENT = {
       blurb:'A hollow stone full of dew. Somebody small will want a wash.' },
     { id:'hedgehoghouse', name:'Build a leaf-pile shelter', short:'piling the leaves', who:'her', spot:'fence',  cost:{ twig:3, moss:3 },   mins:180, green:0, needs:['flag:garden'],
       blurb:'A heap of leaves and sticks in a quiet corner. Please do not tidy it.' },
-    { id:'nestbox', name:'Nail up a nest box', short:'nailing up the nest box',         who:'him', spot:'fence',       cost:{ twig:3, feather:1, acorn:1 }, mins:180, green:0, needs:['fence', 'flag:garden'],
+    { id:'nestbox', name:'Nail up a nest box', short:'nailing up the nest box',         who:'him', spot:'fence',       cost:{ twig:3, feather:1, acorn:1 }, mins:180, green:0, needs:['fence', 'flag:askRobin'],   // round six: Ruby the robin asks for it at the dish
       blurb:'The hole must be the right size. Too big and the wrong sort of bird moves in.' },
     { id:'pond',    name:'Dig a little dew pond', short:'digging the pond',      who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:4, twig:2, water:3 }, mins:360, green:0, needs:['spring', 'flag:garden'],
       blurb:'Just big enough for a frog and a sky, in the corner of the garden, fed by a trickle from the spring. Lined with clay and lots of stones.' },
@@ -293,7 +293,7 @@ window.CONTENT = {
       blurb:'A swag of moss and red berries, with knitted bobbles. Cosy, Hazel says. Itchy, says the robin.', alt:{ berry:4, moss:3, feather:1 } },
 
     // --- the animals' side stories (docs/ANIMALS.md): homes and little kindnesses that come up as each animal's story goes on ---
-    { id:'earthbank', make:'garden', stage:'green', at:[0.70, 0.74], name:'Heap a soft earth bank', short:'heaping the earth bank', who:'either', act:'dig', cost:{ stone:2, moss:1 }, mins:40, green:0, needs:['flag:rabbitTruce'],
+    { id:'earthbank', make:'garden', stage:'green', at:[0.70, 0.74], name:'Heap a soft earth bank', short:'heaping the earth bank', who:'either', act:'dig', cost:{ stone:2, moss:1 }, mins:40, green:0, needs:['flag:askRabbit'],   // round six: Clover asks for somewhere to dig
       blurb:'A soft mound of loose earth in the creature corner. A rabbit should have a proper home, Wendel says.' },
     { id:'clover', make:'garden', stage:'green', at:[0.52, 0.82], name:'Sow a clover strip', short:'sowing clover', who:'either', act:'water', cost:{ seed:3 }, mins:30, green:0, needs:['flag:rabbitHome'],
       blurb:'Clover for the rabbit\'s side of the fence. Peace costs three seeds.' },
@@ -528,11 +528,13 @@ window.CONTENT = {
   // fly: hovers that high off the ground (lands to eat). eats: what it takes from the feeding dish (seed / berry).
   // nest: a fed regular eventually settles nearby (nest | burrow | leafpile | stones). trouble: a small fix; by: the gnome who walks over and does it once your luck catches their eye (her/him), or 'luck' (a little luck does it, no hands); earns light.
   visitors: [
-    { id:'robin',    name:'Robin',       hours:[6,18],  weight:4, h:44, faces:'L', icon:'🐦', speed:0.25, eats:['seed'], nest:'nest',
+    { id:'robin',    name:'Robin',       hours:[6,18],  weight:4, h:44, faces:'L', icon:'🐦', speed:0.25, eats:['berry'], nest:'nest',
       note:'Hops after the digging, hoping for worms.' },
     { id:'mouse',    name:'Field mouse', hours:[0,24],  weight:3, h:80, faces:'L', icon:'🐭', speed:0.06, eats:['seed'],
       note:'Keeps a close eye on the seed bed.',
       trouble:{ text:'has got its head stuck in an old loggers\' bottle.', by:'her', act:'Tip the bottle', thanks:'Hazel tipped the bottle up, very gently. Out popped the mouse, whiskers first, and sat washing its face as if nothing had happened.' } },
+    { id:'rabbit',   name:'Rabbit',      hours:[0,0],   weight:0, h:60, faces:'R', icon:'🐇', speed:0.12, eats:['carrot'],
+      note:'Grey-brown, white tail, and a nose that never stops. Came for the first sprouts and stayed for the company.' },
     { id:'hedgehog', name:'Hedgehog',    hours:[17,24], weight:3, h:50, faces:'R', icon:'🦔', speed:0.05, eats:['berry'], nest:'leafpile',
       note:'Snuffles along the fence line at dusk.',
       trouble:{ text:'has a dry leaf stuck on nearly every spine.', by:'her', act:'Pick the leaves off', thanks:'Hazel picked the leaves off one by one. The hedgehog snuffled, very politely, and trundled off a good deal lighter.' } },
@@ -597,7 +599,41 @@ window.CONTENT = {
     away: 'A rabbit came while you were away and nibbled a few of the sprouts. Wendel is already drawing a fence, a kind one, with a gate.',
     visits: [ 'The rabbit is back, nose pressed to the fence, looking at the sprouts.', 'The rabbit is asleep in the sun by the woodpile. Gerald the beetle does not approve.', 'The rabbit pinched a berry from the dish and sat there eating it, bold as anything.' ] },
   // the feeding dish (job "Set out a feeding dish"): put out seed or berries; whoever eats there on enough different days becomes a regular
-  feeding: { foods:['seed', 'berry'], regularAfter:3, nestAfter:6 },
+  feeding: { foods:['seed', 'berry', 'carrot'], regularAfter:3, nestAfter:6 },
+  // Round six (build 4, docs/ANIMALS.md "The friendship path"): only these three come in month one, one at a time.
+  // seen: the first meeting (shy at the dish, or the mouse's bottle) -> its food shows on the dish -> it comes to eat what you
+  // leave (a trust card the first time) -> fed on friendAfter different days it is a friend with a name -> it drops by now and
+  // then and waits at the dish to ask for help (first its home, then small kindnesses). Only moving in brings green.
+  friends: {
+    roster: ['rabbit', 'mouse', 'robin'],
+    eatAfter: [3, 8],       // minutes after the right food goes out before it comes for it
+    friendAfter: 3,         // fed on this many different days: a friend
+    dropEvery: [12, 25],    // minutes between a friend's short drop-ins while you watch
+    dropStay: [20, 35],     // seconds a drop-in lasts
+    askEvery: [20, 44],     // hours between a friend's small asks at the dish
+    homeAskAfter: 60,       // minutes after becoming a friend before it asks about a home
+    rabbit: { name:'Clover', food:'carrot', hours:[6, 19], trust:'rabbitTrust', friend:'rabbitTruce',
+      meet:'The rabbit crept up to the new dish for a sniff. {who} went over to say hello, and it was gone in a flash of white tail.',
+      eat:'The rabbit is at the dish, eating the carrot.',
+      home:{ flag:'askRabbit', text:'is scraping at the hard ground by the dish, trying to dig, and getting nowhere.', title:'Somewhere soft to dig', button:'Heap her an earth bank',
+        card:'{name} keeps scraping at the hard ground by the dish. A rabbit wants soft earth to dig a home in. Wendel says a heap of loose earth in the creature corner of the garden would be just the thing.' },
+      asks:[ { text:'has a burr tangled in the fur behind one ear.', by:'her', act:'Tease the burr out', thanks:'Hazel teased the burr out, one hair at a time. Clover sat very still and pretended not to enjoy it.' },
+             { text:'is sitting by the dish holding up one front paw. There is a thorn in it.', by:'him', act:'Ease the thorn out', thanks:'Wendel eased the thorn out and blew on the paw. Clover hopped a careful circle to try it, then another, just to be sure.' } ] },
+    mouse: { name:'Thimble', food:'seed', hours:[0, 24], trust:'mouseTrust', friend:'mouseFriend',
+      eat:'The mouse is at the dish, eating the seed with both hands.',
+      met:'Then its eyes went straight to the seed tin. Seed, then: it will show on the feeding dish.',
+      home:{ flag:'askMouse', text:'is sitting by the dish, staring very hard at the big toadstool in the garden.', title:'A house with a cap on', button:'Open the magic',
+        card:'{name} keeps staring at the big toadstool in the garden. A mouse could make a fine house of a toadstool like that, if only it stood somewhere quieter than the middle of Hazel\'s garden.' },
+      asks:[ { text:'has tumbled into the watering can and cannot climb out.', by:'him', act:'Tip the can over', thanks:'Wendel tipped the can on its side. Out came Thimble, damp and dignified, and sat in the sun to dry.' },
+             { text:'is trying to carry a seed twice her size up the stick pile.', by:'her', act:'Give her a hand', thanks:'Hazel lifted the seed to the top of the pile. Thimble looked at it, then at Hazel, then carried it all the way back down again. Some things you must do yourself.' } ] },
+    robin: { name:'Ruby', food:'berry', hours:[6, 18], trust:'robinTrust', friend:'robinFriend',
+      meet:'A robin dropped down by the dish, head on one side. {who} stepped over to say good morning, and it was up and gone.',
+      eat:'The robin is at the dish, taking the berries one at a time.',
+      home:{ flag:'askRobin', text:'is hopping about the dish with a beakful of dry grass and nowhere to put it.', title:'A beakful of grass', button:'Ask Wendel for a nest box',
+        card:'{name} keeps flying to and fro with beakfuls of dry grass, and nowhere to put them. Wendel says a little nest box on a post by the fence would suit a robin down to the ground.' },
+      asks:[ { text:'has a loop of the loggers\' old string caught round one foot.', by:'him', act:'Untangle it', thanks:'Wendel knelt, and with one careful tug Ruby was free. She scolded him soundly, then sang.' },
+             { text:'is puffed up and shivering after a cold shower of rain.', by:'luck', act:'A patch of sun', thanks:'The clouds shifted, and a patch of sun found Ruby just where she sat. She fluffed up, shook herself out, and was off.' } ] },
+  },
   troubleChance: 0.2,   // how often a visitor that can be in trouble arrives in trouble
   deedsPerDay: 3,       // light earned by helping creatures, at most this much a day
   visitorEvery:[90, 200], // seconds between visitors during a visit
@@ -1294,18 +1330,35 @@ window.CONTENT = {
     },
     beats: [
       // the rabbit: "that rabbit"
-      { id:'rabbitTruce', who:'rabbit', kind:'card', when:{ done:'fence', rabbitFed:3 }, title:'The truce', button:'Good rabbit', text:[
+      // round six (build 4): the friendship cards come straight away when the animal earns them (manual: never by the calendar; game.js friendCard)
+      { id:'rabbitTrust', who:'rabbit', kind:'card', manual:true, title:'A carrot, gone', button:'Good rabbit', text:[
+        `The rabbit came for the carrot. It kept one eye on the house the whole time, and one ear on Wendel, who was trying very hard to look busy.`,
+        `When it had eaten every last bit, it sat a moment longer than it needed to. Hazel says that counts for something.` ] },
+      { id:'rabbitTruce', who:'rabbit', kind:'card', manual:true, title:'The truce', button:'Hello, {rabbit}', text:[
         `The rabbit sat by the gate for a whole hour, as good as gold, nose twitching, not so much as glancing at the carrots.`,
-        `Wendel is very proud of it. He has started saving it the outside leaves of the lettuces, and telling it about his day.` ] },
+        `"She ought to have a name," said Hazel, "if she's going to keep coming to tea." She thought about it. "{rabbit}."`,
+        `"{rabbit}," said Wendel at once, as if it had always been her name. He has started saving her the outside leaves of the lettuces, and telling her about his day.` ] },
       { id:'rabbitHome', who:'rabbit', kind:'card', when:{ moved:'burrow' }, title:'A hole of its own', button:'Welcome home', text:[
         `Hazel patted the earth bank flat for the third time. Wendel said a rabbit ought to have the very best home, and patted it a fourth time, just to be sure, and Hazel laughed and let him.`,
         `In the morning there was a round door in the side of it, and from somewhere inside came the thump, thump of somebody very pleased with themselves.` ] },
       { id:'rabbitBabies', who:'rabbit', kind:'page', gift:'rabbit', when:{ after:'rabbitHome', days:21, season:'spring', hours:[5, 11] }, title:'Four small noses', button:'Not the lettuce', text:[
         `Dawn, and four tiny rabbits sat in a row along the garden fence, noses poking through the gaps, gazing at the vegetables. Their mother sat behind them, looking proud and a little embarrassed.`,
         `Wendel counted them twice. Hazel counted them once and put the kettle on. "They'll be wanting something," she said. "Then we'll plant extra," said Wendel, beaming.`,
-        `"She ought to have a name," said Hazel over her tea, "now that she's a mother." She thought about it for a while. "{rabbit}."`,
-        `"{rabbit}," said Wendel at once, as if it had always been her name. He has never called her anything else since.`,
+        `"Look at {rabbit}," said Hazel over her tea. "A mother now." Wendel said he had always known she would be a wonderful one, and went to see about the extra.`,
         `The smallest of the four had a dandelion seed stuck to one ear and did not know. It was the best morning of the whole spring.` ] },
+
+      { id:'mouseTrust', who:'mouse', kind:'card', manual:true, title:'Whiskers first', button:'Little one', text:[
+        `The mouse came for the seed while Hazel was hanging out the washing. It ate with both hands, very fast, looking up at her between every bite.`,
+        `Hazel kept very still and went on pegging. When she looked again, it was still there, washing its face.` ] },
+      { id:'mouseFriend', who:'mouse', kind:'card', manual:true, title:'Thimble', button:'Hello, Thimble', text:[
+        `The mouse was waiting at the dish this morning before the seed was even out.`,
+        `"She's no bigger than a thimble," said Wendel, crouching down to say good morning. "Thimble," said Hazel. The mouse looked at them both and did not argue, so that was that.` ] },
+      { id:'robinTrust', who:'robin', kind:'card', manual:true, title:'One berry at a time', button:'Polite bird', text:[
+        `The robin came for the berries. It took one, flew to the fence, ate it, and came back for the next. One at a time, every time, as if that were the polite way.`,
+        `Wendel stood with his hammer in the air until it had finished, so as not to startle it.` ] },
+      { id:'robinFriend', who:'robin', kind:'card', manual:true, title:'Ruby', button:'Hello, Ruby', text:[
+        `The robin has started following Wendel about while he works, hopping after the spade for worms.`,
+        `"Red as a ruby," said Hazel, watching them. "Ruby, then," said Wendel. Ruby said nothing at all, but she didn't fly off either.` ] },
 
       // the field mouse family: "tenants"
       { id:'mouseGap', who:'mouse', kind:'card', when:{ moved:'mice', days:3, done:'fence' }, title:'A gap in the fence', button:'Oh, mice', text:[

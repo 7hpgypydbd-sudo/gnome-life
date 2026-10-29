@@ -49,6 +49,7 @@ function fresh() {
     spirit: { taught: {} },                  // the Wood spirit's lessons: number -> time taught
     moved: {},                               // creatures that moved into a home the gnomes made (CONTENT.story.moveIns): id -> time
     animals: { done: {}, day: '', rabbitFed: [], gifts: {}, giftDue: {} },   // the animals' side stories: beats that have happened (id -> time), the day of the last one, days the rabbit ate at the dish after the fence, keepsakes picked up (id -> time) and ones still to be left (id -> when)
+    friends: {},                             // round six: the mouse, robin and rabbit (CONTENT.friends): id -> { seen, trust, friend, asked, nextAsk } times
     offered: {},                             // jobs the story has offered so far (id -> time; see offerTick)
     visits: { n: 0, offer: -1 },             // visits so far, and the visit the last new job was offered in (one new job a visit)
   };
@@ -100,6 +101,7 @@ const G = {
     const tk = this.s.tasks; if (tk.bedwater && !tk.spring) tk.spring = { startedAt: tk.bedwater.startedAt, endsAt: tk.bedwater.startedAt, done: true };   // watered before the spring job existed: the spring counts as found
     if (tk.fence) this.s.flags.rabbit = true;
     if (!this.s.flags.r6) { this.s.flags.r6 = true; if (tk.woodpile && !tk.stump) this.s.flags.oldWoodpile = true; }   // round six: firewood now comes from the old stump; a garden that already had its woodpile keeps it
+    this.friendsCatchUp();
     if (this.s.plots.seedbed.grown) this.s.flags.firstpick = true;   // fenced before the rabbit's raid existed
     if (this.s.plots.seedbed.crop === 'sprout') this.s.plots.seedbed.crop = 'carrot';   // the old generic sprouts were always carrots at heart
     for (const [k, tl] of Object.entries(this.s.tiles)) if (k !== '0,0' && !tl.kind && tl.state === 'revealed') tl.kind = this.tileKind(k);   // bare tiles from before the healing chains get theirs; green ones stay as they were
@@ -135,8 +137,7 @@ const G = {
     for (const [id, tk] of Object.entries(s.tasks)) if (!tk.done && tk.endsAt <= t) report.finished.push(this.taskDef(id).name);
     const p = s.plots.seedbed; if (p.stage === 'growing' && p.readyAt <= t) report.finished.push(`${this.cropName(p.crop)} ${p.crop === 'pumpkin' ? 'is' : 'are'} ready`);
     if (gone >= 60 * MIN && !s.flags.rabbit && p.stage === 'growing') { this.rabbitRaid(); report.rabbit = C.rabbit.away; }   // the rabbit came while you were away (it always comes for the first sprouts)
-    if (gone >= 60 * MIN && this.done('fence') && s.feeder.food && !this.beatDone('rabbitTruce') && Math.random() < 0.5) { this.rabbitEats(); report.ate = 'rabbit'; }   // the rabbit had it, politely
-    if (gone >= 60 * MIN) { const ate = this.awayEater(); if (ate) report.ate = ate; }
+    if (gone >= 2 * MIN) { const ate = this.awayEater(t); if (ate) report.ate = ate; }   // the one it was left for came while you were away
     const had = s.village.traveller && s.village.traveller.id, movedBefore = Object.keys(s.moved);
     this.tick();
     const nowMoved = C.story.moveIns.filter(m => s.moved[m.id] && !movedBefore.includes(m.id)); if (nowMoved.length) report.moved = nowMoved.map(m => m.note);
@@ -677,16 +678,20 @@ const G = {
   isRegular(id) { return this.fedDays(id) >= C.feeding.regularAfter; },
   hasNest(id) {
     if (id === 'mouse') return !!this.s.flags.miceIn;   // the mice live in the walked toadstool, not a hole of their own
+    if (id === 'rabbit') return !!this.s.moved.burrow;
     const home = { robin: 'nestbox', hedgehog: 'leafpile' }[id]; if (home && this.s.moved[home]) return true;   // moved into the home the gnomes made
     const d = this.visitorDef(id); return !!(d && d.nest) && this.fedDays(id) >= C.feeding.nestAfter;
   },
   asleep(id) { return id === 'hedgehog' && this.beatDone('hogAsleep') && !this.beatDone('hogSpring'); },   // the hedgehog's winter sleep
   dishBuilt() { const t = this.s.tasks.feeder; return !!(t && t.done); },
-  putFood(kind) {
+  putFood(kind, who) {   // round six: food goes out for one animal you have met, and it comes for it a few minutes later
     const f = this.s.feeder; if (!this.dishBuilt() || f.food || !this.can({ [kind]: 1 })) return false;
-    this.pay({ [kind]: 1 }); f.food = kind; f.at = now();
-    this.note(`${kind === 'seed' ? 'Seed' : 'Berries'} in the feeding dish. Now, who will come?`); this.emit('feeder', f); return true;
+    who = who || C.friends.roster.find(id => this.seen(id) && C.friends[id].food === kind) || null;
+    const [a, b] = C.friends.eatAfter, t = now();
+    this.pay({ [kind]: 1 }); f.food = kind; f.at = t; f.who = who; f.comeAt = t + (a + Math.random() * (b - a)) * MIN / (FAST ? 30 : 1);
+    this.note(`${cap(this.foodName(kind))} in the feeding dish${who ? ` for ${this.friendName(who)}` : ''}.`); this.emit('feeder', f); return true;
   },
+  foodName(k) { return { seed: 'seed', berry: 'berries', carrot: 'a carrot' }[k] || k; },
   // ---- the rain barrel: once scrubbed it fills with rain; tap it to draw the water ----
   barrelFull() { const tk = this.s.tasks.rainbarrel; if (!(tk && this.done('rainbarrel'))) return false; return now() - (this.s.barrelAt || tk.endsAt) >= C.barrel.every * MIN; },
   drawBarrel() { if (!this.barrelFull()) return false; this.s.barrelAt = now(); this.give(C.barrel.give); this.note('The rain barrel filled, and its water went into the store.'); return true; },
@@ -697,12 +702,7 @@ const G = {
     const s = this.s, t = now(); if (s.flags.rabbit || !/^(growing|ready)$/.test(this.plot().stage)) { s.rabbitAt = 0; return false; }   // ready too: a spell can hurry the sprouts, and the rabbit still comes
     if (!s.rabbitAt) s.rabbitAt = t + C.rabbit.after * MIN; return t >= s.rabbitAt;
   },
-  rabbitEats() {   // a later visit: the rabbit eats what is in the dish (after the fence is up, three different days of it make a truce)
-    const A = this.s.animals, dk = dayKey(now()); this.s.feeder.food = null;
-    if (this.done('fence') && !A.rabbitFed.includes(dk)) A.rabbitFed.push(dk);
-    this.note(`The ${this.rabbitName() || 'rabbit'} ate what was in the feeding dish.`); this.emit('feeder', this.s.feeder);
-  },
-  rabbitName() { return this.beatDone('rabbitBabies') ? C.animals.rabbitName : null; },   // Hazel names her on the babies page
+  rabbitName() { return this.isFriend('rabbit') ? C.friends.rabbit.name : null; },   // Hazel names her when she becomes a friend (round six)
   rabbitAte() { this.s.feeder.food = null; this.s.flags.rabbitDish = true; this.note(C.rabbit.dish); this.emit('feeder', this.s.feeder); },
   rabbitRaid() {
     const s = this.s; if (s.flags.rabbit) return; if (s.feeder.food) { s.feeder.food = null; s.flags.rabbitDish = true; }   // it empties the dish first, if there is anything in it (page 1.5 says so)
@@ -722,22 +722,22 @@ const G = {
     if (out === true) this.note(`${who} ate the ${food === 'seed' ? 'seed' : 'berries'} in the dish.`);
     this.emit('fed', { id, out }); return out;
   },
-  awayEater() {   // while you were away: a creature you have met, that eats what is in the dish, came and emptied it
-    const f = this.s.feeder.food; if (!f) return null;
-    const pool = C.visitors.filter(v => this.met(v.id) && (v.eats || []).includes(f)); if (!pool.length) return null;
-    const v = pool[(Math.random() * pool.length) | 0]; this.feed(v.id); return v.name;
+  awayEater(t) {   // while you were away: the animal the food was left for came and ate it
+    const f = this.s.feeder; if (!f.food || !f.who || !f.comeAt || t < f.comeAt) return null;
+    const id = f.who; if (!this.friendAwake(id, new Date(f.comeAt).getHours()) && !this.friendAwake(id, new Date(t).getHours())) return null;
+    this.friendAte(id); return this.friendName(id, true);
   },
   troubleFor(id) {   // does this visitor arrive with a little trouble to fix? (only after it is in the journal, so the first meeting stays simple)
     const d = this.visitorDef(id), tr = d && d.trouble; if (!tr || !this.met(id)) return null;
     if (tr.task && !(this.s.tasks[tr.task] && this.s.tasks[tr.task].done)) return null;
     return Math.random() < C.troubleChance ? tr : null;
   },
-  help(id) {   // a good deed: one light, while today's allowance lasts (a gnome did it, or a little luck: the thanks line says which)
+  help(id, thanks) {   // a good deed: one light, while today's allowance lasts (a gnome did it, or a little luck: the thanks line says which)
     const d = this.visitorDef(id), e = this.entry(id), dk = dayKey(now()), dd = this.s.deeds;
     if (dd.day !== dk) { dd.day = dk; dd.n = 0; }
     e.helped++; const light = dd.n < C.deedsPerDay ? 1 : 0; dd.n += light;
     if (light) this.give({ light: 1 });
-    this.note(d.trouble.thanks); this.emit('helped', { id, light }); return light;
+    this.note(thanks || d.trouble.thanks); this.emit('helped', { id, light }); return light;
   },
 
   // ---- neighbours and the village ----
@@ -1033,7 +1033,7 @@ const G = {
   beatDone(id) { return id in this.s.animals.done; },
   beatText(b) { const n = C.animals.rabbitName; return b.text.map(x => x.replace(/\{rabbit\}/g, n)); },
   animalDue(b, t) {
-    const s = this.s, w = b.when, A = s.animals;
+    const s = this.s, w = b.when, A = s.animals; if (b.manual) return false;   // a friendship card: it comes when it is earned (friendCard)
     if (this.landStage().key === 'barren') return false;   // no animal stories on bare earth
     if (w.after && !this.beatDone(w.after)) return false;
     if (w.done && !this.done(w.done)) return false;
@@ -1064,12 +1064,78 @@ const G = {
     this.note('Somebody has left something on the doorstep.'); this.emit('offer');
   },
   testBeat() {   // test panel: the next animal beat now, whatever the day, season or hour (the job or home it waits on is made so)
-    const s = this.s, t = now(), b = C.animals.beats.find(b => !this.beatDone(b.id) && (!b.when.after || this.beatDone(b.when.after))); if (!b) return null;
+    const s = this.s, t = now(), b = C.animals.beats.find(b => !b.manual && !this.beatDone(b.id) && (!b.when.after || this.beatDone(b.when.after))); if (!b) return null;
     const w = b.when, fin = id => { s.tasks[id] = Object.assign(s.tasks[id] || {}, { startedAt: t - 1, endsAt: t - 1, done: true }); };
     if (w.done) fin(w.done);
     if (w.moved && !s.moved[w.moved]) { const m = C.story.moveIns.find(m => m.id === w.moved); if (m.job) fin(m.job); if (m.flag) s.flags[m.flag] = true; s.moved[w.moved] = t; }
     if (w.met && !this.met(w.met)) this.noteVisitor(w.met);
     this.fireBeat(b, t, true); return b;
+  },
+
+  // ---- round six (build 4): the mouse, the robin and the rabbit (CONTENT.friends; docs/ANIMALS.md "The friendship path") ----
+  // Only these three come in month one, one at a time, and only once the land has its first green (the rabbit's raid on the
+  // first sprouts is the story's own). Before it is a friend an animal turns up only for its first meeting and for food left
+  // for it. index.html asks nextAnimal() what to show and plays it; the times live in s.friends.
+  fr(id) { const F = this.s.friends; return F[id] || (F[id] = {}); },
+  seen(id) { return !!(this.s.friends[id] || {}).seen; },
+  isFriend(id) { return !!(this.s.friends[id] || {}).friend; },
+  friendName(id, lower) { const d = C.friends[id]; if (d && this.isFriend(id)) return d.name; const n = `the ${this.visitorDef(id).name.toLowerCase()}`; return lower ? n : cap(n); },
+  friendAwake(id, h) { const d = C.friends[id]; return !d || this.inHours(d.hours, h); },
+  friendsCatchUp() {   // a garden from before round six: who it had met, fed or housed already
+    const s = this.s, dk = id => (s.journal[id] || {}).first || now();
+    for (const id of C.friends.roster) {
+      if (s.friends[id]) continue; const f = {};
+      if (id === 'rabbit') { if (this.beatDone('rabbitTruce') || this.beatDone('rabbitHome')) { f.seen = f.trust = f.friend = now(); } }
+      else if (this.met(id)) { f.seen = dk(id); if (this.fedDays(id)) f.trust = dk(id); if (this.fedDays(id) >= C.friends.friendAfter || (id === 'mouse' && s.flags.miceIn) || (id === 'robin' && s.moved.nestbox)) f.friend = now(); }
+      if (f.seen) s.friends[id] = f;
+    }
+    if (this.isFriend('robin') || s.tasks.nestbox) s.flags.askRobin = s.flags.askRobin || now();
+    if (this.isFriend('rabbit') || s.tasks.earthbank) s.flags.askRabbit = s.flags.askRabbit || now();
+  },
+  meetDue(id, t) {   // is this animal's first meeting due now? (it waits for you to be watching)
+    const s = this.s, h = new Date(t).getHours(); if (this.seen(id) || !this.friendAwake(id, h)) return false;
+    if (id === 'rabbit') return !!s.flags.rabbit && this.dishBuilt();   // after its raid, it comes for a look at the new dish
+    if (this.landStage().key === 'barren') return false;   // Bryce: no animals on bare earth
+    if (id === 'mouse') return true;   // the first to come back: the stuck rescue
+    if (id === 'robin') { const m = s.friends.mouse; return !!(m && m.seen && this.dishBuilt() && (dayKey(m.seen) !== dayKey(t) || t - m.seen >= 6 * 60 * MIN)); }   // a day or so after the mouse
+    return false;
+  },
+  meet(id) { const f = this.fr(id); if (f.seen) return; f.seen = now(); if (!this.met(id)) this.noteVisitor(id); else this.entry(id); this.note(`${cap(this.friendName(id, true))} likes ${this.foodName(C.friends[id].food)}. It shows on the feeding dish now.`); this.emit('friend', { id, step: 'seen' }); },
+  friendAte(id) {   // it ate what was left for it: a fed day, a trust card the first time, a name on the friendAfter-th day
+    const f = this.fr(id), d = C.friends[id], e = this.entry(id), dk = dayKey(now()), food = this.s.feeder.food;
+    this.s.feeder.food = null; this.s.feeder.who = null; this.s.feeder.comeAt = 0;
+    if (!f.seen) f.seen = now(); if (!this.met(id)) this.noteVisitor(id);
+    if (!e.fed.includes(dk)) e.fed.push(dk);
+    if (id === 'rabbit' && !this.s.animals.rabbitFed.includes(dk)) this.s.animals.rabbitFed.push(dk);
+    this.note(`${this.friendName(id)} ate the ${this.foodName(food).replace(/^a /, '')} in the dish.`);
+    let out = 'ate';
+    if (!f.trust) { f.trust = now(); this.friendCard(d.trust); out = 'trust'; }
+    else if (!f.friend && e.fed.length >= C.friends.friendAfter) { f.friend = now(); this.friendCard(d.friend); out = 'friend'; }
+    this.emit('feeder', this.s.feeder); this.emit('fed', { id, out }); return out;
+  },
+  friendCard(bid) { const A = this.s.animals, b = this.beatDef(bid); if (!b || this.beatDone(bid)) return; A.done[bid] = now(); this.s.flags[bid] = now(); this.s.pages.cards.push({ k: 'beat', id: bid }); this.emit('card'); },
+  homeAskDue(id) {   // a friend's first ask: somewhere to live (only when that home can be made now)
+    const s = this.s, f = s.friends[id], d = C.friends[id]; if (!f || !f.friend || s.flags[d.home.flag] || now() - f.friend < C.friends.homeAskAfter * MIN / (FAST ? 30 : 1)) return false;
+    if (id === 'robin') return this.done('fence');
+    if (id === 'rabbit') return !!s.flags.garden && !s.moved.burrow;
+    if (id === 'mouse') return !!s.flags.garden && !s.flags.toadWalk && this.spellTaught('legs');
+    return false;
+  },
+  homeAsked(id) { const d = C.friends[id]; this.s.flags[d.home.flag] = now(); this.fr(id).nextAsk = now() + C.friends.askEvery[0] * 60 * MIN; this.dirty = true; },
+  smallAsk(id) {   // a small kindness a friend comes to the dish for, now and then (never two days running)
+    const f = this.s.friends[id], d = C.friends[id], t = now(); if (!f || !f.friend || (f.nextAsk && t < f.nextAsk)) return null;
+    if (!f.nextAsk) { f.nextAsk = t + (C.friends.askEvery[0] / 2) * 60 * MIN; return null; }   // not straight after making friends
+    return d.asks[(f.asks || 0) % d.asks.length];
+  },
+  askDone(id) { const f = this.fr(id), [a, b] = C.friends.askEvery; f.asks = (f.asks || 0) + 1; f.nextAsk = now() + (a + Math.random() * (b - a)) * 60 * MIN; this.dirty = true; },
+  nextAnimal(t = now()) {   // what index.html should play next, if anything: { id, kind: meet | eat | home | ask | drop }
+    const s = this.s, h = new Date(t).getHours(), R = C.friends.roster, f = s.feeder;
+    if (f.food && f.who && t >= f.comeAt && this.friendAwake(f.who, h)) return { id: f.who, kind: 'eat' };
+    for (const id of R) if (this.meetDue(id, t)) return { id, kind: 'meet' };
+    for (const id of R) if (this.friendAwake(id, h) && this.homeAskDue(id)) return { id, kind: 'home' };
+    for (const id of R) if (this.friendAwake(id, h)) { const a = this.smallAsk(id); if (a) return { id, kind: 'ask', ask: a }; }
+    const pals = R.filter(id => this.isFriend(id) && this.friendAwake(id, h)); if (pals.length) return { id: pals[(Math.random() * pals.length) | 0], kind: 'drop' };
+    return null;
   },
 
   // ---- story hook for the side mystery (the staff); Bryce writes the plot ----
