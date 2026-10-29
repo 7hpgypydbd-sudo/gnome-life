@@ -33,9 +33,16 @@ Order inside each wishes sheet follows the numbered list in that sheet's prompt 
 | n03-stump-stages | stump stages for `drawStump` (dug round / rocked loose by its hole / chopped firewood / hole filled) | 4 pieces in a row, same scale |
 | n04-campfire | campfire-bare (left) and a matching stone ring (right) | |
 | n05-page-1-1 | page-1-1 (1200x670) | wagon taken apart: wheel door, plank walls, canvas roof, pots |
-| n06-page-1-2 | page-1-2 (1200x670) | Wendel dowsing, Hazel at the spring between the stump's roots |
+| n06-page-1-2 | page-1-2 (1200x670) | Wendel dowsing, Hazel at the spring between the stump's roots; the wagon-wheel home under its stump in the background, no fire ring (second try kept, `-try1` had the old fire ring and tent) |
+| n07-stump-chopping | stump chopping stages (after "rocked loose") | 4 pieces: root end off / a third chopped, small heap / short stub, bigger heap / stump gone, hole + heap of rough rounds. Replaces n03's neat firewood stack (piece 3); n03 pieces 1, 2 and 4 still apply. Pieces 1 and 2 sit close: flood-fill cut |
+| n07-him-chop | him-chop (act `chop`) | 4 frames, hatchet up / swing / strike with chips / lowered; frames include the chopping block. Frames 2 and 3 touch (about 100 px at x~1366): cut at x 705, 1366, 2096 or by flood fill |
+| n08-him-carrylogs | him-carrylogs (act `carrylogs`) | 4-frame walk, chunky split logs |
+| n09-her-chop | her-chop | as n07-him-chop, same tight spacing |
+| n10-her-carrylogs | her-carrylogs | 4-frame walk; cap tips touch the top edge |
 
-Every picture has a hidden snail except the wisp.
+Every picture has a hidden snail except the wisp and the four animation strips.
+
+Gemini used: 16 pictures, then the limit (reset 7:49 pm), then 11 more (27 in all including 3 retries); weekly allowance was at 6% before the second window.
 
 ## Test cut (2026-10-29, `tools/cut_blobs.py <sheet> <out> <id> --gap 20`)
 

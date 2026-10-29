@@ -57,5 +57,41 @@
    "page-1-2"
   ],
   "prompt": "Generate an image: A wide 16:9 storybook page picture in exactly the same style as the pasted page. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. The setting is an Australian hillside clearing that loggers left bare: cut stumps, dry grass, a few tall pale gum trees in the distance, not an English oak wood, no cottages. The two gnomes are exactly the young couple in the pasted picture: Wendel with a red pointed cap, chestnut beard, blue-grey shirt; Hazel with a green pointed cap, chestnut braids, brown dress and cream apron. The picture fills the frame edge to edge with a soft vignette like the pasted page, no paper border, no frame, no text. Morning. At the back of the bare yard stands an old cut stump with big grey twisting roots. Wendel stands near it holding a forked hazel twig out in front of him in both hands, eyes half shut, the tip of the twig dipping down towards the ground between two roots. Hazel kneels between the roots with a little trowel, where a small clear pool of spring water is just welling up out of the earth, and she smiles at it. The little canvas lean-to under the big stump is far off in the background. Hidden detail: a tiny snail on one of the roots. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "Round six",
+  "id": "n07-him-chop",
+  "title": "Wendel chopping (4 frames)",
+  "refs": [
+   "him-build"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. A sprite strip: four frames of the pasted gnome in one row, evenly spaced with clear magenta gaps, all the same size and on the same baseline, full body with feet visible, seen from the side facing right, exactly the same gnome as the pasted strip (same face, cap, hair and clothes, same size). Wendel is chopping firewood with a small wood-handled hatchet held in both hands, standing behind a short round chopping block with a split log standing on it, just in front of him. Frame 1: hatchet raised high above the head, body leaning back a little; frame 2: swinging down, hatchet in front at shoulder height; frame 3: the hatchet blade striking the top of the log, knees bent, two or three pale wood chips flying; frame 4: straightening up, hatchet lowered beside the block. The arms and hatchet must be in a clearly different place in each frame; the block and log stay the same. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "Round six",
+  "id": "n08-him-carrylogs",
+  "title": "Wendel carrying firewood logs (4 frames)",
+  "refs": [
+   "him-carry"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. A walk-cycle sprite strip: four frames of the pasted gnome in one row, evenly spaced with clear magenta gaps, all the same size and on the same baseline, full body with feet visible, seen from the side facing right, exactly like the pasted carry strip (same gnome, same size, same pose of the arms), but instead of thin sticks the gnome carries an armful of four or five chunky split firewood logs, pale cut ends showing, held against the chest in both arms. A clear walk cycle: frame 1 left foot forward with a long stride, frame 2 legs passing under the body, frame 3 right foot forward with a long stride, frame 4 legs passing again. The legs must look clearly different in each frame; the logs stay the same. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "Round six",
+  "id": "n09-her-chop",
+  "title": "Hazel chopping (4 frames)",
+  "refs": [
+   "her-carry"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. A sprite strip: four frames of the pasted gnome in one row, evenly spaced with clear magenta gaps, all the same size and on the same baseline, full body with feet visible, seen from the side facing right, exactly the same gnome as the pasted strip (same face, cap, hair and clothes, same size). Hazel is chopping firewood with a small wood-handled hatchet held in both hands, standing behind a short round chopping block with a split log standing on it, just in front of her. Frame 1: hatchet raised high above the head, body leaning back a little; frame 2: swinging down, hatchet in front at shoulder height; frame 3: the hatchet blade striking the top of the log, knees bent, two or three pale wood chips flying; frame 4: straightening up, hatchet lowered beside the block. The arms and hatchet must be in a clearly different place in each frame; the block and log stay the same. No ground, no shadow. Avoid pink and purple anywhere."
+ },
+ {
+  "batch": "Round six",
+  "id": "n10-her-carrylogs",
+  "title": "Hazel carrying firewood logs (4 frames)",
+  "refs": [
+   "her-carry"
+  ],
+  "prompt": "Generate an image: A wide 16:9 picture. Style: traditional children's book illustration like The Secret World of the Gnomes. Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. Soft light from the upper left. Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame. A walk-cycle sprite strip: four frames of the pasted gnome in one row, evenly spaced with clear magenta gaps, all the same size and on the same baseline, full body with feet visible, seen from the side facing right, exactly like the pasted carry strip (same gnome, same size, same pose of the arms), but instead of thin sticks the gnome carries an armful of four or five chunky split firewood logs, pale cut ends showing, held against the chest in both arms. A clear walk cycle: frame 1 left foot forward with a long stride, frame 2 legs passing under the body, frame 3 right foot forward with a long stride, frame 4 legs passing again. The legs must look clearly different in each frame; the logs stay the same. No ground, no shadow. Avoid pink and purple anywhere."
  }
 ]
