@@ -160,7 +160,7 @@ window.CONTENT = {
     { id:'windowbox', name:'Hang a window box', short:'hanging the window box',        who:'her', act:'water', spot:'shelter',     cost:{ twig:2, moss:2, seed:1 }, mins:90, green:1, needs:['house3'],
       blurb:'Now there is a proper house with a proper window. A home is not a home until something is flowering under it.' },
     // the creature corner: comes with the garden (flag:garden = the garden patch has opened)
-    { id:'birdbath', name:'Set a stone birdbath', short:'setting the birdbath',      who:'him', act:'water', spot:'stonebench',  cost:{ stone:4, water:2 }, mins:120, green:0, needs:['flag:garden'],
+    { id:'birdbath', retired:true, name:'Set a stone birdbath', short:'setting the birdbath',      who:'him', act:'water', spot:'stonebench',  cost:{ stone:4, water:2 }, mins:120, green:0, needs:['flag:garden'],
       blurb:'A hollow stone full of dew. Somebody small will want a wash.' },
     { id:'hedgehoghouse', name:'Build a leaf-pile shelter', short:'piling the leaves', who:'her', spot:'fence',  cost:{ twig:3, moss:3 },   mins:180, green:0, needs:['flag:garden'],
       blurb:'A heap of leaves and sticks in a quiet corner. Please do not tidy it.' },
@@ -198,7 +198,7 @@ window.CONTENT = {
       blurb:'Flat stones set round the fire one by one, so the sparks stay where they\'re put.' },
     { id:'potstools', make:'yard', stage:'barren', at:[0.30, 0.50], name:'Two upturned-pot stools', short:'setting out the stools', who:'either', act:'carry', cost:{ twig:1, moss:1 }, mins:20, green:0,
       blurb:'They had a lot of pots. Now they have chairs.' },
-    { id:'spinner', make:'yard', stage:'barren', at:[0.62, 0.44], name:'A tin-can wind spinner', short:'making the spinner', who:'either', act:'build', cost:{ twig:2, stone:1 }, mins:30, green:0,
+    { id:'spinner', make:'yard', stage:'barren', at:[0.08, 0.30], name:'A tin-can wind spinner', short:'making the spinner', who:'either', act:'build', cost:{ twig:2, stone:1 }, mins:30, green:0,
       blurb:'Made from the loggers\' old tins. It squeaks. Wendel calls that music.' },
     { id:'scraper', make:'yard', stage:'barren', at:[0.29, 0.39], name:'A boot-scraper stone', short:'setting the scraper', who:'either', act:'dig', cost:{ stone:2 }, mins:20, green:0,
       blurb:'For the mud. Hazel\'s idea, Wendel\'s boots.' },
@@ -211,8 +211,8 @@ window.CONTENT = {
       blurb:'It does not scare the rabbit. The rabbit naps under it.' },
     { id:'pebbles', make:'yard', stage:'green', at:[0.58, 0.74], name:'Pebble edging round the seed bed', short:'edging the bed', who:'either', act:'dig', cost:{ stone:5 }, mins:45, green:0, needs:['bed'],
       blurb:'Little white pebbles, set one at a time all the way round the outside of the fence.' },
-    { id:'yardbath', make:'yard', stage:'green', at:[0.75, 0.50], name:'A little bird bath where the old stump stood', short:'setting the bird bath', who:'either', act:'dig', cost:{ stone:3, water:1 }, mins:25, green:0, needs:['stump'],
-      blurb:'A flat stone dish on a short stone, filled from the spring. The robin had a bath in it before the water stopped wobbling.', doneNote:'The little bird bath is set where the old stump stood, and full to the brim.' },
+    { id:'yardbath', make:'yard', stage:'green', at:[0.75, 0.50], name:'A little bug bath where the old stump stood', short:'setting the bug bath', who:'either', act:'dig', cost:{ stone:3, water:1 }, mins:25, green:0, needs:['stump'],
+      blurb:'A flat stone dish on a short stone, filled from the spring, with pebbles poking out so nobody small falls in. The bees found it before the water stopped wobbling.', doneNote:'The little bug bath is set where the old stump stood. A ladybird is already sitting on the middle pebble.' },
 
     { id:'swing', make:'yard', stage:'meadow', at:[0.18, 0.80], name:'Hang a bark swing', short:'hanging the swing', who:'either', act:'build', cost:{ twig:4, moss:2, acorn:1 }, mins:45, green:0, needs:['sapling'],
       blurb:'From the lowest branch of the oak. For the afternoons when nothing needs doing.' },

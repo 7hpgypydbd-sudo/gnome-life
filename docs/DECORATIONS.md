@@ -25,13 +25,13 @@ Each patch of land (tile) earns its own little makes as it heals. Every time a t
 | Bare ground | Little wheelbarrow *(already a job: `barrow`)* | Wendel's corner | "The old one lost its wheel on the hill. This one is smaller, and mostly for Hazel's flowers." |
 | Bare ground | Stone ring round the fire | Hearth | "So the sparks stay where they're put." |
 | Bare ground | Two upturned-pot stools | Hearth | "They had a lot of pots. Now they have chairs." |
-| Bare ground | Tin-can wind spinner | Right of the yard, just in front of the footpath (v75) | "Made from the loggers' old tins. It squeaks. Wendel calls that music." |
+| Bare ground | Tin-can wind spinner | Back left near the house (v79 back in its old spot; the greening now keeps the tall trunk off it) | "Made from the loggers' old tins. It squeaks. Wendel calls that music." |
 | Bare ground | Boot-scraper stone | By the door | "For the mud. Hazel's idea, Wendel's boots." |
 | First green | Flower pots by the door (planted) | Door | "Three of the travelling pots, finally with something in them." |
 | First green | Woven grass doormat | Doorstep | "Wipe your feet. Yes, you." |
 | First green | A little scarecrow | Seed bed edge | "It does not scare the rabbit. The rabbit naps under it." |
 | First green | Pebble edging round the seed bed | Seed bed | "Little white pebbles, one at a time, all round the bed." |
-| First green | A little bird bath (v79, replaces the pot of daisies; 3 stones, 1 water, no seed; `yardbath`) | Where the old stump stood | "A flat stone dish on a short stone, filled from the spring. The robin had a bath in it before the water stopped wobbling." Drawn stand-in until painted (`make-yardbath`); the robin stops by for a splash once you have met it. |
+| First green | A little bug bath (v79, replaces the pot of daisies; 3 stones, 1 water, no seed; `yardbath`) | Where the old stump stood | "A flat stone dish on a short stone, with pebbles poking out so nobody small falls in." Gnome sized, so it is for bugs: a ladybird on a pebble, a bee by day. Drawn stand-in until painted (`make-yardbath`). The garden's old "Set a stone birdbath" job is retired (Bryce: one is enough). |
 | Young meadow | Bark swing *(already a job: `swing`)* | The oak | "From the lowest branch of the oak. For the afternoons when nothing needs doing." |
 | Young meadow | Sundial | Big old stump by the spring | "It's always teatime somewhere. Usually here." |
 | Young meadow | Herb pots by the wash tub (planted; v79 moved off the stick pile) | Wash tub | "Mint, because it will grow anywhere, and thyme, because Hazel insists." |
@@ -138,6 +138,7 @@ Once a neighbour's trade building is up, now and then they wish for a little mak
 Bryce's notes 43, 47, 49, 54, 58 and 59. Every make keeps the spot in its `at`, and the yard's greening keeps clear of them:
 - **Greening keeps clear** (`yardClear` in index.html): no greening plant, edge plant or season touch stands on a make's spot, on the footpath, on the feeding dish or a nest, or in front of one close enough to hide it. Judged at the plant's full size, so a plant never pops out of existence as it grows. Pick-ups and finds also avoid make spots.
 - **Door things on the ground:** the doormat, door pots and boot scraper (`HOUSE_DOOR`) sit on the grass at the foot of the door, not halfway up it.
-- **Bird bath** instead of the pot of daisies (above). An old garden that made the daisy pot gets the bird bath in its place.
+- **Bug bath** instead of the pot of daisies (above). An old garden that made the daisy pot gets the bug bath in its place.
+- **Doormat** turned a quarter turn so its long side lies along the door (the painting is mirrored).
 - **Seed note:** a make that needs seed now says "keeping the last seed back for sowing the seed bed", so it reads as Hazel keeping one for the bed rather than the make going in the bed.
 - **Little finds have a place** (`place` in `C.secrets`, `FIND_PLACES` in index.html): under the washing line (thimble, mitten, yarn, button), by the door (grass ring, letter), by the fire (pipe, teacup), by the seed bed (snail shell), under the little oak (eggshell, chrysalis), by the spring or a healed creek (heart pebble, holed stone, painted pebble), along the healed old track (carved heart, spinning top, bell), anywhere healed for the rest. A find only turns up once its place exists.
