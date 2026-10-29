@@ -3,7 +3,7 @@
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const REPO = path.join(__dirname, '..');
 const VPD = +(process.argv[2] || 3), DAYS = +(process.argv[3] || 60), MODE = process.argv[4] || 'eager';
-let clock = new Date('2026-11-02T08:00:00').getTime();   // a Monday in spring (southern)
+let clock = new Date(process.env.START || '2026-11-02T08:00:00').getTime();   // a Monday in spring (southern); START=2026-09-14T08:00:00 to begin elsewhere
 const RealDate = Date;
 class FakeDate extends RealDate { constructor(...a) { if (a.length) super(...a); else super(clock); } static now() { return clock; } }
 const store = {};
@@ -77,7 +77,7 @@ function visit() {
     for (const fid of G.settled()) { const w = G.wishOpen(fid); if (w && G.can(w.cost)) { G.sendWish(fid); ev('WISH', `${fid}: ${w.name}`); } }   // neighbours' wishes (v70): send the basket when the store has it
     // jobs
     const list = G.taskList();
-    let pn = 0; const vis = list.filter(v => v.state !== 'done' && !v.def.make && !(v.def.healTile && v.state !== 'running' && ++pn > 3));   // the Jobs tab as drawn (Hazel's list is its own tab; at most three waiting patch jobs, the rest are on each patch's card)
+    let pn = 0; let fn = 0; const vis = list.filter(v => v.state !== 'done' && !v.def.make && !(v.def.healTile && v.state !== 'running' && ++pn > 3) && !(v.def.farm && v.state !== 'running' && G.gameDay() > 30 && ++fn > 2));   // the Jobs tab as drawn (Hazel's list is its own tab; at most three waiting patch jobs and, from day 31, two farm jobs; the rest are on each patch's or farm's card)
     if (vis.length > maxList) { maxList = vis.length; maxAt = stamp() + ": " + vis.map(v => v.def.healTile ? "patch" : v.def.farm ? "farm" : v.def.folk ? "village" : v.def.festival ? "fest" : "home:" + v.def.id).join(", "); }
     const ready = list.filter(v => v.state === 'ready' && v.can);
     const pri = v => v.def.chore ? 9 : v.def.home ? 0 : v.def.folk ? 1 : v.def.festival ? 1 : (!v.def.make && !v.def.healTile && !v.def.farm) ? 2 : v.def.healTile ? 3 : v.def.farm ? 4 : 5;
@@ -104,4 +104,5 @@ console.log("\nMost rows in the Jobs tab (not done) at once:", maxList, "\n   at
 console.log(listLog.join('\n'));
 console.log('\nIncome:', JSON.stringify(income)); console.log('Spent:', JSON.stringify(spent)); console.log(invLog.join('\n'));
 console.log('Wishes made:', JSON.stringify(G.wishesCount()), ' little makes:', Object.keys(C.makes).map(k => k + ' ' + G.makesCount(k).done + '/' + G.makesCount(k).total).join(', '));
+if (process.env.SAVE) G.save(), fs.writeFileSync(process.env.SAVE, JSON.stringify(store));   // SAVE=file: the save at the end, to load in a browser
 console.log('\nFinal: green home', G.s.tiles['0,0'].green, 'tiles', Object.keys(G.s.tiles).length, 'neighbours', G.settled().length, 'festival', G.s.festival.stage);

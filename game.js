@@ -89,6 +89,8 @@ const G = {
     if (this.asleepAt(t) && this.workBetween(this.wakeAfter(t), endsAt) <= 0) return short ? 'asleep' : 'asleep for now';
     return short ? `${this.asleepAt(t) ? 'asleep' : 'sleeps first'}, done ${at}` : `${this.asleepAt(t) ? 'they are asleep, so' : 'with a night\'s sleep first,'} done about ${at}${day}`;
   },
+  pace() { const P = C.pace; return P.plans[P.festivalDay] || P.plans[60]; },   // v81: the month-two plan in use (content.js pace)
+  gameDay(t = now()) { if (FAST) return Math.floor((t - (this.s.created || t)) / DAY()) + 1; const a = new Date(this.s.created || t), b = new Date(t); a.setHours(12, 0, 0, 0); b.setHours(12, 0, 0, 0); return Math.round((b - a) / DAY()) + 1; },   // the garden's first day is day 1
   taskSpeed() { return 1 - 0.08 * (this.magicLevel() - 1); },   // each magic level trims task time 8%
 
   boot() {
@@ -174,7 +176,7 @@ const G = {
     this.mealTick(t);
     this.dressTick(t);
     if (this.barrelFull()) this.drawBarrel();   // the rain barrel tops up the store by itself (nobody's hands)
-    this.storyTick(t);
+    this.storyTick(t); this.mistTick(t);
     this.offerTick(t);
     this.moveInTick(t);
     this.animalTick(t);
@@ -241,6 +243,8 @@ const G = {
   spawnOffer(t, want, home) {   // want/home: this kind, in the home yard (the seed bed's safety net)
     const s = this.s, h = new Date(t).getHours(), night = h < 6 || h >= 19;
     const pool = C.offers.map(o => ({ kind: o.kind, w: (night ? o.night : o.day) * (o.kind === 'water' && h >= 5 && h < 10 ? 2.5 : 1) })).filter(o => o.w > 0 && !this.shelfFull(o.kind));   // a full shelf: the land leaves something else
+    const soft = C.store.lightSoft && (s.inv.light || 0) >= C.store.lightSoft, wisp = pool.find(o => o.kind === 'light'), dew = pool.find(o => o.kind === 'water');   // v81: plenty of light saved: the wisps come a fifth as often, and the night leaves dew instead
+    if (soft && wisp) { if (dew) dew.w += wisp.w * 0.8; wisp.w *= 0.2; }
     if (!pool.length && !want) return;
     let r = Math.random() * pool.reduce((a, o) => a + o.w, 0), kind = pool.length ? pool[0].kind : want;
     for (const o of pool) { r -= o.w; if (r <= 0) { kind = o.kind; break; } }
@@ -411,7 +415,11 @@ const G = {
   },
   lineOk(c) { if (!c) return true; if (c.includes('&')) return c.split('&').every(x => this.lineOk(x)); if (c[0] === '!') return !this.lineOk(c.slice(1)); if (c === 'grown') return !!(this.plot().grown || this.plot().stage === 'growing' || this.plot().stage === 'ready'); if (c.startsWith('met:')) return this.met(c.slice(4)); return this.needMet(c); },
   linesFor(list) { const out = list.filter(x => typeof x === 'string' || this.lineOk(x.if)).map(x => typeof x === 'string' ? x : x.t); return out.length ? out : list.filter(x => typeof x === 'string'); },   // a gnome's lines about things that are really there (note 23)
-  needsMet(d) { return (d.needs || []).every(n => this.needMet(n)); },
+  needsMet(d) { return (d.needs || []).every(n => this.needMet(n)) && (!d.festival || this.festOpen(d.id)); },
+  festOpen(id) {   // v81: the festival jobs come one at a time, a day or two apart (content.js pace.jobGap), so the preparing takes a while
+    const J = C.festival.jobs, k = J.findIndex(j => j.id === id); if (k <= 0 || this.s.tasks[id]) return true;
+    const prev = this.s.tasks[J[k - 1].id]; return !!prev && this.done(J[k - 1].id) && (now() >= prev.startedAt + (this.pace().jobGap || 0) * DAY() || this.gameDay() >= C.pace.festivalDay - 6);   // running late: no waiting (the calendar only ever holds a quick player back)   // counted from when the last one was begun, so a slower player doesn't wait twice
+  },
   needHint(n) {   // a need in words, for the one "Next:" line ('' = keep it a surprise)
     if (n.startsWith('page:')) return this.pageHint(n.slice(5));
     if (n.startsWith('stage:')) return `once the yard is ${C.landStages.find(x => x.key === n.slice(6)).name}`;
@@ -491,13 +499,16 @@ const G = {
   makesCount(patch) { const all = C.tasks.filter(d => d.make === patch && !d.season); return { done: all.filter(d => this.done(d.id)).length, total: all.length }; },
   reveal(k) {   // bare neighbours appear around a greened tile (max 2 at a time so the map grows gently); only from chapter four on
     if (!this.pageHappened('3.5')) return;   // before that it's just the yard and the garden (storyTick)
+    const F = this.s.flags, gap = this.gameDay() > 30 ? (this.pace().patchGap || 0) * DAY() : 0, max = gap ? 1 : 2;   // v81: from month two, one new patch every few days (the rest wait in F.mist and come later, mistTick)
+    if (gap && now() < (F.mistAt || 0) + gap) { F.mist = F.mist || []; if (!F.mist.includes(k)) F.mist.push(k); return; }
     const [x, y] = k.split(',').map(Number); let n = 0;
     for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
-      const kk = `${x + dx},${y + dy}`; if (this.s.tiles[kk] || n >= 2 || Math.abs(x + dx) > 2 || Math.abs(y + dy) > 2) continue;
+      const kk = `${x + dx},${y + dy}`; if (this.s.tiles[kk] || n >= max || Math.abs(x + dx) > 2 || Math.abs(y + dy) > 2) continue;
       if (y + dy < -1 && !this.done('bridge')) continue;   // the far side of the stream waits for the bridge
       this.s.tiles[kk] = { state: 'revealed', green: 0, kind: this.tileKind(kk) }; n++;
     }
-    if (n) this.note('The mist has drawn back from more bare ground.');
+    if (n) { F.mistAt = now(); this.note('The mist has drawn back from more bare ground.'); }
+    else if (gap && F.mist) F.mist = F.mist.filter(x => x !== k);   // nothing left to show round this one
   },
 
   // ---- healing the bare tiles (CONTENT.heal; docs/PLAN.md "Healing the bare tiles") ----
@@ -578,7 +589,11 @@ const G = {
   // A neighbour's farm opens on their lot once their trade building is up. Jobs are 'farm:<id>:<step>' and 'farm:<id>:pick'.
   // Its green goes onto that lot's own tile (tileGreen), so the lot keeps going through the land stages after first green.
   // Life events (step.later) are kept in village.folk[id].ev; the picking comes back pickEvery minutes after the last one.
-  farms() { return this.settled().filter(fid => C.farms.list[fid] && this.done('trade:' + fid) && this.s.tiles[this.folkState(fid).tile]); },
+  farms() { return this.settled().filter(fid => C.farms.list[fid] && this.done('trade:' + fid) && this.s.tiles[this.folkState(fid).tile] && this.farmReady(fid)); },
+  farmReady(fid) {   // v81 month two: from the fourth neighbour on, the farm waits until their story is told (the first three, in month one, as before)
+    const v = this.s.village.folk, order = Object.keys(v).sort((a, b) => v[a].since - v[b].since);
+    return order.indexOf(fid) < 3 || v[fid].q === 'done' || !!this.s.tasks[`farm:${fid}:0`];
+  },
   farmOn(k) { return this.farms().find(fid => this.folkState(fid).tile === k) || null; },
   farmSteps(fid) { return C.farms.list[fid].steps; },
   farmAt(fid) { const n = this.farmSteps(fid).length; let i = 0; while (i < n && this.done(`farm:${fid}:${i}`)) i++; return i; },
@@ -800,7 +815,7 @@ const G = {
   villageTick(t) {
     const s = this.s, v = s.village, V = C.village, dk = dayKey(t), h = new Date(t).getHours();
     // a traveller arrives once the house is finished, when it is time, and someone is still on the road
-    if (!v.traveller && v.queue.length && t >= v.nextAt && (this.needMet(V.firstAfter) || /village|test/.test(location.hash))) {
+    if (!v.traveller && v.queue.length && t >= v.nextAt && this.gameDay(t) >= (this.pace().arrive[Object.keys(v.folk).length] || 0) && (this.needMet(V.firstAfter) || /village|test/.test(location.hash))) {
       v.traveller = { id: v.queue.shift(), at: t }; v.traveller.want = this.wishLot();   // they name the patch they'd like to live on
       const f = this.folkDef(v.traveller.id); this.note(`A traveller has camped by the path: ${f.name}, ${f.trade}.`); if (v.traveller.want) this.note(this.wishText(f.id)); this.emit('traveller', v.traveller.id);
     }
@@ -927,10 +942,10 @@ const G = {
   festText(t) { const F = this.s.festival, n = Math.max(1, F.years.length); return t.replace(/\{who\}/g, this.festWho()).replace(/\{years\}/g, ['One year', 'Two years', 'Three years', 'Four years', 'Five years'][n - 1] || `${n} years`); },
   festivalTick(t) {
     const F = C.festival, f = this.s.festival, h = new Date(t).getHours(); if (!F) return;
-    if (f.stage === 'waiting' && this.settled().length >= F.needFolk) { f.stage = 'planning'; this.note(`The neighbours want to hold ${F.name}.`); this.emit('festival', 'idea'); }
+    if (f.stage === 'waiting' && this.settled().length >= F.needFolk && this.gameDay(t) >= this.pace().idea) { f.stage = 'planning'; this.note(`The neighbours want to hold ${F.name}.`); this.emit('festival', 'idea'); }
     else if (f.stage === 'planning' && F.jobs.every(j => this.done(j.id))) {
-      f.stage = 'ready'; const d = new Date(t); d.setHours(F.hours[0], 0, 0, 0); if (d.getTime() - t < 60 * MIN && !FAST) d.setDate(d.getDate() + 1);
-      f.at = FAST ? t : d.getTime(); const when = dayKey(f.at) === dayKey(t) ? 'tonight' : 'tomorrow evening';
+      f.stage = 'ready'; const d = new Date(t); d.setHours(F.hours[0], 0, 0, 0); d.setDate(d.getDate() + (this.pace().notice || 0)); if (d.getTime() - t < 60 * MIN && !FAST) d.setDate(d.getDate() + 1);   // v81: a couple of days' notice
+      f.at = FAST ? t : d.getTime(); const ahead = Math.round((new Date(f.at).setHours(12) - new Date(t).setHours(12)) / DAY()), when = ahead <= 0 ? 'tonight' : ahead === 1 ? 'tomorrow evening' : ahead === 2 ? 'the evening after tomorrow' : `in ${ahead} days' time`;
       this.note(F.ready.replace('{when}', when)); this.emit('festival', 'ready');
     }
     else if (f.stage === 'ready' && t >= f.at && (this.inHours(F.hours, h) || t >= f.at + DAY())) { f.stage = 'on'; f.day = dayKey(t); this.emit('festival', 'night'); }
@@ -972,6 +987,10 @@ const G = {
     if (w === 'garden') return this.gardenOpen();
     if (w === 'toadWalked') return !!s.flags.toadWalk && t - s.flags.toadWalk >= 45000;   // index.html TOAD_WALK
     return false;
+  },
+  mistTick(t) {   // v81: a patch that was held back in the mist comes out once the gap is up (one at a time)
+    const F = this.s.flags; if (!F.mist || !F.mist.length || t < (F.mistAt || 0) + (this.pace().patchGap || 0) * DAY()) return;
+    this.reveal(F.mist.shift());   // nothing left round that one: the next one gets its turn on a later tick
   },
   storyTick(t) {
     const s = this.s, P = s.pages, queued = id => P.cards.some(c => c.k === 'page' && c.id === id);
