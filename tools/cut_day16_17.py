@@ -111,7 +111,60 @@ def strip():
     WROTE.append(os.path.join(SPR, 'her-potwalk.webp'))
 
 
-GROUPS = dict(repaints=repaints, wishes=wishes, track=track, garlands=garlands, month1=month1, round6=round6, pages=pages, strip=strip)
+def hole_box(p):   # the dark hole in a stump piece: the biggest very dark patch, as (middle x, middle y, width) in sheet pixels
+    from scipy import ndimage
+    lum = p[..., :3].astype(int).sum(2); dark = (lum < 200) & (p[..., 3] > 200); lab, n = ndimage.label(ndimage.binary_closing(dark, iterations=3))
+    k = 1 + int(np.argmax(ndimage.sum(dark, lab, range(1, n + 1)))); ys, xs = np.where(lab == k); return (xs.min() + xs.max()) / 2, (ys.min() + ys.max()) / 2, xs.max() - xs.min()
+
+
+def chopping():   # art day 17 n07 (Bryce: paint it being chopped): the fallen stump cut up in steps, each scaled and lined up on stump-2's hole so they swap in place
+    from scipy import ndimage
+    HOLES = {'base': (425, 475, 350), 'stump-c1': (640, 760, 615), 'stump-c2': (380, 420, 365), 'stump-c4': (345, 120, 530)}   # each hole's centre and width, read off gridded crops by eye (hole_box was not reliable)
+    base = crop_alpha(pieces(key(load('n03-stump-stages')))[1]); bx, by, bw = HOLES['base']; H0, W0 = base.shape[:2]; dx, dy = bx - W0 / 2, by - H0 * 0.82   # stump-2's hole from its anchor (how paintedStump places a stage)
+    rgba = key(load('n07-stump-chopping')); solid = rgba[..., 3] > 128
+    lab, n = ndimage.label(ndimage.binary_dilation(solid, iterations=6)); objs = ndimage.find_objects(lab)
+    big = sorted(range(n), key=lambda i: -(objs[i][0].stop - objs[i][0].start) * (objs[i][1].stop - objs[i][1].start))[:4]; big.sort(key=lambda i: objs[i][1].start)
+    for k, out in zip(big, ['stump-c1', 'stump-c2', 'stump-c3', 'stump-c4']):
+        if out == 'stump-c3': continue   # a standing stub, which does not follow on from the stump lying on its side
+        sl = objs[k]; p = rgba[sl].copy(); p[..., 3] = np.where(lab[sl] == k + 1, p[..., 3], 0); p = crop_alpha(p); hx, hy, hw = HOLES[out]
+        sc = bw / hw; im = Image.fromarray(p).resize((round(p.shape[1] * sc), round(p.shape[0] * sc)), Image.LANCZOS); p = np.asarray(im); H, W = p.shape[:2]; hx *= sc; hy *= sc
+        x0, y0 = dx - hx, dy - hy   # the piece's top-left from the anchor
+        half = max(-x0, x0 + W); top = max(-y0, 1); below = max(y0 + H, 1); Hc = int(max(top / 0.82, below / 0.18)) + 2; Wc = int(half * 2) + 2
+        c = np.zeros((Hc, Wc, 4), np.uint8); px, py = int(round(Wc / 2 + x0)), int(round(Hc * 0.82 + y0)); c[py:py + H, px:px + W] = p
+        im = Image.fromarray(c).resize((round(Wc * K), round(Hc * K)), Image.LANCZOS); f = os.path.join(SPR, out + '.webp'); im.save(f, quality=88); WROTE.append(f); print(out, im.size, 'scale', round(sc, 2))
+
+
+def campfire():   # art day 17 n04: the bare campfire (tripod and kettle over a few sticks) and its stone ring, each kept at the old file's width
+    ps = pieces(key(load('n04-campfire'))); assert len(ps) == 2
+    for p, out in zip(ps, ['campfire-bare', 'make-firering']): save(p, out, w=Image.open(os.path.join(SPR, out + '.webp')).width)
+
+
+def strip_scaled(frames, who, act, atlas, body):   # like pack_strip, but scaled so the gnome himself (body: a frame's height without extras) is 240 px tall
+    ims = [Image.fromarray(crop_alpha(f)) for f in frames]; s = 240 / body
+    ims = [i.resize((round(i.width * s), round(i.height * s)), Image.LANCZOS) for i in ims]
+    cw = max(i.width for i in ims) + 4; ch = max(i.height for i in ims) + 2
+    st = Image.new('RGBA', (cw * len(ims), ch))
+    for i, f in enumerate(ims): st.paste(f, (i * cw + (cw - f.width) // 2, ch - f.height), f)
+    path = os.path.join(SPR, f'{who}-{act}.webp'); st.save(path, lossless=True, exact=True, method=6); WROTE.append(path)
+    atlas[who]['acts'][act] = {'n': len(ims), 'cell': [cw, ch]}; print(who, act, cw, ch)
+
+
+def chopstrips():   # art day 17 n07-n10: chopping (with the chopping block) and carrying an armful of logs, both gnomes
+    atlas = json.load(open(os.path.join(SPR, 'gnomes.json')))
+    for name, who, act in (('n07-him-chop', 'him', 'chop'), ('n08-him-carrylogs', 'him', 'carrylogs'), ('n09-her-chop', 'her', 'chop'), ('n10-her-carrylogs', 'her', 'carrylogs')):
+        fr = pieces(key(load(name)), grow=0); fr = sorted(sorted(fr, key=lambda p: -p.shape[0] * p.shape[1])[:4], key=lambda p: 0)
+        rgba = key(load(name)); cols = (rgba[..., 3] > 128).any(0); runs, st = [], None   # frames left to right by their columns
+        for x, v in enumerate(list(cols) + [False]):
+            if v and st is None: st = x
+            if not v and st is not None: runs.append((st, x)); st = None
+        runs = sorted(sorted(runs, key=lambda r: r[0] - r[1])[:4]) if len(runs) >= 4 else [(0, 705), (705, 1366), (1366, 2096), (2096, rgba.shape[1])]
+        frames = [rgba[:, a:b] for a, b in runs]
+        body = min(crop_alpha(f).shape[0] for f in frames)   # the lowest frame: hatchet down, standing straight
+        strip_scaled(frames, who, act, atlas, body)
+    json.dump(atlas, open(os.path.join(SPR, 'gnomes.json'), 'w'), indent=1)
+
+
+GROUPS = dict(repaints=repaints, wishes=wishes, track=track, garlands=garlands, month1=month1, round6=round6, pages=pages, strip=strip, chopping=chopping, campfire=campfire, chopstrips=chopstrips)
 if __name__ == '__main__':
     for g in sys.argv[1:] or GROUPS: GROUPS[g]()
     if WROTE: subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), 'defringe_sprites.py')] + WROTE, check=True)
