@@ -211,14 +211,14 @@ window.CONTENT = {
       blurb:'It does not scare the rabbit. The rabbit naps under it.' },
     { id:'pebbles', make:'yard', stage:'green', at:[0.58, 0.74], name:'Pebble edging round the seed bed', short:'edging the bed', who:'either', act:'dig', cost:{ stone:5 }, mins:45, green:0, needs:['bed'],
       blurb:'Little white pebbles, set one at a time all the way round the outside of the fence.' },
-    { id:'daisypot', make:'yard', stage:'green', at:[0.75, 0.50], name:'A pot of daisies where the old stump stood', short:'potting daisies', who:'either', act:'water', cost:{ seed:2, water:1, moss:1 }, mins:25, green:1, needs:['stump'],
-      blurb:'The spot where the old stump stood needed something to do.' },
+    { id:'yardbath', make:'yard', stage:'green', at:[0.75, 0.50], name:'A little bird bath where the old stump stood', short:'setting the bird bath', who:'either', act:'dig', cost:{ stone:3, water:1 }, mins:25, green:0, needs:['stump'],
+      blurb:'A flat stone dish on a short stone, filled from the spring. The robin had a bath in it before the water stopped wobbling.', doneNote:'The little bird bath is set where the old stump stood, and full to the brim.' },
 
     { id:'swing', make:'yard', stage:'meadow', at:[0.18, 0.80], name:'Hang a bark swing', short:'hanging the swing', who:'either', act:'build', cost:{ twig:4, moss:2, acorn:1 }, mins:45, green:0, needs:['sapling'],
       blurb:'From the lowest branch of the oak. For the afternoons when nothing needs doing.' },
     { id:'sundial', make:'yard', stage:'meadow', at:[0.68, 0.33], name:'A sundial', short:'setting the sundial', who:'either', act:'build', cost:{ stone:5, twig:2, feather:1 }, mins:45, green:0,
       blurb:'It\'s always teatime somewhere. Usually here.' },
-    { id:'herbpots', make:'yard', stage:'meadow', at:[0.48, 0.26], name:'Herb pots by the rain barrel', short:'potting herbs', who:'either', act:'water', cost:{ seed:3, water:2, moss:2 }, mins:35, green:1,
+    { id:'herbpots', make:'yard', stage:'meadow', at:[0.59, 0.19], name:'Herb pots by the wash tub', short:'potting herbs', who:'either', act:'water', cost:{ seed:3, water:2, moss:2 }, mins:35, green:1,
       blurb:'Mint, because it will grow anywhere, and thyme, because Hazel insists.' },
     { id:'wreath', make:'yard', stage:'meadow', at:[0.36, 0.33], name:'A wattle wreath on the door', short:'weaving the wreath', who:'either', act:'craft', cost:{ twig:3, seed:2, berry:2 }, mins:30, green:0,
       blurb:'Golden and smelling of honey. It changes with the seasons.' },
@@ -1167,6 +1167,7 @@ window.CONTENT = {
     // The Wood spirit comes five times in the first month, always in this order (game.js spiritLesson), and floats by what it is
     // teaching about until you tap it. Then it comes back to teach each new kind of bare patch. Its one lesson: magic is for
     // asking, not pushing. The gnomes cannot see it; it is the only one who ever talks to you.
+    toadTooClose: "That big toadstool is sitting right where the garden wants to grow. He's far too big to push. I wonder if he could be asked nicely?",   // round six (note 43): said once when the garden opens, before the legs spell
     spiritFirst: `Something soft and green drifts out of the trees, like a handful of new leaves that forgot to fall. It turns and looks straight at you, as if it has always known you were there. It is a little spark of you, old as the hill, that never quite went to sleep. The gnomes can't see it. But you can.`,
     spiritBack: `The Wood spirit drifts out of the trees again, the soft green shape from your first day. It looks straight at you, pleased, as if you are old friends already.`,   // its first lesson, when you met it on day 1
     lessons: [
@@ -1256,17 +1257,17 @@ window.CONTENT = {
       { id:'mothpot', name:'A honey pot for the moths', ask:'A dish of honey water on a flat stone, for the night moths. Two pots of honey and two stones.', cost:{ honey:2, stone:2 }, at:[0.48, 0.54], look:'dish', wood:true, line:'A dish of honey water on a flat stone. The moths come every night.' } ],
   } },
 
-  // a line may be { t, if } (build 3, note 23): said only once that has happened ('jobId', '!jobId', 'stage:green', 'met:robin', 'grown')
+  // a line may be { t, if } (build 3, note 23): said only once that has happened ('jobId', '!jobId', 'stage:green', 'met:robin', 'grown'; join two with &)
   lines: {
     him: [{ t:"Bare as a baker's elbow. We'll fix that.", if:'!stage:green' }, { t:"Did you see? A sprout. Right in the middle.", if:'grown' }, { t:"There's a beetle living in the woodpile now. I've called him Gerald.", if:'stump' }, { t:"Kettle's on.", if:'stump' }, { t:"Tomorrow we dig the bed properly.", if:'!bed' }, "I remember when all this was ferns.",
           "Our own front door. Well, our own front hole.", "She said yes. I still can't quite believe it.", "I've measured twice and I'm still wrong. Don't tell her.", "Did you know worms are basically farmers?",
           "Every stump was once a tree that had a view.", { t:"I'm going to build her a garden bench. I haven't told her.", if:'!bench' }, "One acorn, one oak. That's the maths.", "Look at that moss. Doing it all without being asked.",
           "Marriage tip: never say 'just a quick job'.", { t:"The soil's coming back. Smell that? That's life.", if:'stage:green' }, "We're not saving the world. We're saving this corner of it.", { t:"I think the fence is leaning on me.", if:'fence' },
-          { t:"That robin is judging my digging.", if:'met:robin' }, { t:"Let's leave the long grass long. Somebody lives in it.", if:'stage:meadow' }, "Tea first. Heroics after."],
+          { t:"That robin is judging my digging.", if:'met:robin' }, { t:"I'd shift that toadstool myself, but he's twice my size and very settled.", if:'flag:garden&!flag:toadWalk' }, { t:"Let's leave the long grass long. Somebody lives in it.", if:'stage:meadow' }, "Tea first. Heroics after."],
     her: [{ t:"I left a crumb on the step for whoever's helping us. Don't laugh.", if:'doorstep' }, { t:"The sapling wants water, not wishes.", if:'sapling' }, "Isn't it quiet without the trees?", { t:"I've put the moss aside for the roof.", if:'!roof' }, "A little each day, that's the trick.", "Listen… was that a robin?",
           { t:"He built the doorstep crooked. I love it.", if:'doorstep' }, "Wattle and daisies by spring, that's my promise.", "Everything here is borrowed from the soil. We should say thank you.", { t:"I counted four new green shoots this morning.", if:'grown' },
           "Plant something that will outlast you.", "I've named the sapling. I'm not saying the name.", { t:"We have a home, a kettle and each other. What more is there?", if:'stump' }, "The bees will come once there's something for them. Build it and they will.",
-          { t:"Mind the clover, it's feeding the soil.", if:'stage:green' }, { t:"Do you hear that? The frogs are practising.", if:'stage:meadow' }, "A gnome could get used to this.", "Nothing is waste. Not even the dead leaves.", "We don't own this patch. We just look after it.",
+          { t:"Mind the clover, it's feeding the soil.", if:'stage:green' }, { t:"That toadstool is too close to the garden. Somebody ought to ask him kindly to move.", if:'flag:garden&!flag:toadWalk' }, { t:"Do you hear that? The frogs are practising.", if:'stage:meadow' }, "A gnome could get used to this.", "Nothing is waste. Not even the dead leaves.", "We don't own this patch. We just look after it.",
           "Put the kettle on, love, I'll bring the biscuits.", "It's not much yet. But it's ours, and it's growing."],
     working: { him:["Nearly there.", "Pass me that, would you?", "Good honest work.", "Measure twice, hammer once. Mostly.", "That's not crooked, that's character.", "Hand me the stone. No, the other stone.", "If it holds a gnome, it holds a bird."],
                her:["Patience. It's coming along.", "Almost done, dear.", "Hum-de-dum.", "In goes the seed. Up comes the world.", "Gently, now. Plants can tell.", "A little water, a little time.", "I could do this all afternoon."] },
@@ -1429,30 +1430,32 @@ window.CONTENT = {
 
   // little finds: tiny painted secrets tucked into the healed land now and then (sprites/kit/secrets-*). Tap one to press it into the journal.
   // size = how wide it is drawn on the land (a gnome is about 120). Nothing here is part of the story.
+  // place (round six, Bryce: where it makes sense): grass (any healed ground), line (under the washing line), door, fire, bed (by the seed bed),
+  // water (by the spring or a healed creek), track (along the healed old track), oak (under the little oak). One only turns up once its place exists.
   secretEvery: [180, 360],   // minutes between new ones (random in this range); at most two are out at once
   secrets: [
-    { id:'clover',   pic:'nature-01',    size:20, name:'a four-leaf clover', note:'Hazel says it\'s luck. Wendel says it\'s just a clover that tried harder. They pressed it anyway.' },
-    { id:'cicada',   pic:'nature-02',    size:16, name:'an empty cicada shell', note:'Still hanging on to its grass stem. The cicada climbed out and flew off singing. Summer\'s coming.' },
-    { id:'ring',     pic:'nature-03',    size:34, name:'a fairy ring', note:'A circle of tiny white mushrooms, overnight. Wendel walked all the way round it, just in case.' },
-    { id:'heart',    pic:'nature-05',    size:18, name:'a heart-shaped pebble', note:'Grey and smooth and very nearly a heart. It went straight into Hazel\'s apron pocket.' },
-    { id:'holed',    pic:'nature-06',    size:20, name:'a stone with a hole', note:'Look through the hole with one eye closed and the valley looks a little more magic. It works.' },
-    { id:'egg',      pic:'nature-07',    size:16, name:'a speckled eggshell', note:'Half a pale blue shell. Somebody small hatched nearby and is already peeping for breakfast.' },
-    { id:'snail',    pic:'nature-08',    size:15, name:'an empty snail shell', note:'The snail moved out. Wendel thinks it would make a fine ear trumpet. Hazel thinks not.' },
-    { id:'cockatoo', pic:'nature-09',    size:34, name:'a black cockatoo feather', note:'Long and black with a band of yellow. The cockatoos flew over yesterday, wailing like old gates.' },
-    { id:'chrysalis',pic:'nature-10',    size:28, name:'a green chrysalis', note:'Hanging very still from a twig, flecked with gold. Hazel has been checking on it every morning.' },
-    { id:'bluefeather', pic:'nature-11', size:14, name:'a little blue feather', note:'Blue as the sky after rain. A fairy-wren must have dropped it showing off.' },
-    { id:'bower',    pic:'nature-12',    size:16, name:'a bowerbird\'s treasures', note:'Blue feather, blue berry, blue shard, laid out just so. Best not to tell the bowerbird.' },
-    { id:'thimble',  pic:'treasures-01', size:13, name:'a brass thimble', note:'Far too big for a gnome finger. Hazel uses it as a cup for the sugar.' },
-    { id:'mitten',   pic:'treasures-02', size:18, name:'a red mitten', note:'A big folk\'s mitten, lost in some long-ago winter. It makes a very warm sleeping bag.' },
-    { id:'carved',   pic:'treasures-03', size:20, name:'a carved wooden heart', note:'Somebody carved this a long time ago and gave it to somebody. Wendel hung it over the door.' },
-    { id:'pipe',     pic:'treasures-04', size:24, name:'Wendel\'s pipe', note:'There it is! He\'s been looking for it for days. He swears he left it on the table.' },
-    { id:'grassring',pic:'treasures-05', size:16, name:'a ring of plaited grass', note:'Plaited by hand, just the size of Hazel\'s finger. Wendel went very pink and said nothing.' },
-    { id:'letter',   pic:'treasures-06', size:18, name:'a note sealed with red wax', note:'Hazel\'s name on the front, in Wendel\'s loopy writing. Best tuck it on her pillow and say nothing.' },
-    { id:'top',      pic:'treasures-07', size:13, name:'a wooden spinning top', note:'It still spins. Wendel timed it: forty-one heartbeats. He wants a rematch.' },
-    { id:'teacup',   pic:'treasures-08', size:18, name:'an acorn-cup teacup', note:'A teacup made from an acorn cup, saucer and all. Exactly the right size for one sip of tea.' },
-    { id:'yarn',     pic:'treasures-09', size:24, name:'a hank of green yarn', note:'Enough for a scarf, or two hats, or one very long sock. Hazel has plans.' },
-    { id:'flowerstone', pic:'treasures-10', size:15, name:'a painted pebble', note:'Someone painted a yellow flower on it. It sits on the windowsill now, where the real ones can see it.' },
-    { id:'bell',     pic:'treasures-11', size:12, name:'a tiny brass bell', note:'Ting! Wendel tied it to the gate so you can hear who\'s coming.' },
-    { id:'button',   pic:'treasures-12', size:14, name:'a wooden button', note:'A big round button with four holes. Hazel says a table. Wendel says a wheel. It\'s still being argued about.' },
+    { id:'clover',   pic:'nature-01',    size:20, place:'grass', name:'a four-leaf clover', note:'Hazel says it\'s luck. Wendel says it\'s just a clover that tried harder. They pressed it anyway.' },
+    { id:'cicada',   pic:'nature-02',    size:16, place:'grass', name:'an empty cicada shell', note:'Still hanging on to its grass stem. The cicada climbed out and flew off singing. Summer\'s coming.' },
+    { id:'ring',     pic:'nature-03',    size:34, place:'grass', name:'a fairy ring', note:'A circle of tiny white mushrooms, overnight. Wendel walked all the way round it, just in case.' },
+    { id:'heart',    pic:'nature-05',    size:18, place:'water', name:'a heart-shaped pebble', note:'Grey and smooth and very nearly a heart. It went straight into Hazel\'s apron pocket.' },
+    { id:'holed',    pic:'nature-06',    size:20, place:'water', name:'a stone with a hole', note:'Look through the hole with one eye closed and the valley looks a little more magic. It works.' },
+    { id:'egg',      pic:'nature-07',    size:16, place:'oak', name:'a speckled eggshell', note:'Half a pale blue shell. Somebody small hatched nearby and is already peeping for breakfast.' },
+    { id:'snail',    pic:'nature-08',    size:15, place:'bed', name:'an empty snail shell', note:'The snail moved out. Wendel thinks it would make a fine ear trumpet. Hazel thinks not.' },
+    { id:'cockatoo', pic:'nature-09',    size:34, place:'grass', name:'a black cockatoo feather', note:'Long and black with a band of yellow. The cockatoos flew over yesterday, wailing like old gates.' },
+    { id:'chrysalis',pic:'nature-10',    size:28, place:'oak', name:'a green chrysalis', note:'Hanging very still from a twig, flecked with gold. Hazel has been checking on it every morning.' },
+    { id:'bluefeather', pic:'nature-11', size:14, place:'grass', name:'a little blue feather', note:'Blue as the sky after rain. A fairy-wren must have dropped it showing off.' },
+    { id:'bower',    pic:'nature-12',    size:16, place:'grass', name:'a bowerbird\'s treasures', note:'Blue feather, blue berry, blue shard, laid out just so. Best not to tell the bowerbird.' },
+    { id:'thimble',  pic:'treasures-01', size:13, place:'line', name:'a brass thimble', note:'Far too big for a gnome finger. Hazel uses it as a cup for the sugar.' },
+    { id:'mitten',   pic:'treasures-02', size:18, place:'line', name:'a red mitten', note:'A big folk\'s mitten, lost in some long-ago winter. It makes a very warm sleeping bag.' },
+    { id:'carved',   pic:'treasures-03', size:20, place:'track', name:'a carved wooden heart', note:'Somebody carved this a long time ago and gave it to somebody. Wendel hung it over the door.' },
+    { id:'pipe',     pic:'treasures-04', size:24, place:'fire', name:'Wendel\'s pipe', note:'There it is! He\'s been looking for it for days. He swears he left it on the table.' },
+    { id:'grassring',pic:'treasures-05', size:16, place:'door', name:'a ring of plaited grass', note:'Plaited by hand, just the size of Hazel\'s finger. Wendel went very pink and said nothing.' },
+    { id:'letter',   pic:'treasures-06', size:18, place:'door', name:'a note sealed with red wax', note:'Hazel\'s name on the front, in Wendel\'s loopy writing. Best tuck it on her pillow and say nothing.' },
+    { id:'top',      pic:'treasures-07', size:13, place:'track', name:'a wooden spinning top', note:'It still spins. Wendel timed it: forty-one heartbeats. He wants a rematch.' },
+    { id:'teacup',   pic:'treasures-08', size:18, place:'fire', name:'an acorn-cup teacup', note:'A teacup made from an acorn cup, saucer and all. Exactly the right size for one sip of tea.' },
+    { id:'yarn',     pic:'treasures-09', size:24, place:'line', name:'a hank of green yarn', note:'Enough for a scarf, or two hats, or one very long sock. Hazel has plans.' },
+    { id:'flowerstone', pic:'treasures-10', size:15, place:'water', name:'a painted pebble', note:'Someone painted a yellow flower on it. It sits on the windowsill now, where the real ones can see it.' },
+    { id:'bell',     pic:'treasures-11', size:12, place:'track', name:'a tiny brass bell', note:'Ting! Wendel tied it to the gate so you can hear who\'s coming.' },
+    { id:'button',   pic:'treasures-12', size:14, place:'line', name:'a wooden button', note:'A big round button with four holes. Hazel says a table. Wendel says a wheel. It\'s still being argued about.' },
   ],
 };

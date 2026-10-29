@@ -67,7 +67,7 @@ function visit() {
     for (const sp of ['wind', 'cloud', 'seedwake', 'sing']) if (G.canCast(sp).ok && (G.s.inv.light||0) >= 3) { G.cast(sp); }
     if (G.dishBuilt() && !G.s.feeder.food) { if ((G.s.inv.berry||0) > 1) G.putFood('berry'); else if ((G.s.inv.seed||0) > 4) G.putFood('seed'); }
     if (!G.s.flags.rabbit && G.s.feeder.food && p.stage === 'growing') { G.rabbitAte(); G.rabbitRaid(); }
-    if (G.done('fence') && G.s.feeder.food && !G.beatDone('rabbitTruce')) G.rabbitEats();
+    if (G.done('fence') && G.s.feeder.food && !G.beatDone('rabbitTruce') && G.rabbitEats) G.rabbitEats();   // (v78 folded this into the friendship path)
     // quests: give / find
     for (const fid of G.settled()) { const st = G.questStep(fid); if (st && st.give) G.questGive(fid); }
     for (const f of [...G.s.village.finds]) G.found(f.id);
