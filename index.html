@@ -3205,6 +3205,7 @@ function drawPond(x, y, a, now) {
   ctx.restore();
 }
 // v70: dressing the house for the season, a swag over the door (stand-in until painted; kit season pieces where they fit)
+const GARLAND_POSTS = [[-71, -100], [0, -79]];   // the painted swag's two ends, on the porch's left post and its right post (world px from the house's foot at s 1)
 const GARLAND = { spring: ['#f3e6ea', '#e9b9c8', '#fbf6e6'], summer: ['#c24f5a', '#e2b33a', '#6a8fb5', '#7a4c8a'], autumn: ['#c9822f', '#e2a93a', '#9a5a2a', '#6e4a2c'], winter: ['#b8322e', '#4f6b2a', '#d9cfb8'] };
 function garland(x, y, season, now) {
   const C2 = GARLAND[season], w = 30;
@@ -3416,8 +3417,9 @@ function makeItems(items, now) {
     if (MAKE_TWICE[d.id]) { const [tx, ty] = MAKE_TWICE[d.id]; items.push({ d: depthOf(tx, ty), draw: () => { const [x, y] = toWorld(tx, ty); if (drawSlot('make-' + d.id, x, y, a)) return; ctx.save(); ctx.globalAlpha = a; MAKE_DRAW[d.id](x, y, a, now); ctx.restore(); } }); }
   }
   const dz = C.tasks.find(d => d.season === G.season(G.now())), da = dz ? taskProg(dz.id) : 0, sh = PROPS.find(q => q.name === 'shelter');   // this season's dressing, over the door
-  if (da > 0 && sh) items.push({ d: depthOf(sh.gx, sh.gy) + 0.012, draw: () => { const [x, y] = toWorld(sh.gx, sh.gy), k = 'make-' + dz.id, im = art(k); ctx.save(); ctx.globalAlpha = da;
-    if (im) { const w = 66 * sh.s, h = w * im.height / im.width; drawSlot(k, x - 38 * sh.s, y - 100 * sh.s + h, 1, { w }); }   // painted (art day 16): the swag over the door
+  if (da > 0 && sh) items.push({ d: depthOf(sh.gx, sh.gy) + 0.005, draw: () => { const [x, y] = toWorld(sh.gx, sh.gy), k = 'make-' + dz.id, im = art(k); ctx.save(); ctx.globalAlpha = da;
+    if (im) { const [lx, ly] = GARLAND_POSTS[0], [rx, ry] = GARLAND_POSTS[1], w = (rx - lx) * sh.s, h = 66 * sh.s * im.height / im.width;   // painted (art day 16): the swag hung post to post across the porch (Bryce), stretched to fit
+      ctx.translate(x + lx * sh.s, y + ly * sh.s); ctx.transform(1, (ry - ly) / (rx - lx), 0, 1, 0, 0); ctx.drawImage(im, 0, -h * 0.12, w, h); }
     else garland(x - 38 * sh.s, y - 98 * sh.s, dz.season, now); ctx.restore(); } });
   if (garden && taskProg('pond') > 0) { const [px, py] = glob(POND.tile, POND.gx, POND.gy); items.push({ d: depthOf(px, py) - 0.3, draw: () => { const [x, y] = toWorld(px, py); drawPond(x, y, taskProg('pond'), now); } }); }
 }
