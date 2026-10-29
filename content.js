@@ -593,7 +593,19 @@ window.CONTENT = {
   // the rabbit (game.js rabbitDue/rabbitRaid): a cheeky regular that always comes for the first sprouts. after = minutes the seedlings are up before it comes (it empties the dish first, if there is food in it).
   barrel: { every: 480, give: { water: 1 } },   // the scrubbed rain barrel fills every `every` minutes and tops up the gnomes' store by itself
   pantry: { cap: 12, seedTin: 30, meals: [[7, 8], [18, 19]] },
-  store: { cap: 40, giftCap: 20 },   // v70: each shelf of the gnomes' store holds 40 of a land find, 20 of a neighbour's gift (light: no limit). Full: the land leaves something else
+  store: { cap: 40, giftCap: 20, lightSoft: 40 },   // v81 (month two pacing): from 40 light the night wisps come a fifth as often and the land leaves dew instead (light is never taken away)
+  // v81 month two pacing (docs/MONTH-TWO.md build 1). Bryce 2026-10-29: the festival about day 60 for 2-3 visits a day. One number
+  // picks a plan; days count from the garden's first day (day 1). arrive: the earliest day each traveller in turn may come (0 = as
+  // soon as the last one has settled, as in month one); idea: the earliest day the neighbours propose the festival; jobGap: days
+  // between one festival job finishing and the next showing (one at a time); notice: days' warning before the festival night;
+  // patchGap: from month two (day 31 on) at most one new patch comes out of the mist every this many days
+  pace: { festivalDay: 60,
+    plans: {
+      45: { arrive:[0, 0, 0, 29, 32, 35, 46, 52], idea:35, jobGap:1, notice:2, patchGap:2 },
+      60: { arrive:[0, 0, 0, 31, 37, 43, 62, 68], idea:44, jobGap:2, notice:2, patchGap:3 },
+      90: { arrive:[0, 0, 0, 36, 50, 64, 71, 78], idea:64, jobGap:4, notice:2, patchGap:3 },
+    } },
+   // v70: each shelf of the gnomes' store holds 40 of a land find, 20 of a neighbour's gift (light: no limit). Full: the land leaves something else
                                      // and a neighbour's gift waits for room. Breakfast is bread and honey once there is honey (game.js mealTick).   // the pantry shelf holds about a dozen of each; at breakfast and supper the gnomes eat one thing from it (fix 3)
   rabbit: { after: 2,
     dish: 'A rabbit hopped up to the feeding dish and ate every last bit. Then it looked about for more.',

@@ -136,7 +136,7 @@ Everything else already has paintings: every animal (sprite and portrait), all f
 
 ## Build order (chats sized like the round-six builds)
 
-1. **Month two pacing** (Opus medium): the week gates for travellers and new patches, farms one job at a time, Jobs list at most about 6 rows, festival rule (6 neighbours + whole creek; jobs one every 4-5 days; two days' notice), the light shelf. Sim targets: festival about day 85-90 at 2-3 visits a day.
+1. **DONE v82 (2026-10-29), Month two pacing** (Opus medium): the week gates for travellers and new patches, farms one job at a time, Jobs list at most about 6 rows, festival rule (6 neighbours + whole creek; jobs one every 4-5 days; two days' notice), the light shelf. Sim targets: festival about day 85-90 at 2-3 visits a day.
 2. **Animals come home** (Opus medium): eight friends in order with foods, asks, homes and names; leaf pile, bee house and owl box become asks; old beats folded in.
 3. **Wild visitors and finds** (Sonnet medium): passers-by return with land and season; frogmouth, owl stake, bucket, carrot with legs; glow-worm at the festival.
 4. **Home stage three** (Opus medium, needs the art first), if chosen.
@@ -155,3 +155,13 @@ Each build keeps old saves loading and month one playing the same, and can go li
 - **Heart of the wood (2026-10-29): yes, a page "Awake"** on festival night after the first dance.
 
 All four picks match the recommendations, so the plan above is AGREED as written.
+
+- **Festival timing CHANGED (2026-10-29, after the first-hour worry): about day 60** (the "shorter choice" above). A traveller every 5-6 days after the Fernsbys (Pebbleworths from day 31, Clem 37, Barnaby 43); the festival idea from day 44 once six neighbours live here; festival jobs one at a time, the next showing 2 days after the last was begun; two days' notice; Nettle (day 62+) and Juniper (68+) come after the festival. The week-by-week table above is for day 90: later builds squeeze it to fit. The length is one number, `C.pace.festivalDay` in content.js (plans for 45, 60 and 90 are written), so it can move again without a rebuild.
+
+## Build 1 as built (v82)
+
+- `content.js` `pace`: per-plan earliest arrival day for each traveller in turn (the first three as before), the festival idea's earliest day, the gap between festival jobs, days of notice, and from day 31 one new patch out of the mist every 3 days (`game.js` reveal + mistTick).
+- The calendar only ever holds a quick player back: a slower player meets nothing later than before because of it, and festival jobs stop waiting once it is within 6 days of the festival day.
+- From the fourth neighbour on, their farm opens after their story; from day 31 the Jobs tab shows two waiting farm jobs at a time (the rest on each farm's card).
+- Light: from 40 saved, night wisps come a fifth as often and the night leaves dew instead (light is never taken away).
+- Pretend player (3 visits a day, 4 runs): festival day 56 every time (was 38-42); Nettle and Juniper days 62 and 68; light by day 90 about 210 (was 330). Twice a day: day 60-85, usually 64-70 (was about 55-63); that player is held up by how long neighbours' patches take to heal, which build 7's long robot run should look at.
