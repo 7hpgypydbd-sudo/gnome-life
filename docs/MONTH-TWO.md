@@ -151,3 +151,4 @@ Each build keeps old saves loading and month one playing the same, and can go li
 
 - **Festival timing (2026-10-29): about day 90 (three months)**, for 2-3 visits a day. The week-by-week table above stands.
 - **Animals (2026-10-29): eight friends with homes, one a week** (hedgehog, wren, native bees, frog, blue-tongue, owl, possum, bandicoot); the rest stay wild visitors.
+- **Home stage three (2026-10-29): a star room upstairs** in the stump's crown, round window on Hazel's Lamp; built week 11, two new paintings.
