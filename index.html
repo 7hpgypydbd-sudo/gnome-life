@@ -230,7 +230,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v79</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v80</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -251,7 +251,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 79;
+const BUILD = 80;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -259,9 +259,9 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=79"></script>
-<script src="game.js?v=79"></script>
-<script src="walk.js?v=79"></script>
+<script src="content.js?v=80"></script>
+<script src="game.js?v=80"></script>
+<script src="walk.js?v=80"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -317,7 +317,7 @@ if (NEWGROUND) {
   for (const n of ['bank', 'lip', 'path']) ASSETS['g-st-ribbon-' + n] = `sprites/kit/ribbon-${n}.webp`;   // art day 14 banks and path edges, straightened by tools/make_ribbons.py
   ASSETS['kit-rut-mud'] = 'sprites/kit/rut-mud.webp'; ASSETS['kit-rut-filled'] = 'sprites/kit/rut-filled.webp';
 }
-const GNOMES = {"him":{"cell":[108,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[144,242]},"water":{"n":4,"cell":[129,245]},"carry":{"n":4,"cell":[140,260]},"eat":{"n":4,"cell":[118,241]},"sit":{"n":4,"cell":[127,208]},"sleep":{"n":4,"cell":[264,85]},"pickup":{"n":4,"cell":[152,243]},"gather":{"n":4,"cell":[173,233]},"canwalk":{"n":4,"cell":[116,242]},"craft":{"n":4,"cell":[115,242]},"build":{"n":4,"cell":[115,242]},"dowse":{"n":4,"cell":[121,242]},"toss":{"n":4,"cell":[144,242]},"fill":{"n":4,"cell":[119,242]}}},"her":{"cell":[122,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[159,242]},"water":{"n":4,"cell":[148,241]},"carry":{"n":6,"cell":[105,244]},"eat":{"n":4,"cell":[102,244]},"sit":{"n":4,"cell":[119,208]},"sleep":{"n":2,"cell":[264,73]},"pickup":{"n":4,"cell":[161,240]},"gather":{"n":4,"cell":[159,224]},"craft":{"n":4,"cell":[111,242]},"build":{"n":4,"cell":[114,242]},"fill":{"n":4,"cell":[107,242]},"toss":{"n":4,"cell":[126,242]},"potwalk":{"n":4,"cell":[107,242]}}}};
+const GNOMES = {"him":{"cell":[108,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[144,242]},"water":{"n":4,"cell":[129,245]},"carry":{"n":4,"cell":[140,260]},"eat":{"n":4,"cell":[118,241]},"sit":{"n":4,"cell":[127,208]},"sleep":{"n":4,"cell":[264,85]},"pickup":{"n":4,"cell":[152,243]},"gather":{"n":4,"cell":[173,233]},"canwalk":{"n":4,"cell":[116,242]},"craft":{"n":4,"cell":[115,242]},"build":{"n":4,"cell":[115,242]},"dowse":{"n":4,"cell":[121,242]},"toss":{"n":4,"cell":[144,242]},"fill":{"n":4,"cell":[119,242]}}},"her":{"cell":[122,242],"dirs":{"side":8,"front":8,"back":8},"acts":{"dig":{"n":4,"cell":[159,242]},"water":{"n":4,"cell":[148,241]},"carry":{"n":6,"cell":[105,244]},"eat":{"n":4,"cell":[102,244]},"sit":{"n":4,"cell":[119,208]},"sleep":{"n":2,"cell":[264,73]},"pickup":{"n":4,"cell":[161,240]},"gather":{"n":4,"cell":[159,224]},"craft":{"n":4,"cell":[111,242]},"build":{"n":4,"cell":[114,242]},"fill":{"n":4,"cell":[107,242]},"toss":{"n":4,"cell":[126,242]},"potwalk":{"n":4,"cell":[111,242]}}}};
 
 // ---------- world helpers ----------
 function tileOrigin(k) { const [tx, ty] = k.split(',').map(Number); return [tx*EX[0] + ty*EY[0], tx*EX[1] + ty*EY[1]]; }
@@ -568,10 +568,16 @@ Object.assign(ART_SLOTS, { 'feeding-dish': { w: 62 },   /* Bryce: bigger for the
 Object.assign(ART_SLOTS, { 'pond': { w: 146 } });
 for (const k of ['spirit-float', 'spirit-point', 'spirit-settle', 'toad-legs', 'toad-house']) ART_SLOTS[k] = {};   // the Wood spirit's painted poses (art day 14)
 for (const p of C.story.pages) ART_SLOTS['page-' + p.id.replace('.', '-')] = {};
-for (const d of C.tasks) if (d.make && d.id !== 'barrow' && d.make !== 'track' && !d.season) ART_SLOTS['make-' + d.id] = { w: 60 };   // v70's track makes, season dressings and neighbours' wishes (WISH_DRAW) are stand-ins until the next art day; add their slots then
+// art day 16: the neighbours' wishes, painted sizes in world px (the stand-ins were drawn 1.3x)
+const WISH_SIZE = { pieshelf:{w:50}, herbwreath:{w:24}, flourbunting:{w:58}, sawhorse:{w:50}, carvedowl:{h:30}, clonks:{h:40}, twinswing:{h:52}, puddle:{w:66}, heightchart:{h:58},
+  birdtable:{h:62}, climbrose:{h:84}, kneerug:{w:38}, honeystall:{h:64}, beebath:{w:40}, paintedbee:{w:24}, sackbarrow:{w:56}, vane:{h:42}, mmbench:{w:72},
+  postyarn:{w:70}, dyepot:{w:44}, ragrug:{w:46}, moonflowers:{w:58}, starchart:{w:24}, mothpot:{w:40} };
+for (const d of C.tasks) if (d.make && d.id !== 'barrow') ART_SLOTS['make-' + d.id] = { w: 60 };   // track makes and the season dressings painted on art day 16
+for (const ws of Object.values(C.wishes.list)) for (const w of ws) ART_SLOTS['wish-' + w.id] = WISH_SIZE[w.id] || { w: 50 };   // the neighbours' wishes (art day 16; WISH_DRAW stand-ins until then)
 // the animals' side stories (docs/ANIMALS.md): a painting for each storybook page (page-a-<beat id>); the rabbit's portrait (not a journal visitor)
 for (const b of C.animals.beats) if (b.kind === 'page') ART_SLOTS['page-a-' + b.id] = {};
-ART_SLOTS['portrait-rabbit'] = {}; ART_SLOTS['vis-mouse-stuck'] = {};   // round six art list: the mouse with a bottle stuck on its head (a drawn stand-in until then)
+ART_SLOTS['portrait-rabbit'] = {}; ART_SLOTS['vis-mouse-stuck'] = {}; ART_SLOTS['mouse-bottle'] = {};   // round six (art day 17): the mouse with a broken bottle neck stuck on its head, and the neck on its own once Hazel tips it off
+for (const k of ['stump-1', 'stump-2', 'stump-3', 'stump-4', 'make-pebbleline']) ART_SLOTS[k] = {};   // art day 17: the old stump dug out in stages (drawStump); art day 16: the thin pebble line round the seed bed (pebbleEdge)
 // art day 15 (tools/cut_day15.py): crops, healing pieces, the animals' story pieces, the neighbours' farms, the bigger oaks. Each is drawn
 // by height where its stand-in was (cropPic, HEAL_PAINT, FARM_PAINT); missing files leave the stand-ins.
 for (const k of ['carrot', 'lettuce', 'bean']) for (let i = 1; i <= 4; i++) ART_SLOTS[`crop-${k}-${i}`] = {};
@@ -591,7 +597,9 @@ for (const k of ['cabbage-1', 'cabbage-2', 'cabbage-3', 'peas-1', 'peas-2', 'str
 const MAKE_SIZE = { firering:{w:100}, potstools:{w:70}, spinner:{h:90}, scraper:{w:46}, doorpots:{w:50}, doormat:{w:42}, scarecrow:{h:105}, pebbles:{w:80}, yardbath:{h:40},
   sundial:{h:66}, herbpots:{w:66}, wreath:{w:34}, plank:{w:84}, chime:{h:70}, nameboard:{w:40}, cushion:{w:44}, swing:{h:120}, hammock:{w:120}, sign:{h:96},
   gstones:{w:110}, wicket:{w:70}, mousering:{w:70}, sitstone:{w:52}, wildflowers:{w:86}, border:{w:140}, arch:{h:112}, mousetable:{w:40}, stonefrog:{w:42}, birddish:{h:78},
-  logbench:{w:120}, ferns:{w:78}, willowseat:{w:74}, pebblepath:{w:120} };
+  logbench:{w:120}, ferns:{w:78}, willowseat:{w:74}, pebblepath:{w:120},
+  signpost:{h:84}, milestone:{h:40}, trackbench:{w:80}, letterbox:{h:60}, noticeboard:{h:70}, trough:{w:70},   // art day 16: the old track's makes
+  earthbank:{w:110}, clover:{w:118}, mousedoor:{h:32}, dress_spring:{w:66}, dress_summer:{w:66}, dress_autumn:{w:66}, dress_winter:{w:66} };
 for (const [id, o] of Object.entries(MAKE_SIZE)) if (ART_SLOTS['make-' + id]) ART_SLOTS['make-' + id] = o;
 const ART = {};   // name -> loaded Image, only for slots whose file exists
 function art(k) { return ART[k] || null; }
@@ -1566,6 +1574,7 @@ function drawRutsFilled(ox, oy, now) {
 // to and fro until it tips over, chopped up and carried to the firewood pile a piece at a time, then the hole filled in.
 // Code stand-ins until the stages are painted (art day list).
 function drawStump(img, x, y, w, h, now) {
+  if (art('stump-1') && art('stump-4')) return paintedStump(img, x, y, w, h, now);
   const p = taskProg('stump'), S = STUMP_ST, roots = IM['kit-wood-17'], dug = sstep(0, S.rock * 0.9, p), fill = sstep(S.fill + 0.02, 1, p), hole = sstep(S.rock + 0.08, S.chop, p) * (1 - fill);
   const chop = p < S.chop ? 0 : sstep(S.chop, S.fill - 0.03, p), chips = chop > 0 ? Math.min(1, chop * 4) * (1 - fill) : 0;
   ctx.save(); groundPatch(x, y, w * 0.72, w * 0.28);
@@ -1582,6 +1591,22 @@ function drawStump(img, x, y, w, h, now) {
   }
   ctx.restore();
 }
+// art day 17: the four painted stages, all at one scale (stump-1 dug round with its roots bared, 2 rocked loose and tipped by its hole,
+// 3 chopped into firewood, 4 the hole filled), crossfaded as the job goes; the chopped wood goes to the woodpile a piece at a time
+const STUMP_K = 1.55;   // stump-1's width over the plain stump's
+function paintedStump(img, x, y, w, h, now) {
+  const p = taskProg('stump'), S = STUMP_ST, k = w * STUMP_K / art('stump-1').width;
+  const pic = (n, al, dx = 0, sc = 1, rot = 0) => { const im = art('stump-' + n); if (!im || al <= 0) return; const iw = im.width * k * sc, ih = im.height * k * sc;
+    ctx.save(); ctx.globalAlpha *= Math.min(1, al); ctx.translate(x + dx, y); if (rot) ctx.rotate(rot); ctx.drawImage(im, -iw / 2, -ih * 0.82, iw, ih); ctx.restore(); };
+  if (p < S.rock) { const dug = sstep(0.05, 0.4, p / S.rock); if (dug < 1) { ctx.save(); ctx.globalAlpha = 1 - dug; shadow(x, y, w * 0.48, w * 0.17); ctx.drawImage(img, x - w / 2, y - h, w, h); ctx.restore(); } pic(1, dug); return; }
+  if (p < S.chop) { const rk = (p - S.rock) / (S.chop - S.rock), tip = sstep(0.65, 0.9, rk); pic(1, 1 - tip, 0, 1, rk < 0.7 ? Math.sin(now / 240) * 0.05 * Math.min(1, rk * 2) : 0); pic(2, tip); return; }   // rocked to and fro, then over it goes
+  const fill = sstep(S.fill, 1, p), chop = sstep(S.chop, S.chop + 0.08, p), carried = sstep(S.chop + 0.1, S.fill - 0.02, p);
+  if (chop > 0 && fill < 1) { pic(4, chop); ctx.save(); ctx.globalAlpha *= chop * (1 - fill); ctx.translate(x, y - w * 0.05); ctx.scale(1, 0.32);   // the hole: a soft dark hollow in the painted patch of dug earth
+    const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, w * 0.3); gr.addColorStop(0, 'rgba(40,26,16,0.95)'); gr.addColorStop(0.6, 'rgba(58,40,26,0.8)'); gr.addColorStop(1, 'rgba(90,66,44,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(0, 0, w * 0.3, 0, 7); ctx.fill(); ctx.restore(); }
+  pic(2, 1 - chop);
+  pic(3, chop * (1 - carried * 0.85), -w * 0.5, 1 - carried * 0.5);   // the chopped wood beside the hole, less of it with each trip to the woodpile
+  if (fill > 0) pic(4, 1);
+}
 function propAlpha(p) {   // how much of a prop shows: props with "until" appear as that job is done
   if (p.gone) return 1 - taskProg(p.gone);   // things a job takes away fade as it runs
   if (!p.until) return 1;
@@ -1594,6 +1619,7 @@ function drawProp(p) {
   const w = img.width * s, h = img.height * s, a = propAlpha(p), now = performance.now();
   if (a < 1 && BEFORE[p.name] && !drawSlot(BEFORE_ART[p.name], x, y, 1 - a)) BEFORE[p.name](x, y, 1 - a);
   if (p.name === 'lanternstump' && a > 0 && a < 1) return drawStump(img, x, y, w, h, now);   // round six: dug out in stages, not a fade
+  if (p.name === 'lanternstump' && a <= 0 && art('stump-4')) { if (!taskProg('yardbath')) { const im = art('stump-4'), k = w * STUMP_K / art('stump-1').width; ctx.save(); ctx.globalAlpha = G.landStage().key === 'barren' ? 0.9 : 0.5; ctx.drawImage(im, x - im.width * k / 2, y - im.height * k * 0.82, im.width * k, im.height * k); ctx.restore(); } return; }   // the filled-in hole, until the bug bath goes there
   if (p.name === 'lanternstump' && a <= 0) { if (G.landStage().key === 'barren') { ctx.save(); ctx.globalAlpha = 0.55; kitPiece('g-st-patch-07', x, y + 4, w * 0.3, true); ctx.restore(); } return; }   // round six: a soft patch of filled-in earth where it stood (the clods looked like odd little ovals)
   if (p.gone && a < 1) { ctx.save(); ctx.globalAlpha = (1 - a) * 0.9; groundPatch(x, y, w * 0.5, w * 0.18); for (let i = 0; i < 9; i++) blob(x + (rnd(i + 90) - 0.5) * w * 0.55, y - 2 + (rnd(i + 91) - 0.5) * w * 0.14, (3 + rnd(i + 92) * 4) * 1.2, (2 + rnd(i + 93) * 2) * 1.2, ['#6e5238', '#7d6046', '#5e4632'][i % 3]); ctx.restore(); }   // a few clods of freshly turned earth where it stood
   // no glow on built things or job spots (Bryce: a fence shouldn't glow); only things you pick up glow. The Jobs badge says when there's work.
@@ -1920,7 +1946,10 @@ function fencePanel(p) { return Math.min(FENCE_N - 1, Math.floor(p * FENCE_N)); 
 function fencePanelShow(k) { const p = taskProg('fence'); return p >= 1 ? 1 : sstep(0.3, 0.9, p * FENCE_N - k); }
 FENCE_SEGS.filter(f => !f.gate).forEach(f => { const k = FENCE_SEGS.indexOf(f); EXTRAS.push({ gx: f.gx, gy: f.gy,
   show: () => bedFenceShown() ? fencePanelShow(k) : 0,
-  draw(x, y, al) { drawFenceSeg(bedRing(f.a0), bedRing(f.a1), al); } }); });
+  draw(x, y, al) { drawFenceSeg(bedRing(f.a0), bedRing(f.a1), al); if (k === 0) mouseDoor(al); } }); });
+function mouseDoor(al) {   // art day 16: the painted mouse door goes on with its fence panel, so the panel never hides it
+  const a = taskProg('mousedoor'); if (a <= 0 || !art('make-mousedoor')) return; const sg = FENCE_SEGS[0], [mx, my] = bedRing((sg.a0 + sg.a1) / 2); drawSlot('make-mousedoor', mx, my + 4, al * a);
+}
 EXTRAS.push({ gx: FENCE_GATE.gx, gy: FENCE_GATE.gy, show: () => bedFenceShown() ? fencePanelShow(FENCE_N - 1) : 0, draw(x, y, al) {
   const open = gateOpen(), g = IM['kit-' + (open ? 'gate-open' : 'gate-closed')];
   drawFenceSeg(bedRing(FENCE_GATE.a0), bedRing(FENCE_GATE.a1), al, g, open ? [[43, 377], [271, 546]] : GATE_FOOT); } });
@@ -2247,7 +2276,7 @@ function drawVisitor(v, now) {
   const dance = def.id === 'lyrebird' && !moving && Math.floor(now / 3500) % 3 === 2 && art('lyre-dance');   // the lyrebird dances now and then while it visits
   const stuck = def.id === 'mouse' && v.trouble && v.trouble.meet;   // the mouse's first meeting: an old loggers' bottle on its head (art slot vis-mouse-stuck)
   if (def.id === 'rabbit') { const im = IM['rabbit-' + (moving || v.phase === 'eat' ? 'dish' : v.pose || 'sit')]; if (im && im.width) { const w = im.width * RABBIT_PIX, hh = im.height * RABBIT_PIX; ctx.save(); ctx.translate(x, yy); if (!v.faceR) ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, -hh, w, hh); ctx.restore(); } }
-  else if (stuck && art('vis-mouse-stuck')) drawCreature(Object.assign({}, def, { id: 'mouse-stuck' }), x, yy, h, v.faceR);
+  else if (stuck && art('vis-mouse-stuck')) drawCreature(Object.assign({}, def, { id: 'mouse-stuck' }), x, yy, h * 1.3, v.faceR);   // the bottle neck sits above its head
   else if (dance) { const w = h * dance.width / dance.height; ctx.drawImage(dance, x - w / 2, yy - h, w, h); }
   else drawCreature(look && art('vis-' + look) ? Object.assign({}, def, { id: look, faces: 'R' }) : def, x, yy, h, v.faceR);
   if (coat && !art('vis-hedgehog-coat')) leafCoat(x, yy, h);   // out shopping again
@@ -2810,6 +2839,7 @@ function visitorMoment(v) {   // a little line now and then while someone is vis
   if (id === 'owl' && gnomes.some(g => g.onBench)) { v.said = true; toast(pick(C.animals.owlCompany)); }   // the gnomes by the fire, the owl watching
   else if (id === 'lyrebird') { v.said = true; toast(pick(C.animals.lyreMimic)); }
 }
+let BOTTLE_OFF = null;   // art day 17: the broken bottle neck Hazel tipped off the mouse, left lying in the grass a while
 const BABY_SEED = {};   // the smallest baby, with the dandelion seed on its ear (tap it)
 function animalItems(items, now) {
   const h = dayPhase().h, day = h >= 6 && h < 19;
@@ -2937,12 +2967,24 @@ function villageItems(items, now) {
   }
   for (const [fid, fs] of Object.entries(v.folk)) for (const w of C.wishes.list[fid] || []) {   // v70: the neighbours' wishes, by their homes (fade in while they make them)
     const a = G.wishProg(fid, w.id); if (a <= 0) continue; const [gx, gy] = glob(fs.tile, ...w.at);
-    items.push({ d: depthOf(gx, gy) + (WISH_FLAT.has(w.look) ? -0.2 : 0), draw: () => { const [x, y] = toWorld(gx, gy); if (drawSlot('wish-' + w.id, x, y, a)) return; ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y); ctx.scale(1.3, 1.3); (WISH_DRAW[w.look] || WISH_DRAW.shelf)(0, 0, now, w); ctx.restore(); } });
+    items.push({ d: depthOf(gx, gy) + (WISH_FLAT.has(w.look) ? -0.2 : 0), draw: () => { const [x, y] = toWorld(gx, gy); if (wishPainted(w, x, y, a)) return; ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y); ctx.scale(1.3, 1.3); (WISH_DRAW[w.look] || WISH_DRAW.shelf)(0, 0, now, w); ctx.restore(); } });
   }
   const ba = taskProg('bridge'); if (ba > 0) { const [gx, gy] = glob(BRIDGE.tile, BRIDGE.gx, BRIDGE.gy); items.push({ d: depthOf(gx, gy) - 0.3, draw: () => { const [x, y] = toWorld(gx, gy); drawBridge(x, y, ba); } }); }
   for (const p of folkOnLand) items.push({ d: depthOf(p.gx, p.gy), draw: () => { p.draw(now); if (p.screen && p.i === 0 && (folkNeedsYou(p.f.id) || (p.home.camp && !G.s.tasks['home:' + p.f.id]))) bang(p.screen.x, p.screen.y - p.screen.h - 14, now); } });
   for (const fd of v.finds) items.push({ d: depthOf(...glob(fd.tile, fd.gx, fd.gy)), draw: () => drawFind(fd, now) });
   for (const o of G.s.secrets.out) items.push({ d: depthOf(...glob(o.tile, o.gx, o.gy)) - 0.01, draw: () => drawSecret(o, now) });
+  if (BOTTLE_OFF && art('mouse-bottle')) { const b = BOTTLE_OFF, a = 1 - sstep(40000, 50000, now - b.t); if (a <= 0) BOTTLE_OFF = null;
+    else items.push({ d: depthOf(b.gx, b.gy), draw: () => { const [x, y] = toWorld(b.gx, b.gy); ctx.save(); ctx.globalAlpha = a; shadow(x, y, 14, 3.5); cropPic('mouse-bottle', x, y, 24, false, 0.85); ctx.restore(); } }); }
+}
+// art day 16: the painted wishes that hang or perch are put up on a post (or two), like their stand-ins: [how, post height]
+const WISH_MOUNT = { herbwreath:['post', 44], paintedbee:['post', 40], starchart:['post', 40], carvedowl:['top', 50], vane:['top', 52], clonks:['arm', 70], twinswing:['frame', 90], flourbunting:['posts', 56] };
+function wishPainted(w, x, y, a) {
+  const k = 'wish-' + w.id, im = art(k); if (!im) return false; const m = WISH_MOUNT[w.id]; if (!m) return drawSlot(k, x, y, a);
+  const [iw, ih] = slotSize(k, im), [how, P] = m; ctx.save(); ctx.globalAlpha *= a;
+  if (how === 'frame' || how === 'posts') { const e = iw / 2 + 4; shadow(x, y, e + 6, 5); post(x - e, y, P, 5); post(x + e, y + 2, P, 5); if (how === 'frame') plank(x - e - 4, y - P, x + e + 4, y - P, 5, '#6e4a2c'); drawSlot(k, x, y - P + ih + (how === 'posts' ? 2 : 0), 1); }
+  else if (how === 'arm') { shadow(x, y, 8, 3); post(x, y, P, 4.5); plank(x, y - P, x + iw * 0.75, y - P, 4, '#7a5a3a'); drawSlot(k, x + iw * 0.42, y - P + ih * 0.95, 1); }
+  else { shadow(x, y, 8, 3); post(x, y, P, 4.5); drawSlot(k, x, how === 'top' ? y - P + 3 : y - P + ih * 0.6, 1); }
+  ctx.restore(); return true;
 }
 // v70: the neighbours' wishes, code stand-ins by look until each is painted (art slot wish-<id>); bottom-centre at (x, y)
 const WISH_FLAT = new Set(['puddle', 'mat', 'beebath', 'flowers', 'dish']);
@@ -3286,7 +3328,7 @@ Object.assign(MAKE_DRAW, {   // the animals' side stories (docs/ANIMALS.md)
   earthbank(x, y) { shadow(x, y, 54, 12); blob(x, y - 11, 52, 20, '#7a5a3a'); blob(x - 4, y - 18, 40, 15, '#8f6c48'); blob(x + 9, y - 26, 22, 9, '#a07c56');   // a soft mound of loose earth
     for (let i = 0; i < 12; i++) blob(x - 46 + rnd(i + 950) * 92, y - 2 - rnd(i + 960) * 8, 2.6, 1.7, ['#6e5038', '#a07c56'][i % 2]);
     for (let i = 0; i < 6; i++) { const gx = x - 40 + i * 16, gy = y - 14 - Math.sin(i / 5 * Math.PI) * 22; ctx.save(); ctx.strokeStyle = '#6f8a34'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx - 2, gy - 6); ctx.moveTo(gx, gy); ctx.lineTo(gx + 2, gy - 5); ctx.stroke(); ctx.restore(); }
-    if (G.s.moved.burrow && art('burrow-mound')) { cropPic('burrow-mound', x - 6, y + 6, 70, true, 0.95); return; }   // painted mound with its round door (art day 15) over the code mound
+    if (G.s.moved.burrow && art('burrow-mound')) { cropPic('burrow-mound', x - 6, y + 6, 70, true, 0.95); return; }   // painted mound with its round door (art day 15) over the code mound (or the painted bank: makeItems)
     if (G.s.moved.burrow && drawSlot('nest-burrow', x - 14, y + 4, 1, { scale: 1.6 })) return;   // the rabbit has dug its burrow into it
     if (G.s.moved.burrow) { blob(x - 20, y - 10, 14, 12, '#2a1a10'); blob(x - 20, y - 11, 10.5, 9, '#140c06'); for (let i = 0; i < 6; i++) blob(x - 34 + i * 5, y + 2 + rnd(i + 970) * 3, 2, 1.3, '#8f6c48'); } },   // a round door, a few crumbs of soil
   clover(x, y) { blob(x, y, 62, 13, 'rgba(70,52,34,0.35)');   // a strip of dug earth sown with clover, a few white and pink heads
@@ -3322,8 +3364,24 @@ const MAKE_DEPTH = { firering: -0.012, wreath: 0.06, nameboard: 0.06, chime: 0.0
 const PEBBLE_N = 14;
 function pebbleAngle(q) { return Math.PI / 2 + 0.34 + q * (2 * Math.PI - 0.68); }
 function pebbleShow(q, a) { if (a >= 1) return 1; const i = Math.round(q * (PEBBLE_N - 1)); return sstep(0.35, 0.85, a * PEBBLE_N - i); }   // the spot she is crouched at fills while she works there (Bryce: laid from her hands)
+const PEBBLE_SL = new Map();
+function pebbleSlices(im) {   // the painted strip's stones, as [x0, x1] column runs (found once from its see-through gaps)
+  if (PEBBLE_SL.has(im)) return PEBBLE_SL.get(im); const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x2 = c.getContext('2d'); x2.drawImage(im, 0, 0);
+  const d = x2.getImageData(0, 0, c.width, c.height).data, runs = []; let st = -1;
+  for (let x = 0; x <= c.width; x++) { let on = false; if (x < c.width) for (let y = 0; y < c.height; y++) if (d[(y * c.width + x) * 4 + 3] > 60) { on = true; break; }
+    if (on && st < 0) st = x; if (!on && st >= 0) { if (x - st > 4) runs.push([st, x]); st = -1; } }
+  PEBBLE_SL.set(im, runs.length ? runs : [[0, im.width]]); return PEBBLE_SL.get(im);
+}
 function pebbleEdge(a) {   // "Pebble edging round the seed bed": small clumps of the painted pebbles just outside the fence, with a gap at the gate
-  const f = bedFrame(), n = PEBBLE_N;
+  const f = bedFrame(), n = PEBBLE_N, line = art('make-pebbleline');
+  if (line) {   // art day 16 (Bryce): a thin line of pebbles following the fence's curve, the painted stones laid one by one, each turned along it
+    const W = f.W * 1.12, H = f.H * 1.15, at = th => [f.cx + Math.cos(th) * W, f.cy + Math.sin(th) * H - Math.cos(th) * W * 0.22], ph = 8, k = ph / line.height, sl = pebbleSlices(line);
+    let q = 0, j = 0;
+    while (q < 1) { const [x0, x1] = sl[j++ % sl.length], pw = (x1 - x0) * k, th = pebbleAngle(q), [x, y] = at(th), [xn, yn] = at(pebbleAngle(Math.min(1, q + 0.002)));
+      const show = pebbleShow(q, a); if (show > 0) { ctx.save(); ctx.globalAlpha *= show; ctx.translate(x, y); ctx.rotate(Math.atan2(yn - y, xn - x)); ctx.drawImage(line, x0, 0, x1 - x0, line.height, 0, -ph * 0.7, pw, ph); ctx.restore(); }
+      q += pw * 0.95 / Math.max(1, Math.hypot(xn - x, yn - y)) * 0.002; }
+    return;
+  }
   for (let i = 0; i < n; i++) { const th = pebbleAngle(i / (n - 1)), u = Math.cos(th), W = f.W * 1.18, H = f.H * 1.22;
     drawSlot('make-pebbles', f.cx + u * W, f.cy + Math.sin(th) * H - u * W * 0.22, pebbleShow(i / (n - 1), a) * 0.8, { w: 20 + 7 * rnd(i + 700), flat: true }); }   // a little see-through, so the white stones sit down into the earth
 }
@@ -3340,19 +3398,23 @@ function makeItems(items, now) {
     const a = taskProg(d.id); if (a <= 0 || d.id === 'barrow') continue;   // the wheelbarrow is a prop already
     const op = d.id === 'swing' && a >= 1 && oakPic(); if (op && !op[0].endsWith('-plain')) continue;   // the bigger oak paintings have the swing in them
     const [hx, hy] = makeAt(d);
+    if (d.id === 'mousedoor' && art('make-mousedoor')) continue;   // painted: drawn with its fence panel (mouseDoor)
     if (MAKE_PARTS[d.id] && !art('make-' + d.id)) { for (const [gx, gy, k, h] of MAKE_PARTS[d.id]()) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); ctx.save(); ctx.globalAlpha = a; shadow(x, y, h * 0.3, h * 0.08); kitPiece(k, x, y, h); ctx.restore(); } }); continue; }
-    if (d.id === 'pebbles' && art('make-pebbles')) { items.push({ d: depthOf(hx, hy) - 0.25, draw: () => pebbleEdge(a) }); continue; }
+    if (d.id === 'pebbles' && (art('make-pebbles') || art('make-pebbleline'))) { items.push({ d: depthOf(hx, hy) - 0.25, draw: () => pebbleEdge(a) }); continue; }
     if (d.id === 'firering' && a < 1 && art('make-firering')) { items.push({ d: depthOf(hx, hy) + MAKE_DEPTH.firering, draw: () => { const [x, y] = toWorld(hx, hy), [w, h] = slotSize('make-firering', art('make-firering')), n = 12, k = Math.ceil(a * n) / n;   // round six (Bryce): the stones go in round the fire one at a time
       ctx.save(); ctx.beginPath(); ctx.moveTo(x, y - h / 2); ctx.arc(x, y - h / 2, w, Math.PI * 0.5, Math.PI * 0.5 + k * Math.PI * 2); ctx.closePath(); ctx.clip(); drawSlot('make-firering', x, y, 1); ctx.restore(); } }); continue; }   // art review: the painted clump is laid round the bed, not dropped in the middle of it
     const hd = HOUSE_DOOR[d.id], sh = hd && PROPS.find(q => q.name === 'shelter');
     items.push({ d: hd ? depthOf(sh.gx, sh.gy) + 0.01 : depthOf(hx, hy) + (MAKE_FLAT.has(d.id) ? -0.25 : MAKE_DEPTH[d.id] || 0), draw: () => { let [x, y] = toWorld(hx, hy); if (hd) { [x, y] = toWorld(sh.gx, sh.gy); x += hd[0] * sh.s; y += hd[1] * sh.s; }
       if (d.id === 'chime') chimePost(x, y, a);
       if (d.id === 'doormat' && art('make-doormat')) { ctx.save(); ctx.translate(x, 0); ctx.scale(-1, 1); drawSlot('make-doormat', 0, y, a); ctx.restore(); return; }   // v79 (Bryce): turned so its long side lies along the door
-      if (drawSlot('make-' + d.id, x, y, a)) return; ctx.save(); ctx.globalAlpha = a; MAKE_DRAW[d.id](x, y, a, now); ctx.restore(); } });
+      if (d.id === 'earthbank' && G.s.moved.burrow && art('burrow-mound')) { drawSlot('make-earthbank', x, y + 4, a); ctx.save(); ctx.globalAlpha = a; cropPic('burrow-mound', x - 6, y + 6, 70, true, 0.95); ctx.restore(); return; }   // the rabbit's round door in the painted bank
+      if (drawSlot('make-' + d.id, x, y + (d.id === 'earthbank' ? 4 : 0), a)) return; ctx.save(); ctx.globalAlpha = a; MAKE_DRAW[d.id](x, y, a, now); ctx.restore(); } });
     if (MAKE_TWICE[d.id]) { const [tx, ty] = MAKE_TWICE[d.id]; items.push({ d: depthOf(tx, ty), draw: () => { const [x, y] = toWorld(tx, ty); if (drawSlot('make-' + d.id, x, y, a)) return; ctx.save(); ctx.globalAlpha = a; MAKE_DRAW[d.id](x, y, a, now); ctx.restore(); } }); }
   }
   const dz = C.tasks.find(d => d.season === G.season(G.now())), da = dz ? taskProg(dz.id) : 0, sh = PROPS.find(q => q.name === 'shelter');   // this season's dressing, over the door
-  if (da > 0 && sh) items.push({ d: depthOf(sh.gx, sh.gy) + 0.012, draw: () => { const [x, y] = toWorld(sh.gx, sh.gy); ctx.save(); ctx.globalAlpha = da; garland(x - 38 * sh.s, y - 98 * sh.s, dz.season, now); ctx.restore(); } });
+  if (da > 0 && sh) items.push({ d: depthOf(sh.gx, sh.gy) + 0.012, draw: () => { const [x, y] = toWorld(sh.gx, sh.gy), k = 'make-' + dz.id, im = art(k); ctx.save(); ctx.globalAlpha = da;
+    if (im) { const w = 66 * sh.s, h = w * im.height / im.width; drawSlot(k, x - 38 * sh.s, y - 100 * sh.s + h, 1, { w }); }   // painted (art day 16): the swag over the door
+    else garland(x - 38 * sh.s, y - 98 * sh.s, dz.season, now); ctx.restore(); } });
   if (garden && taskProg('pond') > 0) { const [px, py] = glob(POND.tile, POND.gx, POND.gy); items.push({ d: depthOf(px, py) - 0.3, draw: () => { const [x, y] = toWorld(px, py); drawPond(x, y, taskProg('pond'), now); } }); }
 }
 
@@ -4394,7 +4456,7 @@ function openPack() {
 const JOB_PIC = { ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'yard-bench', barrow: 'wheelbarrow',
   woodpile: 'firewood', doorstep: 'yard-doorstep', rainbarrel: 'barrel-full', clothesline: 'washing-line', lantern: 'lanternstump', stump: 'lanternstump', windowbox: 'yard-windowbox', wormlantern: 'worm-lantern',
   wormlamp: 'worm-lamp', house1: 'house-hollowed', house2: 'house-windows', house3: 'house-finished', hedgehoghouse: 'nest-leafpile', nestbox: 'nest-nest', bridge: 'bld-bridge',
-  dress_spring: 'kit/season-07', dress_summer: 'kit/season-08', dress_autumn: 'kit/season-05', dress_winter: 'kit/season-03' };
+  dress_spring: 'make-dress_spring', dress_summer: 'make-dress_summer', dress_autumn: 'make-dress_autumn', dress_winter: 'make-dress_winter' };
 function jobPic(d) {   // a small painted picture of what the job makes, for the parchment job cards ('' if there is none)
   const [kind, f] = d.id.split(':'), k = JOB_PIC[d.id] || (d.healTile ? STEP_PIC[d.stepId] : '') || (kind === 'home' ? 'home-' + f : kind === 'trade' ? 'bld-' + f : kind === 'quest' || kind === 'farm' ? 'folk-' + f : kind === 'regrow' ? 'sapling' : d.make ? 'make-' + d.id : '');
   return k ? `<img class="jpic" src="sprites/${k}.webp" alt="" onerror="this.remove()">` : '';
@@ -4582,7 +4644,7 @@ function basketTo(g, fid) {   // a gnome carries it over to the neighbour's door
 function helped(v) {   // the good deed is done: a little light, and the thank-you
   G.entry(v.def.id); if (!G.met(v.def.id)) G.noteVisitor(v.def.id);
   const tr = v.trouble, light = G.help(v.def.id, tr.thanks), [x, y] = toWorld(v.gx, v.gy), thanks = tr.thanks + (tr.meet ? ` ${C.friends.mouse.met}` : '');
-  if (tr.meet) G.meet('mouse'); if (tr.friendAsk) G.askDone(v.def.id);
+  if (tr.meet) { G.meet('mouse'); BOTTLE_OFF = { gx: v.gx + (v.faceR ? -0.04 : 0.04), gy: v.gy + 0.012, t: performance.now() }; } if (tr.friendAsk) G.askDone(v.def.id);
   float(light ? '+1 light ♥' : '♥', x, y - (v.def.h || 30));
   if (v.trouble.by === 'luck') for (let i = 0; i < 10; i++) particles.push({ k: 'breath', x: x - 40 + Math.random() * 20, y: y - 10 - Math.random() * 30, vx: 22 + Math.random() * 12, vy: -3 - Math.random() * 4, r: 3 + Math.random() * 3, life: 0, max: 1.8 + Math.random() });   // the breath of luck: a soft drift of air past it (not a glow)
   v.trouble = null; v.stay = v.t + 8;
