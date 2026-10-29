@@ -1,0 +1,73 @@
+"""Writes art-day-17 prompts (round six asks) to prompts/<id>.txt and prompts.json."""
+import json, os
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+STYLE = ("Style: traditional children's book illustration like The Secret World of the Gnomes. "
+         "Fine brown ink outlines with soft watercolour washes, muted earthy colours, cream highlights, "
+         "naturalistic and gentle, printed-on-paper look. Not clay, not 3D, not cartoon, not vector. "
+         "Soft light from the upper left.")
+MAG = "Flat solid magenta background #FF00FF with no shadow, gradient, glow, text or frame."
+SCALE = ("seen from a gentle slanted view from above and to the front, at gnome scale like the pasted gnome "
+         "(a gnome is about knee high to a person),")
+END = "Do not paint the pasted gnome, bench or buildings. No ground, no shadow. Avoid pink and purple anywhere."
+SCENE = ("The setting is an Australian hillside clearing that loggers left bare: cut stumps, dry grass, a few "
+         "tall pale gum trees in the distance, not an English oak wood, no cottages. The two gnomes are exactly "
+         "the young couple in the pasted picture: Wendel with a red pointed cap, chestnut beard, blue-grey shirt; "
+         "Hazel with a green pointed cap, chestnut braids, brown dress and cream apron. The picture fills the "
+         "frame edge to edge with a soft vignette like the pasted page, no paper border, no frame, no text.")
+
+P = [
+ dict(batch="Round six", id="n01-mouse-bottle", title="The mouse with a broken bottle neck on its head",
+      refs=["vis-mouse", "him-side"],
+      prompt=f"Generate an image: A wide 16:9 picture. {STYLE} {MAG} Two separate pieces side by side with a wide clear magenta gap, {SCALE} "
+             "1) exactly the pasted brown field mouse, sitting up on its back legs, with the BROKEN-OFF NECK of a small old green glass bottle stuck over its head like a too-big helmet: "
+             "only the narrow neck and the round shoulder of the bottle, the broken edge worn smooth and dull, no sharp shards, the mouse's ears squashed inside, "
+             "its eyes and whiskers peeping out under the rim, its little front paws pushing up at the glass, looking puzzled; "
+             "2) the same broken bottle neck lying on its side on its own, empty. The glass is dull sea-glass green, no shine, no sparkle, no glare. "
+             "The mouse is the same size as a gnome's boot. " + END),
+ dict(batch="Round six", id="n02-bug-bath", title="A gnome-sized bug bath",
+      refs=["stonebench", "him-side"],
+      prompt=f"Generate an image: {STYLE} {MAG} One piece in the centre with lots of clear magenta around it, {SCALE} "
+             "a little bug bath made by gnomes: a flat, shallow round stone dish resting on one short chunky stone, the dish only as high as a gnome's knee, "
+             "a little clear water in the dish with five or six rounded pebbles poking up out of the water so nobody small can fall in, "
+             "a red ladybird with black spots sitting on one pebble and a honey bee drinking at the rim. Grey speckled stone with a little moss and lichen, firm ink outlines. "
+             "Hidden detail: a tiny snail on the side of the standing stone. " + END),
+ dict(batch="Round six", id="n03-stump-stages", title="Digging out the old stump, four stages",
+      refs=["wood-17", "him-side"],
+      prompt=f"Generate an image: A wide 16:9 picture. {STYLE} {MAG} Four separate pieces in one row, evenly spaced with wide clear magenta gaps, all at the same scale, {SCALE} "
+             "the same small old rotten tree stump, about as tall as a gnome and a little wider, grey weathered wood with cracked bark, in four stages of being dug out: "
+             "1) the stump still standing in a ring of freshly dug brown earth, its thick roots bared all round, a heap of earth beside it; "
+             "2) the stump rocked loose and tipped over on its side, its roots sticking up in the air with clods of earth on them, beside a round dark hole; "
+             "3) the stump chopped up: a neat little stack of split firewood logs and a scatter of pale wood chips; "
+             "4) the hole filled in: a low round patch of raked brown earth patted smooth, a few wood chips on it. "
+             "Each piece is the same width so they line up. Hidden detail: a tiny snail on the stack of firewood. " + END),
+ dict(batch="Round six", id="n04-campfire", title="Campfire without stones, and the ring of stones",
+      refs=["campfire", "make-firering"],
+      prompt=f"Generate an image: A wide 16:9 picture. {STYLE} {MAG} Two separate pieces side by side with a wide clear magenta gap, both at the same scale: "
+             "1) redraw the pasted campfire exactly, same stick tripod, same black kettle on its hook, same size and view, but WITHOUT any stones: "
+             "just a small heap of crossed sticks on a round patch of bare scorched earth under the kettle, the three tripod legs standing on the ground; "
+             "2) the pasted ring of grey stones on its own, empty, a full closed ring of rounded grey stones exactly the size that fits round the heap of sticks in piece 1. "
+             "Painted UNLIT, as if in daylight with the fire not yet lit: no flames, no glow, no halo, no smoke, no orange. Hidden detail: a tiny snail on one of the stones. "
+             "No ground, no shadow. Avoid pink and purple anywhere."),
+ dict(batch="Round six", id="n05-page-1-1", title="Story page 1.1: the wagon becomes the first home",
+      refs=["page-1-1", "shelter"],
+      prompt=f"Generate an image: A wide 16:9 storybook page picture in exactly the same style as the pasted page with the gnomes and the wagon. {STYLE} {SCENE} "
+             "Late golden afternoon. At the foot of a huge old cut tree stump with great twisting roots, the two gnomes are taking their little wooden hand-cart wagon apart to make their first home, like the pasted lean-to: "
+             "the spoked wooden wagon wheel stands upright between two roots as a round door; two of the wagon's floor planks stand on edge as two short walls; "
+             "Hazel stretches the patched cream canvas wagon top over them as a roof; Wendel, kneeling, ties the canvas to a peg with twine. "
+             "The empty wagon frame with one remaining wheel and the axle lies nearby, and a stack of many little clay pots of all sizes stands by the new door, with the little oak sapling in its pot beside them. "
+             "Gnome sized: the gnomes are small next to the stump. Hidden detail: a tiny snail on the rim of one of the pots. Avoid pink and purple anywhere."),
+ dict(batch="Round six", id="n06-page-1-2", title="Story page 1.2: water between the roots",
+      refs=["page-1-2"],
+      prompt=f"Generate an image: A wide 16:9 storybook page picture in exactly the same style as the pasted page. {STYLE} {SCENE} "
+             "Morning. At the back of the bare yard stands an old cut stump with big grey twisting roots. Wendel stands near it holding a forked hazel twig out in front of him in both hands, "
+             "eyes half shut, the tip of the twig dipping down towards the ground between two roots. Hazel kneels between the roots with a little trowel, "
+             "where a small clear pool of spring water is just welling up out of the earth, and she smiles at it. The little canvas lean-to under the big stump is far off in the background. "
+             "Hidden detail: a tiny snail on one of the roots. Avoid pink and purple anywhere."),
+]
+
+os.makedirs(os.path.join(HERE, "prompts"), exist_ok=True)
+for p in P:
+    open(os.path.join(HERE, "prompts", p["id"] + ".txt"), "w").write(p["prompt"] + "\n")
+json.dump(P, open(os.path.join(HERE, "prompts.json"), "w"), indent=1)
+print(len(P), "prompts")
