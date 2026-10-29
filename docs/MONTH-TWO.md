@@ -1,6 +1,6 @@
 # Gnome Life: month two to the festival (plan, 2026-10-29)
 
-Big-review item 3. Thread "Plan month two to the festival". Design only: nothing here is built yet. Plan page with pictures: see the link in `docs/PLAN.md` "Start here". **Status: PROPOSED.** Bryce's picks on the four choice cards are recorded at the end ("Decisions") once he makes them.
+Big-review item 3. Thread "Plan month two to the festival". Design only: nothing here is built yet. Plan page with pictures: see the link in `docs/PLAN.md` "Start here". **Status: AGREED by Bryce 2026-10-29** (all four cards went with the recommendations; see "Decisions" at the end).
 
 Month one (days 1 to 30, chapters 1 to 3, v75 to v80) is the finish line and is not changed by this plan, with one small exception noted under "Animals".
 
@@ -152,3 +152,6 @@ Each build keeps old saves loading and month one playing the same, and can go li
 - **Festival timing (2026-10-29): about day 90 (three months)**, for 2-3 visits a day. The week-by-week table above stands.
 - **Animals (2026-10-29): eight friends with homes, one a week** (hedgehog, wren, native bees, frog, blue-tongue, owl, possum, bandicoot); the rest stay wild visitors.
 - **Home stage three (2026-10-29): a star room upstairs** in the stump's crown, round window on Hazel's Lamp; built week 11, two new paintings.
+- **Heart of the wood (2026-10-29): yes, a page "Awake"** on festival night after the first dance.
+
+All four picks match the recommendations, so the plan above is AGREED as written.
