@@ -72,8 +72,16 @@ const Walk = (() => {
   function route(ax, ay, bx, by, opts = {}) {
     if (opts.creature && !opts.exact) [bx, by] = free(bx, by, opts);
     if (opts.fly) return [[bx, by]];   // fliers go over everything (but still never land in the bed)
-    const obs = obstacles(opts).filter(o => !inside(o, ax, ay) && (opts.creature && o.hard ? true : !inside(o, bx, by)));   // a gnome may walk up to the thing it works at; nobody is trapped where they stand
-    return legs([ax, ay], [bx, by], obs);
+    const all = obstacles(opts).filter(o => !inside(o, ax, ay));   // nobody is trapped where they stand
+    const at = all.filter(o => !(opts.creature && o.hard) && inside(o, bx, by)), obs = all.filter(o => !at.includes(o));
+    const thing = at.find(o => o.name !== 'seed bed');   // a gnome may work right at a thing (the fire, the woodpile): walk round it to the near side, then step in
+    if (!thing) return legs([ax, ay], [bx, by], obs);   // (into the seed bed: index.html brings them in by the gate)
+    let [u, v] = thing.to(bx, by), r = Math.hypot(u, v);
+    if (r < 0.05) { [u, v] = thing.to(ax, ay); r = Math.hypot(u, v) || 1; }
+    const a0 = Math.atan2(v, u); let near = null;   // the open edge point nearest the spot (things set close together share edges)
+    for (let k = 0; k < 11 && !near; k++) { const a = a0 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 0.3, q = thing.from(Math.cos(a) * 1.1, Math.sin(a) * 1.1); if (!obs.some(o => inside(o, ...q))) near = q; }
+    if (!near) return legs([ax, ay], [bx, by], obs);
+    return [...legs([ax, ay], near, [...obs, thing]), [bx, by]];
   }
   return {
     use(o) { if (o.footprints) footprints = o.footprints; if (o.bed) bed = o.bed; if (o.edges) open = o.edges; },
