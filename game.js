@@ -101,6 +101,7 @@ const G = {
     const tk = this.s.tasks; if (tk.bedwater && !tk.spring) tk.spring = { startedAt: tk.bedwater.startedAt, endsAt: tk.bedwater.startedAt, done: true };   // watered before the spring job existed: the spring counts as found
     if (tk.fence) this.s.flags.rabbit = true;
     if (!this.s.flags.r6) { this.s.flags.r6 = true; if (tk.woodpile && !tk.stump) this.s.flags.oldWoodpile = true; }   // round six: firewood now comes from the old stump; a garden that already had its woodpile keeps it
+    if (tk.daisypot) { tk.yardbath = tk.daisypot; delete tk.daisypot; }   // round six: the pot of daisies on the old stump became a little bird bath
     this.friendsCatchUp();
     if (this.s.plots.seedbed.grown) this.s.flags.firstpick = true;   // fenced before the rabbit's raid existed
     if (this.s.plots.seedbed.crop === 'sprout') this.s.plots.seedbed.crop = 'carrot';   // the old generic sprouts were always carrots at heart
@@ -223,9 +224,11 @@ const G = {
   },
   spawnSecret() {
     const s = this.s, sc = s.secrets, left = C.secrets.filter(x => !sc.found[x.id] && !sc.out.some(o => o.id === x.id)); if (!left.length) return null;
-    const greens = Object.keys(s.tiles).filter(k => s.tiles[k].state === 'green' || k === '0,0'), tile = greens[(Math.random() * greens.length) | 0];
-    let gx, gy, n = 0; do { gx = 0.12 + Math.random() * 0.76; gy = 0.12 + Math.random() * 0.76; } while (this.spotTaken && this.spotTaken(tile, gx, gy) && ++n < 12);
-    const o = { id: left[(Math.random() * left.length) | 0].id, tile, gx, gy };
+    const greens = Object.keys(s.tiles).filter(k => s.tiles[k].state === 'green' || k === '0,0');
+    const anywhere = () => { const tile = greens[(Math.random() * greens.length) | 0]; let gx, gy, n = 0; do { gx = 0.12 + Math.random() * 0.76; gy = 0.12 + Math.random() * 0.76; } while (this.spotTaken && this.spotTaken(tile, gx, gy) && ++n < 12); return [tile, gx, gy]; };
+    const can = left.map(d => [d, d.place && d.place !== 'grass' ? (this.findSpot ? this.findSpot(d.place) : null) : anywhere()]).filter(x => x[1]);   // round six: each find turns up in its own sort of place, once that place exists
+    if (!can.length) return null;
+    const [d, [tile, gx, gy]] = can[(Math.random() * can.length) | 0], o = { id: d.id, tile, gx, gy };
     sc.out.push(o); this.dirty = true; return o;
   },
   findSecret(id) {
@@ -406,7 +409,7 @@ const G = {
     if (n.startsWith('tile:')) return !!s.tiles[n.slice(5)];
     return this.done(n);
   },
-  lineOk(c) { if (!c) return true; if (c[0] === '!') return !this.lineOk(c.slice(1)); if (c === 'grown') return !!(this.plot().grown || this.plot().stage === 'growing' || this.plot().stage === 'ready'); if (c.startsWith('met:')) return this.met(c.slice(4)); return this.needMet(c); },
+  lineOk(c) { if (!c) return true; if (c.includes('&')) return c.split('&').every(x => this.lineOk(x)); if (c[0] === '!') return !this.lineOk(c.slice(1)); if (c === 'grown') return !!(this.plot().grown || this.plot().stage === 'growing' || this.plot().stage === 'ready'); if (c.startsWith('met:')) return this.met(c.slice(4)); return this.needMet(c); },
   linesFor(list) { const out = list.filter(x => typeof x === 'string' || this.lineOk(x.if)).map(x => typeof x === 'string' ? x : x.t); return out.length ? out : list.filter(x => typeof x === 'string'); },   // a gnome's lines about things that are really there (note 23)
   needsMet(d) { return (d.needs || []).every(n => this.needMet(n)); },
   needHint(n) {   // a need in words, for the one "Next:" line ('' = keep it a surprise)
@@ -773,7 +776,7 @@ const G = {
   },
   savingFor(d) {   // the story comes first (fix 3): while a story job waits for things, the extras (Hazel's list, the optional home jobs) don't spend them
     if (d.spine || this.s.tasks[d.id] || !C.tasks.includes(this.baseDef(d))) return '';
-    if ((d.cost || {}).seed && (this.s.inv.seed || 0) - d.cost.seed < 1 && this.done('bedwater')) return 'saving a seed for the seed bed';   // the bed always has one to sow
+    if ((d.cost || {}).seed && (this.s.inv.seed || 0) - d.cost.seed < 1 && this.done('bedwater')) return 'keeping the last seed back for sowing the seed bed';   // the bed always has one to sow
     for (const sp of C.tasks) {
       if (!sp.spine || sp.retired || this.s.tasks[sp.id] || !this.needsMet(sp) || this.can(sp.cost)) continue;
       const short = Object.keys(d.cost || {}).filter(k => (this.s.inv[k] || 0) < (sp.cost[k] || 0) + d.cost[k] && sp.cost[k]);

@@ -230,7 +230,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v78</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v79</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -251,7 +251,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 78;
+const BUILD = 79;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -259,9 +259,9 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=78"></script>
-<script src="game.js?v=78"></script>
-<script src="walk.js?v=78"></script>
+<script src="content.js?v=79"></script>
+<script src="game.js?v=79"></script>
+<script src="walk.js?v=79"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -588,7 +588,7 @@ for (const k of ['herb', 'rhubarb', 'willow', 'fruit', 'lavender', 'wheat']) for
 for (const k of ['cabbage-1', 'cabbage-2', 'cabbage-3', 'peas-1', 'peas-2', 'straw-1', 'straw-2', 'radish', 'scarecrow', 'ladder', 'bottlebrush', 'willow-cut', 'wheat-cut',
   'flax-1', 'flax-2', 'flax-3', 'woad-1', 'woad-2', 'weld', 'indigo', 'trellis', 'moon-1', 'moon-2', 'moon-open', 'moon-closed', 'primrose']) ART_SLOTS['farm-' + k] = {};
 // painted sizes in world px (a gnome stands 111 tall): w = width, h = height, for the little makes cut by tools/cut_day14.py
-const MAKE_SIZE = { firering:{w:100}, potstools:{w:70}, spinner:{h:90}, scraper:{w:46}, doorpots:{w:50}, doormat:{w:42}, scarecrow:{h:105}, pebbles:{w:80}, daisypot:{h:62},
+const MAKE_SIZE = { firering:{w:100}, potstools:{w:70}, spinner:{h:90}, scraper:{w:46}, doorpots:{w:50}, doormat:{w:42}, scarecrow:{h:105}, pebbles:{w:80}, yardbath:{h:40},
   sundial:{h:66}, herbpots:{w:66}, wreath:{w:34}, plank:{w:84}, chime:{h:70}, nameboard:{w:40}, cushion:{w:44}, swing:{h:120}, hammock:{w:120}, sign:{h:96},
   gstones:{w:110}, wicket:{w:70}, mousering:{w:70}, sitstone:{w:52}, wildflowers:{w:86}, border:{w:140}, arch:{h:112}, mousetable:{w:40}, stonefrog:{w:42}, birddish:{h:78},
   logbench:{w:120}, ferns:{w:78}, willowseat:{w:74}, pebblepath:{w:120} };
@@ -2193,7 +2193,7 @@ function footprints() {
     const barren = G.landStage().key === 'barren', lvl = { barren: 0, green: 1, meadow: 2, wood: 3 }[G.landStage().key] || 0;
     for (const [a, b, gx, gy, sc, job] of HOME_KIT) { const k = barren ? a : b, there = barren ? 1 - (job ? taskProg(job) : 0) : b ? 1 : 0; if (!k || there <= 0.05) continue;   // stumps and rocks that stay; the rubbish Hazel clears goes
       const im = IM['kit-' + k]; if (im && im.width) add(k, gx, gy, im.width * sc); }
-    if (lvl >= 1) for (const [n, gx, gy, st] of YARD_WOOD) { if (lvl < st || n === 15) continue; const im = IM['kit-wood-' + pad2(n)]; if (im && im.width) add('wood ' + n, gx, gy, im.width * WOOD[n] / im.height, n >= 11 ? 0.3 : 0.26); }
+    if (lvl >= 1) for (const [n, gx, gy, sc] of yardWood(lvl)) { if (n === 15) continue; const im = IM['kit-wood-' + pad2(n)]; if (im && im.width) add('wood ' + n, gx, gy, im.width * WOOD[n] * sc / im.height, n >= 11 ? 0.3 : 0.26); }
     if (lvl >= 1 && (toadProg() <= 0 || toadProg() >= 1)) {   // the big toadstool (not while it is walking off on its root legs)
       const im = IM['kit-wood-15']; if (im && im.width) { const [tx, ty] = toadAt(); add(toadProg() >= 1 ? 'mouse house' : 'toadstool', tx, ty, im.width * WOOD[15] / im.height * (taskProg('mousering') > 0 ? 1.3 : 1), 0.3); } }
   }
@@ -2677,9 +2677,31 @@ function nookItems(items, tile, seed) {
 // WOOD maps a piece number to its standing height in world px (a gnome is about 120 px tall).
 const WOOD = { 1: 190, 2: 120, 3: 230, 4: 140, 5: 175, 6: 90, 7: 160, 8: 175, 9: 135, 10: 75, 11: 270, 12: 250, 13: 95, 14: 110, 15: 135, 16: 100, 17: 165, 18: 85 };
 const WOOD_PLANTS = [1, 2, 4, 5, 6, 7, 8, 9, 10, 1, 5, 9], WOOD_LOW = [2, 4, 6, 10, 13, 14, 15, 16, 17, 18];
-// the yard: [piece, gx, gy, land stage it appears with (1 green, 2 meadow, 3 wood)]; kept to the margins so the yard stays open
-const YARD_WOOD = [[11, 0.0, 0.40, 1], [12, 0.58, 0.0, 1], [1, 0.02, 0.45, 1], [3, 0.03, 0.66, 2], [13, 0.0, 0.86, 1], [4, 0.10, 0.97, 1], [7, 0.34, 0.99, 2], [15, 0.64, 0.99, 1], [16, 0.97, 0.88, 2],
-  [5, 0.98, 0.52, 1], [9, 0.93, 0.42, 2], [8, 0.86, 0.02, 2], [14, 0.60, 0.01, 1], [17, 0.46, 0.0, 3], [2, 0.08, 0.06, 2], [6, 0.12, 0.90, 3], [18, 0.97, 0.30, 3]];
+// the yard: [piece, gx, gy, land stage it appears with (1 green, 2 meadow, 3 wood)]; kept to the margins so the yard stays open.
+// Round six (Bryce): the first greening is small stuff (moss, fiddleheads, strawberries, a tuft of grass, bluebells); the big
+// stump, ferns and logs come with the meadow, the tall trunk, foxglove and wattle only with the wood. Nothing stands on a make's
+// spot, the footpath or a creature's home (yardClear).
+const YARD_WOOD = [[13, 0.0, 0.86, 1], [4, 0.02, 0.97, 1], [15, 0.64, 0.99, 1], [5, 0.98, 0.45, 1], [2, 0.08, 0.06, 1], [6, 0.10, 0.99, 1], [10, 0.20, 0.02, 1], [10, 0.56, 1.0, 1],
+  [12, 0.58, 0.0, 2], [1, 0.0, 0.58, 2], [7, 0.30, 1.0, 2], [9, 0.95, 0.20, 2], [14, 0.60, 0.01, 2], [18, 0.98, 0.27, 2],
+  [11, 0.0, 0.02, 3], [3, 0.02, 0.76, 3], [8, 0.86, 0.02, 3], [17, 0.46, 0.0, 3]];
+const plantSc = (n, since) => n <= 10 ? [0.65, 0.85, 1][Math.min(2, since)] : 1;   // plants come in small and grow with each greening; logs, stumps, rocks and the toadstool are what they are
+function yardClear(gx, gy, h = 100, path = true) {   // may a greening piece this tall stand here on the home tile? Not on a make's proper spot, the footpath, the dish or a nest,
+  const reach = Math.min(0.2, 0.06 + h / 1200);   // and never in front of one, where it would hide it (Bryce: the windmill behind a trunk)
+  const near = (mx, my, r = 0.07) => { const dx = gx - mx, dy = gy - my, d = Math.hypot(dx, dy); return d < r || (gx + gy > mx + my && d < reach + r * 0.5); };
+  for (const d of C.tasks) if (d.make === 'yard' && !d.season && !HOUSE_DOOR[d.id] && near(...d.at)) return false;
+  if (near(FEEDER.gx, FEEDER.gy, 0.09)) return false;
+  for (const id in NESTS) if (near(...NESTS[id], 0.06)) return false;
+  if (path) for (const [[hx, hy], [px, py]] of footpathLinks()) { const cx = (hx + px) / 2 + (py - hy) * 0.15, cy = (hy + py) / 2 + (hx - px) * 0.15;   // the same gentle bend drawFootpaths lays
+    for (let i = 0; i <= 24; i++) { const t = i / 24, u = (1 - t) * (1 - t) * hx + 2 * t * (1 - t) * cx + t * t * px, v = (1 - t) * (1 - t) * hy + 2 * t * (1 - t) * cy + t * t * py;
+      if (Math.abs(gx - u) < 0.06 && Math.abs(gy - v) < 0.05) return false; } }
+  return true;
+}
+const YW = {};
+function yardWood(lvl) {   // the yard's greening pieces showing at this land stage: [piece, gx, gy, scale] (kept until a stage or a new neighbour's footpath changes it)
+  const key = lvl + '|' + footpathLinks().length; if (YW.key === key) return YW.out;
+  const out = []; YW.key = key; YW.out = out; for (const [n, gx, gy, st] of YARD_WOOD) { if (lvl < st) continue; const sc = plantSc(n, lvl - st); if (n === 15 || yardClear(gx, gy, WOOD[n])) out.push([n, gx, gy, sc]); }
+  return out;
+}
 // the big red toadstool at the yard's front edge: in the way once the garden opens, so you cast "Give the toadstool legs" (Bryce) and it walks off on little root legs
 const TOAD_FROM = [0.64, 0.99], TOAD_TO = [0.24, 1.78];   // to the garden's far-left corner (yard layout plan's G 0.08, 0.88, a step in from the wood's edge so it stands clear)
 const TOAD_WALK = 45000;   // ms the walk takes, so you can watch it go
@@ -2859,7 +2881,7 @@ function landItems(items, now) {
     const home = k === '0,0', tl = G.s.tiles[k], [tx, ty] = k.split(',').map(Number);
     if (home ? lvl < 1 : tl.state !== 'green') continue;
     const seed = tx * 31 + ty * 17 + 5;
-    if (home) { for (const [n, gx, gy, st] of YARD_WOOD) if (lvl >= st) { if (n === 15) { toadItem(items, now, vb); } else woodPiece(items, n, gx, gy, vb); } }
+    if (home) { for (const [n, gx, gy, sc] of yardWood(lvl)) { if (n === 15) { toadItem(items, now, vb); } else woodPiece(items, n, gx, gy, vb, sc); } }
     else {
       if (k !== '0,1' && (!tl.kind || G.stageIndex(k) >= 3)) for (let c = 0; c < 2; c++) {   // two little woodland corners (not on the couple's garden tile) on the tile, away from the stream, the path and the homes
         const [gx, gy] = [[0.14, 0.84], [0.84, 0.16], [0.52, 0.92], [0.9, 0.62], [0.2, 0.2], [0.08, 0.5]][Math.floor(rnd(seed + c * 9) * 6)], [ux, uy] = glob(k, gx, gy);
@@ -2875,14 +2897,15 @@ function landItems(items, now) {
     for (const [dx, dy, ga, gb, gc, back] of [[0, -1, 0, 1, 0.02, true], [-1, 0, 1, 0, 0.02, true], [0, 1, 0, 1, 0.97, false], [1, 0, 1, 0, 0.97, false]]) {
       if (G.s.tiles[`${tx + dx},${ty + dy}`]) continue;
       for (let i = 0; i < 4; i++) { const t = 0.12 + 0.76 * (i + rnd(seed + i * 7 + dx * 3 + dy)) / 4, a = dx ? gc : t, b = dx ? t : gc, [ux, uy] = glob(k, a, b);
-        if (!openGround(ux, uy) || inFarm(k, a, b)) continue;
+        if (!openGround(ux, uy) || inFarm(k, a, b) || (home && !yardClear(a, b, lvl < 3 ? 90 : 200))) continue;
+        if (home && lvl < 3) { const pool = lvl < 2 ? [10, 6, 2, 4, 18, 13] : WOOD_LOW; woodPiece(items, pool[Math.floor(rnd(seed + i * 5 + dx * 7 + dy * 11) * pool.length)], ux, uy, vb, (lvl < 2 ? 0.55 : 0.7) + 0.2 * rnd(seed + i * 11), rnd(seed + i * 3) < 0.5); continue; }   // round six: the yard's wild edge starts low and small too
         const n = back ? (i === 1 && rnd(seed + 3) < 0.45 ? (rnd(seed + i) < 0.5 ? 12 : 11) : i % 2 ? WOOD_LOW[Math.floor(rnd(seed + i * 5) * WOOD_LOW.length)] : WOOD_PLANTS[Math.floor(rnd(seed + i * 5) * WOOD_PLANTS.length)]) : WOOD_LOW[Math.floor(rnd(seed + i * 5) * WOOD_LOW.length)];   // a tall trunk only now and then: they stop at the top of the picture
         if (n >= 11 && n <= 12 && home) continue; woodPiece(items, n, ux, uy, vb, 0.8 + 0.4 * rnd(seed + i * 11), rnd(seed + i * 3) < 0.5); }
     }
     // season touches (art day 8): frost, a spider's web, a bare bush and a snowy stone in winter; fallen leaves in autumn; petals and a dandelion clock in spring
     const touch = { winter: [1, 2, 3, 4], autumn: [5, 6, 5, 6], spring: [7, 8, 7], summer: [8] }[se] || [];
     touch.forEach((n, i) => { const gx = 0.14 + 0.72 * rnd(seed + i * 29 + 500), gy = 0.14 + 0.72 * rnd(seed + i * 31 + 600), [ux, uy] = glob(k, gx, gy);
-      if (!openGround(ux, uy) || onBed(k, gx, gy) || rnd(seed + i * 37) < 0.3) return; const im = IM['kit-season-' + pad2(n)]; if (!im || !im.width) return;
+      if (!openGround(ux, uy) || onBed(k, gx, gy) || (home && !yardClear(gx, gy, 90)) || rnd(seed + i * 37) < 0.3) return; const im = IM['kit-season-' + pad2(n)]; if (!im || !im.width) return;
       items.push({ d: depthOf(ux, uy) - (n === 6 || n === 7 ? 0.2 : 0), draw: () => { const [x, y] = toWorld(ux, uy), h = [55, 85, 120, 70, 38, 34, 34, 62][n - 1], w = im.width * h / im.height;
         if (x < vb.x0 || x > vb.x1 || y < vb.y0 + 360 || y > vb.y1 + 400) return; ctx.drawImage(im, x - w / 2, y - h * 0.9, w, h); } }); });
   }
@@ -3104,7 +3127,7 @@ const INK = 'rgba(42,21,16,0.85)';
 function makeAt(d) { return glob(G.makeTile(d), d.at[0], d.at[1]); }   // its spot on the home grid
 const MAKE_WORK = {   // where a gnome stands to make it (home grid); default: just in front of the spot
   firering:[0.46, 0.58], potstools:[0.43, 0.58], spinner:[0.16, 0.40], doorpots:[0.42, 0.40], doormat:[0.38, 0.40], wreath:SPOTS.door, nameboard:SPOTS.door, chime:[0.45, 0.31],
-  herbpots:[0.50, 0.31], cushion:[0.66, 0.44], pebbles:[0.48, 0.84], scarecrow:[0.62, 0.74], swing:[0.24, 0.84], hammock:[0.14, 0.76], plank:[0.70, 0.30],
+  herbpots:[0.60, 0.25], cushion:[0.17, 0.56], pebbles:[0.48, 0.84], scarecrow:[0.62, 0.74], swing:[0.24, 0.84], hammock:[0.14, 0.76], plank:[0.70, 0.30],
   gstones:[0.50, 1.10], wicket:[0.50, 1.04], arch:[0.50, 1.10], border:[0.50, 1.24], mousering:[0.30, 1.84], mousetable:[0.38, 1.84], ferns:[0.14, 1.34],
   earthbank:[0.76, 1.80], clover:[0.56, 1.88], owlbox:[0.17, 0.78] };
 function makeWork(d) { return MAKE_WORK[d.id] || (([x, y]) => [x + 0.04, y + 0.07])(makeAt(d)); }
@@ -3190,7 +3213,22 @@ const MAKE_DRAW = {
     for (let k = 0; k < 5; k++) plank(-24 - k % 2 * 2, -52 + k * 1.2, -30, -48 + k * 2.5, 0.8, '#d9b860');   // straw at the cuffs
     ctx.restore(); },
   pebbles(x, y, a) { const f = bedFrame(); ctx.globalAlpha = 1; for (let i = 0; i < 34; i++) { const q = i / 33, t = pebbleAngle(q), u = Math.cos(t) * 1.18, v = Math.sin(t) * 1.22, sh = pebbleShow(q, a); if (sh <= 0) continue; ctx.globalAlpha = sh; pebble(f.cx + u * f.W, f.cy + v * f.H - u * f.W * 0.22, 4 + rnd(i + 500) * 2, ['#efeadd', '#e2dccb', '#f6f2e8'][i % 3], i); } },   // round six: just outside the fence, laid one by one behind Hazel
-  daisypot(x, y) { pot(x, y, 22, 'daisy', 7); },
+  yardbath(x, y, a, now) {   // round six (Bryce): a little bug bath where the old stump stood, gnome sized, a flat stone dish on a short stone with pebbles to land on (a drawn stand-in until it is painted)
+    ctx.save(); ctx.translate(x, y); ctx.scale(1.15, 1.15); ctx.translate(-x, -y);
+    shadow(x, y, 16, 5); for (let i = 0; i < 4; i++) flatStone(x + (i - 1.5) * 9 + (rnd(i + 900) - 0.5) * 4, y + 2 + (i % 2) * 3, 3 + rnd(i + 910) * 1.5, i + 30);
+    ctx.strokeStyle = INK; ctx.lineWidth = 1.3; ctx.fillStyle = '#8f8a80'; ctx.beginPath(); ctx.moveTo(x - 7, y); ctx.lineTo(x - 5, y - 24); ctx.lineTo(x + 5, y - 24); ctx.lineTo(x + 8, y); ctx.closePath(); ctx.fill(); ctx.stroke();   // the short stone
+    blob(x - 2, y - 8, 2.4, 3, 'rgba(110,135,70,0.8)');   // a bit of moss
+    ctx.fillStyle = '#a39d92'; ctx.beginPath(); ctx.ellipse(x, y - 26, 21, 7, 0, 0, 7); ctx.fill(); ctx.stroke();   // the dish
+    ctx.fillStyle = '#7d786f'; ctx.beginPath(); ctx.ellipse(x, y - 24.5, 21, 5.5, 0, 0, Math.PI); ctx.fill(); ctx.stroke();   // its rim's shadowed side
+    const w = Math.sin(now / 900) * 0.6; ctx.fillStyle = 'rgba(118,164,176,0.95)'; ctx.beginPath(); ctx.ellipse(x, y - 27, 16, 4.4, 0, 0, 7); ctx.fill();   // the water
+    ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.beginPath(); ctx.ellipse(x - 8 + w, y - 28, 4, 1, 0, 0, 7); ctx.fill();
+    for (const [px, py, r] of [[-1, -27.5, 3.4], [7, -26.5, 2.6], [-8, -26.2, 2.2]]) { blob(x + px, y + py + 0.8, r, r * 0.55, '#6f6a62'); blob(x + px, y + py, r, r * 0.6, '#c9c2b4'); }   // pebbles to stand on
+    const h = new Date(G.now()).getHours(), day = h >= 7 && h < 18;
+    if (a >= 1) { blob(x - 1, y - 30.5, 1.8, 1.4, '#b8322a'); ctx.fillStyle = '#1e1410'; for (const [dx, dy] of [[-0.8, -0.3], [0.7, 0.2]]) { ctx.beginPath(); ctx.arc(x - 1 + dx, y - 30.5 + dy, 0.45, 0, 7); ctx.fill(); } }   // the ladybird on the middle pebble
+    if (a >= 1 && day) { const t = now / 1000, bx = x + 10 + Math.sin(t * 0.9) * 9, by = y - 40 + Math.sin(t * 2.3) * 4;   // a bee coming and going for a sip
+      ctx.globalAlpha *= 0.75; blob(bx - 1, by - 2.5, 2.2, 1.4, '#f4f1e8'); blob(bx + 1.5, by - 2.8, 2, 1.3, '#f4f1e8'); ctx.globalAlpha /= 0.75;
+      blob(bx, by, 2.6, 1.8, '#d9a73a'); ctx.fillStyle = '#2a1a10'; ctx.fillRect(bx - 0.6, by - 1.7, 1.1, 3.4); ctx.fillRect(bx + 1.4, by - 1.4, 0.9, 2.8); }
+    ctx.restore(); },
   swing(x, y, a, now) { const bx = x + 34, top = y - 112, sway = Math.sin(now / 1100) * 4; plank(x + 4, top + 6, x + 62, top - 2, 4.5, '#6e4a2c');   // the oak's low branch, the ropes and the bark seat
     ctx.save(); ctx.strokeStyle = '#d2bd8a'; ctx.lineWidth = 1.4; for (const dx of [-11, 11]) { ctx.beginPath(); ctx.moveTo(bx + dx, top + 2); ctx.lineTo(bx + dx + sway, y - 30); ctx.stroke(); } ctx.restore();
     shadow(bx, y - 2, 16, 4); plank(bx - 14 + sway, y - 30, bx + 14 + sway, y - 30, 5, '#8a6a44'); },
@@ -3276,7 +3314,7 @@ const MAKE_PARTS = {   // makes spread over a few spots (home grid), so each pie
   ferns: () => [[0.04, 1.24, 'kit-wood-01', 74], [0.10, 1.30, 'kit-wood-02', 52], [0.06, 1.36, 'kit-wood-10', 40], [0.14, 1.26, 'kit-wood-16', 44]],
   border: () => [[0.40, 1.14, 'kit-wood-03', 46], [0.50, 1.15, 'kit-wood-09', 30], [0.395, 1.22, 'kit-wood-09', 28], [0.495, 1.23, 'kit-wood-03', 44], [0.39, 1.30, 'kit-wood-03', 42], [0.49, 1.31, 'kit-wood-09', 30], [0.385, 1.37, 'kit-wood-09', 26]],
 };
-const HOUSE_DOOR = { doormat:[-38, -32], doorpots:[-10, -30], scraper:[-68, -28], wreath:[-38, -76], nameboard:[-38, -104] };   // world px from the house's foot (its painted door) at s 1, scaled with the house; drawn in front of it
+const HOUSE_DOOR = { doormat:[-38, -14], doorpots:[-4, -8], scraper:[-70, -12], wreath:[-38, -76], nameboard:[-38, -104] };   // world px from the house's foot (its painted door) at s 1, scaled with the house; drawn in front of it
 const MAKE_FLAT = new Set(['doormat', 'pebbles', 'plank', 'gstones', 'wildflowers', 'pebblepath', 'clover']);   // things that lie on the ground (drawn under the rest)
 const MAKE_DEPTH = { firering: -0.012, wreath: 0.06, nameboard: 0.06, chime: 0.02, cushion: 0.012, mousering: -0.01, spinner: 0.01 };
 // Round six (Bryce): Hazel works her way round the outside of the fence from beside the gate (WORKPATH.pebbles), and the
@@ -3288,6 +3326,12 @@ function pebbleEdge(a) {   // "Pebble edging round the seed bed": small clumps o
   const f = bedFrame(), n = PEBBLE_N;
   for (let i = 0; i < n; i++) { const th = pebbleAngle(i / (n - 1)), u = Math.cos(th), W = f.W * 1.18, H = f.H * 1.22;
     drawSlot('make-pebbles', f.cx + u * W, f.cy + Math.sin(th) * H - u * W * 0.22, pebbleShow(i / (n - 1), a) * 0.8, { w: 20 + 7 * rnd(i + 700), flat: true }); }   // a little see-through, so the white stones sit down into the earth
+}
+function chimePost(x, y, a) {   // round six (makes on the ground): the snail-shell chime hangs from a bent stick pushed into the earth, not from the air
+  const im = art('make-chime'), [w, h] = im ? slotSize('make-chime', im) : [40, 70], px = x + w * 0.42;
+  ctx.save(); ctx.globalAlpha = a; shadow(px, y, 6, 2); ctx.lineCap = 'round';
+  for (const [lw, c] of [[5, INK], [3, '#7a5a3a']]) { ctx.lineWidth = lw; ctx.strokeStyle = c; ctx.beginPath(); ctx.moveTo(px, y); ctx.lineTo(px, y - h * 0.97); ctx.quadraticCurveTo(px, y - h * 1.06, px - w * 0.12, y - h * 1.0); ctx.stroke(); }
+  ctx.restore();
 }
 function makeItems(items, now) {
   const garden = G.gardenOpen();
@@ -3302,6 +3346,8 @@ function makeItems(items, now) {
       ctx.save(); ctx.beginPath(); ctx.moveTo(x, y - h / 2); ctx.arc(x, y - h / 2, w, Math.PI * 0.5, Math.PI * 0.5 + k * Math.PI * 2); ctx.closePath(); ctx.clip(); drawSlot('make-firering', x, y, 1); ctx.restore(); } }); continue; }   // art review: the painted clump is laid round the bed, not dropped in the middle of it
     const hd = HOUSE_DOOR[d.id], sh = hd && PROPS.find(q => q.name === 'shelter');
     items.push({ d: hd ? depthOf(sh.gx, sh.gy) + 0.01 : depthOf(hx, hy) + (MAKE_FLAT.has(d.id) ? -0.25 : MAKE_DEPTH[d.id] || 0), draw: () => { let [x, y] = toWorld(hx, hy); if (hd) { [x, y] = toWorld(sh.gx, sh.gy); x += hd[0] * sh.s; y += hd[1] * sh.s; }
+      if (d.id === 'chime') chimePost(x, y, a);
+      if (d.id === 'doormat' && art('make-doormat')) { ctx.save(); ctx.translate(x, 0); ctx.scale(-1, 1); drawSlot('make-doormat', 0, y, a); ctx.restore(); return; }   // v79 (Bryce): turned so its long side lies along the door
       if (drawSlot('make-' + d.id, x, y, a)) return; ctx.save(); ctx.globalAlpha = a; MAKE_DRAW[d.id](x, y, a, now); ctx.restore(); } });
     if (MAKE_TWICE[d.id]) { const [tx, ty] = MAKE_TWICE[d.id]; items.push({ d: depthOf(tx, ty), draw: () => { const [x, y] = toWorld(tx, ty); if (drawSlot('make-' + d.id, x, y, a)) return; ctx.save(); ctx.globalAlpha = a; MAKE_DRAW[d.id](x, y, a, now); ctx.restore(); } }); }
   }
@@ -4203,6 +4249,10 @@ function renderHud() {
   $('bMagic').querySelector('.dot').textContent = '!'; btnAlert('bMagic', Object.keys(C.spells).some(id => G.canCast(id).ok));
 }
 setInterval(renderHud, 5000);   // keep the "to go" times fresh
+setInterval(() => {   // round six (note 43): once the garden is open, Hazel says out loud that the big toadstool is in its way (the first step towards the legs spell)
+  if (G.s.flags.toadSaid || G.s.flags.toadWalk || !G.gardenOpen() || roomOn || sheet.classList.contains('on') || document.hidden) return;
+  G.s.flags.toadSaid = G.now(); G.dirty = true; gnomeSays('her', C.story.toadTooClose);
+}, 5000);
 const sheet = $('sheet'), shade = $('shade');
 let sheetKind = null, cardAt = 0;
 function openSheet(kind, html) { sheetKind = kind; sheet.innerHTML = `<button class="close" data-a="close">×</button>` + html; sheet.classList.add('on'); shade.classList.add('on'); }
@@ -4763,6 +4813,19 @@ G.onChange((kind, data) => { renderInv(kind === 'inv' && typeof data === 'string
   if (kind === 'wishready') toast(G.wishText(data, true)); });
 
 // ---------- start ----------
+// round six (Bryce): little finds turn up where they make sense, a button under the washing line, a pebble by the water, a bell by the old track
+const healed = k => { const tl = G.s.tiles[k]; return tl && (tl.state === 'green' || (tl.kind && G.stageIndex(k) >= 1)); };
+const FIND_PLACES = {   // [tile, gx, gy] near the place, or null while it isn't there yet (j: a little jitter)
+  line: j => taskProg('clothesline') >= 1 && ['0,0', 0.50 + j(0.08), 0.17 + j(0.04)],
+  door: j => ['0,0', 0.42 + j(0.05), 0.45 + j(0.03)],
+  fire: j => ['0,0', 0.34 + j(0.04), 0.42 + j(0.03)],
+  bed: j => taskProg('bed') >= 1 && ['0,0', 0.74 + j(0.04), 0.60 + j(0.03)],
+  oak: j => taskProg('sapling') >= 1 && ['0,0', 0.25 + j(0.04), 0.86 + j(0.03)],
+  water: j => { const ks = Object.keys(G.s.tiles).filter(k => G.s.tiles[k].kind === 'creek' && healed(k)); if (ks.length && Math.random() < 0.6) { const k = ks[(Math.random() * ks.length) | 0]; return [k, ...healLocal(k, { c: [0.2 + Math.random() * 0.6, Math.random() < 0.5 ? -1.4 : 1.4] })]; }
+    return taskProg('spring') >= 1 && ['0,0', SPRING.at[0] + 0.02 + j(0.05), SPRING.at[1] + 0.11 + j(0.02)]; },
+  track: j => { const ks = Object.keys(G.s.tiles).filter(k => G.s.tiles[k].kind === 'verge' && healed(k)); if (!ks.length) return null; const k = ks[(Math.random() * ks.length) | 0]; return [k, ...healLocal(k, { v: [Math.random() < 0.5 ? -1.5 : 1.5, 0.15 + Math.random() * 0.7] })]; },
+};
+function findSpot(place) { const f = FIND_PLACES[place]; if (!f) return null; for (let n = 0; n < 8; n++) { const r = f(d => (Math.random() - 0.5) * 2 * d); if (!r) return null; if (!G.spotTaken(...r)) return r; } return null; }
 function onBed(tile, gx, gy) {   // inside the dug seed bed (or its fence ring)? Bryce: nothing should sit in the tilled oval
   if (tile !== '0,0' || !(G.s && (G.s.tasks.bed || G.s.plots.seedbed.stage || G.s.plots.seedbed.grown))) return false;
   const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 1.15, H = W * BED_OVAL.ratio;
@@ -4892,7 +4955,8 @@ function drawNameTags() {
   ctx.restore();
 }
 function start() {
-  G.spotTaken = onBed;
+  G.spotTaken = (k, gx, gy) => onBed(k, gx, gy) || (k === '0,0' && !yardClear(gx, gy, 20, false));   // nothing tucked into the seed bed, or under a make
+  G.findSpot = findSpot;
   G.boot();
   for (const o of [...G.s.offers, ...G.s.secrets.out]) for (let n = 0; n < 12 && onBed(o.tile, o.gx, o.gy); n++) { o.gx = 0.1 + Math.random() * 0.8; o.gy = 0.1 + Math.random() * 0.8; }   // anything already lying on the bed moves off it
   for (const p of PROPS) IM[p.name] = settle(IM[p.name], p.flat);
