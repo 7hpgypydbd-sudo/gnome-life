@@ -435,7 +435,7 @@ const WORKPATH = {
   stump: (p, g) => {   // round six (Bryce): in stages. Dig round the roots, rock it loose till it tips, chop it and carry the firewood to the pile, fill the hole
     const [sx, sy] = STUMP_AT, at = [sx, sy];
     if (p < STUMP_ST.rock) return workLoop(g, 'stump-dig', () => [[sx - 0.045, sy + 0.04, 'dig', false, 6, at], [sx + 0.045, sy + 0.045, 'dig', false, 6, at], [sx - 0.06, sy - 0.01, 'dig', false, 5, at]]);
-    if (p < STUMP_ST.chop) return [sx - 0.05, sy + 0.035, 'gather', false, 0, at];   // shoulder to it, rocking it loose
+    if (p < STUMP_ST.chop) return workLoop(g, 'stump-dig', () => [[sx - 0.045, sy + 0.04, 'dig', false, 6, at], [sx + 0.045, sy + 0.045, 'dig', false, 6, at]]);   // v80 (Bryce): still digging while it rocks loose, until it is out of the ground; then the chopping
     if (p < STUMP_ST.carry) return [sx - 0.02, sy + 0.07, actOr(g, 'chop', 'build'), false, 0, [sx + 0.03, sy + 0.04]];   // v80 (Bryce): chopping it up where it fell; the chopped pile grows beside the hole
     if (p < STUMP_ST.fill) return workLoop(g, 'stump-carry', () => [[STUMP_PILE[0] + 0.03, STUMP_PILE[1] + 0.03, 'pickup', false, 2.5, STUMP_PILE], [WOOD_DROP[0] + 0.02, WOOD_DROP[1] + 0.02, 'putdown', 'logs', 2.5, [0.37, 0.11]]]);   // then armful by armful to the woodpile
     return workLoop(g, 'stump-fill', () => [[sx - 0.03, sy + 0.05, 'dig', false, 6, at], [sx + 0.04, sy + 0.04, 'dig', false, 5, at]]);
