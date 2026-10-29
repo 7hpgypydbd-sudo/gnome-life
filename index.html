@@ -230,7 +230,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v80</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v81</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -251,7 +251,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 80;
+const BUILD = 81;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -259,9 +259,9 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=80"></script>
-<script src="game.js?v=80"></script>
-<script src="walk.js?v=80"></script>
+<script src="content.js?v=81"></script>
+<script src="game.js?v=81"></script>
+<script src="walk.js?v=81"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -4428,7 +4428,7 @@ function seedbedBody(inJobs) {   // what the seed bed wants now (shared by the s
     for (const [id, k] of Object.entries(C.crops)) {
       const open = G.cropOpen(id), cost = G.cropCost(id), first = k.free && !Object.keys(cost).length;
       if (!open && (!k.lock || inJobs)) continue;   // lettuces just turn up after the first picking
-      body += `<div class="row"><div class="t"><b>${cap(k.name.replace(/^a /, ''))}</b><span>${open ? `${first ? 'Wendel\'s special seed, free' : `Costs ${costHtml(cost)}`} · ready ${k.grow >= 1200 ? "a day and a night" : "about " + hours(k.grow, true)} after watering · gives ${costHtml(k.harvest)}` : k.lock}</span>${inJobs ? '' : `<span style="display:block;font-style:italic">${k.blurb}</span>`}</div>${open ? `<button class="act" data-a="plant" data-id="${id}" ${G.can(cost) ? '' : 'disabled'}>Sow</button>` : ''}</div>`;
+      body += `<div class="row"><div class="t"><b>${cap(k.name.replace(/^a /, ''))}</b><span>${open ? `${first ? 'Wendel\'s special seed, free' : `Costs ${costHtml(cost)}`} · ready ${k.grow >= 1200 ? "a day and a night" : "about " + hours(!p.grown && k.first ? k.first : k.grow, true)} after watering · gives ${costHtml(k.harvest)}` : k.lock}</span>${inJobs ? '' : `<span style="display:block;font-style:italic">${k.blurb}</span>`}</div>${open ? `<button class="act" data-a="plant" data-id="${id}" ${G.can(cost) ? '' : 'disabled'}>Sow</button>` : ''}</div>`;
     }
     if (!G.canSow()) body += `<p>No seeds in the tin. Look for a seed lying about the land and tap it (one turns up soon when the tin is empty); every picking gives some back.</p>`;
   }

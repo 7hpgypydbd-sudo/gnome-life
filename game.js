@@ -293,7 +293,7 @@ const G = {
   waterCost() { const p = this.plot(); return { water: (C.crops[p.crop] || {}).water || 1 }; },
   water(who = 'him') {
     const p = this.plot(), cost = this.waterCost(); if (p.stage !== 'planted' || !this.can(cost)) return false;
-    this.pay(cost); p.stage = 'growing'; p.wateredAt = now(); p.readyAt = now() + this.dur(C.crops[p.crop].grow);
+    this.pay(cost); p.stage = 'growing'; p.wateredAt = now(); p.readyAt = now() + this.dur(this.growMins(p));
     this.note(`${C.names[who]} watered the bed. Now it grows.`); this.emit('plot', p); return true;
   },
   harvest(who = 'her') {   // returns what was picked (for the little float), or false
@@ -648,7 +648,7 @@ const G = {
   cast(id) {
     if (!this.canCast(id).ok) return false; this.pay(C.spells[id].cost); const t = now();
     if (id === 'coax') { this.plot().readyAt = t; this.note(`A warm hush over the bed, and ${this.cropName(this.plot().crop)} fill out all at once.`); }
-    if (id === 'rain') { const p = this.plot(); p.stage = 'growing'; p.readyAt = t + this.dur(C.crops[p.crop].grow); this.give({ water: 2 }); this.note('Soft rain falls on the bed and beads on the stones.'); }
+    if (id === 'rain') { const p = this.plot(); p.stage = 'growing'; p.readyAt = t + this.dur(this.growMins(p)); this.give({ water: 2 }); this.note('Soft rain falls on the bed and beads on the stones.'); }
     if (id === 'legs') { this.s.flags.toadWalk = t; this.note('The big toadstool shivered, sprouted little root legs and walked off to the far corner of the garden.'); }
     if (C.spells[id].heal) this.healCast(id, t);
     if (id === 'wake') { for (const r of this.running()) if (r.def.tile || r.def.healTile) this.s.tasks[r.id].endsAt = t + (r.endsAt - t) / 2; this.note('The ground stirs under the mist.'); }
@@ -701,6 +701,7 @@ const G = {
   // ---- the rabbit: a cheeky regular, never a real loss ----
   // A rabbit always comes for the first sprouts: if there is food in the dish it eats that first, then nibbles a few sprouts.
   // Only then is "Fence the seed bed" offered. index.html plays the raid when you are watching; catchUp() settles it when you were away.
+  growMins(p) { const c = C.crops[p.crop]; return !p.grown && c.first ? c.first : c.grow; },   // v81: the very first carrots come up in minutes, so day one keeps moving
   rabbitDue() {
     const s = this.s, t = now(); if (s.flags.rabbit || !/^(growing|ready)$/.test(this.plot().stage)) { s.rabbitAt = 0; return false; }   // ready too: a spell can hurry the sprouts, and the rabbit still comes
     if (!s.rabbitAt) s.rabbitAt = t + C.rabbit.after * MIN; return t >= s.rabbitAt;
