@@ -1,6 +1,6 @@
 # Gnome Life: the first month's story (chapters 1-3)
 
-Agreed by Bryce 2026-10-26 (thread "Write the first month's story"). Living copy for reading and comments: https://claude.ai/artifact/HUoQHsALfrq6PHMzn1mkT9 . This file is the master for the words; code takes them from here. **Words rewritten 2026-10-28** (thread "Rewrite the story prose": warmer storybook voice, clearer player role, Wendel gentle throughout; every page id, trigger and unlock unchanged; side-by-side at https://claude.ai/artifact/5hT9CR9KAn79MLw9kYnDZz ). The Wood spirit now calls the player "little luck". **Wired into the game in v52** (see docs/PLAN.md, v52 entry); the "Fitting it into the game" section at the end is what was built.
+Agreed by Bryce 2026-10-26 (thread "Write the first month's story"). Living copy for reading and comments: https://claude.ai/artifact/HUoQHsALfrq6PHMzn1mkT9 . This file is the master for the words; code takes them from here. **Words rewritten 2026-10-28** (thread "Rewrite the story prose": warmer storybook voice, clearer player role, Wendel gentle throughout; every page id, trigger and unlock unchanged; side-by-side at https://claude.ai/artifact/5hT9CR9KAn79MLw9kYnDZz ). The Wood spirit now calls the player "old heart". **Wired into the game in v52** (see docs/PLAN.md, v52 entry); the "Fitting it into the game" section at the end is what was built.
 
 - **Story pages** are the big illustrated pages that open at a milestone. Each is short and ends with one button.
 - **Every page fires from something the player already does** in the job chain (see "Where every card appears").
@@ -18,11 +18,11 @@ This is a little storybook that grows a page at a time, a little more each day y
 
 It is about two gnomes, Wendel and Hazel. They have just been married, and they have come to live on a bare hillside where the loggers cut down every tree. Over many days they will dig and plant and build, and slowly turn it back into a green, cosy home, and one day a whole village.
 
-<b>And you?</b> You are the luck of this place. The gnomes can't see you, and they will never quite know you are there, but they feel it whenever things go their way. You don't dig or carry: Wendel and Hazel do all of that themselves. You gather the little things the land leaves lying about, you choose what they work on next, and later a spirit of the woods will teach you a little gentle magic.
+<b>And you?</b> You are the heart of the wood: the old spirit of this hillside, gone quiet since the loggers came, and woken a little at a time by the gnomes' care. They can't see you, but they feel you whenever things go their way. They do all the work; you gather what the land leaves lying about, and choose what they do next.
 
 **How to play**
 - 👆 <b>Swipe</b> to look around. <b>Pinch</b> to zoom in close.
-- ✨ <b>Tap the little things lying about</b> (twigs, stones, seeds). Your luck carries them to the gnomes' store (🧺 Store).
+- ✨ <b>Tap the little things lying about</b> (twigs, stones, seeds). A breath of your magic carries them to the gnomes' store (🧺 Store).
 - 🔨 <b>Jobs shows what they can do next.</b> If you are ever unsure what to do, look in Jobs. A dot on it means a job is ready to start.
 - 👀 <b>Tap anything</b>, the gnomes included, to see what it is.
 - 🕰️ <b>Jobs take real time.</b> Start one, put your phone down, and come back later. A short visit or two a day is plenty.
@@ -34,31 +34,52 @@ After page 1.1 closes, a small pointer: "Wendel and Hazel are waiting to start. 
 
 ## Chapter one: The bare clearing (days 1 to 3)
 
-They arrive, clear the rubbish, light their first fire, find water and plant their first seeds. The wobble is the rabbit.
+They arrive, find water, clear the rubbish, dig out the old stump for their first fire, and plant their first seeds. The wobble is the rabbit.
 
 ### 1.1 The end of the road
-*Opens the very first time the game is played, before the "How it works" tips.*
+*Opens the very first time the game is played, straight after the welcome screen. Round six (2026-10-29): they came on a little wagon and took it apart for their first home; the player is the heart of the wood.*
 
-They came up the old logging track at the end of a long, hot afternoon, with the cicadas going like tiny saws in the grass. Wendel pushed the wheelbarrow. Hazel carried the little oak in its pot, and talked to it now and then to keep its spirits up. Everything they owned was in that barrow, and most of it was pots.
+They came up the old logging track at the end of a long, hot afternoon, with the cicadas going like tiny saws in the grass. Wendel pulled their little wagon, with its canvas top patched in four places. Hazel walked beside it with the little oak in its pot, and talked to it now and then to keep its spirits up. Everything they owned was in that wagon, and most of it was pots.
 
-Twenty steps from the top, the wheel came off. It bowled away down the hill, bouncing as it went, and they stood and watched it go. Then they carried the rest.
+Twenty steps from the top, a wheel came off and bowled away down the hill. They watched it go. Then they pushed the wagon the rest of the way on three wheels, which is harder than it sounds, and Hazel went back for the wheel, because you never know.
 
-The clearing at the top was not what the travelling pedlar had promised. The loggers had taken every tree but the stumps and left their rubbish behind: rusty tins, broken crates, a cartwheel with no cart. Nothing grew. The creek was a dry bed of stones, and not one bird was singing.
+The clearing at the top was not what the travelling pedlar had promised. The loggers had taken every tree but the stumps and left their rubbish behind: rusty tins, broken crates, coils of old wire. Nothing grew. The creek was a dry bed of stones, and not one bird was singing.
 
 Wendel looked at it all for a long while. "Well," he said gently. "It's got a lovely view."
 
 Hazel slipped her hand into his. "It's got us now, too," she said. She set the little oak down beside the biggest stump, and that was where they would make their home.
 
-Gnomes have a gift, you see. Wherever they live and dig and plant, the land slowly remembers how to be alive. But it is slow work for two small gnomes on a very bare hill, and so they were not quite alone. Something had followed them up the track that evening: a small, kindly luck, the sort that makes a stick turn up just when you need one. They could not see it, and they would never quite know it was there. That luck is you.
+Before dark they took the wagon apart. The runaway wheel and the wagon floor became a door and two walls, tucked in under the roots of the big stump. The canvas top was stretched over them for a roof, and the pots were stacked by the door, all of them. It was not much of a house. But it was theirs.
+
+Gnomes have a gift, you see. Wherever they live and dig and plant, the land slowly remembers how to be alive. And this land had a heart once: the old spirit of the wood, that had lived in every tree on the hill. When the loggers came, it went quiet, deep down under the stumps, and it had been asleep ever since. That evening, as two small gnomes made camp on the bare hill, it stirred. Not much. Just enough to notice them. They could not see it, and they would never quite know it was there. That heart is you.
 
 **Button:** Let's begin
 
-### 1.2 The first fire
-*Opens on the first evening visit (from 5 pm) after "Gather the fallen wood" is finished, or straight away if it is already evening.*
+### 1.2 Water between the roots
+*Opens when "Look for water" is finished (round six, Bryce 2026-10-29: water comes first, before wood). The spring is between the roots of the old stump at the back of the yard.*
 
-They had lit a fire the moment they arrived, in the loggers' old ring of stones, but it was a poor, smoky thing made of whatever sticks were lying about. Tonight was different. Tonight there was a woodpile.
+Before anything else, Wendel went looking for water. Nothing lives without it, and the creek was a dry bed of stones.
 
-Wendel had stacked it bark side up, the way his grandfather used to, and while he stood back to admire it, Hazel quietly laid the fire, because she knew how much he had been looking forward to this. It caught at once and crackled, as if it knew it was the first real fire in their first real home.
+He walked the whole clearing with a forked twig held out in front of him, eyes half shut, the way his grandfather had taught him. Hazel left her clearing and walked softly behind with the trowel, because dowsing wants quiet, and every gnome knows it.
+
+At the back of the yard, between the roots of an old stump, the twig gave a twitch.
+
+"There," he whispered. "Water. I can feel it."
+
+Hazel was already on her knees with the trowel. "Then let's say hello to it," she said.
+
+Under the roots the spring was choked with stones and dead leaves. Wendel pulled them out one by one and piled them beside it, and a thread of clear water came up out of the ground, cold as a secret. It filled a hollow no bigger than a teacup, then a saucer, then a little pool with the sky in it.
+
+They knelt on either side of it, muddy to the elbows, and watched it the way you might watch a sleeping baby. It was the first water this hill had held in years. And where there is water, things can grow. Deep under the hill, something old turned over in its sleep. That was you.
+
+**Button:** Things can grow now
+
+### 1.3 The first fire
+*Opens on the first evening visit (from 5 pm) after "Dig out the old stump" is finished (it is chopped into the first firewood), or once the seed bed is watered so the book never waits all day.*
+
+They had lit a fire the night they arrived, but it was a poor, smoky thing made of whatever twigs were lying about. Tonight was different. Tonight there was a woodpile.
+
+Wendel had dug out the old stump in the middle of the yard, rocked it loose, chopped it into firewood and stacked it by the barrel, bark side up, the way his grandfather used to. While he stood back to admire it, Hazel quietly laid the fire, because she knew how much he had been looking forward to this. It caught at once and crackled, as if it knew it was the first real fire in their first real home.
 
 They sat on an upturned pot each and shared the last of the travelling bread. A beetle came out of the woodpile to see what all the fuss was about. Wendel bowed to him and named him Gerald.
 
@@ -69,23 +90,6 @@ Hazel took his pipe out of her apron pocket, where it had been since the bottom 
 He looked at the fire, and at the first stars coming out over the stumps, and at her. "We're here," he said. That was the whole speech. Hazel said it was the best one she had ever heard.
 
 **Button:** Goodnight, you two
-
-### 1.3 Water under the rubbish
-*Opens when "Look for water" is finished and the spring is running.*
-
-Wendel walked the whole clearing with a forked twig held out in front of him, eyes half shut, the way his grandfather had taught him. Hazel walked softly behind with the trowel, because dowsing wants quiet, and every gnome knows it.
-
-Under the very last of the loggers' crates, the twig gave a twitch.
-
-"There," he whispered. "Water. I can feel it."
-
-Hazel was already on her knees with the trowel. "Then let's say hello to it," she said.
-
-Three stones and a great deal of mud later, a thread of clear water came up out of the ground, cold as a secret. It filled a hollow no bigger than a teacup, then a saucer, then a little pool with the sky in it.
-
-They knelt on either side of it, muddy to the elbows, and watched it the way you might watch a sleeping baby. It was the first water this hill had held in years. And where there is water, things can grow. Somewhere deep down, very faintly, the land noticed.
-
-**Button:** Things can grow now
 
 ### 1.4 Rows and wiggles
 *Opens the first time seedlings come up in the seed bed.*
@@ -186,11 +190,11 @@ Now, at last, it went into real ground at the front corner of the yard. Hazel du
 
 **Our first week, in Hazel's handwriting**
 
-Seven days. We have a roof (moss, no leaks). *(once the roof is on)* We have a fire every night (Wendel's woodpile, he is very proud of it). *(once the woodpile is made)* We have a spring we found ourselves (Wendel found it, he would like that written down). *(once the spring is found)* We have a seed bed, and we have eaten from it. *(once the bed is dug)* We have a fence, and a rabbit who thinks the fence is a suggestion. *(once the fence is up)*
+Seven days. We have a roof (moss, no leaks). *(once the roof is on)* We have a fire every night (Wendel chopped the old stump into firewood, he is very proud of it). *(once the old stump is chopped for firewood)* We have a spring we found ourselves (Wendel found it, he would like that written down). *(once the spring is found)* We have a seed bed, and we have eaten from it. *(once the bed is dug)* We have a fence, and a rabbit who thinks the fence is a suggestion. *(once the fence is up)*
 
 And the land is waking. There's a haze of green at the edges now. Wendel says he can smell it coming, like rain.
 
-I think somebody is helping us. Things turn up just where we need them: twigs by the door, stones by the bed, dew in the morning. I don't know who you are, or what you are. But thank you.
+I think somebody is helping us. Things turn up just where we need them: twigs by the door, stones by the bed, dew in the morning. Wendel says it's the hill itself, waking up. I don't know who you are, or what you are. But thank you.
 
 *In the margin, in Wendel's:* Best week of my life. Lost my pipe four times. Found it in her apron four times.
 
@@ -257,7 +261,7 @@ Wendel's pipe fell out of his mouth. Hazel picked it up and put it back without 
 
 "Did you do that?" Wendel whispered.
 
-"No," said Hazel. She looked round at the empty air, the way you look for someone who has just stepped out of the room, and she smiled. "There's a luck about this place," she said. "A kind one. I'm sure of it."
+"No," said Hazel. She looked round at the empty air, the way you look for someone who has just stepped out of the room, and she smiled. "There's something about this place," she said. "Something old and kind. I think the hill likes us."
 
 It was you, of course. But we won't tell them.
 
@@ -327,14 +331,14 @@ Whichever lesson comes first gets this opening line: *"Something soft and green 
 ### Lesson one: Coax a sprout (second day of visits, magic level 2)
 *It floats over the seed bed.*
 
-"Hello, little luck. I've been watching you help them. The glimmers you gather, the dew and the wisps, are light, and light is your magic. It can't make anything grow. Nothing can. But it can whisper to a seed that is already trying, and tell it to hurry, because somebody is hungry."
+"Hello again, old heart. I've been watching you help them. The glimmers you gather, the dew and the wisps, are light, and light is your magic. It can't make anything grow. Nothing can. But it can whisper to a seed that is already trying, and tell it to hurry, because somebody is hungry."
 
 **New in your magic:** Coax a sprout.
 
 ### Lesson two: Call soft rain (third day, magic level 3)
 *It floats over the spring pool.*
 
-"The clouds pass over this hill without stopping. They think nothing lives here any more. Ask them nicely to look down, and they might. But never ask for a storm, little luck. A garden wants a drink, not a bath."
+"The clouds pass over this hill without stopping. They think nothing lives here any more. Ask them nicely to look down, and they might. But never ask for a storm, old heart. A garden wants a drink, not a bath."
 
 **New in your magic:** Call soft rain.
 
@@ -355,7 +359,7 @@ Whichever lesson comes first gets this opening line: *"Something soft and green 
 ### Lesson five: A bright fire (eighth day, magic level 5)
 *It comes at dusk and floats by the campfire.*
 
-"Your light is strong now, little luck, stronger than mine was at your age. There's nothing new to teach you today. Only this: you'll find light in the dark, in wisps and dew, and you'll find it every time you are kind. Help the small ones when they're in trouble. That is the brightest magic there is."
+"Your light is strong now, old heart, stronger than it has been since the trees came down. There's nothing new to teach you today. Only this: you'll find light in the dark, in wisps and dew, and you'll find it every time you are kind. Help the small ones when they're in trouble. That is the brightest magic there is."
 
 "I'll be about. Whenever this hill needs something new, I'll come and show you."
 
@@ -390,7 +394,7 @@ Three cards mark the big changes (they replace the `explain` text in `CONTENT.la
 
 ## All done for now
 
-*(v64: the gnomes say these to each other. They feel a kindly luck about the place but never see you; only the Wood spirit talks to you. See docs/VISION.md.)*
+*(v64: the gnomes say these to each other. They feel a kindly presence about the place (the heart of the wood) but never see you; only the Wood spirit talks to you. See docs/VISION.md.)*
 
 Once a visit, when both gnomes are busy (or nothing more can be started) and every pick-up lying about has been collected, the visit gently closes: one gnome looks up and says a line, a small paper label reads **All done for now**, and the view eases out a little to show the whole yard. Nothing is locked: chatting, little finds and fiddling stay open. `{time}` is the real time their jobs finish.
 
@@ -409,7 +413,7 @@ Once a visit, when both gnomes are busy (or nothing more can be started) and eve
 
 **Night**
 - Hazel, whispering: "He's asleep already. There'll be dew in the morning."
-- Wendel, yawning: "Goodnight, valley. Goodnight, Gerald. Goodnight, whatever luck lives here."
+- Wendel, yawning: "Goodnight, valley. Goodnight, Gerald. Goodnight, whatever kind old thing lives here."
 
 **After a big day** (a story page opened this visit)
 - Hazel: "What a day. I think we've earned a sit down, love."
@@ -429,8 +433,8 @@ In book order, always (v64, docs/PLAN.md "Progression review" fix 1): a page wai
 | Roughly when | What the player has just done | Card that opens | What it opens up |
 | --- | --- | --- | --- |
 | Day 1 | Opens the game for the first time | 1.1, then the "How it works" tips | Clear the ground, Gather the wood |
-| Day 1 evening | `woodpile` finished (evening, or once the spring is found) | 1.2 The first fire | |
-| Day 1 to 2 | `spring` finished | 1.3 Water under the rubbish | |
+| Day 1 | `spring` finished (water comes first, round six) | 1.2 Water between the roots | |
+| Day 1 evening | `stump` finished (evening, or once the seed bed is watered) | 1.3 The first fire | |
 | Day 2 | Magic level 2, bed dug | Spirit lesson one (seed bed) | Coax a sprout |
 | Day 2 | First seedlings in the bed | 1.4 Rows and wiggles | the feeding dish |
 | Day 2 | The rabbit always comes for the first sprouts (it eats the dish first if there is food in it) | 1.5 The thief | Fence the seed bed |
@@ -457,8 +461,8 @@ One painting per page for a later Mac art day, storybook style like the festival
 | Page | The painting | Where the snail hides |
 | --- | --- | --- |
 | 1.1 | The couple at the top of the logging track at sunset, the wheel-less barrow and potted oak, bare stumps below, the runaway wheel bowling off down the hill | Riding on the runaway wheel |
-| 1.2 | On upturned pots by the first fire, stars over the stumps, Gerald on the woodpile | On a log in the woodpile, next to Gerald |
-| 1.3 | Kneeling either side of the new little pool, a broken crate tipped aside | Drinking at the edge of the pool |
+| 1.2 | Kneeling either side of the new little pool between the roots of an old stump (the current picture still has a crate; repaint some day) | Drinking at the edge of the pool |
+| 1.3 | On upturned pots by the first fire, stars over the stumps, Gerald on the woodpile | On a log in the woodpile, next to Gerald |
 | 1.4 | Planting: Hazel in straight rows, Wendel making his wiggle | Inside the open seed tin |
 | 1.5 | The thin rabbit at dawn with a sprout in its mouth, Hazel in the doorway | Under the licked-clean feeding dish |
 | 2.1 | Holding up the two-legged carrot by the fire | On a carrot top in the basket |
@@ -480,7 +484,8 @@ Also for the art list: two or three more Wood spirit poses (floating, pointing, 
 Checked every page against the jobs, props, creatures and neighbour stories in `content.js` and the v51 changes. What already matches, and what was adjusted:
 
 - **Matches:** Hazel clears the rubbish and Wendel dowses the spring; Gerald the beetle in the woodpile; the canvas shelter that leaks; the bench blurb ("just long enough for two gnomes") and Wendel's line "I'm going to build her a garden bench. I haven't told her."; the little oak carried from their old home; the rabbit's raid line and its later visits; the field mouse's bottle trouble and "keeps a close eye on the seed bed"; the toadstool's four root legs; the round windows of house 2; house 1's blurb ("Wendel insists, a workbench"), which page 3.4 now pays off; Wendel lays the doorstep he trips over; Hazel's mother (Mabel's lost honey-seed cake recipe); they married in a hurry on the road with no feast (Nettle's story and the festival secret), which is why the acorn was picked up by the roadside; the festival's closing words ("two small gnomes and a wheelbarrow"); the magic levels (days 2, 3, 5, 8) and the spells they unlock; light from wisps at night and from good deeds.
-- **Adjusted:** they arrive with the old wheelbarrow but its wheel rolls off down the hill, so it fits the later job "Make a little wheelbarrow" (new blurb: "The old one lost its wheel on the hill. This one is smaller, and mostly for Hazel's flowers."); the seed tin was given "the day they set off", not on the wedding morning (they married on the road); the bench takes "all afternoon", not two days (the job is an hour); the oak goes "at the front corner of the yard" (its yard-plan spot); page 1.2 waits for an evening visit so the stars are out; page 1.5 opens right after the raid, any time of day; in 3.1 the gnomes do not see the Wood spirit, only you do; the yard lantern is out of the first month (v51 shelves it with the fireside lamp stump).
+- **Round six (2026-10-29):** they now arrive with a little wagon; a wheel rolls off down the hill, and that night they take the wagon apart (wheel and floor = door and walls under the big stump, canvas top = first roof, the pots came off it). The 1.1 picture still shows a barrow (repaint some day).
+- **Adjusted (earlier):** they arrive with the old wheelbarrow but its wheel rolls off down the hill, so it fits the later job "Make a little wheelbarrow" (new blurb: "The old one lost its wheel on the hill. This one is smaller, and mostly for Hazel's flowers."); the seed tin was given "the day they set off", not on the wedding morning (they married on the road); the bench takes "all afternoon", not two days (the job is an hour); the oak goes "at the front corner of the yard" (its yard-plan spot); page 1.2 waits for an evening visit so the stars are out; page 1.5 opens right after the raid, any time of day; in 3.1 the gnomes do not see the Wood spirit, only you do; the yard lantern is out of the first month (v51 shelves it with the fireside lamp stump).
 - **Note for the v51 thread:** the tawny owl's journal line says it "watches from the lantern post", which goes in v51.
 - **Window box** now comes after the house (v51); nothing in the story depends on it earlier.
 
