@@ -78,7 +78,7 @@ function visit() {
     let pn = 0; const vis = list.filter(v => v.state !== 'done' && !v.def.make && !(v.def.healTile && v.state !== 'running' && ++pn > 3));   // the Jobs tab as drawn (Hazel's list is its own tab; at most three waiting patch jobs, the rest are on each patch's card)
     if (vis.length > maxList) { maxList = vis.length; maxAt = stamp() + ": " + vis.map(v => v.def.healTile ? "patch" : v.def.farm ? "farm" : v.def.folk ? "village" : v.def.festival ? "fest" : "home:" + v.def.id).join(", "); }
     const ready = list.filter(v => v.state === 'ready' && v.can);
-    const pri = v => v.def.home ? 0 : v.def.folk ? 1 : v.def.festival ? 1 : (!v.def.make && !v.def.healTile && !v.def.farm) ? 2 : v.def.healTile ? 3 : v.def.farm ? 4 : 5;
+    const pri = v => v.def.chore ? 9 : v.def.home ? 0 : v.def.folk ? 1 : v.def.festival ? 1 : (!v.def.make && !v.def.healTile && !v.def.farm) ? 2 : v.def.healTile ? 3 : v.def.farm ? 4 : 5;
     ready.sort((a, b) => pri(a) - pri(b));
     for (const v of ready) { if (G.startTask(v.def.id)) { if (!started.has(v.def.id)) { started.add(v.def.id); if (!v.def.healTile && !v.def.farm) ev(v.def.make ? 'MAKE' : 'JOB', `${v.def.id} (${v.def.name}) by ${v.def.who}`); } } }
     G.tick(); watch();
@@ -90,7 +90,7 @@ function snapshotList(label) {
   const mk = G.taskList().filter(v => v.def.make && v.state !== 'done').length, nx = G.nextUp();
   listLog.push(`${label}: Jobs tab: ready ${(by.ready||[]).length}, waiting (gnome busy etc.) ${(by.locked||[]).length}, running ${(by.running||[]).length}; Hazel's list ${mk}${nx ? `; Next: ${nx.name}, ${nx.why}` : ''}\n   ready: ${(by.ready||[]).join(' | ')}\n   waiting: ${(by.locked||[]).join(' | ')}`);
 }
-const hours = { 1: [8], 2: [8, 19], 3: [8, 13, 19], 4: [7, 11, 15, 20] }[VPD];
+const hours = process.env.HOURS ? process.env.HOURS.split(',').map(Number) : { 1: [8], 2: [8, 19], 3: [8, 13, 19], 4: [7, 11, 15, 20] }[VPD];   // HOURS=21 for an evening-only player
 snapshotList('Very first visit');
 for (let d = 0; d < DAYS; d++) {
   for (const h of hours) { const day = new RealDate(t0 + d * 864e5); day.setHours(h, 0, 0, 0); clock = day.getTime(); visit(); }
