@@ -336,7 +336,7 @@ function depthOf(gx, gy, tile = '0,0') { const [tx, ty] = tile.split(',').map(Nu
 // ---------- scene content (home tile) ----------
 const PROPS = [
   { name:'shelter',      gx:0.30, gy:0.22, s:1.35 },   // v74: a third bigger so the door is gnome height (art review: it was ~0.6 of a gnome)
-  { name:'firewood',     gx:0.37, gy:0.11, s:0.9, front:true, until:'woodpile' },   // v75 (Bryce's yard moves): by the house's right roots, under the barrel
+  { name:'firewood',     gx:0.37, gy:0.11, s:0.9, front:2, until:'woodpile' },   // v75 (Bryce's yard moves): by the house's right roots, in front of the barrel (front:2 draws it over the barrel)
   { name:'barrel',       gx:0.33, gy:0.03, s:0.9, front:true },   // v75 (Bryce's yard moves): against the house's right roots, catching the roof's rain
   { name:'campfire',     gx:0.22, gy:0.40, s:0.9 },   // v75 (Bryce's yard moves): in front of the house's left roots
   { name:'lanternstump', gx:0.75, gy:0.50, s:0.9, gone:'stump' },   // a plain old stump now (Bryce: the lamp post nailed to it made no sense); dug out by "Dig out the old stump"
@@ -3781,7 +3781,7 @@ function frame(now) {
   // depth-sorted things
   const items = [];
   const houseD = depthOf(PROPS[0].gx, PROPS[0].gy);   // things set down against the roots (Bryce's yard moves) stand in front of the house picture, though their feet are further back
-  for (const p of PROPS) items.push({ d: (p.front || (p.name === 'sapling' && potWhere() === 'home') ? Math.max(houseD + 0.005, depthOf(p.gx, p.gy)) : depthOf(p.gx, p.gy)) + (p.flat ? -0.25 : 0), draw: () => drawProp(p) });
+  for (const p of PROPS) items.push({ d: (p.front || (p.name === 'sapling' && potWhere() === 'home') ? Math.max(houseD + 0.005 * (p.front || 1), depthOf(p.gx, p.gy)) : depthOf(p.gx, p.gy)) + (p.flat ? -0.25 : 0), draw: () => drawProp(p) });
   for (const e of EXTRAS) { const a = e.show(); if (a > 0) items.push({ d: depthOf(e.gx, e.gy), draw: () => { const [x, y] = toWorld(e.gx, e.gy); e.draw(x, y, a, now); } }); }
   for (const g of gnomes) items.push({ d: depthOf(g.gx, g.gy) + (g.onBench ? (g.sitPic() ? 0.05 : -0.05) : 0), draw: () => g.draw(now) });   // on the bench: a painted loop sits in front of it, a stand-in behind it
   for (const o of G.s.offers) items.push({ d: depthOf(o.gx, o.gy, o.tile) - 0.02, draw: () => drawOffer(o, now) });
