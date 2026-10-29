@@ -230,7 +230,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v77</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v78</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -251,7 +251,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 77;
+const BUILD = 78;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -259,9 +259,9 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=77"></script>
-<script src="game.js?v=77"></script>
-<script src="walk.js?v=77"></script>
+<script src="content.js?v=78"></script>
+<script src="game.js?v=78"></script>
+<script src="walk.js?v=78"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -571,7 +571,7 @@ for (const p of C.story.pages) ART_SLOTS['page-' + p.id.replace('.', '-')] = {};
 for (const d of C.tasks) if (d.make && d.id !== 'barrow' && d.make !== 'track' && !d.season) ART_SLOTS['make-' + d.id] = { w: 60 };   // v70's track makes, season dressings and neighbours' wishes (WISH_DRAW) are stand-ins until the next art day; add their slots then
 // the animals' side stories (docs/ANIMALS.md): a painting for each storybook page (page-a-<beat id>); the rabbit's portrait (not a journal visitor)
 for (const b of C.animals.beats) if (b.kind === 'page') ART_SLOTS['page-a-' + b.id] = {};
-ART_SLOTS['portrait-rabbit'] = {};
+ART_SLOTS['portrait-rabbit'] = {}; ART_SLOTS['vis-mouse-stuck'] = {};   // round six art list: the mouse with a bottle stuck on its head (a drawn stand-in until then)
 // art day 15 (tools/cut_day15.py): crops, healing pieces, the animals' story pieces, the neighbours' farms, the bigger oaks. Each is drawn
 // by height where its stand-in was (cropPic, HEAL_PAINT, FARM_PAINT); missing files leave the stand-ins.
 for (const k of ['carrot', 'lettuce', 'bean']) for (let i = 1; i <= 4; i++) ART_SLOTS[`crop-${k}-${i}`] = {};
@@ -640,7 +640,7 @@ const hash = location.hash.slice(1);
 for (const tok of hash.split(/[#&]/)) if (/^(day|night|dawn|dusk|morning|evening)$/.test(tok)) tod = tok;
 if (/reset/.test(hash)) { G.reset(); }
 window.addEventListener('hashchange', () => location.reload());
-if (/test/.test(hash)) window.DBG = { ev: src => eval(src), feet: () => footprints(), walk: Walk, visitor: () => visitor, spawn: id => spawnVisitor(C.visitors.find(v => v.id === id)), patch: k => openPatch(k), farm: f => openFarm(f), platy: () => PLATY, swap: f => G.swap(f), jobs: f => openTasks(f || ''), magic: () => openMagic(), lesson: n => openLesson(n), cam, gnomes, IM, seat: BENCH_SEAT, dishFill: f => startDishFill(f), art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spirit: n => openLesson(n || 3), get allDone() { return ALLDONE; }, groundReady: () => !NEWGROUND || !groundMissing(), spiritAt: () => SPIRIT_HINT.screen, spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
+if (/test/.test(hash)) window.DBG = { ev: src => eval(src), feet: () => footprints(), walk: Walk, visitor: () => visitor, spawn: (id, kind) => spawnVisitor(C.visitors.find(v => v.id === id), kind && { kind, ask: (C.friends[id] || {}).asks && C.friends[id].asks[0] }), patch: k => openPatch(k), farm: f => openFarm(f), platy: () => PLATY, swap: f => G.swap(f), jobs: f => openTasks(f || ''), magic: () => openMagic(), lesson: n => openLesson(n), cam, gnomes, IM, seat: BENCH_SEAT, dishFill: f => startDishFill(f), art: k => art(k), greet: (id, n) => openGreeting(id, n), rabbit: () => RABBIT, rabbitVisit: () => rabbitVisit(), toWorld, taskProg: id => taskProg(id), wave: () => { greenWave = performance.now(); }, seedbed: () => openSeedbed(), spirit: n => openLesson(n || 3), get allDone() { return ALLDONE; }, groundReady: () => !NEWGROUND || !groundMissing(), spiritAt: () => SPIRIT_HINT.screen, spots: () => ({ SPOTS, WORKSPOT, RHYTHM, WORKPATH }), route: (a, b, c, d) => bedRoute(a, b, c, d), ring: (gx, gy) => toRing(gx, gy, bedFrame()), inBed: (gx, gy) => { const [x, y] = toWorld(gx, gy), sb = PROPS.find(q => q.name === 'seedbed'), [cx, cy] = toWorld(sb.gx, sb.gy), W = BED_OVAL.w / 2 * 0.95, H = W * BED_OVAL.ratio; const u = (x - cx) / W, v = (y - cy - 12 + u * W * 0.22) / H; return u * u + v * v < 1; } };   // for the preview pictures
 
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -2134,6 +2134,12 @@ function drawFeeder(x, y, a, now) {
     blob(x, y - 19, 19, 5, '#6d675d'); ctx.restore();
   }
   if (!f || a < 1) return;
+  if (f === 'carrot') {   // one carrot from the pantry, lying across the bowl, leafy top and all
+    const painted = !!art('feeding-dish'), cx = x + (painted ? 1 : 0), cy = painted ? y - 58 : y - 20; ctx.save(); ctx.globalAlpha = fp; ctx.translate(cx, cy); ctx.rotate(-0.25);
+    ctx.fillStyle = '#d9772a'; ctx.strokeStyle = '#5a2a10'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-14, 0); ctx.quadraticCurveTo(-2, -5, 9, -3); ctx.lineTo(9, 3); ctx.quadraticCurveTo(-2, 5, -14, 0); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#4f7a2e'; ctx.lineWidth = 1.6; for (const t of [-0.5, 0, 0.5]) { ctx.beginPath(); ctx.moveTo(9, 0); ctx.lineTo(9 + Math.cos(t) * 8, Math.sin(t) * 6 - 2); ctx.stroke(); }
+    ctx.restore(); return;
+  }
   const painted = !!art('feeding-dish'), cx = x + (painted ? 1 : 0), cy = painted ? y - 56 : y - 18, rx = painted ? 15 : 12, ry = painted ? 4 : 2.5, n = f === 'seed' ? 22 : 12;   // heaped in the bowl (painted dish: bowl hollow is 82% of the way up)
   for (let i = 0; i < Math.round(n * fp); i++) { const r = Math.sqrt(rnd(i + 50)), t = rnd(i + 60) * 6.283, fx = cx + Math.cos(t) * r * rx, fy = cy + Math.sin(t) * r * ry - (1 - r) * 2;
     if (f === 'seed') blob(fx, fy, 1.8, 1.2, ['#c9a46a', '#a88450', '#d8bc84'][i % 3]);
@@ -2239,33 +2245,51 @@ function drawVisitor(v, now) {
   if (def.spirit || def.id === 'spirit' || def.id === 'glowworm') glow(x, yy - h / 2, h * 1.2, def.id === 'glowworm' ? 'rgba(170,255,210,1)' : 'rgba(200,255,190,1)', 0.45 + 0.1 * Math.sin(now / 400));
   const coat = def.id === 'hedgehog' && G.beatDone('hogShopping') && season() === 'autumn', look = def.id === 'hedgehog' ? (coat ? 'hedgehog-coat' : season() === 'spring' && G.beatDone('hogSpring') ? 'hedgehog-thin' : null) : null;
   const dance = def.id === 'lyrebird' && !moving && Math.floor(now / 3500) % 3 === 2 && art('lyre-dance');   // the lyrebird dances now and then while it visits
-  if (dance) { const w = h * dance.width / dance.height; ctx.drawImage(dance, x - w / 2, yy - h, w, h); }
+  const stuck = def.id === 'mouse' && v.trouble && v.trouble.meet;   // the mouse's first meeting: an old loggers' bottle on its head (art slot vis-mouse-stuck)
+  if (def.id === 'rabbit') { const im = IM['rabbit-' + (moving || v.phase === 'eat' ? 'dish' : v.pose || 'sit')]; if (im && im.width) { const w = im.width * RABBIT_PIX, hh = im.height * RABBIT_PIX; ctx.save(); ctx.translate(x, yy); if (!v.faceR) ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, -hh, w, hh); ctx.restore(); } }
+  else if (stuck && art('vis-mouse-stuck')) drawCreature(Object.assign({}, def, { id: 'mouse-stuck' }), x, yy, h, v.faceR);
+  else if (dance) { const w = h * dance.width / dance.height; ctx.drawImage(dance, x - w / 2, yy - h, w, h); }
   else drawCreature(look && art('vis-' + look) ? Object.assign({}, def, { id: look, faces: 'R' }) : def, x, yy, h, v.faceR);
   if (coat && !art('vis-hedgehog-coat')) leafCoat(x, yy, h);   // out shopping again
+  if (stuck && !art('vis-mouse-stuck')) stuckBottle(x, yy, h, v.faceR, def, now);
   if (!G.met(def.id) && !v.trouble) { const ph = ((now / 1000) % 2.6) / 2.6; if (ph < 0.25) twinkle(x + h * 0.35, yy - h * 0.95, Math.sin(ph / 0.25 * Math.PI)); }   // "say hello": a glint over someone new (no glow); trouble has its own bubble
-  if (v.trouble) {   // a small paper bubble with a "!" so you can see it needs help
+  if (v.trouble || v.ask) {   // a small paper bubble with a "!" so you can see it needs help (or is waiting at the dish to ask for it)
     const bx = x, by = yy - h - 16 - Math.sin(now / 300) * 2;
     ctx.save(); ctx.fillStyle = '#f3e9d2'; ctx.strokeStyle = '#2a1510'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(bx, by, 11, 0, 7); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#b14c37'; ctx.font = 'bold 15px Georgia, serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', bx, by + 1); ctx.restore();
   }
   v.screen = { x, y: y - fly - (v.lift || 0), w: Math.max(40, h * 1.2), h: h + 20 + fly };
 }
-function spawnVisitor(forced) {
-  const def = forced || G.pickVisitor(); if (!def) return;
-  let to = [0.25 + Math.random() * 0.5, 0.25 + Math.random() * 0.5];
-  let trouble = /trouble/.test(hash) && def.trouble ? def.trouble : G.troubleFor(def.id);
-  if (trouble && trouble.by !== 'luck' && !choreGnome(trouble.by)) trouble = null;   // a trouble a gnome sorts out only comes while they are up
-  if (trouble) trouble = Object.assign({}, trouble);   // this visit's own copy (it remembers who is on the way)
-  const hungry = !trouble && G.dishBuilt() && G.wantsFood(def.id);
-  if (hungry) to = [FEEDER.gx - 0.05, FEEDER.gy + 0.05];
-  const perch = def.id === 'owl' || (trouble && def.id === 'possum');
-  if (perch) { const l = PROPS.find(p => p.name === 'firewood'); to = [l.gx - 0.02, l.gy - 0.02]; }   // up on the woodpile
-  let lift = 0;   // perched up high: on the owl box, or the little oak's stake (the animals' stories)
-  if (def.id === 'owl' && G.s.moved.owlbox) { to = [OWLBOX_AT[0] + 0.004, OWLBOX_AT[1] + 0.004]; lift = 128; }
-  else if (def.id === 'owl' && G.beatDone('owlSapling')) { to = [SAPLING_AT[0] + 0.004, SAPLING_AT[1] + 0.004]; lift = 70; }
-  const from = Walk.edge(to[0], to[1]), how = visitorWalk(def, perch);   // in from the nearest wild edge of the yard, round whatever is in the way
-  visitor = { def, gx: from[0], gy: from[1], phase: 'in', t: 0, stay: trouble ? 1e9 : 18 + Math.random() * 15, perch: 0, hungry, trouble,
-              speed: def.speed || 0.06, faceR: to[0] - to[1] > from[0] - from[1], lift };
+// Round six (build 4): the mouse, the robin and the rabbit come one at a time, only when G.nextAnimal() says (CONTENT.friends):
+// meet (shy at the dish and off when a gnome says hello; the mouse in its bottle), eat (the food you left for it), home (a friend
+// waiting at the dish to ask for somewhere to live), ask (a small kindness) or drop (a friend pottering near whoever is working).
+let nextAnimalAt = 0, dropAt = 0;
+function animalNext() {
+  const nowMs = performance.now(); if (nowMs < nextAnimalAt || RABBIT.on) return; nextAnimalAt = nowMs + 4000;
+  const n = G.nextAnimal(); if (!n) return;
+  if (n.kind === 'drop') { const [a, b] = C.friends.dropEvery; if (!dropAt) dropAt = nowMs + (1 + Math.random() * 3) * 60000; if (nowMs < dropAt) return; dropAt = nowMs + (a + Math.random() * (b - a)) * 60000; }
+  if (n.kind === 'meet' && !choreGnome(n.id === 'mouse' ? 'her' : n.id === 'robin' ? 'him' : 'her')) return;   // someone has to be up to say hello
+  if (n.kind === 'ask' && n.ask.by !== 'luck' && !choreGnome(n.ask.by)) return;
+  spawnVisitor(G.visitorDef(n.id), n);
+}
+function dropSpot(def) {   // a friend's drop-in: near whichever gnome is at work (Bryce loved the mouse pottering about while they work), else by the dish
+  const busy = gnomes.filter(g => !g.inside && (g.job || g.chore)), g = busy[(Math.random() * busy.length) | 0];
+  if (def.id === 'rabbit' && (!g || Math.random() < 0.5)) return G.done('fence') && Math.random() < 0.5 ? [...RABBIT_GATE(), 'sit'] : [WOOD_DROP[0] + 0.08, WOOD_DROP[1] + 0.01, 'nap'];
+  if (g) return [Math.min(0.95, Math.max(0.05, g.gx + 0.07 + Math.random() * 0.04)), Math.min(0.95, Math.max(0.05, g.gy + 0.06 + Math.random() * 0.04))];
+  return [FEEDER.gx + 0.08, FEEDER.gy - 0.02];
+}
+function spawnVisitor(def, plan) {
+  if (!def) return; plan = plan || { kind: 'drop' }; const k = plan.kind, F = C.friends;
+  let to = [FEEDER.gx + 0.07, FEEDER.gy - 0.03], trouble = null, stay = 18 + Math.random() * 15, pose = null;
+  if (k === 'meet' && def.id === 'mouse') trouble = Object.assign({ meet: true }, def.trouble);
+  if (k === 'ask') trouble = Object.assign({ friendAsk: true }, plan.ask);
+  if (/^(home|ask|meet)$/.test(k)) stay = 1e9;
+  if (k === 'eat') to = [FEEDER.gx - 0.05, FEEDER.gy + 0.05];
+  if (k === 'drop') { const d = dropSpot(def); to = [d[0], d[1]]; pose = d[2] || null; const [a, b] = F.dropStay; stay = a + Math.random() * (b - a); }
+  if (/test/.test(hash) && /trouble/.test(hash) && def.trouble && !trouble) trouble = Object.assign({}, def.trouble);
+  const from = Walk.edge(to[0], to[1]), how = visitorWalk(def, false);   // in from the nearest wild edge of the yard, round whatever is in the way
+  visitor = { def, kind: k, gx: from[0], gy: from[1], phase: 'in', t: 0, stay, perch: 0, hungry: k === 'eat', trouble, ask: k === 'home', meet: k === 'meet' && !trouble, pose,
+              speed: def.speed || 0.06, faceR: to[0] - to[1] > from[0] - from[1], lift: 0 };
   Walk.go(visitor, to[0], to[1], how);
   G.arrive(def.id);
 }
@@ -2277,14 +2301,6 @@ const RABBIT = { on: null, next: 0 };
 function rabbitGo(steps) { const [gx, gy] = steps[0]; RABBIT.on = { steps, i: 1, gx, gy, act: null, t: 0, flip: false, hop: 0 }; }
 const sayFor = t => Math.min(7, 2.4 + t.length / 20);   // long enough to read
 function gnomeSays(who, text) { const g = gnomes.find(g => g.who === who); if (!g) return; for (const o of gnomes) o.sayT = 0; g.say = text; g.sayT = sayFor(text); bubble.textContent = text; }
-function rabbitVisit() {   // a later visit, once the fence is up (after the truce it sits by the gate instead of testing the fence)
-  const kinds = [G.beatDone('rabbitTruce') ? 'gate' : 'peer', 'nap']; if (G.s.feeder.food) kinds.push('dish', 'dish');   // food in the dish draws it
-  const k = kinds[(Math.random() * kinds.length) | 0], food = G.s.feeder.food;
-  const say = k === 'gate' ? C.animals.rabbitGate : k === 'dish' ? (food === 'berry' ? C.rabbit.visits[2] : C.animals.rabbitSeed) : C.rabbit.visits[{ peer: 0, nap: 1 }[k]];
-  const spot = { peer: [0.80, 0.86, 'sniff', 30], gate: [...RABBIT_GATE(), 'sniff', 40], nap: [WOOD_DROP[0] + 0.08, WOOD_DROP[1] + 0.01, 'nap', 50], dish: [FEEDER.gx + 0.07, FEEDER.gy - 0.03, food === 'berry' ? 'berry' : 'eat', 7] }[k];
-  rabbitGo([[1.05, 0.62], [...spot, () => { if (k === 'dish' && G.s.feeder.food) G.rabbitEats(); }], [1.06, 0.40]]);
-  RABBIT.on.say = say ? say.replace(/^The rabbit/, `The ${G.rabbitName() || 'rabbit'}`) : say;
-}
 const RABBIT_GATE = () => [FENCE_GATE.gx + 0.035, FENCE_GATE.gy + 0.07];   // where it sits, perfectly good, after the truce
 function updateRabbit(dt) {
   const r = RABBIT.on, nowMs = performance.now();
@@ -2294,9 +2310,7 @@ function updateRabbit(dt) {
       rabbitGo(G.s.feeder.food ? [[1.05, 0.40], [FEEDER.gx + 0.07, FEEDER.gy - 0.03, 'eat', 7, () => { G.rabbitAte(); toast('A rabbit is eating everything in the dish!'); }], nibble, [1.06, 0.92]] : [[1.05, 0.40], nibble, [1.06, 0.92]]);
       RABBIT.on.fast = 2; return;
     }
-    const h = dayPhase().h;
-    if (G.done('fence') && h >= 6 && h < 19) { if (!RABBIT.next) RABBIT.next = nowMs + (60 + Math.random() * 120) * 1000; else if (nowMs > RABBIT.next) { RABBIT.next = nowMs + (12 + Math.random() * 10) * 60000; rabbitVisit(); } }
-    return;
+    return;   // round six: after its raid the rabbit comes through the friendship path (animalNext)
   }
   const st = r.steps[r.i]; if (!st) { RABBIT.on = null; return; }
   if (r.act) {   // eating, sniffing or napping where it is
@@ -2321,24 +2335,36 @@ function drawRabbit(now) {
   if (nap) { ctx.save(); ctx.fillStyle = 'rgba(60,45,30,0.7)'; ctx.font = 'italic 12px Georgia'; const k = (now / 1400) % 1; ctx.globalAlpha = 1 - k; ctx.fillText('z', x + 26 + k * 10, y - 62 - k * 20); ctx.restore(); }
 }
 function updateVisitor(dt) {
-  if (!visitor) { if (performance.now() > nextVisitorAt) { spawnVisitor(); const [a, b] = C.visitorEvery, k = G.s.feeder.food ? 0.6 : 1; nextVisitorAt = performance.now() + (a + Math.random() * (b - a)) * k * 1000; } return; }
+  if (!visitor) { animalNext(); return; }
   const v = visitor; v.t += dt;
   const dx = v.tx - v.gx, dy = v.ty - v.gy, d = Math.hypot(dx, dy);
   if (d > 0.005) v.faceR = dx - dy > 0;   // screen x grows with gx - gy
-  if (v.phase === 'in') { if (Walk.step(v, v.speed * dt)) { v.phase = v.hungry && G.wantsFood(v.def.id) ? 'eat' : 'stay'; v.t = 0; v.perch = 1; } }
-  else if (v.phase === 'eat') { if (v.t > 6) { v.hungry = false; v.phase = 'stay'; v.t = 0; ate(v); } }
+  if (v.phase === 'in') { if (Walk.step(v, v.speed * (v.def.id === 'rabbit' ? 1.6 : 1) * dt)) { v.phase = v.hungry && G.s.feeder.food ? 'eat' : 'stay'; v.t = 0; v.perch = 1;
+    if (v.phase === 'eat') { const say = (C.friends[v.def.id] || {}).eat; if (say) toast(G.isFriend(v.def.id) ? say.replace(/^The (rabbit|mouse|robin)/, G.friendName(v.def.id)) : say); btnAlert('bJournal', true); }   // note 41: a visit you can't miss
+    if (v.meet) sayHello(v); } }
+  else if (v.phase === 'eat') { if (v.t > 6) { v.hungry = false; v.phase = 'stay'; v.t = 0; v.stay = 8; ate(v); } }
   else if (v.phase === 'stay') { visitorMoment(v);
-    if (v.def.id === 'mouse' && !v.trouble && Math.random() < dt * 0.4) { Walk.go(v, Math.min(0.95, Math.max(0.05, v.gx + (Math.random() - 0.5) * 0.2)), Math.min(0.95, Math.max(0.05, v.gy + (Math.random() - 0.5) * 0.2)), visitorWalk(v.def)); v.phase = 'in'; }   // a scurry, never under anything
+    if (v.meet && v.hello && (v.t > 25 || Math.hypot(v.hello.gx - v.gx, v.hello.gy - v.gy) < 0.13)) return dashOff(v);   // a gnome came over to say hello: off it goes
+    if (v.meet && !v.hello && v.t > 6) sayHello(v);
+    if ((v.trouble || v.ask) && v.t > 480 && !(v.trouble && v.trouble.helping)) { v.trouble = null; v.ask = false; v.stay = 0; }   // it waited a good while; it will come back
+    if (v.def.id === 'mouse' && !v.trouble && !v.ask && Math.random() < dt * 0.4) { Walk.go(v, Math.min(0.95, Math.max(0.05, v.gx + (Math.random() - 0.5) * 0.2)), Math.min(0.95, Math.max(0.05, v.gy + (Math.random() - 0.5) * 0.2)), visitorWalk(v.def)); v.phase = 'in'; }   // a scurry, never under anything
     if (v.t > v.stay) { const [ex, ey] = Walk.edge(v.gx, v.gy); v.phase = 'out'; v.perch = 0; Walk.go(v, ex, ey, Object.assign({ exact: true }, visitorWalk(v.def))); } }   // off by the nearest wild edge
-  else if (Walk.step(v, v.speed * 1.5 * dt)) visitor = null;
+  else if (Walk.step(v, v.speed * (v.dash ? 4 : 1.5) * dt)) visitor = null;
+}
+function sayHello(v) {   // the first meeting: a gnome walks over to say hello (and that is the end of that)
+  const who = v.def.id === 'robin' ? 'him' : 'her', g = choreGnome(who); if (!g) return; v.hello = g;
+  g.startChore('hello', [[v.gx + 0.08, v.gy + 0.04, 'pickup', false, 2, [v.gx, v.gy]]]);
+  gnomeSays(g.who, g.who === 'her' ? 'Oh! Hello, little one.' : 'Well, good morning to you.');
+}
+function dashOff(v) {
+  const [x, y] = toWorld(v.gx, v.gy), who = v.hello ? C.names[v.hello.who] : 'Hazel';
+  v.meet = false; v.dash = true; v.phase = 'out'; v.perch = 0; const [ex, ey] = Walk.edge(v.gx, v.gy); Walk.go(v, ex, ey, Object.assign({ exact: true }, visitorWalk(v.def)));
+  G.meet(v.def.id); float('✎ new entry', x, y - 30); toast(C.friends[v.def.id].meet.replace('{who}', who)); btnAlert('bJournal', true);
 }
 function visitorWalk(def, perch) { return { creature: true, fly: !!(def.fly || def.spirit || perch), exact: !!perch }; }   // fliers go over things (never landing in the bed); walkers go round
 function ate(v) {   // the visitor finished at the dish
-  const out = G.feed(v.def.id); if (!out) return;
-  const [x, y] = toWorld(v.gx, v.gy), name = G.met(v.def.id) ? v.def.name : 'Someone new';
-  if (out === 'regular') { float('♥ a regular now', x, y - 30); toast(`${name} will come by every day now.`); btnAlert('bJournal', true); }
-  else if (out === 'nest') { float('♥ moving in', x, y - 30); toast(`${name} has made a home nearby. Look for it.`); btnAlert('bJournal', true); }
-  else float('♥', x, y - 20);
+  if (!G.s.feeder.food) return; const out = G.friendAte(v.def.id), [x, y] = toWorld(v.gx, v.gy);
+  float(out === 'friend' ? '♥ a friend' : '♥', x, y - 30);
 }
 
 // ---------- neighbours and the village ----------
@@ -2694,7 +2720,8 @@ function mouseHouse(x, y, w, h, now) {   // the toadstool turns into a mouse hou
   if (G.s.flags.mouseSock && !G.beatDone('mouseWinter')) SOCK.screen = sockHammock(x - w * 0.3, y + 40, now); else SOCK.screen = null;
   if (since < MOUSE_IN) return;
   if (art('sign-noknock')) { shadow(x + w * 0.42, y + 2, 7, 2); cropPic('sign-noknock', x + w * 0.42, y + 3, 30, false, 0.95); }   // the mice's own sign by the door (art day 15)
-  if (!G.s.flags.miceIn) { G.s.flags.miceIn = true; G.note('A mouse family has moved into the old toadstool.'); toast('A mouse family has moved into the toadstool!'); }
+  if (!G.s.flags.miceIn) { const fm = G.fr('mouse'); if (!fm.friend) { fm.seen = fm.seen || G.now(); fm.trust = fm.trust || G.now(); fm.friend = G.now(); }   // moving in makes a friend of it, met or not
+    G.s.flags.miceIn = true; G.note('A mouse family has moved into the old toadstool.'); toast('A mouse family has moved into the toadstool!'); }
   const im = art('vis-mouse'); if (!im || night > 0.6) return;   // by day the little ones play round the door
   const t = now / 1000;
   [[-22, 32, 0], [16, 23, 1.7], [34, 20, 3.1]].forEach(([ox, hh, ph], i) => { const ww = im.width * hh / im.height, hop = Math.max(0, Math.sin(t * 2.2 + ph)) * (i ? 4 : 0), mx = dx + ox + (i ? Math.sin(t * 0.7 + ph) * 6 : 0);
@@ -2747,6 +2774,15 @@ function leafCoat(x, y, h) {   // dry leaves carried home on its spines (it was 
   ctx.restore();
 }
 const OWLBOX_AT = C.tasks.find(d => d.id === 'owlbox').at;   // the owl box's post, beside the little oak (home grid)
+function stuckBottle(x, y, h, faceR, def, now) {   // stand-in until the stuck mouse is painted: a green glass bottle over its head, neck out, wobbling
+  const s = ((def.faces || 'L') === 'R' ? 1 : -1) * (faceR !== ((def.faces || 'L') === 'R') ? -1 : 1), wob = Math.sin(now / 240) * 0.1;   // which side its head is on (as drawCreature mirrors it)
+  ctx.save(); ctx.translate(x + s * h * 0.22, y - h * 0.70); ctx.rotate(-s * Math.PI / 2 + wob); ctx.globalAlpha = 0.85;
+  ctx.fillStyle = 'rgba(96,140,92,0.72)'; ctx.strokeStyle = 'rgba(30,50,30,0.9)'; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.roundRect(-h * 0.16, -h * 0.16, h * 0.32, h * 0.40, h * 0.09); ctx.fill(); ctx.stroke();   // the body, over the head
+  ctx.beginPath(); ctx.rect(-h * 0.055, h * 0.24, h * 0.11, h * 0.13); ctx.fill(); ctx.stroke();   // the neck
+  ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(-h * 0.11, -h * 0.10, h * 0.04, h * 0.26);   // a glint on the glass
+  ctx.restore();
+}
 function visitorMoment(v) {   // a little line now and then while someone is visiting (once a visit)
   if (v.said || v.t < 4) return; const id = v.def.id;
   if (id === 'owl' && gnomes.some(g => g.onBench)) { v.said = true; toast(pick(C.animals.owlCompany)); }   // the gnomes by the fire, the owl watching
@@ -2764,7 +2800,7 @@ function animalItems(items, now) {
     if (seed) { const sx = x + (flip ? 1 : -1) * w * 0.12, sy = y - bob - hh * 0.97; ctx.save(); ctx.strokeStyle = 'rgba(250,248,240,0.95)'; ctx.lineWidth = 0.7; for (let i = 0; i < 7; i++) { const a = -Math.PI / 2 + (i - 3) * 0.32; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + Math.cos(a) * 4, sy + Math.sin(a) * 4); ctx.stroke(); } ctx.restore();
       BABY_SEED.screen = { x, y, w: 30, h: hh + 10 }; } } });
   const gate = art('rabbit-gate'), B = [1, 2, 3, 4].map(i => art('baby-' + i)), byH = (im, h) => h / im.height;
-  if (!RABBIT.on) { if (gate) rab(bx + 0.04, by - 0.04, gate, byH(gate, 92), true, 0); else rab(bx + 0.04, by - 0.04, sit, 0.62, true, 0); }   // the mother, by her door, when she is not off visiting the yard
+  if (!RABBIT.on && !(visitor && visitor.def.id === 'rabbit')) { if (gate) rab(bx + 0.04, by - 0.04, gate, byH(gate, 92), true, 0); else rab(bx + 0.04, by - 0.04, sit, 0.62, true, 0); }   // the mother, by her door, when she is not off visiting the yard
   if (!G.beatDone('rabbitBabies')) return;
   const t = now / 1000, hop = i => Math.max(0, Math.sin(t * 2 + i * 2.1)) * 3;   // the babies: two sitting up, one asleep in a heap
   if (B.every(Boolean)) {   // painted (art day 15): two sitting up, one nosing about, one asleep in a heap
@@ -4012,6 +4048,7 @@ function tap(cx, cy) {
   if (PLATY.on && hit(PLATY.on.screen, wx, wy)) { const isNew = G.noteVisitor('platypus'); float(isNew ? '✎ new entry' : '✎', PLATY.on.screen.x, PLATY.on.screen.y); return openGreeting('platypus', isNew); }
   if (visitor && hit(visitor.screen, wx, wy)) {
     if (visitor.trouble) return openHelp();
+    if (visitor.ask) return openAsk();
     const id = visitor.def.id, isNew = G.noteVisitor(id); float(isNew ? '✎ new entry' : '✎', visitor.screen.x, visitor.screen.y);
     return openGreeting(id, isNew);
   }
@@ -4205,7 +4242,7 @@ sheet.addEventListener('click', e => {
   if (a === 'start') { if (G.startTask(id)) { JOB_START = performance.now(); toast(G.asleepAt(G.now()) ? 'They will get going when they wake, at six.' : 'Set to work.'); for (const g of gnomes) if (g.who === G.taskDef(id).who) { g.walking = false; g.wait = 0.1; } } }
   if (a === 'openmagic') { openMagic(); return; }
   if (a === 'cast') { if (G.cast(id)) { toast(C.spells[id].name + '.'); if (id === 'legs') { closeSheet(); const [x, y] = toWorld(...TOAD_FROM); cam.x = x; cam.y = y - 40; return; } } }   // watch it walk off
-  if (a === 'food') { if (G.putFood(id)) { const g = startDishFill(id); toast(g ? `${g.who === 'her' ? 'Hazel' : 'Wendel'} takes the ${id === 'seed' ? 'seed' : 'berries'} over to the dish.` : id === 'seed' ? 'Seed in the dish.' : 'Berries in the dish.'); closeSheet(); return; } }
+  if (a === 'food') { if (G.putFood(id, b.dataset.who)) { const g = startDishFill(id); toast(g ? `${C.names[g.who]} takes ${{ seed: 'the seed', berry: 'the berries', carrot: 'a carrot' }[id]} over to the dish.` : `${cap(G.foodName(id))} in the dish.`); closeSheet(); return; } }
   if (a === 'help') return doHelp();
   if (a === 'folk') return openFolk(id);
   if (a === 'traveller') return openTraveller();
@@ -4238,7 +4275,8 @@ sheet.addEventListener('click', e => {
   if (a === 'tmins') return G.skipMins(+b.dataset.n);
   if (a === 'tfinish') { G.finishAll(); toast('Every job finished.'); }
   if (a === 'tpack') { G.fillPack(); toast("Store filled up."); }
-  if (a === 'tvisit') { closeSheet(); spawnVisitor(); return; }
+  if (a === 'askyes') return askYes();
+  if (a === 'tvisit') { closeSheet(); const n = G.nextAnimal(); if (n) spawnVisitor(G.visitorDef(n.id), n); else toast('No animal is due just now.'); return; }
   if (a === 'tsecret') { closeSheet(); const o = G.spawnSecret(); if (o) { const [x, y] = toWorld(...glob(o.tile, o.gx, o.gy)); cam.x = x; cam.y = y; } else toast('Every little find has been found.'); return; }
   if (a === 'secret') return openSecret(id);
   if (a === 'ttrav') { G.callTraveller(); toast(G.s.village.traveller ? 'A traveller is camped by the path.' : 'No one left on the road.'); }
@@ -4252,7 +4290,7 @@ function openTest() {
   <h3>Start again</h3><p><button class="act" data-a="reset">Start the game over from the beginning</button></p>
   <h3>Jump ahead in time</h3><p><button class="act" data-a="tmins" data-n="30">+30 minutes</button> <button class="act" data-a="tskip" data-n="1">+1 day</button> <button class="act" data-a="tskip" data-n="3">+3 days</button> <button class="act" data-a="tskip" data-n="7">+1 week</button></p>
   <h3>Speed things up</h3><p><button class="act" data-a="tfinish">Finish every job now</button></p><p><button class="act" data-a="tpack">Fill the store (20 of everything)</button></p>
-  <h3>Call someone</h3><p><button class="act" data-a="tvisit">A creature visits</button> <button class="act" data-a="ttrav">A traveller arrives</button> <button class="act" data-a="tsecret">Hide a little find</button> <button class="act" data-a="tplaty">The platypus (dawn only, normally)</button></p>
+  <h3>Call someone</h3><p><button class="act" data-a="tvisit">Next animal moment</button> <button class="act" data-a="ttrav">A traveller arrives</button> <button class="act" data-a="tsecret">Hide a little find</button> <button class="act" data-a="tplaty">The platypus (dawn only, normally)</button></p>
   <h3>Seasons</h3><p>${['spring', 'summer', 'autumn', 'winter'].map(k => `<button class="act${season() === k ? '' : ' quiet'}" data-a="tseason" data-id="${k}">${C.seasons[k].name}</button>`).join(' ')} <button class="act quiet" data-a="tseason" data-id="">The phone's own</button></p>
   <h3>The animals' stories</h3><p><button class="act" data-a="tbeat">Skip to the next animal beat</button></p><p class="meta">${C.animals.beats.filter(b => G.beatDone(b.id)).length} of ${C.animals.beats.length} beats so far. It ignores the season and the hour, and makes the job or home it waits on finished.</p>
   <h3>The festival</h3><p><button class="act" data-a="tfest" data-n="0">Start the festival plans now</button> <button class="act" data-a="tfest" data-n="1">Festival night now</button></p>
@@ -4374,18 +4412,21 @@ function portraitHtml(v, big) {   // the journal picture: painted portrait, else
   const src = art('portrait-' + v.id) ? `sprites/portrait-${v.id}.webp` : art('vis-' + v.id) ? `sprites/vis-${v.id}.webp` : null;
   return `<div class="por${big ? ' big' : ''}${src && !art('portrait-' + v.id) ? ' pad' : ''}${art('portrait-' + v.id) ? ' scene' : ''}">${src ? `<img src="${src}" alt="">` : `<span>${v.icon || '•'}</span>`}</div>`;
 }
-function journalFoot(v) {   // what you know about a creature's feeding, nest and good deeds, in words
-  const e = G.s.journal[v.id] || {}, F = C.feeding, n = (e.fed || []).length, bits = [];
-  if (v.eats && n) bits.push(G.hasNest(v.id) ? `Lives nearby now.` : G.isRegular(v.id) ? `A regular: comes by every day.${v.nest ? ` Fed on ${n} days; it may settle nearby after ${F.nestAfter}.` : ''}` : `Fed at the dish on ${n} of ${F.regularAfter} days it needs to become a regular.`);
-  else if (v.eats && G.dishBuilt()) bits.push(`Might come to the dish for ${v.eats.map(k => k === 'seed' ? 'seed' : 'berries').join(' or ')}.`);
+function journalFoot(v) {   // what you know about a creature's feeding, home and good deeds, in words
+  const e = G.s.journal[v.id] || {}, d = C.friends[v.id], n = (e.fed || []).length, bits = [];
+  if (d) {   // round six: the friendship path
+    if (G.hasNest(v.id)) bits.push(`Lives here now.`);
+    else if (G.isFriend(v.id)) bits.push(`A friend. Likes ${G.foodName(d.food)}, and comes to the dish now and then to ask for help.`);
+    else if (G.seen(v.id)) bits.push(`Likes ${G.foodName(d.food)}. Fed at the dish on ${Math.min(n, C.friends.friendAfter)} of the ${C.friends.friendAfter} days it takes to make a friend.`);
+  } else if (v.eats && n) bits.push(G.hasNest(v.id) ? `Lives nearby now.` : G.isRegular(v.id) ? `A regular: comes by every day.` : `Fed at the dish on ${n} days.`);
   if (e.helped) bits.push(`Helped ${e.helped === 1 ? 'once' : e.helped + ' times'}.`);
   return bits.join(' ');
 }
 function openJournal() {
-  const seen = C.visitors.filter(v => G.met(v.id)).length, regs = C.visitors.filter(v => G.isRegular(v.id)).length;
+  const list = C.visitors.filter(v => C.friends.roster.includes(v.id) || G.met(v.id)), seen = list.filter(v => G.met(v.id)).length, regs = C.friends.roster.filter(id => G.isFriend(id)).length;   // round six: only the mouse, robin and rabbit for now (others come in month two)
   const nb = neighboursHtml();
-  let html = `<h2>Field journal<small>${seen} of ${C.visitors.length} met${regs ? ` · ${regs} regular${regs > 1 ? 's' : ''}` : ''}</small></h2>${questHtml()}${G.s.festival.stage !== 'waiting' ? `<p><button class="act quiet" data-a="festgreen">🎉 ${C.festival.name}</button></p>` : ''}${ourStoryHtml()}${G.s.flags.firstpick ? `<h3>Little makes</h3><p>${makesLine()} little makes.</p>` : ''}${nb || '<h3>Creatures</h3>'}<p>Tap a visitor in the garden to note it down; a little twinkle over its head means someone new. Tap a page to read it.</p><div class="jgrid">`;
-  for (const v of C.visitors) { const m = G.met(v.id); html += `<button class="jcard${m ? '' : ' unseen'}" data-a="${m ? 'entry' : ''}" data-id="${v.id}">${portraitHtml(v)}<b>${m ? v.name : '?'}</b>${G.hasNest(v.id) ? '<i>lives here</i>' : G.isRegular(v.id) ? '<i>regular</i>' : ''}</button>`; }
+  let html = `<h2>Field journal<small>${seen} of ${list.length} met${regs ? ` · ${regs} friend${regs > 1 ? 's' : ''}` : ''}</small></h2>${questHtml()}${G.s.festival.stage !== 'waiting' ? `<p><button class="act quiet" data-a="festgreen">🎉 ${C.festival.name}</button></p>` : ''}${ourStoryHtml()}${G.s.flags.firstpick ? `<h3>Little makes</h3><p>${makesLine()} little makes.</p>` : ''}${nb || '<h3>Creatures</h3>'}<p>Tap an animal in the garden to say hello. Once you have met one, its favourite food shows on the feeding dish. Tap a page to read it.</p><div class="jgrid">`;
+  for (const v of list) { const m = G.met(v.id), fr = C.friends[v.id] && G.isFriend(v.id); html += `<button class="jcard${m ? '' : ' unseen'}" data-a="${m ? 'entry' : ''}" data-id="${v.id}">${portraitHtml(v)}<b>${m ? (fr ? C.friends[v.id].name : v.name) : '?'}</b>${G.hasNest(v.id) ? '<i>lives here</i>' : fr ? '<i>a friend</i>' : G.isRegular(v.id) ? '<i>regular</i>' : ''}</button>`; }
   html += `</div>`;
   const nf = Object.keys(G.s.secrets.found).length;
   html += `<h3>Little finds</h3><p>${nf ? `${nf} of ${C.secrets.length} pressed between the pages.` : 'Tiny things hide in the healed grass. Watch for a glint.'}</p><div class="finds">`;
@@ -4420,30 +4461,32 @@ function openSpringCard() {   // Wendel found the spring: the first water back i
     <p>Water is where the land starts to remember. It fills the can for the seed bed, and one day it can wake the dry creek too. Watch the little pool at the back of the yard: the land has just taken its first breath.</p></div>
     <p style="text-align:center"><button class="act" data-a="lookspring">Have a look</button></p>`);
 }
-function openGreeting(id, isNew) {   // tapping a creature in the garden: a little greeting card (its story is still to be written)
-  const v = G.visitorDef(id), foot = journalFoot(v), hello = isNew ? 'A new friend!' : G.isRegular(id) ? 'Hello again, old friend' : 'Hello again';
-  openSheet('greet', `<div class="jpage card"><p class="meta" style="margin:0">${hello}</p>${portraitHtml(v, true)}<h2>${v.name}</h2><p class="lore">${v.note}</p>
-    ${foot ? `<p class="meta">${foot}</p>` : ''}<p class="meta"><i>Its story is still to be written.</i></p>
-    <p class="meta">${isNew ? 'Noted in the field journal.' : `Met ${G.s.journal[id].count} times.`}</p></div>
+function openGreeting(id, isNew) {   // tapping a creature in the garden: a little greeting card
+  const v = G.visitorDef(id), foot = journalFoot(v), fr = C.friends[id] && G.isFriend(id), hello = isNew ? 'Noted in the field journal' : fr ? 'Hello again, old friend' : 'Hello again';
+  openSheet('greet', `<div class="jpage card"><p class="meta" style="margin:0">${hello}</p>${portraitHtml(v, true)}<h2>${fr ? `${C.friends[id].name}<small>the ${v.name.toLowerCase()}</small>` : v.name}</h2><p class="lore">${v.note}</p>
+    ${foot ? `<p class="meta">${foot}</p>` : ''}<p class="meta">${isNew ? '' : `Met ${G.s.journal[id].count} times.`}</p></div>
     <p style="text-align:center"><button class="act" data-a="close">Back to the garden</button></p>`);
 }
 function openEntry(id) {
   const v = G.visitorDef(id), e = G.s.journal[id];
-  const foot = journalFoot(v);
-  openSheet('entry', `<p style="margin:0 0 4px"><button class="act quiet" data-a="journal">‹ Journal</button></p><div class="jpage">${portraitHtml(v, true)}<h2>${v.name}</h2><p class="lore">${v.note}</p>
+  const foot = journalFoot(v), fr = C.friends[id] && G.isFriend(id);
+  openSheet('entry', `<p style="margin:0 0 4px"><button class="act quiet" data-a="journal">‹ Journal</button></p><div class="jpage">${portraitHtml(v, true)}<h2>${fr ? `${C.friends[id].name}<small>the ${v.name.toLowerCase()}</small>` : v.name}</h2><p class="lore">${v.note}</p>
     <p class="meta">First seen ${new Date(e.first).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })} · met ${e.count === 1 ? 'once' : e.count + ' times'}</p>${foot ? `<p class="meta">${foot}</p>` : ''}</div>`);
 }
-function openFeeder() {
+function openFeeder() {   // round six: the animals' meeting place. Only the animals you have met show here, each with the food it likes.
   if (taskProg('feeder') < 1) return openTasks('feeder');
-  const f = G.s.feeder.food, F = C.feeding;
-  let html = `<h2>The feeding dish</h2>`;
-  if (f) html += `<p>There ${f === 'seed' ? 'is seed' : 'are berries'} in the dish. Someone will be along. Things go quicker while there is food out.</p>`;
+  const f = G.s.feeder, F = C.friends, met = F.roster.filter(id => G.seen(id));
+  let html = `<h2>The feeding dish<small>where the animals come</small></h2>`;
+  if (f.food) html += `<p>There ${f.food === 'carrot' ? 'is a carrot' : f.food === 'seed' ? 'is seed' : 'are berries'} in the dish${f.who ? ` for ${G.friendName(f.who, true)}` : ''}. ${f.who ? `${G.friendName(f.who)} will be along for it soon${G.friendAwake(f.who, dayPhase().h) ? '' : ', once it is morning'}.` : 'Someone may come for it.'}</p>`;
+  if (!met.length) html += `<p>Nobody has come to the dish yet. ${G.landStage().key === 'barren' && !G.s.flags.rabbit ? 'The animals will start coming back once the land shows its first green.' : 'Watch for someone creeping up to it.'}</p>`;
   else {
-    html += `<p>Put something out and see who comes. A creature fed here on ${F.regularAfter} different days becomes a regular and comes by every day; some may even make a home nearby.</p>`;
-    for (const k of F.foods) { const n = G.s.inv[k] || 0; html += `<div class="row"><div class="t"><b>Put out ${k === 'seed' ? 'seed' : 'berries'}</b><span>Costs ${costHtml({ [k]: 1 })} · you have ${n}</span></div><button class="act" data-a="food" data-id="${k}" ${n ? '' : 'disabled'}>Put out</button></div>`; }
+    html += `<p>${f.food ? 'When it is empty, put out' : 'Put out'} what one of them likes, and they will come for it. Fed on ${F.friendAfter} different days, an animal becomes a friend.</p>`;
+    for (const id of met) {
+      const d = F[id], v = G.visitorDef(id), n = G.s.inv[d.food] || 0, friend = G.isFriend(id), days = G.fedDays(id);
+      const state = friend ? 'a friend' : `fed on ${Math.min(days, F.friendAfter)} of ${F.friendAfter} days`, none = d.food === 'carrot' ? 'no carrots in the pantry yet' : `you have none`;
+      html += `<div class="row"><div class="t"><b>${G.friendName(id)} likes ${G.foodName(d.food)}</b><span>${state} · ${n ? `costs ${costHtml({ [d.food]: 1 })} · you have ${n}` : none}</span></div><button class="act" data-a="food" data-id="${d.food}" data-who="${id}" ${n && !f.food ? '' : 'disabled'}>Put out</button></div>`;
+    }
   }
-  const met = C.visitors.filter(v => v.eats && G.met(v.id));
-  if (met.length) html += `<h3>Who eats what</h3>` + met.map(v => `<p style="margin:2px 0"><b>${v.name}</b>: ${v.eats.map(k => k === 'seed' ? 'seed' : 'berries').join(', ')}${G.isRegular(v.id) ? ' · regular' : ` · fed ${G.fedDays(v.id)} of ${F.regularAfter} days`}</p>`).join('');
   openSheet('feeder', html);
 }
 // A creature in trouble (progression fix 2): your luck draws a gnome's eye to it and they walk over and help with their own hands,
@@ -4453,7 +4496,17 @@ function openHelp() {
   const by = v.trouble.by || 'her', g = by !== 'luck' && choreGnome(by), name = g && C.names[g.who];
   const how = by === 'luck' ? 'A little of your magic would do it.' : v.trouble.helping ? `${C.names[v.trouble.helping]} is on the way.` : g ? `${name} hasn't noticed yet. A nudge from you could draw ${g.who === 'her' ? 'her' : 'his'} eye to it.` : 'Wendel and Hazel are asleep.';
   const btn = by === 'luck' ? `<button class="act" data-a="help">${v.trouble.act}</button>` : g && !v.trouble.helping ? `<button class="act" data-a="help">Draw ${name}'s eye to it</button>` : '';
-  openSheet('help', `<div class="jpage">${portraitHtml(v.def, true)}<h2>The ${v.def.name.toLowerCase()}</h2><p class="lore">The ${v.def.name.toLowerCase()} ${v.trouble.text}</p><p class="meta">${how}</p></div><p style="text-align:center">${btn}</p>`);
+  openSheet('help', `<div class="jpage">${portraitHtml(v.def, true)}<h2>${G.friendName(v.def.id)}</h2><p class="lore">${G.friendName(v.def.id)} ${v.trouble.text}</p><p class="meta">${how}</p></div><p style="text-align:center">${btn}</p>`);
+}
+function openAsk() {   // a friend waiting at the dish: it wants somewhere to live (round six)
+  const v = visitor; if (!v || !v.ask) return; const h = C.friends[v.def.id].home;
+  openSheet('ask', `<div class="jpage card"><p class="meta" style="margin:0">Waiting at the dish</p>${portraitHtml(v.def, true)}<h2>${h.title}</h2><p class="lore">${h.card.replace('{name}', G.friendName(v.def.id))}</p></div><p style="text-align:center"><button class="act" data-a="askyes">${h.button}</button></p>`);
+}
+function askYes() {
+  const v = visitor; if (!v || !v.ask) return closeSheet(); const id = v.def.id; G.homeAsked(id); v.ask = false; v.stay = v.t + 6;
+  const [x, y] = toWorld(v.gx, v.gy); float('♥', x, y - 30);
+  if (id === 'mouse') return openMagic();
+  closeSheet(); toast(id === 'robin' ? 'Wendel has put a nest box on his Jobs list.' : 'An earth bank is on the list of little makes for the garden.'); btnAlert('bTasks', true);
 }
 function doHelp() {
   const v = visitor; if (!v || !v.trouble) return closeSheet();
@@ -4478,7 +4531,8 @@ function basketTo(g, fid) {   // a gnome carries it over to the neighbour's door
 }
 function helped(v) {   // the good deed is done: a little light, and the thank-you
   G.entry(v.def.id); if (!G.met(v.def.id)) G.noteVisitor(v.def.id);
-  const light = G.help(v.def.id), [x, y] = toWorld(v.gx, v.gy), thanks = v.trouble.thanks;
+  const tr = v.trouble, light = G.help(v.def.id, tr.thanks), [x, y] = toWorld(v.gx, v.gy), thanks = tr.thanks + (tr.meet ? ` ${C.friends.mouse.met}` : '');
+  if (tr.meet) G.meet('mouse'); if (tr.friendAsk) G.askDone(v.def.id);
   float(light ? '+1 light ♥' : '♥', x, y - (v.def.h || 30));
   if (v.trouble.by === 'luck') for (let i = 0; i < 10; i++) particles.push({ k: 'breath', x: x - 40 + Math.random() * 20, y: y - 10 - Math.random() * 30, vx: 22 + Math.random() * 12, vy: -3 - Math.random() * 4, r: 3 + Math.random() * 3, life: 0, max: 1.8 + Math.random() });   // the breath of luck: a soft drift of air past it (not a glow)
   v.trouble = null; v.stay = v.t + 8;
@@ -4508,7 +4562,7 @@ function openPage(id, again) {
 const RABBIT_DEF = { id: 'rabbit', icon: '🐇' };   // not a journal visitor, but it has a painted portrait
 function animalName(id) { return id === 'rabbit' ? G.rabbitName() || 'the rabbit' : `the ${G.visitorDef(id).name.toLowerCase()}`; }
 function beatHtml(b) {
-  const pic = art('page-a-' + b.id), por = portraitHtml(b.who === 'rabbit' ? RABBIT_DEF : G.visitorDef(b.who), true), who = b.who === 'rabbit' ? 'The rabbit' : G.visitorDef(b.who).name;
+  const pic = art('page-a-' + b.id), por = portraitHtml(b.who === 'rabbit' ? RABBIT_DEF : G.visitorDef(b.who), true), who = C.friends[b.who] && G.isFriend(b.who) ? C.friends[b.who].name : b.who === 'rabbit' ? 'The rabbit' : G.visitorDef(b.who).name;
   if (b.kind === 'page') return `<div class="jpage page"><p class="chap">${C.animals.chapter}</p>${pic ? `<img class="story" src="sprites/page-a-${b.id}.webp" alt="">` : por}<h2>${b.title}</h2>${G.beatText(b).map(x => `<p class="tale">${x}</p>`).join('')}</div>`;
   return `<div class="jpage card"><p class="meta" style="margin:0">${C.animals.chapter} · ${who}</p>${por}<h2>${b.title}</h2>${G.beatText(b).map(x => `<p class="lore">${x}</p>`).join('')}</div>`;
 }
@@ -4688,7 +4742,7 @@ function openAway(r) {
   if (r.event) html += `<p>${r.event}</p>`;
   if (r.rabbit) html += `<p>${r.rabbit}</p>`;
   if (r.moved) for (const m of r.moved) html += `<p>${m}</p>`;
-  if (r.ate) html += `<p>The ${r.ate.toLowerCase()} came by and emptied the feeding dish.</p>`;
+  if (r.ate) html += `<p>${cap(r.ate)} came by for the food you left in the feeding dish.</p>`;
   if (r.traveller) { const f = G.folkDef(r.traveller); html += `<p>A traveller has camped by the path: <b>${f.name}</b>, ${f.trade}. Wendel has been over twice already to say hello.</p>`; tips.push('Tap the traveller\'s tent to meet them.'); }
   if (r.newDay) { html += `<p>The hill feels a little more awake today. I can't say how I know. I just do.</p>`; tips.push(`Your magic has grown a little: ${G.magicInfo().name}.`); }
   if (r.offered) { html += `<p>${r.offered > 1 ? `${r.offered} little things have` : 'Something small has'} turned up about the yard again. Wendel says the hill is looking after us, and I think he's right.</p>`; tips.push(`There ${r.offered > 1 ? `are ${r.offered} things` : 'is something'} lying about to gather. Swipe to look around the yard.`); }
