@@ -62,6 +62,32 @@ const G = {
   save() { if (!this.s) return; this.s.lastSeen = now(); Store.write(this.s); this.dirty = false; },
   reset() { Store.clear(); try { localStorage.removeItem(SKEW_KEY); } catch (e) {} this.s = fresh(); this.save(); location.hash = ''; location.reload(); },
   dur(mins) { return mins * MIN * this.taskSpeed(); },
+  jobMins(mins) { return mins <= 180 ? mins : 180 + (mins - 180) / 2; },   // build 3 (night rest): a long job counts its first three hours in full and the rest at half, so the gnomes' night off doesn't hold evening players up (6h -> 4h30, 8h -> 5h30)
+  // ---- the night rest (Bryce, round six): no gnome work while they sleep (half past ten at night to six in the morning). Job
+  // timers stop overnight and carry on when they wake; crops, trees and the land still grow in the dark.
+  asleepAt(t) { if (FAST) return false; const d = new Date(t), h = d.getHours() + d.getMinutes() / 60; return h >= C.night.bed || h < C.night.wake; },
+  wakeAfter(t) { const d = new Date(t); if (d.getHours() + d.getMinutes() / 60 >= C.night.bed) d.setDate(d.getDate() + 1); d.setHours(C.night.wake, 0, 0, 0); return d.getTime(); },   // the next time they get up (t is in the night)
+  bedAfter(t) { const d = new Date(t); d.setHours(Math.floor(C.night.bed), Math.round(C.night.bed % 1 * 60), 0, 0); return d.getTime(); },   // tonight's bedtime (t is in the day)
+  workEnd(t, ms) {   // when a job started at t with ms of work in it finishes, skipping the nights
+    if (FAST) return t + ms;
+    for (let i = 0; i < 60 && ms > 0; i++) { if (this.asleepAt(t)) { t = this.wakeAfter(t); continue; } const step = Math.min(ms, this.bedAfter(t) - t); t += step; ms -= step; }
+    return t + Math.max(0, ms);
+  },
+  workBetween(a, b) {   // awake time between a and b (ms)
+    if (FAST || b <= a) return Math.max(0, b - a);
+    let n = 0; for (let i = 0; i < 60 && a < b; i++) { if (this.asleepAt(a)) { a = this.wakeAfter(a); continue; } const e = Math.min(b, this.bedAfter(a)); n += e - a; a = e; }
+    return n;
+  },
+  taskFrac(id) {   // 0..1 through a job (its awake time); 1 once done
+    const tk = this.s.tasks[id], t = now(); if (!tk) return 0; if (tk.done || tk.endsAt <= t) return 1;
+    const all = this.workBetween(tk.startedAt, tk.endsAt); return all > 0 ? Math.min(1, this.workBetween(tk.startedAt, t) / all) : 1;
+  },
+  jobLeft(endsAt, short) {   // "2h 10m to go", or, when a night's sleep comes first, when they'll finish
+    const t = now(); if (FAST || endsAt - t - this.workBetween(t, endsAt) < 60000) return short ? this.timeLeft(endsAt) : `${this.timeLeft(endsAt)} to go`;
+    const d = new Date(endsAt), at = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(/\s?([ap])\.?m\.?/i, (m, x) => x.toLowerCase() + 'm'), day = dayKey(endsAt) === dayKey(t) ? '' : ' tomorrow';
+    if (this.asleepAt(t) && this.workBetween(this.wakeAfter(t), endsAt) <= 0) return short ? 'asleep' : 'asleep for now';
+    return short ? `${this.asleepAt(t) ? 'asleep' : 'sleeps first'}, done ${at}` : `${this.asleepAt(t) ? 'they are asleep, so' : 'with a night\'s sleep first,'} done about ${at}${day}`;
+  },
   taskSpeed() { return 1 - 0.08 * (this.magicLevel() - 1); },   // each magic level trims task time 8%
 
   boot() {
@@ -140,7 +166,8 @@ const G = {
       if (d.give) this.give(d.give);
       if (id === 'spring') s.pages.cards.push({ k: 'spring' });   // Bryce: finding the spring is a big moment; it gets its own card before the story page
       this.note(`${C.names[d.who]} finished: ${lc(d.name)}.`); if (d.doneNote) this.note(d.doneNote);
-      this.emit('task', { id, done: true });
+      if (d.chore) delete s.tasks[id];   // a little chore can be done again
+      this.emit('task', { id, done: true, give: d.chore && d.give, who: d.who });
     }
     this.mealTick(t);
     this.dressTick(t);
@@ -159,7 +186,12 @@ const G = {
     if (t - s.lastOfferAt >= C.offerEvery * MIN) { s.lastOfferAt = t; if (s.offers.length < C.offerCap) { this.spawnOffer(t); this.emit('offer'); } }
     { const p = s.plots.seedbed, dug = this.done('bedwater') || p.stage || p.grown, lying = k => s.offers.some(o => o.kind === k && !o.keep);   // never stuck at the seed bed (Bryce): an empty tin or a dry can, and the land leaves one lying about
       const need = !dug ? null : !p.stage && !this.canSow() && (s.inv.seed || 0) < 2 ? 'seed' : p.stage === 'planted' && !this.can(this.waterCost()) ? 'water' : null;
-      if (need && !lying(need)) { this.spawnOffer(t, need, true); this.emit('offer'); } }
+      if (need && !lying(need)) { this.spawnOffer(t, need, true); this.emit('offer'); }
+      for (const sp of C.tasks) {   // build 3 (never stuck): a story job that is ready but short of something from the land, and the land leaves one of it lying in the yard
+        if (!sp.spine || sp.retired || s.tasks[sp.id] || !this.needsMet(sp) || this.can(sp.cost)) continue;
+        for (const k of Object.keys(sp.cost)) if ((s.inv[k] || 0) < sp.cost[k] && C.offers.some(o => o.kind === k && o.kind !== 'light') && !lying(k)) { this.spawnOffer(t, k, true); this.emit('offer'); }
+        break;   // only the first waiting story job
+      } }
   },
 
   // ---- gentle events (data in CONTENT.events; never a loss) ----
@@ -235,6 +267,7 @@ const G = {
 
   // ---- the seed bed ----
   plot() { return this.s.plots.seedbed; },
+  cropUp() { const p = this.plot(); return p.stage === 'growing' && now() - (p.wateredAt || 0) > 0.3 * Math.max(1, p.readyAt - (p.wateredAt || 0)); },   // up and leafing (weeds only come once there is a crop to weed round)
   cropName(id) { return C.crops[id] ? C.crops[id].name.replace(/^a /, 'the ') : 'the crop'; },
   cropOpen(id) {   // may this crop be sown yet? (needs: flag:x, grown:n harvests, or a finished job)
     const c = C.crops[id], p = this.plot(), F = this.s.flags;
@@ -304,6 +337,7 @@ const G = {
   taskDef(id) {
     if (id.startsWith('heal:')) return this.healDef(id);
     if (id.startsWith('farm:')) return this.farmTask(id);
+    if (id.startsWith('chore:')) { const c = C.chores.list.find(c => c.id === id); return c && Object.assign({ chore: true, green: 0 }, c, { who: this.eitherWho(c) }); }
     if (id.startsWith('regrow:')) { const tile = id.slice(7); return Object.assign({ id, tile }, C.regrow, { name: `${C.regrow.name} (${this.tileName(tile)})` }); }
     if (id.startsWith('fest:')) { const j = C.festival.jobs.find(j => j.id === id); return j && Object.assign({ festival: true }, j, { cost: this.festCost(j) }); }
     const [kind, fid, step] = id.split(':'), f = this.folkDef(fid);
@@ -313,10 +347,24 @@ const G = {
     let d = C.tasks.find(t => t.id === id); if (d && d.alt) d = Object.assign({}, d, { cost: this.festCost(d) });   // alt: what it costs before the village makes that thing
     return d && d.who === 'either' ? Object.assign({}, d, { who: this.eitherWho(d) }) : d;
   },
-  eitherWho(d) {   // a job either gnome can do: whoever took it on, else whoever is free (Hazel first if both are)
+  eitherWho(d) {   // a job either gnome can do: whoever took it on, else whoever is free (Hazel first if both are, or the one the chore suits)
     const tk = this.s.tasks[d.id]; if (tk && tk.who) return tk.who;
-    const busy = w => Object.entries(this.s.tasks).some(([id, k]) => !k.done && k.endsAt > now() && id !== d.id && (k.who || (C.tasks.find(t => t.id === id) || {}).who) === w);
-    return ['her', 'him'].find(w => !busy(w)) || 'her';
+    return ['her', 'him'].sort((a, b) => (b === d.pref) - (a === d.pref)).find(w => !this.isBusy(w, d.id)) || d.pref || 'her';
+  },
+  isBusy(w, but) { return Object.entries(this.s.tasks).some(([id, k]) => !k.done && k.endsAt > now() && id !== but && (k.who || (C.tasks.find(t => t.id === id) || {}).who) === w); },
+  // ---- little chores (build 3, "never stuck"): small jobs for whichever gnome is free, so nobody stands about while the crops
+  // grow or a story job waits. Free, short, and each brings in a few things; the ones the story is short of come first.
+  choreList() {
+    const s = this.s, K = C.chores; if (!K || !this.needsMet({ needs: K.needs })) return [];
+    if (!['her', 'him'].some(w => !this.isBusy(w))) return [];   // both busy: nothing to offer
+    const want = {};   // what the waiting story job is short of
+    for (const sp of C.tasks) if (sp.spine && !sp.retired && !s.tasks[sp.id] && this.needsMet(sp)) for (const [k, n] of Object.entries(sp.cost || {})) if ((s.inv[k] || 0) < n) want[k] = 1;
+    const ok = c => !s.tasks[c.id] && this.needsMet(c) && !Object.keys(c.give || {}).some(k => this.shelfFull(k, false)) && (!c.crop || this.cropUp());
+    const score = c => (c.crop ? -2 : 0) - (Object.keys(c.give).some(k => want[k]) ? 1 : 0) + Math.min(...Object.keys(c.give).map(k => s.inv[k] || 0)) / 100;
+    const all = K.list.filter(ok).sort((a, b) => score(a) - score(b)), out = [];
+    for (const w of ['her', 'him'].filter(w => !this.isBusy(w))) { const c = all.find(c => c.pref === w && !out.includes(c)) || all.find(c => !out.includes(c)); if (c) out.push(c); }   // one that suits each free gnome
+    for (const c of all) if (out.length < K.show && !out.includes(c)) out.push(c);
+    return out.slice(0, K.show);
   },
   taskList() {   // everything the player could start or is waiting on, in a sensible order
     const s = this.s, out = [];
@@ -333,6 +381,8 @@ const G = {
       const st = this.questStep(fid); if (st && st.job) out.push(this.taskView(this.taskDef(`quest:${fid}:${fs.q}`)));
     }
     if (s.festival.stage !== 'waiting') for (const j of C.festival.jobs) out.push(this.taskView(this.taskDef(j.id)));
+    for (const [id, tk] of Object.entries(s.tasks)) if (id.startsWith('chore:') && !tk.done) out.push(this.taskView(this.taskDef(id)));
+    for (const c of this.choreList()) out.push(this.taskView(this.taskDef(c.id)));
     return out.filter(v => v.show).sort((a, b) => (a.rank - b.rank));
   },
   taskView(d) {   // a job as the Jobs list sees it. A job whose needs are not met is not shown at all (no greyed rows); one that
@@ -355,6 +405,8 @@ const G = {
     if (n.startsWith('tile:')) return !!s.tiles[n.slice(5)];
     return this.done(n);
   },
+  lineOk(c) { if (!c) return true; if (c[0] === '!') return !this.lineOk(c.slice(1)); if (c === 'grown') return !!(this.plot().grown || this.plot().stage === 'growing' || this.plot().stage === 'ready'); if (c.startsWith('met:')) return this.met(c.slice(4)); return this.needMet(c); },
+  linesFor(list) { const out = list.filter(x => typeof x === 'string' || this.lineOk(x.if)).map(x => typeof x === 'string' ? x : x.t); return out.length ? out : list.filter(x => typeof x === 'string'); },   // a gnome's lines about things that are really there (note 23)
   needsMet(d) { return (d.needs || []).every(n => this.needMet(n)); },
   needHint(n) {   // a need in words, for the one "Next:" line ('' = keep it a surprise)
     if (n.startsWith('page:')) return this.pageHint(n.slice(5));
@@ -397,11 +449,12 @@ const G = {
   startTask(id) {
     const d = this.taskDef(id), v = this.taskView(d); if (v.state !== 'ready' || !v.can) return false;
     this.pay(d.cost); const t = now();
-    this.s.tasks[id] = { startedAt: t, endsAt: t + this.dur(d.mins), done: false }; if (d.healTile || d.farm || C.tasks.some(x => x.id === id && x.who === 'either')) this.s.tasks[id].who = d.who;
+    const from = this.asleepAt(t) ? this.wakeAfter(t) : t;   // started at night: they get going when they wake
+    this.s.tasks[id] = { startedAt: from, endsAt: this.workEnd(from, this.dur(this.jobMins(d.mins))), done: false }; if (d.healTile || d.farm || d.chore || C.tasks.some(x => x.id === id && x.who === 'either')) this.s.tasks[id].who = d.who;
     if (d.home || d.claims) this.s.tasks[id].tile = d.home ? this.homeLot(d.folk) : this.freeLot();
     if (d.claims) this.s.festival.tile = this.s.tasks[id].tile;
     if (d.tile) this.s.tiles[d.tile].state = 'regrowing';
-    this.note(`${C.names[d.who]} set to work: ${lc(d.name)}.`); this.emit('task', { id }); return true;
+    this.note(from > t ? `${C.names[d.who]} will start in the morning: ${lc(d.name)}.` : `${C.names[d.who]} set to work: ${lc(d.name)}.`); this.emit('task', { id }); return true;
   },
   running() { return Object.entries(this.s.tasks).filter(([, tk]) => !tk.done).map(([id, tk]) => Object.assign({ id }, tk, { def: this.taskDef(id) })); },
 
@@ -584,6 +637,7 @@ const G = {
     if (id === 'legs' && this.s.flags.toadWalk) return { ok: false, why: 'it has already walked off' };
     if (id === 'coax' && this.plot().stage !== 'growing') return { ok: false, why: this.plot().stage === 'planted' ? 'the bed needs watering first: nothing grows until it has had a drink' : this.plot().stage === 'ready' ? 'the bed is already ready to pick' : 'nothing is growing in the seed bed yet' };
     if (id === 'rain' && this.plot().stage !== 'planted') return { ok: false, why: 'nothing is waiting for water' };
+    if (C.spells[id].daily && this.s.spellsUsed[id] === dayKey(now())) return { ok: false, why: 'used today. Magic for the crops comes back each morning' };   // build 3 (Bryce): crop magic is a treat, saved up, not a button
     if (id === 'wake' && !this.running().some(r => r.def.tile || r.def.healTile)) return { ok: false, why: 'no patch is regrowing' };
     return { ok: true };
   },
@@ -900,6 +954,7 @@ const G = {
   // Hazel's lists wait in pages.cards until index.html can show them (one at a time, never over an open menu), so nothing is lost
   // if the game is closed first. A page that is waiting in pages.cards has happened, as far as the jobs are concerned.
   pageHappened(id) { const P = this.s.pages; return id in P.seen || P.cards.some(c => c.k === 'page' && c.id === id); },
+  pageOpensJob(id) { return C.tasks.some(d => !d.retired && !this.s.tasks[d.id] && (d.needs || []).includes('page:' + id)); },   // a job is waiting on this page (so it is never held back for the next visit)
   pageAfter(pg) { const i = C.story.pages.indexOf(pg); return pg.after || (i > 0 ? [C.story.pages[i - 1].id] : []); },
   storyDue(pg, t) {
     const s = this.s, w = pg.when, h = new Date(t).getHours(), p = s.plots.seedbed;

@@ -27,6 +27,28 @@ window.CONTENT = {
     pumpkin: { name:'pumpkin', icon:'🎃', pantry:true },
   },
 
+  // The night rest (Bryce, round six): bed at half past ten, up at six. No gnome work in between (job timers stop); crops and
+  // the land still grow in the dark.
+  night: { bed: 22.5, wake: 6 },
+
+  potLine: `The little oak came all the way up the logging track in its pot, with Hazel talking to it now and then to keep its spirits up. It is the only tree on the hill for now. One day it will be the biggest.`,
+
+  // Little chores (build 3, "never stuck"): small free jobs for whichever gnome is free, once the first day's work is done, so
+  // nobody stands about while the crops grow or a story job waits. pref: who it suits (the other does it if that one is busy);
+  // give: what it brings in; crop: only while something grows in the seed bed. Jobs shows `show` of them, what the story is short of first.
+  chores: { needs:['bedwater'], show:2, list:[
+    { id:'chore:sticks', name:'Pick up sticks round the edge', short:'picking up sticks', pref:'him', act:'pickup', give:{ twig:2 }, mins:30,
+      blurb:'The wind always brings a few down from the old fence line. They go on the stick pile.' },
+    { id:'chore:stones', name:'Look for flat stones', short:'looking for stones', pref:'him', act:'pickup', give:{ stone:2 }, mins:30,
+      blurb:'Good flat ones, for building. The loggers turned up plenty, if you know where to look.' },
+    { id:'chore:moss', name:'Gather moss off the old stumps', short:'gathering moss', pref:'her', act:'gather', give:{ moss:2 }, mins:30,
+      blurb:'Just a little from each stump, so it grows back thicker. It goes on Hazel\'s shelf by the door.' },
+    { id:'chore:dew', name:'Shake the dew off the grass', short:'gathering dew', pref:'her', act:'gather', give:{ water:2 }, mins:25, needs:['spring'],
+      blurb:'Into the jug, a little at a time, from the long grass by the spring.' },
+    { id:'chore:weed', name:'Weed round the young crop', short:'weeding the seed bed', pref:'her', act:'gather', give:{ seed:1 }, mins:20, crop:true,
+      blurb:'Now there is something growing, the weeds have noticed too. Pulling them shakes out the odd seed worth keeping.' },
+  ] },
+
   // What the land offers while you are away. One every offerEvery minutes, at most offerCap lying about.
   offerEvery: 20, offerCap: 8,
   offers: [ // weight by time of day: day / night
@@ -489,8 +511,8 @@ window.CONTENT = {
     { days:8, name:'a bright fire', unlock:null },
   ],
   spells: {
-    coax: { name:'Coax a sprout',  cost:{ light:2 }, blurb:'Finish whatever is growing in the bed, right now.' },
-    rain: { name:'Call soft rain', cost:{ light:3 }, blurb:'Waters every planted bed and leaves dew on the ground.' },
+    coax: { name:'Coax a sprout',  cost:{ light:3 }, daily:true, blurb:'Finish whatever is growing in the bed, right now. Once a day.' },
+    rain: { name:'Call soft rain', cost:{ light:3 }, daily:true, blurb:'Waters every planted bed and leaves dew on the ground. Once a day.' },
     wake: { name:'Wake the land',  cost:{ light:4 }, blurb:'Halves the time left on a regrowing patch.' },
     // taught by the Wood spirit the first time each kind of bare tile appears (CONTENT.heal); each helps one job that is already under way
     wind:  { name:'Ask the wind', cost:{ light:2 }, heal:'meadow', blurb:'While the seed balls are being tossed, the wind carries them into the far corners. The job goes twice as fast.' },
@@ -986,6 +1008,10 @@ window.CONTENT = {
   // portrait as the stand-in picture until the page is painted (art slot page-<id with a dash>, e.g. page-1-1); else the couple.
   story: { beats: [ /* { id:'staff-found', when:{ landStage:'green' }, text:'...', sets:'staffFound' } */ ],
     chapters: { 1:'Chapter one: The bare clearing', 2:'Chapter two: Putting down roots', 3:'Chapter three: A proper home' },
+    keepGrowing: [   // said after each of the first three pickings (build 3): growing things is how the land comes back
+      `Every crop we grow wakes the land a little more. Let's get the next one in, love.`,
+      `Did you feel that? The ground's a bit more awake. Another sowing, I think.`,
+      `The more we grow, the greener it gets. Never leave the bed empty for long, that's the trick.` ],
     pages: [
       { id:'1.1', ch:1, when:'welcome', title:'The end of the road', button:`Let's begin`, text:[
         `They came up the old logging track at the end of a long, hot afternoon, with the cicadas going like tiny saws in the grass. Wendel pulled their little wagon, with its canvas top patched in four places. Hazel walked beside it with the little oak in its pot, and talked to it now and then to keep its spirits up. Everything they owned was in that wagon, and most of it was pots.`,
@@ -1194,16 +1220,17 @@ window.CONTENT = {
       { id:'mothpot', name:'A honey pot for the moths', ask:'A dish of honey water on a flat stone, for the night moths. Two pots of honey and two stones.', cost:{ honey:2, stone:2 }, at:[0.48, 0.54], look:'dish', wood:true, line:'A dish of honey water on a flat stone. The moths come every night.' } ],
   } },
 
+  // a line may be { t, if } (build 3, note 23): said only once that has happened ('jobId', '!jobId', 'stage:green', 'met:robin', 'grown')
   lines: {
-    him: ["Bare as a baker's elbow. We'll fix that.", "Did you see? A sprout. Right in the middle.", "There's a beetle living in the woodpile now. I've called him Gerald.", "Kettle's on.", "Tomorrow we dig the bed properly.", "I remember when all this was ferns.",
+    him: [{ t:"Bare as a baker's elbow. We'll fix that.", if:'!stage:green' }, { t:"Did you see? A sprout. Right in the middle.", if:'grown' }, { t:"There's a beetle living in the woodpile now. I've called him Gerald.", if:'stump' }, { t:"Kettle's on.", if:'stump' }, { t:"Tomorrow we dig the bed properly.", if:'!bed' }, "I remember when all this was ferns.",
           "Our own front door. Well, our own front hole.", "She said yes. I still can't quite believe it.", "I've measured twice and I'm still wrong. Don't tell her.", "Did you know worms are basically farmers?",
-          "Every stump was once a tree that had a view.", "I'm going to build her a garden bench. I haven't told her.", "One acorn, one oak. That's the maths.", "Look at that moss. Doing it all without being asked.",
-          "Marriage tip: never say 'just a quick job'.", "The soil's coming back. Smell that? That's life.", "We're not saving the world. We're saving this corner of it.", "I think the fence is leaning on me.",
-          "That robin is judging my digging.", "Let's leave the long grass long. Somebody lives in it.", "Tea first. Heroics after."],
-    her: ["I left a crumb on the step for whoever's helping us. Don't laugh.", "The sapling wants water, not wishes.", "Isn't it quiet without the trees?", "I've put the moss aside for the roof.", "A little each day, that's the trick.", "Listen… was that a robin?",
-          "He built the doorstep crooked. I love it.", "Wattle and daisies by spring, that's my promise.", "Everything here is borrowed from the soil. We should say thank you.", "I counted four new green shoots this morning.",
-          "Plant something that will outlast you.", "I've named the sapling. I'm not saying the name.", "We have a home, a kettle and each other. What more is there?", "The bees will come once there's something for them. Build it and they will.",
-          "Mind the clover, it's feeding the soil.", "Do you hear that? The frogs are practising.", "A gnome could get used to this.", "Nothing is waste. Not even the dead leaves.", "We don't own this patch. We just look after it.",
+          "Every stump was once a tree that had a view.", { t:"I'm going to build her a garden bench. I haven't told her.", if:'!bench' }, "One acorn, one oak. That's the maths.", "Look at that moss. Doing it all without being asked.",
+          "Marriage tip: never say 'just a quick job'.", { t:"The soil's coming back. Smell that? That's life.", if:'stage:green' }, "We're not saving the world. We're saving this corner of it.", { t:"I think the fence is leaning on me.", if:'fence' },
+          { t:"That robin is judging my digging.", if:'met:robin' }, { t:"Let's leave the long grass long. Somebody lives in it.", if:'stage:meadow' }, "Tea first. Heroics after."],
+    her: [{ t:"I left a crumb on the step for whoever's helping us. Don't laugh.", if:'doorstep' }, { t:"The sapling wants water, not wishes.", if:'sapling' }, "Isn't it quiet without the trees?", { t:"I've put the moss aside for the roof.", if:'!roof' }, "A little each day, that's the trick.", "Listen… was that a robin?",
+          { t:"He built the doorstep crooked. I love it.", if:'doorstep' }, "Wattle and daisies by spring, that's my promise.", "Everything here is borrowed from the soil. We should say thank you.", { t:"I counted four new green shoots this morning.", if:'grown' },
+          "Plant something that will outlast you.", "I've named the sapling. I'm not saying the name.", { t:"We have a home, a kettle and each other. What more is there?", if:'stump' }, "The bees will come once there's something for them. Build it and they will.",
+          { t:"Mind the clover, it's feeding the soil.", if:'stage:green' }, { t:"Do you hear that? The frogs are practising.", if:'stage:meadow' }, "A gnome could get used to this.", "Nothing is waste. Not even the dead leaves.", "We don't own this patch. We just look after it.",
           "Put the kettle on, love, I'll bring the biscuits.", "It's not much yet. But it's ours, and it's growing."],
     working: { him:["Nearly there.", "Pass me that, would you?", "Good honest work.", "Measure twice, hammer once. Mostly.", "That's not crooked, that's character.", "Hand me the stone. No, the other stone.", "If it holds a gnome, it holds a bird."],
                her:["Patience. It's coming along.", "Almost done, dear.", "Hum-de-dum.", "In goes the seed. Up comes the world.", "Gently, now. Plants can tell.", "A little water, a little time.", "I could do this all afternoon."] },
