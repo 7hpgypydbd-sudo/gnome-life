@@ -1,5 +1,5 @@
 // Headless "pretend player" for checking the order things unlock in (docs/PLAN.md "Progression review"). Runs the real content.js + game.js with a fake clock.
-// Usage: node tools/progression_sim.js [visitsPerDay 1-4] [days] [eager|relaxed]. Prints story pages, lessons, land stages, jobs, animals and village in the order they happen.
+// Usage: node tools/progression_sim.js [visitsPerDay 1-4] [days] [eager|relaxed]. NOLEGS=1 leaves the toadstool spell uncast (tools/make_showoff.js). Prints story pages, lessons, land stages, jobs, animals and village in the order they happen.
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const REPO = path.join(__dirname, '..');
 const VPD = +(process.argv[2] || 3), DAYS = +(process.argv[3] || 60), MODE = process.argv[4] || 'eager';
@@ -65,7 +65,7 @@ function visit() {
     if (!p.stage && (G.done('bedwater') || p.grown)) { const order = (!G.s.flags['sown:pumpkin'] && G.cropOpen('pumpkin')) ? ['pumpkin'] : [['carrot','lettuce','bean'][p.grown % 3], 'carrot', 'lettuce']; for (const id of order) if (G.cropOpen(id) && G.can(G.cropCost(id))) { G.plant(id); break; } }
     if (p.stage === 'planted') G.water();
     if (MODE === 'eager' && p.stage === 'growing' && G.canCast('coax').ok && (G.s.inv.light||0) >= 4) G.cast('coax');
-    if (G.canCast('legs').ok) { G.cast('legs'); ev('SPELL', 'toadstool legs'); }
+    if (G.canCast('legs').ok && !process.env.NOLEGS) { G.cast('legs'); ev('SPELL', 'toadstool legs'); }
     for (const sp of ['wind', 'cloud', 'seedwake', 'sing']) if (G.canCast(sp).ok && (G.s.inv.light||0) >= 3) { G.cast(sp); }
     if (G.dishBuilt() && !G.s.feeder.food) { if ((G.s.inv.berry||0) > 1) G.putFood('berry'); else if ((G.s.inv.seed||0) > 4) G.putFood('seed'); }
     if (!G.s.flags.rabbit && G.s.feeder.food && p.stage === 'growing') { G.rabbitAte(); G.rabbitRaid(); }

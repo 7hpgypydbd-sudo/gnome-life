@@ -230,7 +230,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v84</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v85</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -251,7 +251,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 84;
+const BUILD = 85;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -259,11 +259,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=84"></script>
-<script src="playlog.js?v=84"></script>
-<script src="concerns.js?v=84"></script>
-<script src="game.js?v=84"></script>
-<script src="walk.js?v=84"></script>
+<script src="content.js?v=85"></script>
+<script src="playlog.js?v=85"></script>
+<script src="concerns.js?v=85"></script>
+<script src="game.js?v=85"></script>
+<script src="walk.js?v=85"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -4399,6 +4399,7 @@ sheet.addEventListener('click', e => {
   if (a === 'tplaty') { closeSheet(); PLATY.force = true; PLATY.next = 0; PLATY.on = null; updatePlatypus(0); if (PLATY.on) { const [gx, gy] = healLocal(PLATY.on.k, { c: [0.5, 0] }), [x, y] = toWorld(...glob(PLATY.on.k, gx, gy)); cam.x = x; cam.y = y; } else toast('The creek needs to be on the map first.'); return; }
   if (a === 'tskip') return G.skipDays(+b.dataset.n);
   if (a === 'tmins') return G.skipMins(+b.dataset.n);
+  if (a === 'tshow') { if (!confirm('Swap this sandbox for the show-off garden? It wipes the sandbox garden.')) return; fetch('showoff.json?v=' + BUILD, { cache: 'no-store' }).then(r => r.json()).then(s => G.showOff(s)).catch(() => toast('Could not fetch the show-off garden. Try again in a moment.')); return; }
   if (a === 'tfinish') { G.finishAll(); toast('Every job finished.'); }
   if (a === 'tpack') { G.fillPack(); toast("Store filled up."); }
   if (a === 'askyes') return askYes();
@@ -4418,7 +4419,8 @@ function costHtml(cost) { return Object.entries(cost || {}).map(([k, n]) => `<i>
 function openTest() {
   openSheet('test', `<h2>Test panel</h2><p>For trying things out. Tap one, then close this and have a look.</p>
   <h3>Start again</h3><p><button class="act" data-a="reset">Start the game over from the beginning</button></p>
-  <h3>Jump ahead in time</h3><p><button class="act" data-a="tmins" data-n="30">+30 minutes</button> <button class="act" data-a="tskip" data-n="1">+1 day</button> <button class="act" data-a="tskip" data-n="3">+3 days</button> <button class="act" data-a="tskip" data-n="7">+1 week</button></p>
+  <h3>Show it off</h3><p><button class="act" data-a="tshow">Show-off garden (about day ten)</button></p><p class="meta">Swaps this sandbox for a garden ten days on: house built, garden open, store full, the toadstool spell ready to cast. Your real garden is not touched.</p>
+  <h3>Jump ahead in time</h3><p><button class="act" data-a="tmins" data-n="30">+30 minutes</button> <button class="act" data-a="tmins" data-n="180">+3 hours</button> <button class="act" data-a="tskip" data-n="1">+1 day</button> <button class="act" data-a="tskip" data-n="3">+3 days</button> <button class="act" data-a="tskip" data-n="7">+1 week</button></p>
   <h3>Speed things up</h3><p><button class="act" data-a="tfinish">Finish every job now</button></p><p><button class="act" data-a="tpack">Fill the store (20 of everything)</button></p>
   <h3>Call someone</h3><p><button class="act" data-a="tvisit">Next animal moment</button> <button class="act" data-a="ttrav">A traveller arrives</button> <button class="act" data-a="tsecret">Hide a little find</button> <button class="act" data-a="tplaty">The platypus (dawn only, normally)</button></p>
   <h3>Seasons</h3><p>${['spring', 'summer', 'autumn', 'winter'].map(k => `<button class="act${season() === k ? '' : ' quiet'}" data-a="tseason" data-id="${k}">${C.seasons[k].name}</button>`).join(' ')} <button class="act quiet" data-a="tseason" data-id="">The phone's own</button></p>
