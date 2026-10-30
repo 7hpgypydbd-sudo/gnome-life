@@ -230,7 +230,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v83</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v84</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -251,7 +251,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 83;
+const BUILD = 84;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -259,10 +259,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=83"></script>
-<script src="playlog.js?v=83"></script>
-<script src="game.js?v=83"></script>
-<script src="walk.js?v=83"></script>
+<script src="content.js?v=84"></script>
+<script src="playlog.js?v=84"></script>
+<script src="concerns.js?v=84"></script>
+<script src="game.js?v=84"></script>
+<script src="walk.js?v=84"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -4122,7 +4123,7 @@ const up = e => {
   ptrs.delete(e.pointerId); pinch0 = null; if (ptrs.size === 0) gesture = null; else if (gesture) gesture.tapOK = false;
 };
 for (const g of ['gesturestart','gesturechange','gestureend']) document.addEventListener(g, e => e.preventDefault(), { passive: false });
-document.addEventListener('touchmove', e => { if (e.target.closest && e.target.closest('#sheet') && sheet.scrollHeight > sheet.clientHeight) return; e.preventDefault(); }, { passive: false });   // the parchment menus scroll with a finger; nothing else moves the page
+document.addEventListener('touchmove', e => { if (e.target.closest && e.target.closest('#sheet') && sheet.scrollHeight > sheet.clientHeight) return; if (e.target.closest && e.target.closest('#cBox,#cList')) return; e.preventDefault(); }, { passive: false });   // the parchment menus scroll with a finger; nothing else moves the page
 // iPhone Safari can still nudge the whole page (scrolling a sheet past its end, or the toolbar sliding away); the page then
 // draws in one place but takes taps in another. Keep the page pinned at the top so taps always land where the finger is.
 const pin = () => { if (window.scrollX || window.scrollY || document.documentElement.scrollTop || document.body.scrollTop) { window.scrollTo(0, 0); document.documentElement.scrollTop = document.body.scrollTop = 0; } };
@@ -4408,6 +4409,8 @@ sheet.addEventListener('click', e => {
   if (a === 'reset') { if (confirm('Start the garden over? This wipes your save.')) G.reset(); return; }
   if (a === 'copylog') { e.preventDefault(); return copyPlayLog(b); }
   if (a === 'sharelog') { e.preventDefault(); return sharePlayLog(); }
+  if (a === 'ctoggle') { e.preventDefault(); CONCERNS.toggle(); if (sheetKind === 'test') return openTest(); }
+  if (a === 'csend') { e.preventDefault(); return CONCERNS.open(); }
   refreshSheet();
 });
 function iconHtml(k) { return ASSETS['icon-' + k] || art('icon-' + k) ? `<img class="ico" src="sprites/icon-${k}.webp" alt="${C.resources[k].name}">` : `<span class="ico" style="display:inline-block;text-align:center;font-size:18px">${C.resources[k].icon}</span>`; }
@@ -4422,7 +4425,7 @@ function openTest() {
   <h3>The animals' stories</h3><p><button class="act" data-a="tbeat">Skip to the next animal beat</button></p><p class="meta">${C.animals.beats.filter(b => G.beatDone(b.id)).length} of ${C.animals.beats.length} beats so far. It ignores the season and the hour, and makes the job or home it waits on finished.</p>
   <h3>The festival</h3><p><button class="act" data-a="tfest" data-n="0">Start the festival plans now</button> <button class="act" data-a="tfest" data-n="1">Festival night now</button></p>
   <p class="meta">A normal play-through order: fill the pack, start jobs in the Jobs list, tap "Finish every job now", repeat. "+1 day" brings the daily things back.</p>
-  <p style="margin-top:14px;font-size:12px"><a href="#" data-a="reset" style="color:var(--red)">start over (wipes this garden)</a></p>${LOG_LINKS}`);
+  <p style="margin-top:14px;font-size:12px"><a href="#" data-a="reset" style="color:var(--red)">start over (wipes this garden)</a></p>${LOG_LINKS}${CONCERNS.links()}`);
 }
 // ---------- the play log (v83): copied out as plain text for Claude, from the bottom of the Magic page or the test panel ----------
 const LOG_LINKS = `<p style="margin-top:6px;font-size:12px"><a href="#" data-a="copylog" style="color:var(--ink2)">copy play log</a> · <a href="#" data-a="sharelog" style="color:var(--ink2)">save it as a file</a></p>`;
@@ -4436,6 +4439,10 @@ function sharePlayLog() {
   try { const file = new File([t], name, { type: 'text/plain' }); if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file] }).catch(() => {}); } catch (e) {}
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([t], { type: 'text/plain' })); a.download = name; document.body.appendChild(a); a.click(); a.remove();
 }
+CONCERNS.hook({   // the concern button (v84, concerns.js): which window is open, the play log to send with them, and the toast
+  info: () => ({ win: $('room').classList.contains('on') ? 'room: ' + $('rTitle').textContent : sheetKind ? `${sheetKind} "${[...(sheet.querySelector('h2') || {}).childNodes || []].map(n => n.textContent.trim()).filter(Boolean).join(' · ')}"`.slice(0, 80) : '' }),
+  logText: playLogText, toast,
+});
 function testPeek(x, y) { if (window.SANDBOX && x < 200 && y < 80 + 20) { openTest(); return true; } return false; }   // Bryce: one tap on the title opens the test panel (five was a chore)
 function refreshSheet() { if (sheetKind === 'test') return; if (sheetKind && sheetKind.startsWith('folk:')) openFolk(sheetKind.slice(5)); else if (sheetKind === 'traveller') G.s.village.traveller ? openTraveller() : closeSheet(); else if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'barrel') openBarrel(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); else if (sheetKind === 'fest') openFestGreen(); else if (sheetKind && sheetKind.startsWith('patch:')) openPatch(sheetKind.slice(6)); else if (sheetKind && sheetKind.startsWith('farm:')) openFarm(sheetKind.slice(5)); renderInv(); renderHud(); }
 function seedbedBody(inJobs) {   // what the seed bed wants now (shared by the seed bed's own card and the Jobs list); null = nothing to say
@@ -4548,7 +4555,7 @@ function openMagic() {
   }
   if (!shown) html += `<p class="meta">No spells yet. ${G.s.spirit && Object.keys(G.s.spirit.taught).length ? 'The Wood spirit will come back with the next one.' : 'The Wood spirit will come and teach you, one spell at a time.'}</p>`;
   html += `<p style="margin-top:14px"><button class="act quiet" data-a="howto">How to play</button></p>`;
-  html += `<p style="margin-top:14px;font-size:12px">Save v${G.s.v} · ${new Date(G.s.created).toLocaleDateString()} · <a href="#" data-a="reset" style="color:var(--red)">start over</a></p>${LOG_LINKS}`;
+  html += `<p style="margin-top:14px;font-size:12px">Save v${G.s.v} · ${new Date(G.s.created).toLocaleDateString()} · <a href="#" data-a="reset" style="color:var(--red)">start over</a></p>${LOG_LINKS}${CONCERNS.links()}`;
   openSheet('magic', html);
 }
 function portraitHtml(v, big) {   // the journal picture: painted portrait, else the garden painting, else the stand-in icon
