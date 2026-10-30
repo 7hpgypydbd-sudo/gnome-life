@@ -17,7 +17,7 @@ const VISIT_GAP = FAST ? 10000 : 10 * 60000;      // away this long (real time) 
 const Store = {
   key: window.SANDBOX ? 'gnomelife.sandbox.save' : 'gnomelife.save',   // the sandbox keeps its own garden
   load() { try { const s = localStorage.getItem(this.key); return s ? JSON.parse(s) : null; } catch (e) { return null; } },
-  write(blob) { try { localStorage.setItem(this.key, JSON.stringify(blob)); } catch (e) {} },
+  write(blob) { const j = JSON.stringify(blob); try { localStorage.setItem(this.key, j); } catch (e) { if (window.PL) { PL.drop(); try { localStorage.setItem(this.key, j); } catch (e2) {} } } },   // phone storage full: the play log makes room (the save always comes first)
   clear() { try { localStorage.removeItem(this.key); } catch (e) {} },
 };
 
@@ -59,9 +59,9 @@ function fresh() {
 const G = {
   s: null, listeners: new Set(), dirty: false, away: null,
   onChange(fn) { this.listeners.add(fn); },
-  emit(kind, data) { for (const fn of this.listeners) fn(kind, data); this.dirty = true; },
+  emit(kind, data) { if (kind !== 'inv' && window.PL) PL.add(`ev ${kind} ${PL.short(data)}`); for (const fn of this.listeners) fn(kind, data); this.dirty = true; },
   save() { if (!this.s) return; this.s.lastSeen = now(); Store.write(this.s); this.dirty = false; },
-  reset() { Store.clear(); try { localStorage.removeItem(SKEW_KEY); } catch (e) {} this.s = fresh(); this.save(); location.hash = ''; location.reload(); },
+  reset() { if (window.PL) { PL.add('=== the garden was started over ==='); PL.flush(); } Store.clear(); try { localStorage.removeItem(SKEW_KEY); } catch (e) {} this.s = fresh(); this.save(); location.hash = ''; location.reload(); },
   dur(mins) { return mins * MIN * this.taskSpeed(); },
   jobMins(mins) { return mins <= 180 ? mins : 180 + (mins - 180) / 2; },   // build 3 (night rest): a long job counts its first three hours in full and the rest at half, so the gnomes' night off doesn't hold evening players up (6h -> 4h30, 8h -> 5h30)
   // ---- the night rest (Bryce, round six): no gnome work while they sleep (half past ten at night to six in the morning). Job
@@ -110,6 +110,7 @@ const G = {
     for (const [k, tl] of Object.entries(this.s.tiles)) if (k !== '0,0' && !tl.kind && tl.state === 'revealed') tl.kind = this.tileKind(k);   // bare tiles from before the healing chains get theirs; green ones stay as they were
     this.pantryTrim('her', true);   // older gardens with heaps of veg: the spare has quietly gone round the valley
     this.away = this.catchUp();
+    if (window.PL) { const a = this.away; PL.add(`=== opened v${typeof BUILD !== 'undefined' ? BUILD : '?'}${window.SANDBOX ? ' sandbox' : ''}, away ${Math.round(a.gone / 60000)} min${a.newDay ? ', a new day' : ''} ===`); if (a.finished.length) PL.add(`while away: ${a.finished.join('; ')}`); PL.add(this.snap()); }
     this.save();
     return this.s;
   },
@@ -150,7 +151,7 @@ const G = {
   },
 
   // ---- per-frame rules (cheap; call a few times a second) ----
-  markVisit(t) { if (t - (this.lastActive || 0) >= VISIT_GAP) this.s.visits.n++; this.lastActive = t; },   // back after a while: a new visit
+  markVisit(t) { if (t - (this.lastActive || 0) >= VISIT_GAP) { this.s.visits.n++; if (window.PL) PL.add(`visit ${this.s.visits.n} begins`); } this.lastActive = t; },   // back after a while: a new visit
   tick() {
     const s = this.s, t = now(); if (!s) return;   // not loaded yet (the first frame can come before the save is read)
     this.markVisit(t);
@@ -169,6 +170,7 @@ const G = {
       if (id === 'bridge') { for (const k of ['1,-1', '0,-1', '2,-1', '-1,-1']) if (s.tiles[k] && s.tiles[k].state === 'green') this.reveal(k); this.note('The bridge is up. The far side of the stream is reachable at last.'); }
       if (d.give) this.give(d.give);
       if (id === 'spring') s.pages.cards.push({ k: 'spring' });   // Bryce: finding the spring is a big moment; it gets its own card before the story page
+      if (window.PL) PL.add(`job done [${id}] by ${d.who}`);
       this.note(`${C.names[d.who]} finished: ${lc(d.name)}.`); if (d.doneNote) this.note(d.doneNote);
       if (d.chore) delete s.tasks[id];   // a little chore can be done again
       this.emit('task', { id, done: true, give: d.chore && d.give, who: d.who });
@@ -466,6 +468,7 @@ const G = {
     if (d.home || d.claims) this.s.tasks[id].tile = d.home ? this.homeLot(d.folk) : this.freeLot();
     if (d.claims) this.s.festival.tile = this.s.tasks[id].tile;
     if (d.tile) this.s.tiles[d.tile].state = 'regrowing';
+    if (window.PL) PL.add(`job start [${id}] by ${d.who}, ${Math.round(this.dur(this.jobMins(d.mins)) / 60000)} min of work, done ${new Date(this.s.tasks[id].endsAt).toTimeString().slice(0, 5)}, paid ${PL.short(d.cost || {})}`);
     this.note(from > t ? `${C.names[d.who]} will start in the morning: ${lc(d.name)}.` : `${C.names[d.who]} set to work: ${lc(d.name)}.`); this.emit('task', { id }); return true;
   },
   running() { return Object.entries(this.s.tasks).filter(([, tk]) => !tk.done).map(([id, tk]) => Object.assign({ id }, tk, { def: this.taskDef(id) })); },
@@ -476,6 +479,7 @@ const G = {
   // Green the yard earns spreads into the couple's garden once it is open; what is grown in the garden stays in the garden.
   addGreen(n, where = 'yard') {
     if (!n) return;
+    if (window.PL) PL.add(`green +${n} (${where})`);
     const bump = k => { const before = this.landStage(k).key; this.s.tiles[k].green += n; const after = this.landStage(k); return after.key !== before ? after : null; };
     if (where !== 'garden') { const st = bump('0,0');
       if (st) { this.note(`The home patch is now ${st.name}.`); this.s.pages.cards.push({ k: 'land', key: st.key }); this.emit('land', st); } }
@@ -549,7 +553,7 @@ const G = {
   flowing(k) { const tl = this.s.tiles[k]; if (!tl || tl.kind !== 'creek') return false; const i = this.healSteps(k).findIndex(st => st.id === 'stones'); return this.healStepDone(k, i); },
   canFlow(k) { const [x, y] = k.split(',').map(Number); return ['0,-1', '1,-1', '-2,-1'].includes(k) || this.flowing(`${x - 1},${y}`) || this.flowing(`${x + 1},${y}`); },   // fed by the spring at home, the old spring at the west end, or a flowing stretch next door
   tileGreen(k, n) {   // green points on one bare tile; a new stage gets its own land card
-    if (!n) return; const tl = this.s.tiles[k], before = this.landStage(k).key; tl.green += n; const st = this.landStage(k);
+    if (!n) return; const tl = this.s.tiles[k], before = this.landStage(k).key; tl.green += n; if (window.PL) PL.add(`green +${n} on ${k} (now ${tl.green})`); const st = this.landStage(k);
     if (st.key === before) return;
     if (tl.state !== 'green') { tl.state = 'green'; this.reveal(k); }
     this.note(`${cap(this.patchName(k))} is now ${st.name}.`); this.s.pages.cards.push({ k: 'tland', tile: k, key: st.key }); this.emit('land', st);
@@ -1165,7 +1169,12 @@ const G = {
   flag(k, v = true) { this.s.story.flags[k] = v; this.emit('story', k); },
   hasFlag(k) { return !!this.s.story.flags[k]; },
 
-  note(text) { const l = this.s.log; l.push({ t: now(), text }); if (l.length > 40) l.shift(); },
+  snap() {   // the play log's picture of the garden right now, on one line
+    const s = this.s, p = s.plots.seedbed, inv = Object.entries(s.inv).filter(([, n]) => n).map(([k, n]) => k + ' ' + n).join(', ');
+    const run = this.running().map(r => `${r.id} (${r.def.who}, ${this.timeLeft(r.endsAt)})`).join(', ') || 'none';
+    return `state: day ${this.gameDay()}, visit ${s.visits.n}, chapter ${s.story.chapter}, home ${this.landStage().key} (green ${s.tiles['0,0'].green}), bed ${p.crop || '-'} ${p.stage || 'empty'}, jobs running: ${run}, lying about ${s.offers.length}, cards waiting ${s.pages.cards.length}, store: ${inv}`;
+  },
+  note(text) { if (window.PL) PL.add('journal: ' + text); const l = this.s.log; l.push({ t: now(), text }); if (l.length > 40) l.shift(); },
   timeLeft(endsAt) { const ms = Math.max(0, endsAt - now()); if (FAST) return `${Math.ceil(ms / 1000)}s`; const m = Math.ceil(ms / 60000); return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`; },
   FAST, now,
   // ---- test panel helpers ----
@@ -1186,7 +1195,8 @@ const G = {
 
 // autosave on a timer and whenever the page is hidden
 setInterval(() => { G.tick(); if (G.dirty) G.save(); }, 1000);
-document.addEventListener('visibilitychange', () => { if (document.hidden) G.save(); });
-window.addEventListener('pagehide', () => G.save());
+document.addEventListener('visibilitychange', () => { if (window.PL && G.s) { if (document.hidden) PL.add('--- put away (phone locked or app closed) ---'); else { PL.add('--- back ---'); PL.add(G.snap()); } } if (document.hidden) { G.save(); if (window.PL) PL.flush(); } });
+window.addEventListener('pagehide', () => { G.save(); if (window.PL) PL.flush(); });
+if (window.PL) PL.when = () => { if (!G.s) return ''; const d = new Date(now()), z = x => String(x).padStart(2, '0'); return `d${G.gameDay()} ${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}`; };
 window.GL = G;   // console: GL.s, GL.reset(), GL.give({seed:5})
 })();
