@@ -1179,6 +1179,13 @@ const G = {
   FAST, now,
   // ---- test panel helpers ----
   skipMins(n) { try { localStorage.setItem(SKEW_KEY, String(SKEW + n * 60000)); } catch (e) {} this.save(); location.reload(); },   // test panel: +30 minutes (moves the clock too)
+  showOff(s) {   // sandbox (v85): swap in the show-off garden (showoff.json), opened a few hours after it was saved at the phone's own time of day
+    if (!window.SANDBOX) return;
+    const D = 86400000; SKEW = Math.ceil((s.lastSeen + 3 * 3600000 - Date.now()) / D) * D;
+    try { localStorage.setItem(SKEW_KEY, String(SKEW)); } catch (e) {}
+    if (window.PL) { PL.add('=== swapped in the show-off garden ==='); PL.flush(); }
+    this.s = s; Store.write(s); this.save = () => {}; location.hash = ''; location.reload();   // no last save on the way out, so the diary counts the hours since
+  },
   skipDays(n) { try { localStorage.setItem(SKEW_KEY, String(SKEW + n * 86400000)); } catch (e) {} this.save(); location.reload(); },
   finishAll() { const t = now(); for (const tk of Object.values(this.s.tasks)) if (!tk.done && tk.endsAt > t) tk.endsAt = t; const p = this.s.plots.seedbed; if (p.stage === 'growing') p.readyAt = t; this.tick(); this.emit('inv'); },
   fillPack() { const o = {}; for (const k of Object.keys(C.resources)) o[k] = 20; this.give(o); },
