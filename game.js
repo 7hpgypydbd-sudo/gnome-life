@@ -63,7 +63,8 @@ const G = {
   save() { if (!this.s) return; this.s.lastSeen = now(); Store.write(this.s); this.dirty = false; },
   reset() { if (window.PL) { PL.add('=== the garden was started over ==='); PL.flush(); } Store.clear(); try { localStorage.removeItem(SKEW_KEY); } catch (e) {} this.s = fresh(); this.save(); location.hash = ''; location.reload(); },
   dur(mins) { return mins * MIN * this.taskSpeed(); },
-  jobMins(mins) { return mins <= 180 ? mins : 180 + (mins - 180) / 2; },   // build 3 (night rest): a long job counts its first three hours in full and the rest at half, so the gnomes' night off doesn't hold evening players up (6h -> 4h30, 8h -> 5h30)
+  trim(mins) { const T = C.trim; if (!T || mins <= T.keep) return mins; return Math.min(T.most, T.keep + (mins - T.keep) * T.rate); },   // v86: the long waits trimmed (content.js trim; one place to undo)
+  jobMins(mins) { mins = this.trim(mins); return mins <= 180 ? mins : 180 + (mins - 180) / 2; },   // build 3 (night rest): a long job counts its first three hours in full and the rest at half, so the gnomes' night off doesn't hold evening players up (6h -> 4h30, 8h -> 5h30)
   // ---- the night rest (Bryce, round six): no gnome work while they sleep (half past ten at night to six in the morning). Job
   // timers stop overnight and carry on when they wake; crops, trees and the land still grow in the dark.
   asleepAt(t) { if (FAST) return false; const d = new Date(t), h = d.getHours() + d.getMinutes() / 60; return h >= C.night.bed || h < C.night.wake; },
@@ -104,6 +105,7 @@ const G = {
     if (tk.fence) this.s.flags.rabbit = true;
     if (!this.s.flags.r6) { this.s.flags.r6 = true; if (tk.woodpile && !tk.stump) this.s.flags.oldWoodpile = true; }   // round six: firewood now comes from the old stump; a garden that already had its woodpile keeps it
     if (tk.daisypot) { tk.yardbath = tk.daisypot; delete tk.daisypot; }   // round six: the pot of daisies on the old stump became a little bird bath
+    if (!this.s.flags.trim86) { this.s.flags.trim86 = true; this.trimRunning(); }   // v86: jobs and crops already under way when the waits were trimmed finish sooner too
     this.friendsCatchUp();
     if (this.s.plots.seedbed.grown) this.s.flags.firstpick = true;   // fenced before the rabbit's raid existed
     if (this.s.plots.seedbed.crop === 'sprout') this.s.plots.seedbed.crop = 'carrot';   // the old generic sprouts were always carrots at heart
@@ -720,7 +722,13 @@ const G = {
   // ---- the rabbit: a cheeky regular, never a real loss ----
   // A rabbit always comes for the first sprouts: if there is food in the dish it eats that first, then nibbles a few sprouts.
   // Only then is "Fence the seed bed" offered. index.html plays the raid when you are watching; catchUp() settles it when you were away.
-  growMins(p) { const c = C.crops[p.crop]; return !p.grown && c.first ? c.first : c.grow; },   // v81: the very first carrots come up in minutes, so day one keeps moving
+  trimRunning() {   // v86, once per garden: what was already running when the waits were trimmed has its time left cut by the same share
+    const t = now(), cut = (end, was) => t + (end - t) * Math.min(1, this.jobMins(was) / Math.max(1, was <= 180 ? was : 180 + (was - 180) / 2));
+    for (const [id, tk] of Object.entries(this.s.tasks)) { if (tk.done || !(tk.endsAt > t)) continue; let d = null; try { d = this.taskDef(id); } catch (e) {} if (d && d.mins) tk.endsAt = Math.round(cut(tk.endsAt, d.mins)); }
+    const p = this.s.plots.seedbed, c = p && p.stage === 'growing' && C.crops[p.crop];
+    if (c && p.readyAt > t) { const was = !p.grown && c.first ? c.first : c.grow; p.readyAt = Math.round(t + (p.readyAt - t) * this.trim(was) / was); }
+  },
+  growMins(p) { const c = C.crops[p.crop]; return this.trim(!p.grown && c.first ? c.first : c.grow); },   // v81: the very first carrots come up in minutes, so day one keeps moving
   rabbitDue() {
     const s = this.s, t = now(); if (s.flags.rabbit || !/^(growing|ready)$/.test(this.plot().stage)) { s.rabbitAt = 0; return false; }   // ready too: a spell can hurry the sprouts, and the rabbit still comes
     if (!s.rabbitAt) s.rabbitAt = t + C.rabbit.after * MIN; return t >= s.rabbitAt;
@@ -868,7 +876,7 @@ const G = {
   },
   sendWish(fid, who = 'her') {   // the basket goes over; the neighbour makes it
     const w = this.wishState(fid), d = this.wishOpen(fid); if (!d || !this.can(d.cost)) return false;
-    const t = now(), mins = (d.mins || C.wishes.mins) * MIN;
+    const t = now(), mins = this.trim(d.mins || C.wishes.mins) * MIN;
     this.pay(d.cost); w.made[d.id] = [t, t + mins]; w.open = null; w.next = t + mins + C.wishes.every * MIN;
     const f = this.folkDef(fid); this.note(`${C.names[who]} took ${this.costWords(d.cost)} over to ${f.short}, who has started on ${lc(d.name)}.`); this.emit('wish', fid); return true;
   },

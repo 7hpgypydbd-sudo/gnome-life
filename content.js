@@ -599,6 +599,11 @@ window.CONTENT = {
   // soon as the last one has settled, as in month one); idea: the earliest day the neighbours propose the festival; jobGap: days
   // between one festival job finishing and the next showing (one at a time); notice: days' warning before the festival night;
   // patchGap: from month two (day 31 on) at most one new patch comes out of the mist every this many days
+  // v86 (Bryce 2026-11-10, back from a break: "I kind of want to get things done"): every wait longer than `keep` minutes is
+  // trimmed. The part past `keep` counts at `rate`, and nothing (job or crop) takes longer than `most` minutes of work. Day one's
+  // quick jobs are under `keep`, so they stay as they were; the calendar (festival day, neighbours' days) is untouched.
+  // To undo: trim: null.
+  trim: { keep: 20, rate: 0.6, most: 240 },
   pace: { festivalDay: 60,
     plans: {
       45: { arrive:[0, 0, 0, 29, 32, 35, 46, 52], idea:35, jobGap:1, notice:2, patchGap:2 },
