@@ -363,7 +363,7 @@ const G = {
     const tk = this.s.tasks[d.id]; if (tk && tk.who) return tk.who;
     return ['her', 'him'].sort((a, b) => (b === d.pref) - (a === d.pref)).find(w => !this.isBusy(w, d.id)) || d.pref || 'her';
   },
-  isBusy(w, but) { return Object.entries(this.s.tasks).some(([id, k]) => !k.done && k.endsAt > now() && id !== but && (k.who || (C.tasks.find(t => t.id === id) || {}).who) === w); },
+  isBusy(w, but, storyJob) { return Object.entries(this.s.tasks).some(([id, k]) => !k.done && k.endsAt > now() && id !== but && !(storyJob && id.startsWith('chore:')) && (k.who || (C.tasks.find(t => t.id === id) || {}).who) === w); },
   // ---- little chores (build 3, "never stuck"): small jobs for whichever gnome is free, so nobody stands about while the crops
   // grow or a story job waits. Free, short, and each brings in a few things; the ones the story is short of come first.
   choreList() {
@@ -466,6 +466,7 @@ const G = {
   startTask(id) {
     const d = this.taskDef(id), v = this.taskView(d); if (v.state !== 'ready' || !v.can) return false;
     this.pay(d.cost); const t = now();
+    if (!d.chore) for (const [cid, ck] of Object.entries(this.s.tasks)) if (cid.startsWith('chore:') && !ck.done && ck.endsAt > t && (ck.who || (this.taskDef(cid) || {}).who) === d.who) delete this.s.tasks[cid];   // a gnome putting a little chore down to start a real job
     const from = this.asleepAt(t) ? this.wakeAfter(t) : t;   // started at night: they get going when they wake
     this.s.tasks[id] = { startedAt: from, endsAt: this.workEnd(from, this.dur(this.jobMins(d.mins))), done: false }; if (d.healTile || d.farm || d.chore || C.tasks.some(x => x.id === id && x.who === 'either')) this.s.tasks[id].who = d.who;
     if (d.home || d.claims) this.s.tasks[id].tile = d.home ? this.homeLot(d.folk) : this.freeLot();
@@ -814,7 +815,7 @@ const G = {
     return '';
   },
   gateWhy(d) {   // extra reasons a job cannot start yet, in words ('' = fine)
-    const busy = d.who && Object.entries(this.s.tasks).find(([id, tk]) => !tk.done && tk.endsAt > now() && id !== d.id && (this.taskDef(id) || {}).who === d.who);   // one job at a time for each gnome
+    const busy = d.who && Object.entries(this.s.tasks).find(([id, tk]) => !tk.done && tk.endsAt > now() && id !== d.id && !(!d.chore && id.startsWith('chore:')) && (this.taskDef(id) || {}).who === d.who);   // round-seven (19, 21): a little chore never keeps a gnome from a real job   // one job at a time for each gnome
     if (busy) return `${C.names[d.who]} is busy with ${lc(this.taskDef(busy[0]).name)}`;
     const save = this.savingFor(d); if (save) return save;
     if (d.home && !this.homeLot(d.folk)) { const k = this.wishOf(d.folk); return k ? `waits for ${this.patchName(k)}, ${this.tileWhere(k)}, to grow to young meadow` : 'needs a patch next door grown to young meadow for their home'; }

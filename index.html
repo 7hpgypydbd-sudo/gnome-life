@@ -237,7 +237,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v89</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v90</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -258,7 +258,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 89;
+const BUILD = 90;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -266,11 +266,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=89"></script>
-<script src="playlog.js?v=89"></script>
-<script src="concerns.js?v=89"></script>
-<script src="game.js?v=89"></script>
-<script src="walk.js?v=89"></script>
+<script src="content.js?v=90"></script>
+<script src="playlog.js?v=90"></script>
+<script src="concerns.js?v=90"></script>
+<script src="game.js?v=90"></script>
+<script src="walk.js?v=90"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -2174,7 +2174,8 @@ function drawFenceSeg(A, B, a, img = IM['kit-fence-straight-a'], foot = FENCE_FO
   const sx = Math.max(0.02, (B[0] - A[0]) / (fb[0] - fa[0])), sy = FENCE_SY, sh = ((B[1] - A[1]) - sy * (fb[1] - fa[1])) / (fb[0] - fa[0]);
   ctx.save(); ctx.globalAlpha = a; lineShadow(A, B, 7); ctx.transform(sx, sh, 0, sy, A[0] - sx * fa[0], A[1] - sh * fa[0] - sy * fa[1]); ctx.drawImage(im, 0, 0); ctx.restore();
 }
-function gateOpen() { return gnomes.some(g => g.screen && Math.hypot(g.gx - FENCE_GATE.gx, g.gy - FENCE_GATE.gy) < 0.16); }   // swings open while a gnome is by the gate
+let gateHeld = 0;
+function gateOpen() { const t = performance.now(); if (gnomes.some(g => g.screen && Math.hypot(g.gx - FENCE_GATE.gx, g.gy - FENCE_GATE.gy) < 0.26)) gateHeld = t + 1600; return t < gateHeld; }   // note 25 (Bryce): swings open as anyone nears it and stays open a moment after they pass, so you can see it   // swings open while a gnome is by the gate
 function bedFenceShown() { return taskProg('fence') > 0 && propAlpha(PROPS.find(p => p.name === 'seedbed')) > 0; }
 // Round six (Bryce): Wendel goes round the ring in order, a panel at a time, gate last (WORKPATH.fence); each panel goes up
 // while he hammers at it, after he has fetched its sticks from the stick pile
@@ -2571,10 +2572,13 @@ function updateRabbit(dt) {
     if (G.rabbitDue()) {   // the first raid
       const nibble = [0.70, 0.62, 'nibble', 8, () => { G.rabbitRaid(); gnomeSays('him', 'Oh, you poor hungry thing!'); toast('The rabbit nibbled the sprouts. Time for a fence.'); }];
       rabbitGo(G.s.feeder.food ? [[1.05, 0.40], [FEEDER.gx + 0.07, FEEDER.gy - 0.03, 'eat', 7, () => { G.rabbitAte(); toast('A rabbit is eating everything in the dish!'); }], nibble, [1.06, 0.92]] : [[1.05, 0.40], nibble, [1.06, 0.92]]);
-      RABBIT.on.fast = 2; return;
+      RABBIT.on.fast = 2; RABBIT.on.hold = 2.2;   // note 17 (Bryce): the raid is a scene, so the camera eases over to the bed first and the rabbit waits a beat for you to see it
+      { const [bx, by] = toWorld(0.72, 0.62); ALLDONE.ease = { t: 0, z0: cam.z, x0: cam.x, y0: cam.y, z1: clampZ(Math.max(cam.z, 1.2)), x1: bx, y1: by }; liveUntil = Math.max(liveUntil, performance.now() + 6000); }
+      return;
     }
     return;   // round six: after its raid the rabbit comes through the friendship path (animalNext)
   }
+  if (r.hold > 0) { r.hold -= dt; return; }
   const st = r.steps[r.i]; if (!st) { RABBIT.on = null; return; }
   if (r.act) {   // eating, sniffing or napping where it is
     r.t -= dt; if (r.t > 0) return;
@@ -5064,7 +5068,7 @@ function allDoneCheck(now) {
   if (more || now - JOB_START < 30000 || gnomes.some(g => g.chore || g.walking && g.job)) return;   // build 3: only when truly nothing is left, and never while someone is just setting off to a job
   ALLDONE.done = true; ALLDONE.on = true;
   const h = dayPhase().h, A = C.story.allDone, first = run.length ? Math.min(...run.map(r => r.endsAt)) : 0;
-  const set = h >= 21 || h < 5 ? A.night : bigDay && h >= 17 ? A.bigDay : h >= 17 ? A.evening : run.length ? A.busy : A.nothing;
+  const set = h >= 21 || h < 5 ? A.night : bigDay && h >= 17 ? A.bigDay : h >= 19 ? A.evening : run.length ? A.busy : A.nothing;
   const [who, line] = pick(set), text = line.replace('{time}', first ? new Date(first).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(/\s?([ap])\.?m\.?/i, (m, x) => x.toLowerCase() + 'm') : 'later');
   PL.add(`ALL DONE FOR NOW window (${set === A.night ? 'night' : set === A.bigDay ? 'big day' : set === A.evening ? 'evening' : set === A.busy ? 'both busy' : 'nothing to do'}): ${C.names[who]}: "${text}" · running: ${run.map(r => r.id).join(', ') || 'none'}`);
   const g = gnomes.find(g => g.who === who), seen = g && g.screen && !g.inside;   // they say it if they are out in the yard; else the label carries it
