@@ -1112,7 +1112,7 @@ window.CONTENT = {
         `"It'll outlive us," said Wendel softly.`,
         `"That's the idea," said Hazel. "One day some other gnome will sit under it and wonder who planted it."`,
         `"We could carve our names on it."`,
-        `"Not on the tree, love," said Hazel. "It's got enough to do." But she let him scratch a very small W and H on the empty pot, and he has kept it ever since.` ] },
+        `"Not on the tree, love," said Hazel. "It's got enough to do." But she let him carve a very small heart and W+H into the plank of the bench by the fire, and he has kept it ever since.` ] },
       { id:'2.5', ch:2, when:'next', title:'Our first week', sub:`in Hazel's handwriting`, button:'Turn the page', journal:true, text:[
         [ `Our first week, or near enough.`, { if:'roof', text:`We have a roof (moss, no leaks).` }, { if:'stump', text:`We have a fire every night (Wendel chopped the old stump into firewood, he is very proud of it).` }, { if:'spring', text:`We have a spring we found ourselves (Wendel found it, he would like that written down).` }, { if:'bed', text:`We have a seed bed, and we have eaten from it.` }, { if:'fence', text:`We have a fence, and a rabbit who thinks the fence is a suggestion.` } ],
         `And the land is waking. There's a haze of green at the edges now. Wendel says he can smell it coming, like rain.`,
