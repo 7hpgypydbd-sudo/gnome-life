@@ -135,7 +135,7 @@ window.CONTENT = {
       doneNote:'The old stump is gone, chopped and stacked by the barrel. Tonight there is proper firewood.' },
     { id:'rainbarrel', name:'Scrub the rain barrel', short:'scrubbing the barrel',   who:'either', spot:'barrel',        cost:{ twig:2, stone:1 },  mins:20,  green:0, needs:['roof'],   // after the roof: it catches the rain off it (Bryce: why have a barrel at all?)
       blurb:'The old barrel by the house is green with slime. Scrubbed clean, it catches the rain off the roof: a can of water every so often without the walk to the spring. Whoever is free will do it.' },
-    { id:'herbs',   name:'Plant a herb corner', short:'planting herbs',        who:'her', act:'water', spot:'seedbed',     cost:{ seed:2, water:2, moss:1 }, mins:60, green:1, needs:['bed', 'flag:firstpick'],
+    { id:'herbs',   name:'Plant a herb corner', short:'planting herbs',        who:'her', act:'water', spot:'herbs',       cost:{ seed:2, water:2, moss:1 }, mins:60, green:1, needs:['bed', 'flag:firstpick'],
       blurb:'Thyme, mint and the one parsley that will not die. Good for tea and for bees.' },
     { id:'compost', name:'Start a compost heap', short:'starting the compost',       who:'him', act:'dig', spot:'wheelbarrow', cost:{ twig:2, moss:3, water:1, carrot:1 }, mins:60, green:0, needs:['flag:firstpick'],
       blurb:'Peelings, leaves and patience. Dug into the seed bed, it makes the soil rich: one extra seed every harvest.' },
