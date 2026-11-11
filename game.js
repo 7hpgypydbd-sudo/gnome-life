@@ -805,7 +805,7 @@ const G = {
   },
   savingFor(d) {   // the story comes first (fix 3): while a story job waits for things, the extras (Hazel's list, the optional home jobs) don't spend them
     if (d.spine || this.s.tasks[d.id] || !C.tasks.includes(this.baseDef(d))) return '';
-    if ((d.cost || {}).seed && (this.s.inv.seed || 0) - d.cost.seed < 1 && this.done('bedwater')) return 'keeping the last seed back for sowing the seed bed';   // the bed always has one to sow
+    // round-seven tidy (notes 49, 51): the old 'keep the last seed back' rule is gone: it blocked the herb corner for no reason a player could see. If the bed is empty and no seed is left, the land leaves one lying in the yard (see the never-stuck check in tick).
     for (const sp of C.tasks) {
       if (!sp.spine || sp.retired || this.s.tasks[sp.id] || !this.needsMet(sp) || this.can(sp.cost)) continue;
       const short = Object.keys(d.cost || {}).filter(k => (this.s.inv[k] || 0) < (sp.cost[k] || 0) + d.cost[k] && sp.cost[k]);
