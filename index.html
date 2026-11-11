@@ -4456,7 +4456,9 @@ function tapAt(cx, cy, wx, wy) {
     if (near) return toast(near.d.doneNote || near.d.blurb);
   } else if (f.tile === festTile() && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openFestGreen();
   else if (G.farmOn(f.tile) && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openFarm(G.farmOn(f.tile));
-  else if (G.s.tiles[f.tile] && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return G.s.tiles[f.tile].kind ? openPatch(f.tile) : openTasks('regrow:' + f.tile);
+  else if (G.s.tiles[f.tile] && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) { const run = G.running().find(r => (r.def.healTile === f.tile || r.def.tile === f.tile) && r.endsAt > G.now());   // concern 3 (Bryce): the gnome is already at it, so say so instead of opening the card for a job nobody can start
+      if (run) { const lc = n => n.charAt(0).toLowerCase() + n.slice(1); return toast(`${C.names[run.def.who] || 'Someone'} is on it: ${run.def.short || lc(run.def.name)}, ${G.timeLeft(run.endsAt)} to go.`); }
+      return G.s.tiles[f.tile].kind ? openPatch(f.tile) : openTasks('regrow:' + f.tile); }
 }
 
 // ---------- UI ----------
