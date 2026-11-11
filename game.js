@@ -484,7 +484,7 @@ const G = {
     if (!n) return;
     if (window.PL) PL.add(`green +${n} (${where})`);
     const bump = k => { const before = this.landStage(k).key; this.s.tiles[k].green += n; const after = this.landStage(k); return after.key !== before ? after : null; };
-    if (where !== 'garden') { const st = bump('0,0');
+    if (where !== 'garden') { const was = this.s.tiles['0,0'].green, st = bump('0,0'); this.emit('green', was);   // v87: the little oak shows a sprig of leaves
       if (st) { this.note(`The home patch is now ${st.name}.`); this.s.pages.cards.push({ k: 'land', key: st.key }); this.emit('land', st); } }
     if (this.gardenOpen()) { const st = bump('0,1'); if (st) this.note(`The garden is now ${st.name}.`); }
   },
@@ -514,7 +514,7 @@ const G = {
       if (y + dy < -1 && !this.done('bridge')) continue;   // the far side of the stream waits for the bridge
       this.s.tiles[kk] = { state: 'revealed', green: 0, kind: this.tileKind(kk) }; n++;
     }
-    if (n) { F.mistAt = now(); this.note('The mist has drawn back from more bare ground.'); }
+    if (n) { F.mistAt = now(); this.note('More of the valley has woken up round the mended patch.'); }
     else if (gap && F.mist) F.mist = F.mist.filter(x => x !== k);   // nothing left to show round this one
   },
 
@@ -1015,8 +1015,11 @@ const G = {
     for (const pg of C.story.pages) if (!(pg.id in P.seen) && !queued(pg.id) && this.pageAfter(pg).every(id => this.pageHappened(id)) && this.storyDue(pg, t)) { P.cards.push({ k: 'page', id: pg.id, at: t }); this.emit('card'); }
     // the land opens with the story: the garden patch beside the yard in chapter three (once the yard has greened), and the
     // old track the night the first traveller's lantern comes up it (page 3.5); after that, each healed patch shows the next
-    if (!s.tiles['0,1'] && this.pageHappened('3.0') && this.stageIndex('0,0') >= 1) { s.tiles['0,1'] = { state: 'revealed', green: 0, kind: this.tileKind('0,1') }; this.note('The mist has drawn back from the patch beside the yard.'); this.emit('reveal', '0,1'); }
-    if (!s.tiles['1,0'] && this.pageHappened('3.5')) { s.tiles['1,0'] = { state: 'revealed', green: 0, kind: this.tileKind('1,0') }; this.note('The mist has drawn back from the old track. A lantern is bobbing up it.'); this.emit('reveal', '1,0'); }
+    // v87 (fresh-eyes review 4, note 68): the garden patch wakes when the yard first greens (about day 2 or 3), the old track
+    // when the yard reaches meadow (about day 4 or 5), so the world is bigger than one yard long before the house is finished
+    if (!s.tiles['0,1'] && this.stageIndex('0,0') >= 1) { s.tiles['0,1'] = { state: 'revealed', green: 0, kind: this.tileKind('0,1') }; this.note('The patch beside the yard has woken up. It is bare and full of the loggers\' junk, but it is ours to mend.'); this.emit('reveal', '0,1'); }
+    if (!s.tiles['1,0'] && (this.stageIndex('0,0') >= 2 || this.pageHappened('3.5'))) { s.tiles['1,0'] = { state: 'revealed', green: 0, kind: this.tileKind('1,0') }; this.note(this.pageHappened('3.5') ? 'The old track has woken up. A lantern is bobbing up it.' : 'The old track past the yard has woken up. Wendel says a track always leads to somebody.'); this.emit('reveal', '1,0'); }
+    if (this.pageHappened('3.5') && !s.flags.revealSwept) { s.flags.revealSwept = true; for (const k of Object.keys(s.tiles)) if (k !== '0,0' && s.tiles[k].state === 'green') this.reveal(k); }   // patches mended before chapter three ended show their neighbours now
     for (const [patch, M] of Object.entries(C.makes)) {   // Hazel's list: a patch reached a new stage, so new little makes are ready
       if (!this.patchOpen(patch)) continue;
       const st = this.landStage(M.tile).key, key = `${patch}:${st}`;
