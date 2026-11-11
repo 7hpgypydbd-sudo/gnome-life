@@ -237,7 +237,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v87</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v88</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -258,7 +258,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 87;
+const BUILD = 88;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -266,11 +266,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=87"></script>
-<script src="playlog.js?v=87"></script>
-<script src="concerns.js?v=87"></script>
-<script src="game.js?v=87"></script>
-<script src="walk.js?v=87"></script>
+<script src="content.js?v=88"></script>
+<script src="playlog.js?v=88"></script>
+<script src="concerns.js?v=88"></script>
+<script src="game.js?v=88"></script>
+<script src="walk.js?v=88"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -650,6 +650,7 @@ const cv = document.getElementById('c'), ctx = cv.getContext('2d');
 const bubble = document.getElementById('bubble'), toastEl = document.getElementById('toast');
 let W = 0, H = 0, DPR = 1;
 const cam = { x: PLOT.w/2, y: PLOT.h/2 - 40, z: 1 };
+window.__ev = s => eval(s);   // preview pictures (headless browser tools): run a line inside the game
 let minZ = 0.4, maxZ = 4;
 const gnomes = [], particles = [], floaters = [];
 let JOB_START = 0, JOBS_REAL = false;   // when a job was last started ("All done" waits a bit after); something besides a little chore is ready (the idle pointer only points at those)
@@ -1242,12 +1243,12 @@ const STREAM_U0 = -1.55;
 function streamV(u) { const x = u - 1.5; return -0.5 + 0.06 * Math.sin(x * 2.3) + 0.03 * Math.sin(x * 5.1); }
 function streamHW(u) { return 38 + 6 * Math.sin(u * 3.7) + 16 * Math.exp(-Math.pow((u - STREAM_U0) * 3.5, 2)); }   // half width (world px); a pool at the spring
 function pathU(v) { const y = v + 0.5; return 1.5 + 0.05 * Math.sin(y * 2.1) + 0.025 * Math.sin(y * 4.7); }
-function* bakeGroundTile(k) {   // a generator: yields every few rows so the work spreads over frames
+function* bakeGroundTile(k, matFn = groundMat, into = GR.tiles) {   // a generator: yields every few rows so the work spreads over frames (the pencil valley bakes bare land into its own store)
   const [tx, ty] = k.split(',').map(Number), [ox, oy] = tileOrigin(k);
   const W = Math.round(PLOT.w * GS), H = Math.round(PLOT.h * GS);
-  const cv2 = GR.tiles[k] && GR.tiles[k].width === W ? GR.tiles[k] : Object.assign(document.createElement('canvas'), { width: W, height: H });
+  const cv2 = into[k] && into[k].width === W ? into[k] : Object.assign(document.createElement('canvas'), { width: W, height: H });
   const x2 = cv2.getContext('2d'), img = x2.createImageData(W, H), D = img.data;
-  const M = {}; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const m = groundMat(`${tx + dx},${ty + dy}`); if (m) { m.kg = m.kind === 0 ? m.g : 0; m.km = m.kind === 1 ? m.g : 0; m.kw = m.kind === 2 ? m.g : 0; } M[(dx + 1) + 3 * (dy + 1)] = m; }
+  const M = {}; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const m = matFn(`${tx + dx},${ty + dy}`); if (m) { m.kg = m.kind === 0 ? m.g : 0; m.km = m.kind === 1 ? m.g : 0; m.kw = m.kind === 2 ? m.g : 0; } M[(dx + 1) + 3 * (dy + 1)] = m; }
   const self = M[4], at = (i, j) => M[(i - tx + 1) + 3 * (j - ty + 1)] || self;   // a missing neighbour borrows this tile, so nothing bleeds in from the void
   const edgeOpen = [!M[3], !M[5], !M[1], !M[7]];   // west, east, north, south neighbours missing -> soft outer edge on that side
   // world -> tile coords
@@ -1310,10 +1311,10 @@ function* bakeGroundTile(k) {   // a generator: yields every few rows so the wor
     if (wash > 0) { const k2 = 0.28 * wash; col[0] += (200 - col[0]) * k2; col[1] += (205 - col[1]) * k2; col[2] += (195 - col[2]) * k2; }
     let al = 255;   // (the bare home patch is plain earth too; its ruts, stumps and rubbish are pieces on top, see HOME_KIT)
     // a soft, ragged outer edge where the map ends
-    const eW = u - tx, eE = tx + 1 - u, eN = v - ty, eS = ty + 1 - v, rag = 0.035 * (nD - 0.5);
+    const eW = u - tx, eE = tx + 1 - u, eN = v - ty, eS = ty + 1 - v, rag = 0.05 * (nD - 0.5) + 0.07 * (nA - 0.5), ew = 0.09;   // v87: a wider, more ragged edge, like paint soaking into the paper
     let edge = 1;
-    if (edgeOpen[0]) edge = Math.min(edge, sstep(0, 0.05, eW + rag)); if (edgeOpen[1]) edge = Math.min(edge, sstep(0, 0.05, eE + rag));
-    if (edgeOpen[2]) edge = Math.min(edge, sstep(0, 0.05, eN + rag)); if (edgeOpen[3]) edge = Math.min(edge, sstep(0, 0.05, eS + rag));
+    if (edgeOpen[0]) edge = Math.min(edge, sstep(0, ew, eW + rag)); if (edgeOpen[1]) edge = Math.min(edge, sstep(0, ew, eE + rag));
+    if (edgeOpen[2]) edge = Math.min(edge, sstep(0, ew, eN + rag)); if (edgeOpen[3]) edge = Math.min(edge, sstep(0, ew, eS + rag));
     al *= edge;
     const o = 4 * (j * W + i); D[o] = col[0]; D[o + 1] = col[1]; D[o + 2] = col[2]; D[o + 3] = al;
   } }
@@ -1335,7 +1336,7 @@ function* bakeGroundTile(k) {   // a generator: yields every few rows so the wor
     const green = self.g > 0.5, pset = green ? (self.kind === 2 ? ['patch-01', 'patch-05', 'patch-01'] : self.kind === 1 ? ['patch-04', 'patch-06', 'patch-02'] : ['patch-02', 'patch-01', 'patch-02']) : ['patch-07'];
     if (green && season() === 'autumn') pset.push('patch-03', 'patch-03');
     if (green && season() === 'spring') pset.push('patch-04', 'patch-06');
-    for (let n = 0; n < (green ? 4 : k === '0,0' ? 0 : 1); n++) {   // (no bare-soil patch in the yard: it read as a dug bed before Hazel digs one)
+    for (let n = 0; n < (green ? 4 : 0); n++) {   // (no bare-soil patch on bare land: it read as a dug bed, or as the rubbish heap the patch card talks about, v87 note 70)
       const gx = 0.14 + 0.72 * rn(n + 400), gy = 0.14 + 0.72 * rn(n + 410); const [wx, wy] = toWorld(gx, gy, k);
       const i = Math.round((wx - ox) * GS), j = Math.round((wy - oy) * GS); if (i < 0 || j < 0 || i >= W || j >= H || zone[j * W + i]) continue;
       const cv = cov[j * W + i] / 255; if (green ? cv < 0.85 : cv > 0.15) continue;
@@ -1372,7 +1373,7 @@ function* bakeGroundTile(k) {   // a generator: yields every few rows so the wor
   }
   if (k === '1,-1' && self.path > 0.5) [-0.62, -0.05, 0.55].forEach((f, i) =>   // stepping stones across the water
     put(GSTICK.steps[i * 2], 0.5 + 0.02 * f, 0.5 + f * streamHW(1.5) / LEY, 0.55));
-  GR.tiles[k] = cv2;
+  into[k] = cv2;
 }
 // Painted stream banks and path edges (art day 14, straightened into seamless ribbons by tools/make_ribbons.py).
 // A ribbon is laid along a curve one canvas column at a time: each column is only moved up or down, never turned, so
@@ -1435,7 +1436,7 @@ function bakeRibbons(x2, k, tx, ty, ox, oy, M, edgeOpen) {
 function groundSig(k) {   // everything a tile's picture depends on (itself and its eight neighbours)
   const [tx, ty] = k.split(',').map(Number), out = [];
   for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const m = groundMat(`${tx + dx},${ty + dy}`); out.push(m ? [m.g, m.kind, m.wet, m.path, m.wash].join() : '-'); }
-  return out.join('|') + '|' + season() + '|a9';   // the seasonal stickers change with the season
+  return out.join('|') + '|' + season() + '|a10';   // the seasonal stickers change with the season
 }
 // Baked tiles are kept in the browser (IndexedDB) with the signature they were baked for, so the next visit opens with the
 // finished ground at once instead of baking it all again. A tile whose signature has changed is simply baked afresh.
@@ -1453,7 +1454,12 @@ function gdbLoad() {   // read every kept tile; use the ones still right for the
       const fin = () => { if (ended && !pending) done(); };
       rq.onsuccess = () => { const c = rq.result; if (!c) { ended = true; return fin(); }
         const k = c.key, rec = c.value;
-        if (rec && rec.blob && G.s.tiles[k] && rec.sig === groundSig(k) && !GR.tiles[k]) {
+        if (rec && rec.blob && typeof k === 'string' && k.startsWith('pen:')) { const pk = k.slice(4);   // a kept pencil tile (v87)
+          if (!G.s.tiles[pk] && inValley(pk) && rec.sig === penSig(pk) && !PEN.tiles[pk]) { pending++; const url = URL.createObjectURL(rec.blob), im = new Image();
+            im.onload = () => { const c = Object.assign(document.createElement('canvas'), { width: im.width, height: im.height }); c.getContext('2d').drawImage(im, 0, 0);
+              if (!PEN.tiles[pk]) { PEN.tiles[pk] = c; PEN.sig[pk] = rec.sig; } URL.revokeObjectURL(url); pending--; fin(); };
+            im.onerror = () => { URL.revokeObjectURL(url); pending--; fin(); }; im.src = url; } }
+        else if (rec && rec.blob && G.s.tiles[k] && rec.sig === groundSig(k) && !GR.tiles[k]) {
           pending++; const url = URL.createObjectURL(rec.blob), im = new Image();
           im.onload = () => { const cv2 = Object.assign(document.createElement('canvas'), { width: im.width, height: im.height }); cv2.getContext('2d').drawImage(im, 0, 0);
             if (!GR.tiles[k]) { GR.tiles[k] = cv2; GR.sig[k] = rec.sig; } URL.revokeObjectURL(url); pending--; fin(); };
@@ -1502,6 +1508,203 @@ function drawGroundTile(k, ox, oy, now) {
   ctx.drawImage(cv2, ox, oy, PLOT.w, PLOT.h);
   if (k === '0,0' && G.landStage().key === 'barren') drawHomePlot(ox, oy, now);
   return true;
+}
+// ---------- the pencil valley (v87: fresh-eyes review 4; notes 54, 67, 68) ----------
+// Land that has not woken yet is no longer dark: the whole valley is drawn on old paper in faint pencil, made from the game's
+// own bare ground and the loggers' leftovers on each patch, run through a pencil filter (no new paintings). The paper takes the
+// night's moonlit blue from the light layer like everything else, so night stays cosy. The next patch to open carries a pale
+// wash of colour, a promise. Pencil tiles are baked after the real ground, a little each frame, and kept in the browser.
+const VALLEY = 2;   // the map is 5 x 5: -2..2 each way
+const PEN = { tiles: {}, sig: {}, job: null, jobKey: null, scratch: {}, paper: null, wash: null, S: 0.4, checkAt: 0 };
+function inValley(k) { const [x, y] = k.split(',').map(Number); return Math.abs(x) <= VALLEY && Math.abs(y) <= VALLEY; }
+function pencilKeys() { const out = []; for (let y = -VALLEY; y <= VALLEY; y++) for (let x = -VALLEY; x <= VALLEY; x++) { const k = `${x},${y}`; if (!G.s.tiles[k]) out.push(k); } return out; }
+const penMat = k => inValley(k) ? { g: 0, kind: 0, wet: 0, path: 0, wash: 0 } : null;
+function penSig(k) { return `pen6|${G.tileKind(k)}|${season()}`; }
+function nextPatch() {   // the patch that will open next (it gets the wash): the garden, then the old track, then beside a greened patch
+  const T = G.s.tiles; if (!T['0,1']) return '0,1'; if (!T['1,0']) return '1,0';
+  const F = G.s.flags; if (F.mist && F.mist.length) { const [x, y] = F.mist[0].split(',').map(Number); for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) { const k = `${x + dx},${y + dy}`; if (!T[k] && inValley(k) && (y + dy >= -1 || G.done('bridge'))) return k; } }
+  for (const [k, tl] of Object.entries(T)) { if (k !== '0,0' && tl.state !== 'green') continue; const [x, y] = k.split(',').map(Number);
+    for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) { const kk = `${x + dx},${y + dy}`; if (!T[kk] && inValley(kk) && (y + dy >= -1 || G.done('bridge'))) return kk; } }
+  return null;
+}
+function penPieces(k) {   // the bare patch's own leftovers (what is there before any job): stumps, junk, old fences, the dead tree
+  const kind = G.tileKind(k), L = HEAL_LOOK[kind]; if (!L) return [];
+  const [tx, ty] = k.split(',').map(Number), swap = (kind === 'meadow' || kind === 'creature' || kind === 'nursery') && ((tx + ty) & 1) !== 0;
+  const out = [];
+  for (const q of L) {
+    if (!(q.always || q.go) || q.flat || q.home) continue;
+    let im = null, h = q.h;
+    if (q.pic) im = healPic(q.pic);
+    else if (q.draw === 'deadtree') { im = art('heal-deadtree'); h = 250; }
+    else if (q.draw && HEAL_PAINT[q.draw] && q.draw !== 'tree') { const f = HEAL_PAINT[q.draw](q); im = art(f[0]); h = f[1]; }
+    if (!im) continue;
+    const at = q.c || q.v ? healLocal(k, q) : swap ? [q.at[1], q.at[0]] : q.at;
+    out.push({ im, h, at, flip: !!q.flip });
+  }
+  return out.sort((a, b) => a.at[0] + a.at[1] - b.at[0] - b.at[1]);
+}
+function* penJob(k) {
+  yield* bakeGroundTile(k, penMat, PEN.scratch);
+  const src = PEN.scratch[k], [ox, oy] = tileOrigin(k);
+  const top = Object.assign(document.createElement('canvas'), { width: src.width, height: src.height }), x2 = top.getContext('2d');   // the leftovers on their own layer: they get firm lines, the ground only a faint grain
+  for (const p of penPieces(k)) { const [wx, wy] = toWorld(p.at[0], p.at[1], k), w = p.im.width * p.h / p.im.height;
+    x2.save(); x2.translate((wx - ox) * GS, (wy - oy) * GS); if (p.flip) x2.scale(-1, 1); x2.drawImage(p.im, -w * GS / 2, -p.h * GS * 0.92, w * GS, p.h * GS); x2.restore(); }
+  yield;
+  // the pencil filter, at a lower resolution: lines where the picture is darker than round about it, a little tone in the darks
+  const S = PEN.S / GS, w = Math.round(src.width * S), h = Math.round(src.height * S);
+  const c = Object.assign(document.createElement('canvas'), { width: w, height: h }), cx = c.getContext('2d');
+  cx.drawImage(top, 0, 0, w, h); const tg = cx.getImageData(0, 0, w, h).data; cx.clearRect(0, 0, w, h);
+  cx.drawImage(src, 0, 0, w, h); delete PEN.scratch[k];
+  const img = cx.getImageData(0, 0, w, h), d = img.data, n = w * h, L = new Float32Array(n), A = new Float32Array(n), P = new Float32Array(n), PL = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const a = d[4 * i + 3] / 255; A[i] = a; L[i] = (0.3 * d[4 * i] + 0.59 * d[4 * i + 1] + 0.11 * d[4 * i + 2]) * a + 205 * (1 - a);
+    const pa = tg[4 * i + 3] / 255; P[i] = pa; PL[i] = (0.3 * tg[4 * i] + 0.59 * tg[4 * i + 1] + 0.11 * tg[4 * i + 2]) * pa + 215 * (1 - pa); }
+  yield;
+  const blur = (inp, r) => {   // a box blur, rows then columns
+    const t = new Float32Array(n), o = new Float32Array(n), q = 2 * r + 1;
+    for (let y = 0; y < h; y++) { let s = 0; const row = y * w; for (let x = -r; x <= r; x++) s += inp[row + Math.min(w - 1, Math.max(0, x))];
+      for (let x = 0; x < w; x++) { t[row + x] = s / q; s += inp[row + Math.min(w - 1, x + r + 1)] - inp[row + Math.max(0, x - r)]; } }
+    for (let x = 0; x < w; x++) { let s = 0; for (let y = -r; y <= r; y++) s += t[Math.min(h - 1, Math.max(0, y)) * w + x];
+      for (let y = 0; y < h; y++) { o[y * w + x] = s / q; s += t[Math.min(h - 1, y + r + 1) * w + x] - t[Math.max(0, y - r) * w + x]; } }
+    return o;
+  };
+  const B1 = blur(L, 1), B = blur(L, 4); yield;   // a difference of two blurs: the ground's fine grain drops out, shapes keep their outlines
+  const Q1 = blur(PL, 1), Q = blur(PL, 3); yield;
+  const [X0, Y0] = [PLOT.top[0] * PEN.S, PLOT.top[1] * PEN.S];
+  for (let i = 0; i < n; i++) {
+    const ground = 0.32 * Math.min(1, Math.max(0, B[i] - B1[i] - 11) / 26) * A[i];   // the bare earth: a faint grain of cracks and tufts
+    const thing = Math.min(1, Math.max(0, Q[i] - Q1[i] - 3) / 16 + Math.max(0, (150 - Q1[i]) / 150) * 0.25 * P[i]);   // a stump, a fence, the dead tree: a firmer outline, a touch of shading
+    const a = Math.min(1, ground + thing);
+    d[4 * i] = 78; d[4 * i + 1] = 68; d[4 * i + 2] = 56; d[4 * i + 3] = 255 * a;
+  }
+  cx.putImageData(img, 0, 0);
+  PEN.tiles[k] = c;
+  penSave(k, PEN.sig[k]);
+}
+function penUpdate() {   // after the real ground is baked: bake the pencil tiles, nearest first, a few milliseconds a frame
+  if (!GR.ready || !GDB.loaded || groundMissing() || GR.job || GR.queue.length) return;
+  const t = performance.now();
+  if (!PEN.job && t > PEN.checkAt) {
+    PEN.checkAt = t + 700;
+    for (const k of Object.keys(PEN.tiles)) if (G.s.tiles[k]) delete PEN.tiles[k];   // woken: the real ground has it now
+    const ks = pencilKeys().sort((p, q) => { const [a1, b1] = p.split(',').map(Number), [a2, b2] = q.split(',').map(Number); return Math.hypot(a1, b1) - Math.hypot(a2, b2); });
+    const k = ks.find(k => PEN.sig[k] !== penSig(k));
+    if (k) { const pieces = HEAL_LOOK[G.tileKind(k)] || [], wait = pieces.some(q => q.pic && (q.always || q.go) && !q.flat && !healPic(q.pic));   // the leftovers' pictures load as they are asked for
+      if (!wait) { PEN.sig[k] = penSig(k); PEN.job = penJob(k); PEN.jobKey = k; } }
+  }
+  while (PEN.job && performance.now() - t < 8) if (PEN.job.next().done) PEN.job = null;
+}
+function penSave(k, sig) {
+  const c = PEN.tiles[k]; if (!GDB.db || !c || !c.toBlob) return;
+  c.toBlob(b => { if (!b || PEN.sig[k] !== sig) return; try { GDB.db.transaction('tiles', 'readwrite').objectStore('tiles').put({ sig, blob: b }, 'pen:' + k); } catch (e) {} }, 'image/png');
+}
+function paperPattern() {   // old paper: a warm cream with a soft mottle and a few fibres (fixed, from the ground noise)
+  if (PEN.paper || !GR.ready) return PEN.paper;
+  const N = 256, c = Object.assign(document.createElement('canvas'), { width: N, height: N }), x = c.getContext('2d'), img = x.createImageData(N, N), d = img.data;
+  for (let y = 0; y < N; y++) for (let i = 0; i < N; i++) { const m = gNoise(i, y) - 0.5, f = gNoise(i * 3 + 40, y + 90) - 0.5, o = 4 * (y * N + i);   // noise wraps every 256, so the tile repeats seamlessly
+    d[o] = 226 + 7 * m + 5 * f; d[o + 1] = 216 + 7 * m + 5 * f; d[o + 2] = 190 + 6 * m + 4 * f; d[o + 3] = 255; }
+  x.putImageData(img, 0, 0); PEN.paper = ctx.createPattern(c, 'repeat'); return PEN.paper;
+}
+function washCanvas() {   // the pale wash on the next patch: a watercolour blot with a ragged edge, earthy with a breath of green
+  if (PEN.wash || !GR.ready) return PEN.wash;
+  const S = PEN.S, w = Math.round(PLOT.w * S), h = Math.round(PLOT.h * S), c = Object.assign(document.createElement('canvas'), { width: w, height: h }), x = c.getContext('2d'), img = x.createImageData(w, h), d = img.data;
+  const [px0, py0] = PLOT.top, a = PLOT.right[0] - px0, b = PLOT.left[0] - px0, cc = PLOT.right[1] - py0, dd = PLOT.left[1] - py0, det = a * dd - b * cc;
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+    const qx = i / S - px0, qy = j / S - py0, u = (qx * dd - b * qy) / det, v = (a * qy - cc * qx) / det; if (u < 0 || u > 1 || v < 0 || v > 1) continue;
+    const nA = gNoise(i / 3, j / 3), nB = gNoise(i / 7 + 50, j / 7 + 20), e = Math.min(u, 1 - u, v, 1 - v) + 0.12 * (nA - 0.5), al = sstep(0.02, 0.2, e) * (0.75 + 0.25 * nB);
+    const g = sstep(0.4, 0.7, nB), o = 4 * (j * w + i);
+    d[o] = 196 - 40 * g; d[o + 1] = 170 - 6 * g; d[o + 2] = 120 - 20 * g; d[o + 3] = 255 * 0.32 * al;
+  }
+  x.putImageData(img, 0, 0); PEN.wash = c; return c;
+}
+function drawPaper(ph) {   // under everything: the paper the valley is drawn on (screen space: the grain stays the same at any zoom)
+  const pat = paperPattern(); ctx.fillStyle = pat || 'rgb(226,216,190)'; ctx.fillRect(0, 0, W, H);
+  const night = 1 - ph.light; if (night > 0.02) { ctx.fillStyle = `rgba(36,34,44,${0.38 * night})`; ctx.fillRect(0, 0, W, H); }   // dusk: the paper dims before the moonlight turns it blue, so it never outshines the lit garden
+  if (ph.warm > 0) { ctx.fillStyle = `rgba(214,150,90,${0.12 * ph.warm})`; ctx.fillRect(0, 0, W, H); }
+}
+function drawPencilValley() {
+  const nx = nextPatch(), ks = pencilKeys().sort((a, b) => depthOf(0, 0, a) - depthOf(0, 0, b));
+  for (const k of ks) {
+    const [ox, oy] = tileOrigin(k); if (offScreen(ox + PLOT.w / 2, oy + PLOT.h / 2, PLOT.w / 2, PLOT.h / 2)) continue;
+    if (k === nx) { const wc = washCanvas(); if (wc) ctx.drawImage(wc, ox, oy, PLOT.w, PLOT.h); }
+    const c = PEN.tiles[k]; if (c) { ctx.save(); ctx.globalAlpha = k === nx ? 0.85 : 0.62; ctx.drawImage(c, ox, oy, PLOT.w, PLOT.h); ctx.restore(); }
+  }
+}
+function drawPaperEdge() {   // screen space: the paper darkens a little toward the edges of the phone, like an old page
+  const g = ctx.createRadialGradient(W / 2, H * 0.45, Math.min(W, H) * 0.35, W / 2, H * 0.45, Math.hypot(W, H) * 0.62);
+  g.addColorStop(0, 'rgba(120,96,64,0)'); g.addColorStop(1, 'rgba(120,96,64,0.22)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+// ---------- the little oak shows the green (v87: fresh-eyes review 4; notes 66, 67) ----------
+// No meter sits on the screen. Whenever the yard earns green, a little sprig of oak leaves appears beside the oak for a few
+// seconds: one new leaf pops on, the leaves still to come are empty buds, and a full sprig means the yard moves on to its
+// next stage. Tap the oak (or its pot) to see the sprig again. Grown woodland gets a full sprig with an acorn.
+const SPRIG = { t: -1e9, from: 0, to: 0 };
+function sprigCount(g) {   // [leaves out, buds in all] for the stage the yard is in
+  const S = C.landStages; let i = 0; for (let j = 0; j < S.length; j++) if (g >= S[j].at) i = j;
+  if (i >= S.length - 1) return [14, 14, true];
+  const span = S[i + 1].at - S[i].at; return [g - S[i].at, span, false];
+}
+function showSprig(prev) { const g = G.s.tiles['0,0'].green; SPRIG.from = prev == null ? g : prev; SPRIG.to = g; SPRIG.t = performance.now(); liveUntil = Math.max(liveUntil, performance.now() + 6500); }
+function drawSprig(now) {
+  const t = (performance.now() - SPRIG.t) / 1000; if (t < 0 || t > 6) return;
+  const a = Math.min(1, t / 0.4, (6 - t) / 0.9); if (a <= 0) return;
+  const p = PROPS.find(q => q.name === 'sapling'); if (!p) return; const [wx, wy] = toWorld(p.gx, p.gy);
+  const ok = taskProg('sapling') >= 1 && oakPic(), oh = ok ? ok[1] : taskProg('sapling') >= 1 ? 90 : 60, odx = ok ? ok[2] : 0;   // on a scrap of paper just above the oak's crown
+  let sx = (wx + odx - cam.x) * cam.z + W / 2, sy = (wy - oh * 0.95 - cam.y) * cam.z + H / 2 - 44;
+  if (sx < -80 || sx > W + 80 || sy < -60 || sy > H + 60) return;
+  sx = Math.min(W - 70, Math.max(70, sx)); sy = Math.min(H - 150, Math.max(110, sy));
+  const [n1, N, full] = sprigCount(SPRIG.to), [n0] = sprigCount(SPRIG.from), fresh = SPRIG.to > SPRIG.from && n1 > 0 && n0 < n1 ? Math.max(0, n0) : n1;   // leaves from `fresh` on pop on one after another
+  ctx.save(); ctx.globalAlpha = a; ctx.translate(sx, sy); ctx.lineCap = 'round';
+  ctx.save(); ctx.shadowColor = 'rgba(40,28,16,0.35)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2; ctx.fillStyle = '#efe4c8';   // the paper scrap (parchment, like the title label)
+  ctx.beginPath(); const pw = 70, ph2 = 40; for (let i = 0; i <= 24; i++) { const q = i / 24 * Math.PI * 2, r = 1 + 0.035 * Math.sin(i * 5.3); ctx.lineTo(Math.cos(q) * pw * r, Math.sin(q) * ph2 * r); } ctx.closePath(); ctx.fill(); ctx.restore();
+  ctx.strokeStyle = 'rgba(120,90,50,0.35)'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.translate(-50, 8);
+  // the twig: a gentle curve up and to the right
+  const len = 100, P = f => [len * f, -len * 0.16 * f - 9 * Math.sin(f * Math.PI)];
+  ctx.strokeStyle = INK; ctx.lineWidth = 4.2; ctx.beginPath(); for (let f = 0; f <= 1.001; f += 0.05) { const [x, y] = P(f); f ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
+  ctx.strokeStyle = '#7a5a3a'; ctx.lineWidth = 2.4; ctx.stroke();
+  for (let i = 0; i < N; i++) {
+    const f = 0.1 + 0.88 * (i + 0.5) / N, [x, y] = P(f), [x2, y2] = P(f + 0.01), th = Math.atan2(y2 - y, x2 - x), side = i % 2 ? 1 : -1, phi = th + side * 1.05;   // alternate leaves, up and down the twig
+    const lx = x, ly = y;
+    ctx.save(); ctx.translate(lx, ly); ctx.rotate(phi - Math.PI / 2);
+    if (i < n1) {   // a leaf (the newest pop on in turn, with a little bounce)
+      const d = i >= fresh ? t - 0.5 - 0.35 * (i - fresh) : 9; if (d < 0) { ctx.restore(); drawBud(lx, ly); continue; }
+      const k = d > 0.5 ? 1 : 0.4 + 0.6 * Math.sin(Math.min(1, d / 0.5) * Math.PI * 0.75) / Math.sin(Math.PI * 0.75);
+      ctx.scale(k, k); oakLeaf(i);
+    } else { ctx.restore(); drawBud(lx, ly); continue; }
+    ctx.restore();
+  }
+  if (full) { const [x, y] = P(1); ctx.fillStyle = '#9a6a38'; ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(x + 3, y + 7, 4.2, 5.4, 0, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#6a4a2a'; ctx.beginPath(); ctx.ellipse(x + 3, y + 2.6, 5, 2.6, 0, 0, 7); ctx.fill(); ctx.stroke(); }
+  ctx.restore();
+}
+function drawBud(x, y) { ctx.fillStyle = 'rgba(184,154,106,0.9)'; ctx.strokeStyle = 'rgba(42,21,16,0.7)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x, y - 1, 2.6, 3.4, 0.3, 0, 7); ctx.fill(); ctx.stroke(); }
+function oakLeaf(i) {   // a small lobed oak leaf, pointing along +y from its stalk
+  const L = 17, Wd = 6.5; ctx.beginPath(); ctx.moveTo(0, 0);
+  for (let s = -1; s <= 1; s += 2) { ctx.moveTo(0, 2); for (let j = 1; j <= 4; j++) { const yy = 2 + (L - 2) * j / 4, ww = Wd * Math.sin(Math.PI * j / 4.6) + 1; ctx.quadraticCurveTo(s * (ww + 2.2), yy - (L / 8), s * (ww * 0.55), yy); } ctx.lineTo(0, L + 1); }
+  ctx.fillStyle = i % 3 === 2 ? '#7d9a3e' : i % 3 === 1 ? '#6a8a34' : '#5f7f2e'; ctx.fill(); ctx.strokeStyle = 'rgba(42,21,16,0.75)'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.strokeStyle = 'rgba(42,40,16,0.45)'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, L - 1); ctx.stroke();
+}
+// "The valley", a page in the Journal: a small map of every patch, coloured by how green it is; land not yet woken in pencil.
+function valleyMap() {
+  const T = 34, Hh = 20, n = VALLEY, cw = (2 * n + 1) * T * 2 + 20, ch = (2 * n + 1) * Hh * 2 + 30, c = Object.assign(document.createElement('canvas'), { width: cw * 2, height: ch * 2 }), x = c.getContext('2d');
+  x.scale(2, 2); const cx0 = cw / 2, cy0 = 14, col = { barren: '#cdb48a', green: '#b9c486', meadow: '#8fae5c', wood: '#5f8a45' };
+  const at = (tx, ty) => [cx0 + (tx - ty) * T, cy0 + (tx + ty + 2 * n) * Hh];
+  for (let s = 0; s <= 4 * n; s++) for (let ty = -n; ty <= n; ty++) { const tx = s - 2 * n - ty; if (Math.abs(tx) > n) continue;
+    const k = `${tx},${ty}`, tl = G.s.tiles[k], [px, py] = at(tx, ty);
+    const dia = () => { x.beginPath(); x.moveTo(px, py); x.lineTo(px + T, py + Hh); x.lineTo(px, py + 2 * Hh); x.lineTo(px - T, py + Hh); x.closePath(); }; dia();
+    if (tl) { x.fillStyle = col[G.landStage(k).key] || col.barren; x.fill(); x.strokeStyle = 'rgba(60,44,30,0.6)'; x.lineWidth = 1; x.stroke(); }
+    else { x.save(); x.clip(); x.strokeStyle = 'rgba(78,68,56,0.16)'; x.lineWidth = 0.7; for (let h = -2 * T; h < 2 * T; h += 6) { x.beginPath(); x.moveTo(px + h, py); x.lineTo(px + h + 2 * Hh, py + 2 * Hh); x.stroke(); } x.restore();
+      dia(); x.setLineDash([3, 3]); x.strokeStyle = 'rgba(78,68,56,0.45)'; x.stroke(); x.setLineDash([]); }
+    if (k === nextPatch() && !tl) { dia(); x.fillStyle = 'rgba(196,170,120,0.35)'; x.fill(); }
+    if (k === '0,0') { x.fillStyle = '#7a5236'; x.strokeStyle = INK; x.lineWidth = 1; x.beginPath(); x.moveTo(px - 6, py + Hh + 4); x.lineTo(px - 6, py + Hh - 3); x.lineTo(px, py + Hh - 9); x.lineTo(px + 6, py + Hh - 3); x.lineTo(px + 6, py + Hh + 4); x.closePath(); x.fill(); x.stroke(); }
+    if (MAP[k] && WET.has(MAP[k]) && tl && G.flowing && G.flowing(k)) { x.strokeStyle = '#6f9ab0'; x.lineWidth = 2; x.beginPath(); x.moveTo(px - T * 0.6, py + Hh * 1.4); x.lineTo(px + T * 0.6, py + Hh * 0.6); x.stroke(); }
+  }
+  return c.toDataURL();
+}
+function openValley() {
+  const chip = (c, t) => `<span style="white-space:nowrap"><i style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${c};vertical-align:-1px;margin-right:4px;border:1px solid rgba(60,44,30,.4)"></i>${t}</span>`;
+  openSheet('valley', `<p style="margin:0 0 4px"><button class="act quiet" data-a="journal">‹ Journal</button></p><h2>The valley<small>${Object.keys(G.s.tiles).length} of ${(2 * VALLEY + 1) ** 2} patches awake</small></h2>
+    <p style="text-align:center;margin:6px 0"><img src="${valleyMap()}" alt="A little map of the valley" style="width:100%;max-width:360px"></p>
+    <p class="meta" style="text-align:center;line-height:1.9">${chip('#cdb48a', 'bare')} · ${chip('#b9c486', 'first green')} · ${chip('#8fae5c', 'meadow')} · ${chip('#5f8a45', 'woodland')}</p>`);
 }
 // ---------- night light layer (#newground) ----------
 // Darkness is its own layer. Every light cuts a soft hole in it, so the ground and walls near a lamp are really lit, and far
@@ -3449,14 +3652,17 @@ function makeItems(items, now) {
 const ROLL_AT = [0.24, 0.88], SHELF_AT = [0.32, 0.84];   // at home: where the seed balls are rolled, and the nursery shelf (Hazel's growing corner, near the oak)
 const HEAL_LOOK = {
   meadow: [
-    { s:'rubbish', go:1, pic:'kit-leftovers-01', at:[0.30, 0.42], h:52 }, { s:'rubbish', go:1, pic:'kit-leftovers-11', at:[0.52, 0.30], h:44 },
-    { s:'rubbish', go:1, pic:'kit-leftovers-04', at:[0.44, 0.62], h:44, flat:1 }, { s:'rubbish', go:1, pic:'kit-leftovers-03', at:[0.68, 0.50], h:34 },
-    { s:'rubbish', go:1, pic:'kit-leftovers-06', at:[0.22, 0.70], h:47 }, { s:'rubbish', go:1, pic:'kit-leftovers-12', at:[0.62, 0.78], h:44 },
+    // v87 (note 70): a real rubbish heap, the loggers' junk piled on a mound of spoil in the middle; Hazel picks it off piece by piece, then levels the mound
+    { s:'rubbish', go:1, pic:'kit-leftovers-03', at:[0.62, 0.40], h:30 }, { s:'rubbish', go:1, pic:'kit-leftovers-04', at:[0.36, 0.56], h:40, flat:1 },
+    { s:'rubbish', go:1, pic:'kit-leftovers-11', at:[0.50, 0.40], h:40 }, { s:'rubbish', go:1, pic:'kit-leftovers-12', at:[0.43, 0.47], h:44 },
+    { s:'rubbish', go:1, pic:'kit-leftovers-06', at:[0.53, 0.53], h:40 }, { s:'rubbish', go:1, pic:'kit-leftovers-01', at:[0.47, 0.44], h:48 },
+    { s:'rubbish', go:1, pic:'kit-marks-06', at:[0.48, 0.48], h:92, flat:1, heap:1 },
     { s:'fence', go:1, draw:'oldfence', at:[0.16, 0.22], h:58 }, { s:'fence', go:1, draw:'oldfence', at:[0.34, 0.17], h:54 },
     { s:'fence', go:1, draw:'oldfence', at:[0.54, 0.14], h:58, broken:1 }, { s:'fence', go:1, draw:'oldfence', at:[0.74, 0.16], h:52 },
     { s:'fence', pic:'fence-fallen', at:[0.85, 0.66], h:60 },   // the good posts, stacked to use again
-    ...[[0.40, 0.46], [0.57, 0.57], [0.30, 0.60], [0.50, 0.36], [0.68, 0.68]].flatMap(at => [{ s:'fork', pic:'g-st-patch-07', at, h:94, flat:1, fade:1 }]),
-    ...[[0.40, 0.46], [0.57, 0.57], [0.30, 0.60], [0.50, 0.36], [0.68, 0.68]].flatMap(at => [{ s:'water', draw:'wet', at, flat:1, fade:1 }]),
+    // v87 (note 75): forked ground is turned, raked earth; watering darkens those same patches with a little shine of water, no grey blobs
+    ...[[0.40, 0.46], [0.57, 0.57], [0.30, 0.60], [0.50, 0.36], [0.68, 0.68]].flatMap(at => [{ s:'fork', pic:'kit-marks-05', at, h:50, flat:1, fade:1 }]),
+    ...[[0.40, 0.46], [0.57, 0.57], [0.30, 0.60], [0.50, 0.36], [0.68, 0.68]].flatMap((at, n) => [{ s:'water', draw:'wet', at, flat:1, fade:1, n }]),
     { s:'roll', home:1, draw:'balls', at:ROLL_AT, until:'toss' },
     ...[[0.36, 0.50], [0.52, 0.62], [0.27, 0.64], [0.47, 0.37], [0.63, 0.72], [0.74, 0.42]].flatMap((at, i) => [{ s:'toss', draw:'dots', at, flat:1, gone:'sprout' + (i + 1) }, { ev:'sprout' + (i + 1), draw:'sprout', at, n:i }]),
     { s:'logpile', pic:'kit-wood-13', at:[0.84, 0.74], h:54 },
@@ -3525,6 +3731,12 @@ const HEAL_LOOK = {
 const HEAL_IDX = {};
 for (const [kind, K] of Object.entries(C.heal.kinds)) { const st = {}, ev = {}; K.steps.forEach((s, i) => { st[s.id] = i; (s.later || []).forEach((l, j) => { ev[l.ev] = [i, j]; }); }); HEAL_IDX[kind] = { st, ev }; }
 const HP = {};   // extra painted pieces, loaded when first needed (never blocks the start)
+let WETM = null;
+function wetMarks() {   // the forked-earth picture, darkened as if soaked (made once)
+  if (WETM) return WETM; const im = healPic('kit-marks-05'); if (!im) return null;
+  const c = Object.assign(document.createElement('canvas'), { width: im.width, height: im.height }), x = c.getContext('2d'); x.drawImage(im, 0, 0);
+  x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(52,34,20,0.42)'; x.fillRect(0, 0, c.width, c.height); return (WETM = c);
+}
 function healPic(name) { if (IM[name] && IM[name].width) return IM[name]; const a = art(name); if (a) return a; if (!name.startsWith('kit-')) return null;
   if (!HP[name]) { const im = new Image(); im.src = `sprites/kit/${name.slice(4)}.webp`; HP[name] = im; } return HP[name].complete && HP[name].width ? HP[name] : null; }
 function healProg(k, s) { const i = HEAL_IDX[G.s.tiles[k].kind].st[s]; if (i == null) return 0; if (G.healStepDone(k, i)) return 1; return taskProg(`heal:${k}:${i}`); }
@@ -3569,7 +3781,9 @@ const HEAL_DRAW = {
       if (i) ctx.quadraticCurveTo((ex + lx) / 2, (ey + ly) / 2 + 9, ex, ey); else ctx.moveTo(ex, ey); lx = ex; ly = ey; }); ctx.stroke(); }
     ctx.restore();
   },
-  wet(x, y) { ctx.save(); ctx.translate(x, y); ctx.scale(1, 0.5); const g = ctx.createRadialGradient(0, 0, 4, 0, 0, 52); g.addColorStop(0, 'rgba(40,26,16,0.34)'); g.addColorStop(0.7, 'rgba(40,26,16,0.16)'); g.addColorStop(1, 'rgba(40,26,16,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 52, 0, 7); ctx.fill(); ctx.restore(); },
+  wet(x, y, a, q) {   // the forked patch, soaked: darker earth with a glint or two of standing water (v87)
+    const im = wetMarks(); if (!im) return; const h = 50, w = h * im.width / im.height; ctx.drawImage(im, x - w / 2, y - h / 2, w, h);
+    const n = q.n || 0; ctx.fillStyle = 'rgba(214,226,228,0.55)'; for (let i = 0; i < 3; i++) { const px = x + (rnd(n * 7 + i) - 0.5) * w * 0.6, py = y + (rnd(n * 7 + i + 3) - 0.5) * h * 0.45; ctx.beginPath(); ctx.ellipse(px, py, 3.5 + 2 * rnd(n + i), 1.2, 0, 0, 7); ctx.fill(); } },
   balls(x, y) { for (let i = 0; i < 9; i++) { const r = rnd(i + 900), t = rnd(i + 910) * 6.3; pebble(x + Math.cos(t) * r * 12, y + Math.sin(t) * r * 5 - (i > 6 ? 4 : 0), 3.2, i % 3 ? '#7a5a3e' : '#8a6a48', i); } },
   dots(x, y, a, q) { const s = (q.n || 0) + q.local[0] * 50; for (let i = 0; i < 9; i++) { const r = rnd(s + i), t = rnd(s + i + 40) * 6.3; pebble(x + Math.cos(t) * r * 26, y + Math.sin(t) * r * 10, 3, i % 2 ? '#6e4f34' : '#7d5c3e', i); } },
   sprout(x, y, a, q) { const s = (q.n || 0) * 7 + q.local[1] * 30; for (let i = 0; i < 6; i++) { const r = rnd(s + i), t = rnd(s + i + 40) * 6.3, px = x + Math.cos(t) * r * 22, py = y + Math.sin(t) * r * 9;
@@ -4004,16 +4218,13 @@ function frame(now) {
   updateVisitor(dt); updateRabbit(dt); updatePlatypus(dt);
   for (const p of folkOnLand) p.update(dt);
   spawnParticles(dt, ph); updateParticles(dt);
-  if (NEWGROUND) groundUpdate();
+  if (NEWGROUND) { groundUpdate(); penUpdate(); }
   if (roomOn) { drawRoom(now, dt); requestAnimationFrame(frame); return; }   // the garden is hidden behind the room
 
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  ctx.fillStyle = `rgb(${Math.round(28 + 30*ph.light + 40*ph.warm)},${Math.round(36 + 34*ph.light + 10*ph.warm)},${Math.round(24 + 30*ph.light)})`;
-  ctx.fillRect(0, 0, W, H);
+  drawPaper(ph);   // v87: the valley is drawn on paper (the night light layer turns it moonlit blue)
   ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(cam.z, cam.z); ctx.translate(-cam.x, -cam.y);
-  const mist = ctx.createRadialGradient(PLOT.w/2, PLOT.h/2, 100, PLOT.w/2, PLOT.h/2, 1400);
-  mist.addColorStop(0, `rgba(190,200,170,${0.25 * ph.light + 0.06})`); mist.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = mist; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000);
+  if (NEWGROUND) drawPencilValley();
 
   // ground tiles, far to near
   const tiles = Object.entries(G.s.tiles).sort((a, b) => depthOf(0, 0, a[0]) - depthOf(0, 0, b[0]));
@@ -4081,6 +4292,7 @@ function frame(now) {
   if (ph.warm > 0) { ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = `rgba(255,170,90,${0.28 * ph.warm})`; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); ctx.restore(); }
   ctx.restore();
 
+  drawSprig(now);   // v87: the little oak's sprig of leaves, when green is earned or the oak is tapped
   if (NEWGROUND) drawMorningMist(dt, now);
   // screen-space overlays: "busy" tags over working gnomes, and tap ripples
   drawNameTags();
@@ -4142,15 +4354,18 @@ if (window.visualViewport) { visualViewport.addEventListener('scroll', pin); vis
 document.addEventListener('touchend', () => setTimeout(pin, 50), { passive: true });
 cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
 function pinchInfo() { const [a, b] = [...ptrs.values()]; return { d: Math.hypot(a.x - b.x, a.y - b.y), cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, z: cam.z }; }
-function mapMinZ() {   // far enough out to see every tile that has appeared so far (once the map has grown past the home tile)
+function mapBounds() {   // every tile that has appeared so far, plus a ring of the pencil valley round them (v87: you can look out over the paper)
   let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
   for (const k of Object.keys(G.s.tiles)) { const [ox, oy] = tileOrigin(k); x0 = Math.min(x0, ox); y0 = Math.min(y0, oy); x1 = Math.max(x1, ox + PLOT.w); y1 = Math.max(y1, oy + PLOT.h); }
+  const mx = PLOT.w * 0.45, my = PLOT.h * 0.45; return [x0 - mx, y0 - my, x1 + mx, y1 + my];
+}
+function mapMinZ() {   // far enough out to see every tile that has appeared so far and a little of the valley round it
+  const [x0, y0, x1, y1] = mapBounds();
   return Math.min(minZ, Math.min(W / (x1 - x0 + 80), H / (y1 - y0 + 160)) * 0.95);
 }
 function clampZ(z) { return Math.max(mapMinZ(), Math.min(maxZ, z)); }
 function clampCam() {
-  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
-  for (const k of Object.keys(G.s.tiles)) { const [ox, oy] = tileOrigin(k); x0 = Math.min(x0, ox); y0 = Math.min(y0, oy); x1 = Math.max(x1, ox + PLOT.w); y1 = Math.max(y1, oy + PLOT.h); }
+  const [x0, y0, x1, y1] = mapBounds();
   cam.x = Math.max(x0 - 100, Math.min(x1 + 100, cam.x)); cam.y = Math.max(y0 - 150, Math.min(y1 + 100, cam.y));
 }
 cv.addEventListener('wheel', () => { GUIDE.pinch += 0.07; });   // a mouse wheel counts as a pinch for the guided minute
@@ -4202,7 +4417,7 @@ function tapAt(cx, cy, wx, wy) {
     let best = null, bd = 1e9;
     const pad = 14 / cam.z;   // a generous margin around each prop
     for (const p of PROPS) { if (p.gone && taskProg(p.gone) >= 1) continue; const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s, h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 4 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
-    if (best) { if (best.name === 'seedbed') { if (propAlpha(best) >= 1 && bedReady()) return openSeedbed(); const t = C.tasks.find(t => t.spot === 'clearing' && !(G.s.tasks[t.id] && G.s.tasks[t.id].done)); return openTasks(t ? t.id : ''); } if (best.name === 'shelter' && !wantsTap(best)) return openRoom(); if (best.name === 'sapling' && taskProg('sapling') < 1) return openPot(); if (best.name === 'barrel') { if (G.drawBarrel()) { const [bx, by] = toWorld(best.gx, best.gy); float(`+${C.barrel.give.water} ${C.resources.water.name}`, bx, by - 60); } return openBarrel(); } const task = C.tasks.find(t => t.spot === best.name && !t.retired); if (task) return openTasks(task.id); }
+    if (best) { if (best.name === 'seedbed') { if (propAlpha(best) >= 1 && bedReady()) return openSeedbed(); const t = C.tasks.find(t => t.spot === 'clearing' && !(G.s.tasks[t.id] && G.s.tasks[t.id].done)); return openTasks(t ? t.id : ''); } if (best.name === 'shelter' && !wantsTap(best)) return openRoom(); if (best.name === 'sapling') { showSprig(); if (taskProg('sapling') < 1 && G.taskView(G.taskDef('sapling')).show && !G.done('sapling')) return openPot(); return; }; if (best.name === 'barrel') { if (G.drawBarrel()) { const [bx, by] = toWorld(best.gx, best.gy); float(`+${C.barrel.give.water} ${C.resources.water.name}`, bx, by - 60); } return openBarrel(); } const task = C.tasks.find(t => t.spot === best.name && !t.retired); if (task) return openTasks(task.id); }
   } else if (f.tile === festTile() && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openFestGreen();
   else if (G.farmOn(f.tile) && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return openFarm(G.farmOn(f.tile));
   else if (G.s.tiles[f.tile] && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return G.s.tiles[f.tile].kind ? openPatch(f.tile) : openTasks('regrow:' + f.tile);
@@ -4400,6 +4615,7 @@ sheet.addEventListener('click', e => {
   if (a === 'tseason') { location.hash = id ? 'test&' + id : 'test'; return; }
   if (a === 'tfest') { closeSheet(); G.testFestival(b.dataset.n === '1'); return; }
   if (a === 'journal') return openJournal();
+  if (a === 'valley') return openValley();
   if (a === 'page') return openPage(id, true);
   if (a === 'beat') return openBeat(id, true);
   if (a === 'beatdone') { closeSheet(); if (id === 'mouseSock') gnomeSays('him', 'Have you seen my other sock?'); return; }
@@ -4596,7 +4812,7 @@ function journalFoot(v) {   // what you know about a creature's feeding, home an
 function openJournal() {
   const list = C.visitors.filter(v => C.friends.roster.includes(v.id) || G.met(v.id)), seen = list.filter(v => G.met(v.id)).length, regs = C.friends.roster.filter(id => G.isFriend(id)).length;   // round six: only the mouse, robin and rabbit for now (others come in month two)
   const nb = neighboursHtml();
-  let html = `<h2>Field journal<small>${seen} of ${list.length} met${regs ? ` · ${regs} friend${regs > 1 ? 's' : ''}` : ''}</small></h2>${diaryHtml()}${questHtml()}${G.s.festival.stage !== 'waiting' ? `<p><button class="act quiet" data-a="festgreen">🎉 ${C.festival.name}</button></p>` : ''}${ourStoryHtml()}${G.s.flags.firstpick ? `<h3>Little makes</h3><p>${makesLine()} little makes.</p>` : ''}${nb || '<h3>Creatures</h3>'}<p>Tap an animal in the garden to say hello. Once you have met one, its favourite food shows on the feeding dish. Tap a page to read it.</p><div class="jgrid">`;
+  let html = `<h2>Field journal<small>${seen} of ${list.length} met${regs ? ` · ${regs} friend${regs > 1 ? 's' : ''}` : ''}</small></h2><p><button class="act quiet" data-a="valley">The valley</button></p>${diaryHtml()}${questHtml()}${G.s.festival.stage !== 'waiting' ? `<p><button class="act quiet" data-a="festgreen">🎉 ${C.festival.name}</button></p>` : ''}${ourStoryHtml()}${G.s.flags.firstpick ? `<h3>Little makes</h3><p>${makesLine()} little makes.</p>` : ''}${nb || '<h3>Creatures</h3>'}<p>Tap an animal in the garden to say hello. Once you have met one, its favourite food shows on the feeding dish. Tap a page to read it.</p><div class="jgrid">`;
   for (const v of list) { const m = G.met(v.id), fr = C.friends[v.id] && G.isFriend(v.id); html += `<button class="jcard${m ? '' : ' unseen'}" data-a="${m ? 'entry' : ''}" data-id="${v.id}">${portraitHtml(v)}<b>${m ? (fr ? C.friends[v.id].name : v.name) : '?'}</b>${G.hasNest(v.id) ? '<i>lives here</i>' : fr ? '<i>a friend</i>' : G.isRegular(v.id) ? '<i>regular</i>' : ''}</button>`; }
   html += `</div>`;
   const nf = Object.keys(G.s.secrets.found).length;
@@ -4964,6 +5180,7 @@ document.addEventListener('click', e => { const b = e.target.closest && e.target
 $('bPack').onclick = openPack; $('guideSkip').onclick = () => guideTo(4);
 $('guide').addEventListener('click', e => { const b = e.target.closest('button[data-a="guide"]'); if (!b) return; G.s.flags.guide = b.dataset.id === 'skip' ? 4 : 1; $('guideSkip').style.display = ''; guideTo(G.s.flags.guide); });   // v87: the hello's own buttons
 $('bTasks').onclick = () => { hidePointer('bTasks'); if (guideStep() === 4) guideTo(9); openTasks(); }; $('bMagic').onclick = openMagic; $('bJournal').onclick = openJournal;
+G.onChange((kind, data) => { if (kind === 'green') showSprig(performance.now() - SPRIG.t < 5000 ? Math.min(SPRIG.from, data) : data); });   // v87: a burst of green (a harvest, coming back after a while) shows all its new leaves
 G.onChange((kind, data) => { renderInv(kind === 'inv' && typeof data === 'string' ? data : null); renderHud(); if (kind === 'task' && data && data.done) { if (data.give) { const g = gnomes.find(g => g.who === data.who); if (g && g.screen && !g.inside) float(Object.entries(data.give).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(' '), g.screen.x, g.screen.y - g.screen.h * 0.6); else toast(`${C.names[data.who]} brought in ${Object.entries(data.give).map(([k, n]) => `${n} ${C.resources[k].name}`).join(' and ')}.`); } else toast('Finished: ' + lcName(G.taskDef(data.id).name) + '.'); } if (kind === 'event') toast(data.text); if (kind === 'movein') toast(data.note);
   if (kind === 'traveller' && data) { if (!sheetKind && windowFree() && G.s.flags.welcomed) { tookWindow(); openStory(data, 'arrived'); } else toast('A traveller has camped by the path.'); }   // v87: only if this visit has had no window yet
   if (kind === 'story') { if (!sheetKind && windowFree()) { tookWindow(); openStory(data.folk, data.kind); } else toast(`${cap(G.folkDef(data.folk).short)} has news. It is in the Journal.`); }
