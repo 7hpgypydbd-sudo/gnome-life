@@ -27,15 +27,15 @@ const ev = (kind, txt) => log.push(`${stamp()}  ${kind.padEnd(8)} ${txt}`);
 // watch pages/cards
 const seenCards = new Set();
 function drainCards() {
-  for (const c of G.s.pages.cards) {
+  for (const c of [...G.s.pages.cards]) {
+    if (c.k === 'page') { if (G.pageCanOpen(c, clock)) { const pg = G.pageDef(c.id); ev('PAGE', `${c.id} ${pg.title}`); G.seePage(c.id); } continue; }   // v87: one page a morning, about yesterday (index.html cardCheck)
     const key = JSON.stringify(c); if (seenCards.has(key)) continue; seenCards.add(key);
-    if (c.k === 'page') { const pg = G.pageDef(c.id); ev('PAGE', `${c.id} ${pg.title}`); G.seePage(c.id); }
-    else if (c.k === 'land') ev('LAND', `home yard -> ${c.key}`);
+    if (c.k === 'land') ev('LAND', `home yard -> ${c.key}`);
     else if (c.k === 'tland') ev('LAND', `${c.tile} (${G.s.tiles[c.tile].kind}) -> ${c.key}`);
     else if (c.k === 'makes') ev('MAKES', `Hazel's list: ${c.patch} ${c.stage}`);
     else if (c.k === 'beat') ev('ANIMAL', `${c.id}`);
   }
-  G.s.pages.cards = [];
+  G.s.pages.cards = G.s.pages.cards.filter(c => c.k === 'page');
 }
 const doneSeen = new Set();
 let lastFolk = 0, lastTrav = null, festStage = 'waiting', lastTiles = new Set(Object.keys(G.s.tiles)), gardenWas = false, magicWas = 1;
