@@ -103,8 +103,8 @@ window.CONTENT = {
       doneNote:'Wendel found a spring between the roots of the old stump at the back of the yard, choked with stones and dead leaves. He has pulled them out, and clear water is trickling again, the first in this valley for a long time.' },
     { id:'clear',   name:'Clear the ground', short:'clearing the ground', spine:true, who:'her', act:'carry', spot:'clearing', cost:{}, give:{ twig:3, stone:3 }, mins:8, green:0, magic:1,
       blurb:'Old tins, broken pots and loggers\' rubbish everywhere. Hazel carries it all off, one piece at a time, and lays the good straight sticks on a stick pile by the house. Sticks make fences.' },
-    { id:'woodpile', name:'Gather the fallen sticks',    short:'gathering sticks', spine:true, who:'him', act:'gather', spot:'firewood', cost:{}, give:{ twig:2 }, mins:5, green:0, magic:1,
-      needs:['spring'], blurb:'Fallen branches lie all about the yard. Wendel gathers them up, odd sticks and all, and adds them to the stick pile by the house.' },
+    { id:'woodpile', name:'Gather sticks for the fence',    short:'gathering sticks', spine:true, who:'him', act:'gather', spot:'firewood', cost:{}, give:{ twig:2 }, mins:5, green:0, magic:1,
+      needs:['flag:rabbit'], blurb:'Fallen branches lie all about the yard. Wendel gathers them up, odd sticks and all, and adds them to the stick pile by the house, for the fence.' },   // round-seven (note 11): sticks are gathered when the fence needs them
     { id:'bed',     name:'Dig a seed bed', short:'digging the seed bed', spine:true, who:'her', act:'dig', spot:'clearing', cost:{ twig:2 },  mins:8, green:0, magic:1,
       needs:['clear'], blurb:'Now the ground is clear, the earth can be turned. Hazel digs it over row by row, until there is a patch of soft dark soil for the vegetables.' },
     { id:'bedwater', name:'Water the seed bed', short:'fetching water', stages:[[0.12, 'watering the seed bed']], spine:true, who:'either', act:'water', spot:'spring', cost:{}, mins:3, green:0, magic:1,
@@ -113,7 +113,7 @@ window.CONTENT = {
       blurb:'A flat stone dish on a stump. Put out seed or berries and see who comes. Some will come back.' },
     // the rabbit always comes for the first sprouts (game.js rabbitDue); only then is the fence offered
     { id:'fence', act:'build',   name:'Fence the seed bed', short:'fencing the bed', spine:true, who:'him', spot:'fence',       cost:{ twig:4 },           mins:10, green:0, magic:1,
-      needs:['bed', 'flag:rabbit'], blurb:'That rabbit helped itself to the sprouts. Wendel fetches sticks from the stick pile and weaves a low fence all round the bed, a piece at a time, with a little gate, and something put out for it instead. It is only hungry.' },
+      needs:['bed', 'woodpile'], blurb:'That rabbit helped itself to the sprouts. Wendel fetches sticks from the stick pile and weaves a low fence all round the bed, a piece at a time, with a little gate, and something put out for it instead. It is only hungry.' },
 
     // --- chapter two: putting down roots (from page 2.1, the first harvest). The roof first, then the bench, then the oak;
     // the small jobs come a couple at a time, in this order ---
@@ -131,7 +131,7 @@ window.CONTENT = {
       blurb:'Two tunics, one apron, a very small pair of socks. The sun can do the drying.' },
     // dug out in stages (index.html drawStump): the roots bared, rocked loose and tipped, chopped and carried to the woodpile, the hole filled
     { id:'stump', name:'Dig out the old stump', short:'digging round the roots', stages:[[0.3, 'rocking the stump loose'], [0.45, 'chopping firewood'], [0.68, 'carrying the firewood'], [0.88, 'filling in the hole']], spine:true, who:'either', act:'dig', spot:'lanternstump', cost:{}, give:{ twig:3 }, mins:12, green:0,
-      needs:['woodpile'], blurb:'An old loggers\' stump stands in the middle of the yard, dry as a bone. Whoever is free digs round its roots, rocks it loose, chops it into firewood and stacks it by the barrel, then fills in the hole. Their first proper firewood.',
+      needs:['spring'], blurb:'An old loggers\' stump stands in the middle of the yard, dry as a bone. Whoever is free digs round its roots, rocks it loose, chops it into firewood and stacks it by the barrel, then fills in the hole. Their first proper firewood.',
       doneNote:'The old stump is gone, chopped and stacked by the barrel. Tonight there is proper firewood.' },
     { id:'rainbarrel', name:'Scrub the rain barrel', short:'scrubbing the barrel',   who:'either', spot:'barrel',        cost:{ twig:2, stone:1 },  mins:20,  green:0, needs:['roof'],   // after the roof: it catches the rain off it (Bryce: why have a barrel at all?)
       blurb:'The old barrel by the house is green with slime. Scrubbed clean, it catches the rain off the roof: a can of water every so often without the walk to the spring. Whoever is free will do it.' },
@@ -1076,10 +1076,10 @@ window.CONTENT = {
         `Wendel looked at it all for a long while. "Well," he said gently. "It's got a lovely view."`,
         `"It's got us now, too," said Hazel. She set the little oak down by the biggest stump, and before dark the wagon was a little shelter under its roots. Not much of a house. But theirs.`,
         `This hill had a heart once, the old spirit of the wood. When the loggers came it went quiet, deep under the stumps. That evening, as two small gnomes made camp, it stirred, just enough to notice them. That heart is you.` ] },
-      { id:'1.3', ch:1, when:'done:woodpile', title:'Water, and a fire', button:'What a first day', text:[
+      { id:'1.3', ch:1, when:'done:stump', title:'Water, and a fire', button:'What a first day', text:[
         `Their first whole day on the hill began with water, because nothing lives without it. Wendel walked the clearing with a forked twig held out in front of him, eyes half shut, the way his grandfather had taught him, and Hazel walked softly behind, because dowsing wants quiet.`,
         `Between the roots of an old stump, the twig gave a twitch. "There," he whispered. The spring was choked with stones and dead leaves, and he pulled them out one by one until a thread of clear water came up, cold as a secret. Deep under the hill, something old turned over in its sleep. That was you.`,
-        `By evening there was a woodpile too, every fallen stick in the clearing stacked bark side up, the way his grandfather used to. Hazel quietly laid the fire, because she knew how much he had been looking forward to it. A beetle came out of the woodpile to see what the fuss was about. Wendel bowed to him and named him Gerald.`,
+        `By evening there was a woodpile too, the old stump chopped into rounds and stacked bark side up, the way his grandfather used to. Hazel quietly laid the fire, because she knew how much he had been looking forward to it. A beetle came out of the woodpile to see what the fuss was about. Wendel bowed to him and named him Gerald.`,
         `"I had a speech," said Wendel, patting his pockets. "I think it's with my pipe." Hazel took the pipe out of her apron, where it had been since the bottom of the hill. He looked at the fire, and the first stars, and at her. "We're here," he said. That was the whole speech, and Hazel said it was the best one she had ever heard.` ] },
       { id:'1.5', ch:1, when:'flag:rabbit', pic:'rabbit', title:'Rows, wiggles and a thief', button:`Fair's fair`, text:[
         `On planting day Hazel opened the seed tin her mother had given her: carrots, beans, a pinch of lettuce, and one enormous pumpkin seed. Wendel put that one in his top pocket. "For something special," he said.`,

@@ -145,6 +145,13 @@ if (window.SANDBOX) {
   .meter i { background: rgba(51,37,26,.12); }
   .pack { gap:10px; } .pack div { background: rgba(255,250,235,.4); border:1px solid rgba(51,37,26,.13); border-radius:6px; }
   .pack b { font-family: var(--body); font-weight:600; font-size:22px; }
+  /* round-seven (note 1): the store reads as shelves: each row of three stands on a plank, the count is a small tag, no boxes */
+  .pack { gap:0; padding:4px 6px 0; border-radius:8px; background-color:rgba(60,42,24,.10); background-image:repeating-linear-gradient(to bottom, transparent 0, transparent 82px, #8a6a44 82px, #6e5034 90px, rgba(40,26,14,.25) 90px, transparent 96px); background-size:100% 96px; }
+  .pack div, .pack div.zero { background:none; border:0; border-radius:0; height:82px; box-sizing:border-box; padding:6px 4px 7px; position:relative; font-size:12px; line-height:1.15; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; margin-bottom:14px; }
+  .pack div.zero { opacity:.4; filter:grayscale(.5); }
+  .pack img { width:42px; height:42px; margin:0 auto 1px; }
+  .pack b { position:absolute; top:6px; right:14px; min-width:22px; padding:0 5px; border-radius:11px; background:#f3e9d2; border:1px solid rgba(51,37,26,.35); font-size:14px; line-height:20px; text-align:center; }
+  .pack small.full { position:absolute; top:28px; right:6px; font-size:10px; }
   .jcard { background: rgba(255,250,235,.45); border:1px solid rgba(51,37,26,.13); border-radius:6px; box-shadow:none; } .jcard b { font-family: var(--fell); font-weight:400; font-size:15px; }
   .por { border-color: var(--gold); background: radial-gradient(circle at 50% 40%, #fbf4e2, #e8d8b4); }
   .jpage .lore { font-family: var(--body); font-size:18px; } .jrow { border-top:1px dashed rgba(51,37,26,.22); }
@@ -237,7 +244,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v90</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v91</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -258,7 +265,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 90;
+const BUILD = 91;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -266,11 +273,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=90"></script>
-<script src="playlog.js?v=90"></script>
-<script src="concerns.js?v=90"></script>
-<script src="game.js?v=90"></script>
-<script src="walk.js?v=90"></script>
+<script src="content.js?v=91"></script>
+<script src="playlog.js?v=91"></script>
+<script src="concerns.js?v=91"></script>
+<script src="game.js?v=91"></script>
+<script src="walk.js?v=91"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -2182,7 +2189,7 @@ function bedFenceShown() { return taskProg('fence') > 0 && propAlpha(PROPS.find(
 const FENCE_ORDER = FENCE_SEGS;
 function fencePanel(p) { return Math.min(FENCE_N - 1, Math.floor(p * FENCE_N)); }
 function fencePanelShow(k) { const p = taskProg('fence'); return p >= 1 ? 1 : sstep(0.3, 0.9, p * FENCE_N - k); }
-FENCE_SEGS.filter(f => !f.gate).forEach(f => { const k = FENCE_SEGS.indexOf(f); EXTRAS.push({ gx: f.gx, gy: f.gy,
+FENCE_SEGS.filter(f => !f.gate).forEach(f => { const k = FENCE_SEGS.indexOf(f); EXTRAS.push({ gx: f.gx, gy: f.gy, bias: -0.05,   // note 42 (Bryce): a panel is long, and its middle is only one point on it; a small creature standing level with its near half is drawn in front, not hidden behind it
   show: () => bedFenceShown() ? fencePanelShow(k) : 0,
   draw(x, y, al) { drawFenceSeg(bedRing(f.a0), bedRing(f.a1), al); } }); });
 EXTRAS.push({ gx: FENCE_GATE.gx, gy: FENCE_GATE.gy, show: () => bedFenceShown() ? fencePanelShow(FENCE_N - 1) : 0, draw(x, y, al) {
@@ -4273,7 +4280,7 @@ function frame(now) {
   const items = [];
   const houseD = depthOf(PROPS[0].gx, PROPS[0].gy);   // things set down against the roots (Bryce's yard moves) stand in front of the house picture, though their feet are further back
   for (const p of PROPS) items.push({ d: (p.front || (p.name === 'sapling' && potWhere() === 'home') ? Math.max(houseD + 0.005 * (p.front || 1), depthOf(p.gx, p.gy)) : depthOf(p.gx, p.gy)) + (p.flat ? -0.25 : 0), draw: () => drawProp(p) });
-  for (const e of EXTRAS) { const a = e.show(); if (a > 0) items.push({ d: depthOf(e.gx, e.gy), draw: () => { const [x, y] = toWorld(e.gx, e.gy); e.draw(x, y, a, now); } }); }
+  for (const e of EXTRAS) { const a = e.show(); if (a > 0) items.push({ d: depthOf(e.gx, e.gy) + (e.bias || 0), draw: () => { const [x, y] = toWorld(e.gx, e.gy); e.draw(x, y, a, now); } }); }
   for (const g of gnomes) items.push({ d: depthOf(g.gx, g.gy) + (g.onBench ? (g.sitPic() ? 0.05 : -0.05) : 0), draw: () => g.draw(now) });   // on the bench: a painted loop sits in front of it, a stand-in behind it
   if (visitor) items.push({ d: depthOf(visitor.gx, visitor.gy), draw: () => drawVisitor(visitor, now) });
   if (RABBIT.on) items.push({ d: depthOf(RABBIT.on.gx, RABBIT.on.gy), draw: () => drawRabbit(now) });
@@ -4463,6 +4470,7 @@ function tapAt(cx, cy, wx, wy) {
   else if (G.s.tiles[f.tile] && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) { const run = G.running().find(r => (r.def.healTile === f.tile || r.def.tile === f.tile) && r.endsAt > G.now());   // concern 3 (Bryce): the gnome is already at it, so say so instead of opening the card for a job nobody can start
       if (run) { const lc = n => n.charAt(0).toLowerCase() + n.slice(1); return toast(`${C.names[run.def.who] || 'Someone'} is on it: ${run.def.short || lc(run.def.name)}, ${G.timeLeft(run.endsAt)} to go.`); }
       return G.s.tiles[f.tile].kind ? openPatch(f.tile) : openTasks('regrow:' + f.tile); }
+  else if (f.tile !== '0,0' && !G.s.tiles[f.tile] && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) return toast('That land is still asleep, drawn in pencil. It wakes as the yard turns green.');   // note 63 (Bryce): taps on the far patches used to do nothing
 }
 
 // ---------- UI ----------
@@ -4960,7 +4968,8 @@ function basketTo(g, fid) {   // a gnome carries it over to the neighbour's door
 }
 function helped(v) {   // the good deed is done: a little light, and the thank-you
   G.entry(v.def.id); if (!G.met(v.def.id)) G.noteVisitor(v.def.id);
-  const tr = v.trouble, light = G.help(v.def.id, tr.thanks), [x, y] = toWorld(v.gx, v.gy), thanks = tr.thanks + (tr.meet ? ` ${C.friends.mouse.met}` : '');
+  const tr = v.trouble, said = tr.helping && tr.helping !== (tr.by || 'her') ? tr.thanks.replace(/Hazel|Wendel/g, m => m === 'Hazel' ? 'Wendel' : 'Hazel') : tr.thanks,   // note 35 (Bryce): whoever was free did the helping, so the card names that gnome
+    light = G.help(v.def.id, said), [x, y] = toWorld(v.gx, v.gy), thanks = said + (tr.meet ? ` ${C.friends.mouse.met}` : '');
   if (tr.meet) { G.meet('mouse'); BOTTLE_OFF = { gx: v.gx + (v.faceR ? -0.04 : 0.04), gy: v.gy + 0.012, t: performance.now() }; } if (tr.friendAsk) G.askDone(v.def.id);
   float(light ? '+1 light ♥' : '♥', x, y - (v.def.h || 30));
   if (v.trouble.by === 'luck') for (let i = 0; i < 10; i++) particles.push({ k: 'breath', x: x - 40 + Math.random() * 20, y: y - 10 - Math.random() * 30, vx: 22 + Math.random() * 12, vy: -3 - Math.random() * 4, r: 3 + Math.random() * 3, life: 0, max: 1.8 + Math.random() });   // the breath of luck: a soft drift of air past it (not a glow)
