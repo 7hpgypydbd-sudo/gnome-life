@@ -1043,12 +1043,13 @@ window.CONTENT = {
     howTitle: `How to play`,
     how: [
       `✨ <b>Tap the little things lying about</b> to gather them.`,
-      `🔨 <b>Jobs</b> shows what the gnomes can do next.`,
+      `🍃 <b>Tap a little paper flag</b> on the land to set the gnomes to work. 🔨 <b>Jobs</b> lists everything.`,
       `🕰️ <b>Jobs take real time.</b> Start one, put your phone down, come back later. Nothing can go wrong.` ],
     howMore: [   // shown when How to play is opened again later
       `👆 <b>Swipe</b> to look around. <b>Pinch</b> to come closer or see it all.`,
-      `👀 <b>Tap anything</b>, the gnomes included, to see what it is.` ],
+      `👀 <b>Tap anything</b>, the gnomes included, to see what it is. Spells are cast by touching what they work on.` ],
     button: `Open the story`,
+    flag: `See the little paper flag? A flag means a job can start there. Tap it, old heart.`,   // v90: the guided minute ends at the first job flag
     after: `Wendel and Hazel are ready to start. Open 🔨 Jobs: that's where you'll always find what they can do next.`,   // the Wood spirit says this once the guided first minute is done
   },
 
