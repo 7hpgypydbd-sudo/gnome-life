@@ -1870,8 +1870,9 @@ function drawProp(p) {
   else if (p.name === 'sapling' && taskProg('sapling') >= 1) { const ok = oakPic(); if (ok) cropPic(ok[0], x + ok[2], y, ok[1], false, 0.96); else if (!drawSlot('oak-planted', x, y)) drawPlantedOak(x, y, s); }
   else if (p.name === 'fence' && art('fence-fallen')) { const f = taskProg('fence'); drawSlot('fence-fallen', x, y, 1 - f, { w }); ctx.globalAlpha = a * f; ctx.drawImage(img, x - w / 2, y - h, w, h); }
   else {
-    if (sp < 1) { ctx.globalAlpha = a * (sw && sp > 0 ? 1 - sp * 0.5 : 1); ctx.drawImage(img, x - w / 2, y - h + (p.flat ? h / 2 : 0), w, h); }
-    if (sp > 0) { ctx.globalAlpha = a; drawSlot(sw[0], x, y, sp, { w }); }
+    // note 34 (Bryce): the old and new barrel were drawn together at half strength, so it looked doubled while he scrubbed; now one picture at a time, swapping halfway
+    if (sp < 0.5) { ctx.globalAlpha = a; ctx.drawImage(img, x - w / 2, y - h + (p.flat ? h / 2 : 0), w, h); }
+    else { ctx.globalAlpha = a; drawSlot(sw[0], x, y, 1, { w }); }
   }
   ctx.restore();
   if (AFTER[p.name]) AFTER[p.name]((px, py) => [x - w / 2 + px * s, y - h + py * s], s, now);
@@ -2943,7 +2944,7 @@ const WOOD_PLANTS = [1, 2, 4, 5, 6, 7, 8, 9, 10, 1, 5, 9], WOOD_LOW = [2, 4, 6, 
 // Round six (Bryce): the first greening is small stuff (moss, fiddleheads, strawberries, a tuft of grass, bluebells); the big
 // stump, ferns and logs come with the meadow, the tall trunk, foxglove and wattle only with the wood. Nothing stands on a make's
 // spot, the footpath or a creature's home (yardClear).
-const YARD_WOOD = [[13, 0.0, 0.86, 1], [4, 0.02, 0.97, 1], [15, 0.64, 0.99, 1], [5, 0.98, 0.45, 1], [2, 0.08, 0.06, 1], [6, 0.10, 0.99, 1], [10, 0.20, 0.02, 1], [10, 0.56, 1.0, 1],
+const YARD_WOOD = [[13, 0.0, 0.86, 2], [4, 0.02, 0.97, 1], [15, 0.64, 0.99, 1], [5, 0.98, 0.45, 1], [2, 0.08, 0.06, 1], [6, 0.10, 0.99, 1], [10, 0.20, 0.02, 1], [10, 0.56, 1.0, 1],
   [12, 0.58, 0.0, 2], [1, 0.0, 0.58, 2], [7, 0.30, 1.0, 2], [9, 0.95, 0.20, 2], [14, 0.60, 0.01, 2], [18, 0.98, 0.27, 2],
   [11, 0.0, 0.02, 3], [3, 0.02, 0.76, 3], [8, 0.86, 0.02, 3], [17, 0.46, 0.0, 3]];
 const plantSc = (n, since) => n <= 10 ? [0.65, 0.85, 1][Math.min(2, since)] : 1;   // plants come in small and grow with each greening; logs, stumps, rocks and the toadstool are what they are
@@ -5061,7 +5062,7 @@ function allDoneCheck(now) {
   if (more || now - JOB_START < 30000 || gnomes.some(g => g.chore || g.walking && g.job)) return;   // build 3: only when truly nothing is left, and never while someone is just setting off to a job
   ALLDONE.done = true; ALLDONE.on = true;
   const h = dayPhase().h, A = C.story.allDone, first = run.length ? Math.min(...run.map(r => r.endsAt)) : 0;
-  const set = h >= 21 || h < 5 ? A.night : bigDay && h >= 5 ? A.bigDay : h >= 17 ? A.evening : run.length ? A.busy : A.nothing;
+  const set = h >= 21 || h < 5 ? A.night : bigDay && h >= 17 ? A.bigDay : h >= 17 ? A.evening : run.length ? A.busy : A.nothing;
   const [who, line] = pick(set), text = line.replace('{time}', first ? new Date(first).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(/\s?([ap])\.?m\.?/i, (m, x) => x.toLowerCase() + 'm') : 'later');
   PL.add(`ALL DONE FOR NOW window (${set === A.night ? 'night' : set === A.bigDay ? 'big day' : set === A.evening ? 'evening' : set === A.busy ? 'both busy' : 'nothing to do'}): ${C.names[who]}: "${text}" · running: ${run.map(r => r.id).join(', ') || 'none'}`);
   const g = gnomes.find(g => g.who === who), seen = g && g.screen && !g.inside;   // they say it if they are out in the yard; else the label carries it
