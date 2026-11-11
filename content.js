@@ -107,7 +107,7 @@ window.CONTENT = {
       needs:['spring'], blurb:'Fallen branches lie all about the yard. Wendel gathers them up, odd sticks and all, and adds them to the stick pile by the house.' },
     { id:'bed',     name:'Dig a seed bed', short:'digging the seed bed', spine:true, who:'her', act:'dig', spot:'clearing', cost:{ twig:2 },  mins:8, green:0, magic:1,
       needs:['clear'], blurb:'Now the ground is clear, the earth can be turned. Hazel digs it over row by row, until there is a patch of soft dark soil for the vegetables.' },
-    { id:'bedwater', name:'Water the seed bed', short:'fetching water', stages:[[0.12, 'watering the seed bed']], spine:true, who:'him', act:'water', spot:'spring', cost:{}, mins:3, green:0, magic:1,
+    { id:'bedwater', name:'Water the seed bed', short:'fetching water', stages:[[0.12, 'watering the seed bed']], spine:true, who:'either', act:'water', spot:'spring', cost:{}, mins:3, green:0, magic:1,
       needs:['bed', 'spring'], blurb:'A can at a time from the new spring, watered patch by patch, until the fresh soil is dark and damp. Then it is ready for seeds.' },
     { id:'feeder',  name:'Set out a feeding dish', short:'setting out the dish', spine:true, who:'her', act:'carry', spot:'feeder', cost:{ stone:2, twig:1 }, mins:4, green:0, magic:1, needs:['flag:rabbit'],   // Bryce: the dish is the compromise after the rabbit's raid, beside the fence
       blurb:'A flat stone dish on a stump. Put out seed or berries and see who comes. Some will come back.' },
