@@ -10,6 +10,8 @@ Agreed by Bryce 2026-10-26 (thread "Write the first month's story"). Living copy
 
 ## Before chapter one: the welcome screen (2026-10-28)
 
+**v87 (2026-11-11):** cut to about 60 words and three one-line tips (fresh-eyes review: three long screens before the first touch). The words below are the older, longer version; `CONTENT.welcome` in content.js holds the live ones. The Wood spirit's hello is now a short line in its paper strip, not a window.
+
 *Opens the very first time the game starts, before page 1.1, so a new player (Bryce's mum, say) knows what this is and who they are. Words in `CONTENT.welcome`; the screen itself is drawn in index.html by the play-notes chat.*
 
 **Welcome to Gnome Life**
@@ -32,92 +34,56 @@ It is about two gnomes, Wendel and Hazel. They have just been married, and they 
 
 After page 1.1 closes, a small pointer: "Wendel and Hazel are waiting to start. Open 🔨 Jobs to see what they can do first."
 
-## Chapter one: The bare clearing (days 1 to 3)
+## Chapter one: The bare clearing (day one, told over three mornings)
 
-They arrive, find water, clear the rubbish, dig out the old stump for their first fire, and plant their first seeds. The wobble is the rabbit.
+They arrive, find water, gather a woodpile for their first real fire, and plant their first seeds. The wobble is the rabbit. **v87 (2026-11-11, fresh-eyes review "one page a morning"):** everything in chapter one happens on day one, so its five pages are cut to three: 1.1 at the welcome, then 1.3 and 1.5 on the next two mornings, each about the day before. The old 1.2 (the spring) is folded into 1.3, and the old 1.4 (planting) into 1.5; their paintings stay in `sprites/` unused.
 
 ### 1.1 The end of the road
-*Opens the very first time the game is played, straight after the welcome screen. Round six (2026-10-29): they came on a little wagon and took it apart for their first home; the player is the heart of the wood.*
+*Opens the very first time the game is played, straight after the welcome screen. Cut to about 150 words in v87.*
 
-They came up the old logging track at the end of a long, hot afternoon, with the cicadas going like tiny saws in the grass. Wendel pulled their little wagon, with its canvas top patched in four places. Hazel walked beside it with the little oak in its pot, and talked to it now and then to keep its spirits up. Everything they owned was in that wagon, and most of it was pots.
+They came up the old logging track at the end of a long, hot afternoon, Wendel pulling their little wagon and Hazel beside it with the little oak in its pot. Everything they owned was in that wagon, and most of it was pots.
 
-Twenty steps from the top, a wheel came off and bowled away down the hill. They watched it go. Then they pushed the wagon the rest of the way on three wheels, which is harder than it sounds, and Hazel went back for the wheel, because you never know.
-
-The clearing at the top was not what the travelling pedlar had promised. The loggers had taken every tree but the stumps and left their rubbish behind: rusty tins, broken crates, coils of old wire. Nothing grew. The creek was a dry bed of stones, and not one bird was singing.
+The clearing at the top was not what the pedlar had promised. The loggers had taken every tree but the stumps and left their rubbish behind. Nothing grew, and not one bird was singing.
 
 Wendel looked at it all for a long while. "Well," he said gently. "It's got a lovely view."
 
-Hazel slipped her hand into his. "It's got us now, too," she said. She set the little oak down beside the biggest stump, and that was where they would make their home.
+"It's got us now, too," said Hazel. She set the little oak down by the biggest stump, and before dark the wagon was a little shelter under its roots. Not much of a house. But theirs.
 
-Before dark they took the wagon apart. The runaway wheel and the wagon floor became a door and two walls, tucked in under the roots of the big stump. The canvas top was stretched over them for a roof, and the pots were stacked by the door, all of them. It was not much of a house. But it was theirs.
-
-Gnomes have a gift, you see. Wherever they live and dig and plant, the land slowly remembers how to be alive. And this land had a heart once: the old spirit of the wood, that had lived in every tree on the hill. When the loggers came, it went quiet, deep down under the stumps, and it had been asleep ever since. That evening, as two small gnomes made camp on the bare hill, it stirred. Not much. Just enough to notice them. They could not see it, and they would never quite know it was there. That heart is you.
+This hill had a heart once, the old spirit of the wood. When the loggers came it went quiet, deep under the stumps. That evening, as two small gnomes made camp, it stirred, just enough to notice them. That heart is you.
 
 **Button:** Let's begin
 
-### 1.2 Water between the roots
-*Opens when "Look for water" is finished (round six, Bryce 2026-10-29: water comes first, before wood). The spring is between the roots of the old stump at the back of the yard.*
+### 1.3 Water, and a fire
+*The morning after "Gather the fallen sticks" is done (so usually day two). Painting: the first fire (page-1-3).*
 
-Before anything else, Wendel went looking for water. Nothing lives without it, and the creek was a dry bed of stones.
+Their first whole day on the hill began with water, because nothing lives without it. Wendel walked the clearing with a forked twig held out in front of him, eyes half shut, the way his grandfather had taught him, and Hazel walked softly behind, because dowsing wants quiet.
 
-He walked the whole clearing with a forked twig held out in front of him, eyes half shut, the way his grandfather had taught him. Hazel left her clearing and walked softly behind with the trowel, because dowsing wants quiet, and every gnome knows it.
+Between the roots of an old stump, the twig gave a twitch. "There," he whispered. The spring was choked with stones and dead leaves, and he pulled them out one by one until a thread of clear water came up, cold as a secret. Deep under the hill, something old turned over in its sleep. That was you.
 
-At the back of the yard, between the roots of an old stump, the twig gave a twitch.
+By evening there was a woodpile too, every fallen stick in the clearing stacked bark side up, the way his grandfather used to. Hazel quietly laid the fire, because she knew how much he had been looking forward to it. A beetle came out of the woodpile to see what the fuss was about. Wendel bowed to him and named him Gerald.
 
-"There," he whispered. "Water. I can feel it."
+"I had a speech," said Wendel, patting his pockets. "I think it's with my pipe." Hazel took the pipe out of her apron, where it had been since the bottom of the hill. He looked at the fire, and the first stars, and at her. "We're here," he said. That was the whole speech, and Hazel said it was the best one she had ever heard.
 
-Hazel was already on her knees with the trowel. "Then let's say hello to it," she said.
+**Button:** What a first day
 
-Under the roots the spring was choked with stones and dead leaves. Wendel pulled them out one by one and piled them beside it, and a thread of clear water came up out of the ground, cold as a secret. It filled a hollow no bigger than a teacup, then a saucer, then a little pool with the sky in it.
+### 1.5 Rows, wiggles and a thief
+*The morning after page 1.3 (its moment, the rabbit's raid on the first sprouts, comes on day one). Painting: the thief (page-1-5). The last paragraph changes once the fence is built.*
 
-They knelt on either side of it, muddy to the elbows, and watched it the way you might watch a sleeping baby. It was the first water this hill had held in years. And where there is water, things can grow. Deep under the hill, something old turned over in its sleep. That was you.
+On planting day Hazel opened the seed tin her mother had given her: carrots, beans, a pinch of lettuce, and one enormous pumpkin seed. Wendel put that one in his top pocket. "For something special," he said.
 
-**Button:** Things can grow now
+"Rows," said Hazel, drawing a straight line in the soil. "Wiggles," said Wendel, drawing a curly one. So they planted in rows with one wiggle at the end, and both of them were happy, which is how most marriages work.
 
-### 1.3 The first fire
-*Opens on the first evening visit (from 5 pm) after "Dig out the old stump" is finished (it is chopped into the first firewood), or once the seed bed is watered so the book never waits all day.*
+Then somebody got into the seed bed: somebody with long ears, a white tail and no manners at all.
 
-They had lit a fire the night they arrived, but it was a poor, smoky thing made of whatever twigs were lying about. Tonight was different. Tonight there was a woodpile.
+*(If flag:rabbitDish:)* The feeding dish was licked clean, and three sprouts were nibbled down to nothing.
 
-Wendel had dug out the old stump in the middle of the yard, rocked it loose, chopped it into firewood and stacked it by the barrel, bark side up, the way his grandfather used to. While he stood back to admire it, Hazel quietly laid the fire, because she knew how much he had been looking forward to this. It caught at once and crackled, as if it knew it was the first real fire in their first real home.
+Three of the little sprouts were nibbled down to nothing.
 
-They sat on an upturned pot each and shared the last of the travelling bread. A beetle came out of the woodpile to see what all the fuss was about. Wendel bowed to him and named him Gerald.
+Hazel had seen it from the shelter: a rabbit as thin as a rake, chewing as fast as it could in case someone took the sprout away. "Poor thing's starving, love," she said. "Same as we were when we got here."
 
-"I had a speech," said Wendel, patting his pockets. "About new beginnings. I wrote it down. I think it's with my pipe."
+*(If fence:)* "Then we'll share," said Wendel. So he built a little fence round the bed, with a gate, and they put something out for the rabbit, and asked it, nicely, to leave the carrots for them.
 
-Hazel took his pipe out of her apron pocket, where it had been since the bottom of the hill, and gave it to him. "Do the speech, love," she said.
-
-He looked at the fire, and at the first stars coming out over the stumps, and at her. "We're here," he said. That was the whole speech. Hazel said it was the best one she had ever heard.
-
-**Button:** Goodnight, you two
-
-### 1.4 Rows and wiggles
-*Opens the first time seedlings come up in the seed bed.*
-
-On planting day, Hazel opened the seed tin her mother had pressed into her hands the morning they set off. Inside, in little twists of paper, were carrots, beans, a pinch of lettuce, and one enormous pumpkin seed. Wendel took that one out and put it in his top pocket. "For something special," he said.
-
-"Rows," said Hazel, drawing a straight line in the soil with her finger.
-
-"Wiggles," said Wendel, drawing a curly one beside it.
-
-So they planted in rows, with one wiggle at the end, and both of them were happy, which is how most marriages work.
-
-By evening the bed lay dark and damp and very still. By morning it was not. Tiny green shoots stood up all over it, looking surprised to be there, and Wendel went along the rows on his knees, saying good morning to each one.
-
-**Button:** Grow, little ones
-
-### 1.5 The thief
-*Opens right after the rabbit's raid (or on the next visit, if it happened while you were away), just before "Fence the seed bed" appears in Jobs. The raid line is now gentler: "Oh, you poor hungry thing," said Wendel. "All right. A fence, then, so we can share."*
-
-Somebody had been in the seed bed. Somebody with long ears, a white tail and no manners at all. The feeding dish was licked clean, and three of the sprouts were nibbled down to nothing. *(otherwise: "Three of the little sprouts were nibbled down to nothing.")*
-
-Wendel knelt by the bitten stalks with a sad face. Then he noticed the footprints in the soft earth: tiny ones, close together, going round and round, as if whoever made them had been too hungry to decide where to start.
-
-Hazel had seen it from the shelter: a rabbit as thin as a rake, sitting up with a sprout in its mouth, chewing as fast as it could in case someone took it away.
-
-"Poor thing's starving, love," she said. "Same as we were when we got here."
-
-"Then we'll share," said Wendel at once. He gathered up a few straight sticks and began to measure. "A little fence round the bed, with a gate. We'll put something out for the rabbit, and just ask it, nicely, to leave the carrots for us."
+"Then we'll share," said Wendel at once. "A little fence round the bed, with a gate. We'll put something out for the rabbit, and just ask it, nicely, to leave the carrots for us."
 
 **Button:** Fair's fair
 
@@ -186,7 +152,7 @@ Now, at last, it went into real ground at the front corner of the yard. Hazel du
 **Button:** Grow tall
 
 ### 2.5 Our first week
-*Opens on the first visit seven days after the game began. A page from Hazel's journal, with Wendel's notes squeezed into the margin. Any line about something not done yet is left out.*
+*Opens the morning after 2.4 (v87: it no longer waits for seven days, since one page a morning already spreads the story; with a quick player it comes on about day eight; the first line is now 'Our first week, or near enough.' instead of 'Seven days.'). A page from Hazel's journal, with Wendel's notes squeezed into the margin. Any line about something not done yet is left out.*
 
 **Our first week, in Hazel's handwriting**
 
@@ -428,31 +394,26 @@ Once a visit, when both gnomes are busy (or nothing more can be started) and eve
 
 ## Where every card appears
 
-In book order, always (v64, docs/PLAN.md "Progression review" fix 1): a page waits for the page before it, and the jobs that come next wait for the pages, so the story decides what unlocks. Days are what the progression sim (`node tools/progression_sim.js 2 90`) shows for a twice-a-day player.
+**v87 (2026-11-11): one page a morning.** A page's moment (below) only puts it in the queue. It opens on the first visit of a LATER day, at most one page a day, so the storybook always tells you about yesterday. The jobs that follow a page wait until it has been read, so the story leads and the fifteen pages take at least fifteen days however fast someone plays; a long break gives one page, not a pile. Pretend player at three visits a day: 1.3 day 2, 1.5 day 3, 2.1 day 4, 2.2 day 5, 2.3 day 6, 2.4 day 7, 2.5 day 8, 3.0 day 9, 3.1 day 12, 3.2 day 13, 3.3 day 14, 3.4 day 15, 3.5 day 16. The side jobs that used to wait for page 2.1 (doorstep, bean poles, washing line, herbs, compost, spring ring) now come with the first harvest itself, so the first days stay busy.
 
-| Roughly when | What the player has just done | Card that opens | What it opens up |
-| --- | --- | --- | --- |
-| Day 1 | Opens the game for the first time | 1.1, then the "How it works" tips | Clear the ground, Gather the wood |
-| Day 1 | `spring` finished (water comes first, round six) | 1.2 Water between the roots | |
-| Day 1 evening | `stump` finished (evening, or once the seed bed is watered) | 1.3 The first fire | |
-| Day 2 | Magic level 2, bed dug | Spirit lesson one (seed bed) | Coax a sprout |
-| Day 2 | First seedlings in the bed | 1.4 Rows and wiggles | the feeding dish |
-| Day 2 | The rabbit always comes for the first sprouts (it eats the dish first if there is food in it) | 1.5 The thief | Fence the seed bed |
-| Day 2 to 3 | First harvest | 2.1 Supper from our own ground | the roof; small jobs start coming, a couple at a time; Hazel's first list |
-| Day 3 | Magic level 3, spring found | Spirit lesson two (spring) | Call soft rain |
-| Day 3 | `roof` finished | 2.2 The night it rained | the bench |
-| Day 4 | `bench` finished | 2.3 Room for two | the little oak |
-| Day 4 | `sapling` finished | 2.4 The little oak | |
-| Day 7 to 8 | Seven days since they arrived | 2.5 Our first week | |
-| straight after | | 3.0 A house for winter + quest | the house; the garden patch comes out of the mist |
-| Week 2 | The garden patch turns green | 3.1 Next door, spirit lesson three (toadstool) | the creature corner (pond, bee house, nest box, leaf pile, birdbath, berry bush) |
-| Week 2 | Toadstool walk ends | 3.2 The toadstool takes a walk | |
-| next day | Spirit lesson four (wake the land), then five (by the fire), one a day | | |
-| A day later | `flags.miceIn` | 3.3 Somebody's moved in | |
-| Week 2 | `house1` finished (and 3.3 has come) | 3.4 Big plans | the lean-to |
-| When the house is done | `house3` finished (and 3.3 has come) | 3.5 Over the threshold | the old track, the first traveller, who names the patch they would like to live on |
+| Moment (puts the page in the queue) | Page (opens the next morning) | What it opens up once read |
+| --- | --- | --- |
+| Opens the game for the first time | 1.1 (with the welcome, at once) | the first jobs |
+| `woodpile` finished | 1.3 Water, and a fire | |
+| the rabbit's raid (it always comes for the first sprouts) | 1.5 Rows, wiggles and a thief | |
+| first harvest | 2.1 Supper from our own ground | the roof |
+| `roof` finished | 2.2 The night it rained | the bench |
+| `bench` finished | 2.3 Room for two | the little oak |
+| `sapling` finished | 2.4 The little oak | |
+| straight after | 2.5 Our first week | |
+| straight after | 3.0 A house for winter + quest | the house; the garden patch comes out of the mist |
+| the garden patch turns green | 3.1 Next door (spirit lesson three: toadstool) | the creature corner |
+| toadstool walk ends | 3.2 The toadstool takes a walk | |
+| `flags.miceIn` | 3.3 Somebody's moved in | |
+| `house1` finished | 3.4 Big plans | the lean-to |
+| `house3` finished | 3.5 Over the threshold | the old track, the first traveller |
 
-**House rules:** at most one story page at a time (a second waits for the close or the next visit); never over an open menu; every page is kept in the Journal under **Our story**; spirit lessons are greeting-card size.
+**House rules (v87, "a quiet front door"):** at most ONE window a visit, and none in the middle of a visit. The morning page comes first; an animal's beat from an earlier visit may take the window if no page wants it. Land stages, Hazel's lists and the spring no longer open a card: the land changes, a short paper note says so, and the words go into **Hazel's diary** at the top of the Journal (which also holds what used to be the "While you were away" page). Every page is kept in the Journal under **Our story**.
 
 ## Paintings and hidden snails
 

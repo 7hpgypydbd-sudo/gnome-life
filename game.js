@@ -433,11 +433,12 @@ const G = {
   needsWhy(d) { return (d.needs || []).filter(n => !this.needMet(n)).map(n => this.needHint(n)).filter(Boolean).join(', '); },
   pageHint(id) {   // when a page comes, in words
     const i = C.story.pages.findIndex(p => p.id === id), pg = C.story.pages[i]; if (!pg) return ''; const w = pg.when;
+    if (this.pageWaiting(id)) return `when tomorrow's page of the story opens`;   // v87: it has happened; it is told the next morning
+    if (pg.when !== 'welcome' && pg.when !== 'next' && this.storyDue(pg, now())) return `when the story gets there (a page each morning)`;   // its moment has come; the pages before it are told first
     if (w.startsWith('done:')) return `after ${this.taskDef(w.slice(5)).short}`;
     if (w === 'flag:firstpick') return 'after the first harvest';
-    if (w === 'week') return 'when their first week is up';
     if (w === 'garden') return 'once the garden opens';
-    if (w === 'next' && i > 0) return this.pageHint(C.story.pages[i - 1].id);
+    if (w === 'next' && i > 0) return this.pageHappened(C.story.pages[i - 1].id) ? `when tomorrow's page of the story opens` : this.pageHint(C.story.pages[i - 1].id);
     return '';
   },
   offerTick(t) {   // the home jobs that aren't the story's own come a little at a time: at most two waiting, at most one new a visit
@@ -984,8 +985,13 @@ const G = {
   // Each page opens once, when its moment comes (storyDue), and never before the page before it (pg.after). Pages, land cards and
   // Hazel's lists wait in pages.cards until index.html can show them (one at a time, never over an open menu), so nothing is lost
   // if the game is closed first. A page that is waiting in pages.cards has happened, as far as the jobs are concerned.
-  pageHappened(id) { const P = this.s.pages; return id in P.seen || P.cards.some(c => c.k === 'page' && c.id === id); },
-  pageOpensJob(id) { return C.tasks.some(d => !d.retired && !this.s.tasks[d.id] && (d.needs || []).includes('page:' + id)); },   // a job is waiting on this page (so it is never held back for the next visit)
+  // v87 (fresh-eyes review, "one page a morning"): a page HAPPENS when it is read. Its moment (storyDue) only puts it in the
+  // queue; it opens on the first visit of a LATER day, at most one page a day, so the storybook always tells you about
+  // yesterday. The jobs that follow a page wait for it to be read, so the story leads and fifteen pages last at least
+  // fifteen days, however fast someone plays (and a long break gives one page, not a pile).
+  pageHappened(id) { return id in this.s.pages.seen; },
+  pageWaiting(id) { return this.s.pages.cards.some(c => c.k === 'page' && c.id === id); },
+  pageCanOpen(c, t = now()) { return c.k === 'page' && dayKey(c.at || 0) !== dayKey(t) && this.s.flags.pageDay !== dayKey(t); },   // queued on an earlier day, and no page read yet today
   pageAfter(pg) { const i = C.story.pages.indexOf(pg); return pg.after || (i > 0 ? [C.story.pages[i - 1].id] : []); },
   storyDue(pg, t) {
     const s = this.s, w = pg.when, h = new Date(t).getHours(), p = s.plots.seedbed;
@@ -995,7 +1001,6 @@ const G = {
     if (w.startsWith('flag:')) return !!s.flags[w.slice(5)];
     if (w === 'evening:stump') return this.done('stump') && (h >= 17 || h < 5 || this.done('bedwater'));   // the first evening with real firewood, so the stars are out (or, so the book never waits all day, once the bed is watered: the page tells of that evening)
     if (w === 'seedlings') return !!(p.stage === 'growing' || p.stage === 'ready' || p.grown);
-    if (w === 'week') return t - s.created >= 7 * DAY();
     if (w === 'garden') return this.gardenOpen();
     if (w === 'toadWalked') return !!s.flags.toadWalk && t - s.flags.toadWalk >= 45000;   // index.html TOAD_WALK
     return false;
@@ -1007,7 +1012,7 @@ const G = {
   storyTick(t) {
     const s = this.s, P = s.pages, queued = id => P.cards.some(c => c.k === 'page' && c.id === id);
     if (this.gardenOpen() && !s.flags.garden) s.flags.garden = true;   // garden jobs (the pond) wait for this
-    for (const pg of C.story.pages) if (!(pg.id in P.seen) && !queued(pg.id) && this.pageAfter(pg).every(id => this.pageHappened(id)) && this.storyDue(pg, t)) { P.cards.push({ k: 'page', id: pg.id }); this.emit('card'); }
+    for (const pg of C.story.pages) if (!(pg.id in P.seen) && !queued(pg.id) && this.pageAfter(pg).every(id => this.pageHappened(id)) && this.storyDue(pg, t)) { P.cards.push({ k: 'page', id: pg.id, at: t }); this.emit('card'); }
     // the land opens with the story: the garden patch beside the yard in chapter three (once the yard has greened), and the
     // old track the night the first traveller's lantern comes up it (page 3.5); after that, each healed patch shows the next
     if (!s.tiles['0,1'] && this.pageHappened('3.0') && this.stageIndex('0,0') >= 1) { s.tiles['0,1'] = { state: 'revealed', green: 0, kind: this.tileKind('0,1') }; this.note('The mist has drawn back from the patch beside the yard.'); this.emit('reveal', '0,1'); }
@@ -1019,7 +1024,7 @@ const G = {
       P.makes[key] = t; if (C.tasks.some(d => d.make === patch && d.stage === st && !d.season)) { P.cards.push({ k: 'makes', patch, stage: st }); this.emit('card'); }
     }
   },
-  seePage(id) { this.s.pages.seen[id] = now(); this.s.pages.cards = this.s.pages.cards.filter(c => !(c.k === 'page' && c.id === id)); this.dirty = true; },
+  seePage(id) { this.s.pages.seen[id] = now(); this.s.flags.pageDay = dayKey(now()); this.s.pages.cards = this.s.pages.cards.filter(c => !(c.k === 'page' && c.id === id)); this.dirty = true; },
   pageDef(id) { return C.story.pages.find(p => p.id === id); },
   pageText(pg) {   // the page's paragraphs as they read now (lines about things not done yet are left out)
     const ok = c => c.startsWith('flag:') ? !!this.s.flags[c.slice(5)] : c.startsWith('helped:') ? !!(this.s.journal[c.slice(7)] || {}).helped : c.startsWith('season:') ? c.slice(7).split('|').includes(this.season(now())) : this.done(c);
@@ -1091,7 +1096,7 @@ const G = {
   fireBeat(b, t, soon) {
     const A = this.s.animals; A.done[b.id] = t; A.day = dayKey(t); this.s.flags[b.id] = t;
     if (b.gift) { const d = new Date(t); d.setDate(d.getDate() + 1); d.setHours(6, 0, 0, 0); A.giftDue[b.gift] = soon || FAST ? t + 20000 : d.getTime(); }   // the next morning
-    this.s.pages.cards.push({ k: 'beat', id: b.id }); this.note(`A new page in the animals' stories: ${b.title}.`); this.emit('card');
+    this.s.pages.cards.push({ k: 'beat', id: b.id, v: this.s.visits.n }); this.note(`A new page in the animals' stories: ${b.title}.`); this.emit('card');
   },
   leaveKeepsake(id) {   // an animal's thank-you on the doorstep: one tappable keepsake (an offering with keep: animal)
     const s = this.s, [gx, gy] = C.animals.doorstep, give = C.animals.gifts[id].give, kind = Object.keys(give)[0], n = s.offers.filter(o => o.keep).length;
@@ -1148,7 +1153,7 @@ const G = {
     else if (!f.friend && e.fed.length >= C.friends.friendAfter) { f.friend = now(); this.friendCard(d.friend); out = 'friend'; }
     this.emit('feeder', this.s.feeder); this.emit('fed', { id, out }); return out;
   },
-  friendCard(bid) { const A = this.s.animals, b = this.beatDef(bid); if (!b || this.beatDone(bid)) return; A.done[bid] = now(); this.s.flags[bid] = now(); this.s.pages.cards.push({ k: 'beat', id: bid }); this.emit('card'); },
+  friendCard(bid) { const A = this.s.animals, b = this.beatDef(bid); if (!b || this.beatDone(bid)) return; A.done[bid] = now(); this.s.flags[bid] = now(); this.s.pages.cards.push({ k: 'beat', id: bid, v: this.s.visits.n }); this.emit('card'); },
   homeAskDue(id) {   // a friend's first ask: somewhere to live (only when that home can be made now)
     const s = this.s, f = s.friends[id], d = C.friends[id]; if (!f || !f.friend || s.flags[d.home.flag] || now() - f.friend < C.friends.homeAskAfter * MIN / (FAST ? 30 : 1)) return false;
     if (id === 'robin') return this.done('fence');
