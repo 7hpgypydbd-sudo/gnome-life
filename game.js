@@ -159,6 +159,7 @@ const G = {
     this.markVisit(t);
     // crop
     const p = s.plots.seedbed;
+    if (s.flags.sown1 && !s.tasks.bedwater && p.stage && p.stage !== 'planted') s.tasks.bedwater = { startedAt: t, endsAt: t, done: true };   // watered some other way (the rain spell): the first watering counts as done
     if (p.stage === 'growing' && p.readyAt <= t) { p.stage = 'ready'; this.note(`${cap(this.cropName(p.crop))} ${p.crop === 'pumpkin' ? 'is' : 'are'} ready to pick.`); this.emit('plot', p); }
     // tasks
     for (const [id, tk] of Object.entries(s.tasks)) {
@@ -171,7 +172,8 @@ const G = {
       if (d.folk) this.villageDone(id, d, tk);
       if (id === 'bridge') { for (const k of ['1,-1', '0,-1', '2,-1', '-1,-1']) if (s.tiles[k] && s.tiles[k].state === 'green') this.reveal(k); this.note('The bridge is up. The far side of the stream is reachable at last.'); }
       if (d.give) this.give(d.give);
-      if (id === 'spring') s.pages.cards.push({ k: 'spring' });   // Bryce: finding the spring is a big moment; it gets its own card before the story page
+      if (id === 'spring') s.pages.cards.push({ k: 'spring' });
+      if (id === 'bedwater') { const p = s.plots.seedbed; if (p.stage === 'planted') { p.stage = 'growing'; p.wateredAt = t; p.readyAt = t + this.dur(this.growMins(p)); this.emit('plot', p); } }   // round-seven note 15: the first watering is the seeds being watered in, so they start growing   // Bryce: finding the spring is a big moment; it gets its own card before the story page
       if (window.PL) PL.add(`job done [${id}] by ${d.who}`);
       this.note(`${C.names[d.who]} finished: ${lc(d.name)}.`); if (d.doneNote) this.note(d.doneNote);
       if (d.chore) delete s.tasks[id];   // a little chore can be done again
@@ -192,8 +194,8 @@ const G = {
     const E = C.events; if (E && t - s.events.lastAt >= E.every * MIN) this.rollEvent(t);
     // offerings trickle in during a visit too
     if (t - s.lastOfferAt >= C.offerEvery * MIN) { s.lastOfferAt = t; if (s.offers.length < C.offerCap) { this.spawnOffer(t); this.emit('offer'); } }
-    { const p = s.plots.seedbed, dug = this.done('bedwater') || p.stage || p.grown, lying = k => s.offers.some(o => o.kind === k && !o.keep);   // never stuck at the seed bed (Bryce): an empty tin or a dry can, and the land leaves one lying about
-      const need = !dug ? null : !p.stage && !this.canSow() && (s.inv.seed || 0) < 2 ? 'seed' : p.stage === 'planted' && !this.can(this.waterCost()) ? 'water' : null;
+    { const p = s.plots.seedbed, dug = this.done('bed') || this.done('bedwater') || p.stage || p.grown, lying = k => s.offers.some(o => o.kind === k && !o.keep);   // never stuck at the seed bed (Bryce): an empty tin or a dry can, and the land leaves one lying about
+      const need = !dug ? null : !p.stage && !this.canSow() && (s.inv.seed || 0) < 2 ? 'seed' : p.stage === 'planted' && this.done('bedwater') && !this.can(this.waterCost()) ? 'water' : null;
       if (need && !lying(need)) { this.spawnOffer(t, need, true); this.emit('offer'); }
       for (const sp of C.tasks) {   // build 3 (never stuck): a story job that is ready but short of something from the land, and the land leaves one of it lying in the yard
         if (!sp.spine || sp.retired || s.tasks[sp.id] || !this.needsMet(sp) || this.can(sp.cost)) continue;
@@ -294,13 +296,14 @@ const G = {
   plant(cropId = 'carrot', who = 'her') {
     const p = this.plot(), c = C.crops[cropId], cost = c && this.cropCost(cropId); if (!c || p.stage || !this.cropOpen(cropId) || !this.can(cost)) return false;
     this.pay(cost); if (c.free) this.s.flags['sown:' + c.free] = true; if (c.once) this.s.flags[cropId + 'Year'] = new Date(now()).getFullYear();
-    p.crop = cropId; p.stage = 'planted'; p.plantedAt = now(); p.readyAt = 0;
+    p.crop = cropId; p.stage = 'planted'; p.plantedAt = now(); p.readyAt = 0; this.s.flags.sown1 = true;
     this.note(cropId === 'pumpkin' && !Object.keys(cost).length ? 'Wendel pressed his one enormous pumpkin seed into the middle of the bed, very solemnly. It wants water.' : `${C.names[who]} sowed ${c.name.replace(/^a /, 'a ')} across the bed. ${c.water > 1 ? 'They want a good drink.' : 'They want water.'}`);
     this.emit('plot', p); return true;
   },
+  waterReady() { const p = this.plot(); return p.stage === 'planted' && this.done('bedwater') && this.can(this.waterCost()); },   // the bed's water button (the very first watering is the job "Water the seed bed")
   waterCost() { const p = this.plot(); return { water: (C.crops[p.crop] || {}).water || 1 }; },
   water(who = 'him') {
-    const p = this.plot(), cost = this.waterCost(); if (p.stage !== 'planted' || !this.can(cost)) return false;
+    const p = this.plot(), cost = this.waterCost(); if (!this.waterReady()) return false;
     this.pay(cost); p.stage = 'growing'; p.wateredAt = now(); p.readyAt = now() + this.dur(this.growMins(p));
     this.note(`${C.names[who]} watered the bed. Now it grows.`); this.emit('plot', p); return true;
   },

@@ -62,7 +62,7 @@ function visit() {
     const n = G.spiritLesson(); if (n) { G.teach(n); ev('SPIRIT', `lesson ${n}`); }
     const p = G.plot();
     if (p.stage === 'ready') { G.harvest(); }
-    if (!p.stage && (G.done('bedwater') || p.grown)) { const order = (!G.s.flags['sown:pumpkin'] && G.cropOpen('pumpkin')) ? ['pumpkin'] : [['carrot','lettuce','bean'][p.grown % 3], 'carrot', 'lettuce']; for (const id of order) if (G.cropOpen(id) && G.can(G.cropCost(id))) { G.plant(id); break; } }
+    if (!p.stage && (G.done('bed') || G.done('bedwater') || p.grown)) { const order = (!G.s.flags['sown:pumpkin'] && G.cropOpen('pumpkin')) ? ['pumpkin'] : [['carrot','lettuce','bean'][p.grown % 3], 'carrot', 'lettuce']; for (const id of order) if (G.cropOpen(id) && G.can(G.cropCost(id))) { G.plant(id); break; } }
     if (p.stage === 'planted') G.water();
     if (MODE === 'eager' && p.stage === 'growing' && G.canCast('coax').ok && (G.s.inv.light||0) >= 4) G.cast('coax');
     if (G.canCast('legs').ok && !process.env.NOLEGS) { G.cast('legs'); ev('SPELL', 'toadstool legs'); }
