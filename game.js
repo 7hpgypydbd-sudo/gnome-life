@@ -364,7 +364,8 @@ const G = {
   },
   eitherWho(d) {   // a job either gnome can do: whoever took it on, else whoever is free (Hazel first if both are, or the one the chore suits)
     const tk = this.s.tasks[d.id]; if (tk && tk.who) return tk.who;
-    return ['her', 'him'].sort((a, b) => (b === d.pref) - (a === d.pref)).find(w => !this.isBusy(w, d.id)) || d.pref || 'her';
+    const pref = d.pref || (/^(build|dig)$/.test(typeof d.act === 'string' ? d.act : '') ? 'him' : 'her');   // round eight note 1: building and digging suit Wendel, so he has things of his own; the rest Hazel
+    return ['her', 'him'].sort((a, b) => (b === pref) - (a === pref)).find(w => !this.isBusy(w, d.id)) || pref;
   },
   isBusy(w, but, storyJob) { return Object.entries(this.s.tasks).some(([id, k]) => !k.done && k.endsAt > now() && id !== but && !(storyJob && id.startsWith('chore:')) && (k.who || (C.tasks.find(t => t.id === id) || {}).who) === w); },
   // ---- little chores (build 3, "never stuck"): small jobs for whichever gnome is free, so nobody stands about while the crops
