@@ -22,6 +22,8 @@ _Last updated: 2026-11-14 (v98 live). Keep this file short: one page of where we
 
 **Stand-in check.** Before every art day and every release, run `node tools/standin_check.js` (needs a local server, see the file) and look at the list in section 4. Nothing a month-one player meets may be a stand-in. When a painting lands, remove its code stand-in in the same change (a painting that fades in during a job must not have code drawn on top).
 
+**No assumed length.** Never plan to a fixed number of days or a target day for anything (Bryce, 2026-11-14). Pace comes from how it feels in play; the pretend player's day counts are measurements only.
+
 **Finish line.** "Month one, fully finished": every month-one picture painted, words polished, someone has played 30 days at real pace without getting stuck, ready for Bryce's mum. New ideas go to the maybe pile.
 
 ## 2. Where we are
@@ -32,7 +34,7 @@ _Last updated: 2026-11-14 (v98 live). Keep this file short: one page of where we
 
 ## 3. What's next (in order)
 
-1. When round ten ends: one build of every round-ten note under the new rules. Big items already flagged in it: when Mabel arrives and how long the whole game is (note 1, Bryce undecided); jobs go to whichever gnome is free and day one shared fairly (notes 4, 12, repeat of round 8 no. 1); the barrel and spout only after the roof, with rain for the herb box as the reason (note 2, agreed); redesign the green sprig meter (note 8, show looks first); rename "Hazel's list" to a shared list (note 9); a one-line reason on every new job card (notes 3, 5, 7, 10).
+1. When round ten ends: one build of every round-ten note under the new rules. Big items already flagged in it: when Mabel arrives and the pace of the early game (note 1; no fixed game length, feel it out); jobs go to whichever gnome is free and day one shared fairly (notes 4, 12, repeat of round 8 no. 1); the barrel and spout only after the roof, with rain for the herb box as the reason (note 2, agreed); redesign the green sprig meter (note 8, show looks first); rename "Hazel's list" to a shared list (note 9); a one-line reason on every new job card (notes 3, 5, 7, 10).
 2. Next art day: the stand-ins in section 4, plus anything round ten asks for.
 3. Held until Bryce asks: month-two builds 2 to 7 (`docs/MONTH-TWO.md`), then a long robot run.
 
@@ -51,7 +53,7 @@ Drawn in code on purpose: paper job flags, growing badge, glows.
 - Wendel (dreamer) and Hazel (practical, never sceptical or hen-pecking), newlyweds regrowing a logged Australian clearing into a cosy 5x5 village. The player is the heart of the wood, a bodiless forest spirit; the gnomes do every physical job. 2 to 5 minute visits; jobs take real time; no gnome work 22:30 to 06:00.
 - Art: "Secret World of the Gnomes" storybook paintings, never clay or toy. Parchment menus, nothing glows, contact shadows. Less text, more visual cues.
 - The land is the menu: paper flags where a job can start, tap for a job card; Jobs lists everything. Unopened land is pencil on paper. Only growing things bring green.
-- Whole game about 60 days: Mabel arrives about day 15 (under review, round ten note 1), other neighbours about days 31/37/43, festival about day 56. Never monetised.
+- No fixed game length (Bryce, 2026-11-14). Pace is felt out through play, not planned to a number of days. Today's build happens to bring Mabel about day 15 and the festival about day 56; those are measurements, not targets. Never monetised.
 
 ## 6. Where things live
 
