@@ -529,7 +529,11 @@ function fetchFirst(job, sp, plan, face) { return Object.assign((p, g) => { if (
 function stickFetch(id) { const d = id && G.taskDef(id); if (!d || !(d.cost || {}).twig || OWN_FETCH.has(id) || d.folk || d.festival || d.healTile || d.farm || stickPileShow() <= 0) return null;
   const job = { id, def: d }, sp = jobSpot(job) || WORKSPOT['job:' + id] || WORKSPOT[d.spot] || SPOTS.fire, plan = d.act || SPOT_ACT[d.spot] || 'build';
   return fetchFirst(job, sp, plan === 'carry' ? 'build' : plan, JOB_FACE[id] || (d.make ? makeAt(d) : null)); }
-function workFn(id) { if (id && id.startsWith('chore:')) return (p, g) => choreWork(id, p, g); return WORKPATH[id] || (id && id.startsWith('heal:') ? (p, g) => healWork(id, p, g) : id && id.startsWith('farm:') ? (p, g) => farmWork(id, p, g) : stickFetch(id)); }   // jobs that move the gnome about as they go (the healing jobs: healWork)
+// v99 (note 18): a thing for the home is made at the work corner first (sawing and hammering there), then carried to its spot and fitted
+function cornerWork(id) { const d = id && G.taskDef(id); if (!d || !d.make || d.id === 'bed2' || !/^(craft|build)$/.test(d.act) || taskProg('workcorner') < 1) return null;
+  const sp = makeWork(d), face = makeAt(d), at = WORKSPOT.workcorner;
+  return Object.assign((p, g) => !g ? sp : p < 0.55 ? [at[0], at[1], 'build', false, 0, WORKCORNER] : [sp[0], sp[1], d.act, p < 0.7, 0, face], { fetch: true }); }
+function workFn(id) { if (id && id.startsWith('chore:')) return (p, g) => choreWork(id, p, g); return WORKPATH[id] || cornerWork(id) || (id && id.startsWith('heal:') ? (p, g) => healWork(id, p, g) : id && id.startsWith('farm:') ? (p, g) => farmWork(id, p, g) : stickFetch(id)); }   // jobs that move the gnome about as they go (the healing jobs: healWork)
 function woodTaken(i) { const [k, t] = segOf(taskProg('woodpile'), WOOD_ITEMS.length); return taskProg('woodpile') >= 1 || k > i ? 1 : k < i ? 0 : sstep(0.25, 0.6, t); }   // 0..1: how much of that lot Wendel has picked up
 function woodStage() {   // the firewood pile grows in 3 steps as the old stump is chopped and carried over (round six; a garden from before keeps its pile)
   if (G.s.flags.oldWoodpile) return 3; const p = taskProg('stump'); if (p >= 1) return 3; if (p < STUMP_ST.carry) return 0;
@@ -580,7 +584,8 @@ function benchEvening() {   // tonight they sit out on the bench? Before the hou
   let h = 7; for (const c of new Date(G.now()).toDateString()) h = (h * 31 + c.charCodeAt(0)) | 0; return (h >>> 3) % 4 !== 0;
 }
 const JOB_FACE = { bench:BENCH, lantern:[0.75, 0.50] };   // what a working gnome turns to face (default: the middle of the yard)
-const WORKSPOT = { logseat:[0.185,0.495], feeder:[0.82,0.66], clearing:[0.54,0.66], wheelbarrow:[0.78,0.88], shelter:[0.38,0.30], lanternstump:[0.71,0.54], fence:[0.80,0.74], sapling:[0.24,0.84], stonebench:[0.11,0.46], seedbed:[0.54,0.66], herbs:[HERB_AT[0] - 0.03, HERB_AT[1] + 0.08] };
+const WORKCORNER = [0.09, 0.27];   // v99 (note 18): Wendel's work corner, beside the house on its left (the story's lean-to grows out of it)
+const WORKSPOT = { workcorner:[WORKCORNER[0] + 0.06, WORKCORNER[1] + 0.07], logseat:[0.185,0.495], feeder:[0.82,0.66], clearing:[0.54,0.66], wheelbarrow:[0.78,0.88], shelter:[0.38,0.30], lanternstump:[0.71,0.54], fence:[0.80,0.74], sapling:[0.24,0.84], stonebench:[0.11,0.46], seedbed:[0.54,0.66], herbs:[HERB_AT[0] - 0.03, HERB_AT[1] + 0.08] };
 
 // ---------- loading ----------
 const IM = {};
@@ -3781,6 +3786,12 @@ function herbStage() {   // 0 = none yet, 1 sprouts while she plants, 2 young on
   return G.now() - (tk.endsAt || 0) > 24 * 3600 * 1000 ? 3 : 2;
 }
 const HERB_CLUMPS = [[-26, 4, 0, 1.1], [2, 11, 1, 1.3], [28, 2, 2, 1.1], [-6, -8, 1, 0.95]];   // dx, dy (world px), which painting, size
+function workCornerItems(items) {   // v99 (note 18, art day 21): poles and bark first, then (the story's lean-to job) the finished workshop
+  const a = taskProg('workcorner'), b = taskProg('leanto'); if (a <= 0 && b <= 0) return; const [gx, gy] = WORKCORNER;
+  items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy), H = 168;
+    const pic = (k, al) => { const im = art(k); if (!im || al <= 0) return; const w = H * im.width / im.height; ctx.save(); ctx.globalAlpha *= al; ctx.drawImage(im, x - w / 2, y - H * 0.93, w, H); ctx.restore(); };
+    shadow(x, y - 4, 60, 16); if (b < 1) pic('yard-leanto-frame', Math.max(a, b > 0 ? 1 : 0) * (1 - sstep(0.3, 1, b))); if (b > 0) pic('yard-leanto', sstep(0.3, 1, b)); } });
+}
 function compostItems(items) {   // note 48 (Bryce): the compost heap sits in the yard's southern corner, with the wheelbarrow close by
   const p = taskProg('compost'); if (p <= 0) return;
   const [gx, gy] = [0.70, 0.93];
@@ -4554,7 +4565,7 @@ function frame(now) {
   spiritItem(items, now);
   makeItems(items, now); bed2Items(items, now);
   herbItems(items);
-  compostItems(items);
+  compostItems(items); workCornerItems(items);
   animalItems(items, now);
   festItems(items, now);
   items.sort((a, b) => a.d - b.d);
@@ -4733,6 +4744,7 @@ function tapAt(cx, cy, wx, wy) {
     for (const p of PROPS) { if (p.gone && taskProg(p.gone) >= 1) continue; const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s * (p.hitW || 1), h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 4 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
     if (best) { if (best.name === 'seedbed') { if (propAlpha(best) >= 1 && bedReady()) return openSeedbed(); if (openSpot('clearing')) return; return toast(bedReady() ? 'The seed bed. Hazel and Wendel are busy just now; it can wait.' : 'Rough ground, for now. One day the seed bed goes here.'); } if (best.name === 'shelter') { if (!wantsTap(best)) return openRoom(); if (openJobCard(spotJobs('shelter'))) { sheet.querySelector('.foot').insertAdjacentHTML('afterbegin', '<a href="#" data-a="room">look inside</a> · '); return; } } if (best.name === 'sapling') { showSprig(); if (taskProg('sapling') < 1 && G.taskView(G.taskDef('sapling')).show && !G.done('sapling')) return openPot(); return; }; if (best.name === 'barrel') { if (G.drawBarrel()) { const [bx, by] = toWorld(best.gx, best.gy); float(`+${C.barrel.give.water} ${C.resources.water.name}`, bx, by - 60); } return openBarrel(); } if (openSpot(best.name)) return; }
     if (stickPileShow() > 0) { const [px, py] = toWorld(STICK_PILE[0], STICK_PILE[1]); if (Math.hypot(wx - px, wy - py + 6) < Math.max(30, 38 / cam.z)) return toast(C.stickPile.replace('{n}', G.s.inv.twig || 0)); }   // round nine note 18: what the pile is, and why it never goes
+    if (taskProg('workcorner') >= 1 || taskProg('leanto') >= 1) { const [hx, hy] = toWorld(...WORKCORNER); if (Math.abs(wx - hx) < 62 && wy > hy - 160 && wy < hy + 12) return toast(taskProg('leanto') >= 1 ? 'Wendel\'s workshop. A hook for every tool, and a little window for the stars.' : 'The work corner. Things for the home get made here, then carried to where they go.'); }
     if (taskProg('compost') >= 1) { const [hx, hy] = toWorld(0.70, 0.93); if (Math.hypot(wx - hx, wy - hy + 14) < Math.max(34, 40 / cam.z)) return toast('The compost heap. Peelings, weeds and old leaves go in; rich dark soil comes out for the seed bed. With it every crop grows a little faster, and every harvest gives one seed more.'); }   // v99 (note 47): it says what it does
     if (herbStage()) { const [hx, hy] = toWorld(HERB_AT[0], HERB_AT[1]); if (Math.hypot(wx - hx, wy - hy + 8) < Math.max(40, 44 / cam.z)) return herbStage() === 1 ? toast('Hazel is putting in the herbs: thyme, mint and the one parsley that will not die.') : toast(herbStage() === 2 ? 'The herb box, knocked together from the wagon\'s spare boards. Thyme, mint and the one parsley that will not die.' : 'The herb box is in flower, and the bees have found it.'); }
     // concern 1 (Bryce): the little bug bath, the pots, the doormat and the rest of the finished makes answer a tap with a line about themselves
@@ -4755,7 +4767,7 @@ function tapAt(cx, cy, wx, wy) {
 // A flag drawn faint in pencil means the store is short; the card says what of. A red thread on the flag marks the story's job.
 // Hazel's little makes have no flags (Bryce): they stay in Hazel's list in Jobs. Jobs stays as the index of everything.
 // Spells are cast from the thing they act on: the seed bed, a patch being mended, the toadstool in the way.
-const STAKE_AT = { spring: () => [SPRING.at[0] - 0.02, SPRING.at[1] + 0.04], fire: () => [0.27, 0.43], firewood: () => [0.41, 0.15], barrel: () => [0.42, 0.14], clearing: () => [0.56, 0.62], logseat: () => [0.20, 0.53], herbs: () => [HERB_AT[0], HERB_AT[1] + 0.03] };
+const STAKE_AT = { workcorner: () => [WORKCORNER[0] + 0.05, WORKCORNER[1] + 0.06], spring: () => [SPRING.at[0] - 0.02, SPRING.at[1] + 0.04], fire: () => [0.27, 0.43], firewood: () => [0.41, 0.15], barrel: () => [0.42, 0.14], clearing: () => [0.56, 0.62], logseat: () => [0.20, 0.53], herbs: () => [HERB_AT[0], HERB_AT[1] + 0.03] };
 function stakeSpot(d) {   // [world x, world y] where this job's flag stands, or null (no flag)
   if (d.make || d.chore) return null;
   const tile = d.healTile || d.tile; if (tile) return G.s.tiles[tile] || d.tile ? toWorld(0.5, 0.52, tile) : null;
@@ -4923,8 +4935,12 @@ function roomGnome(g, x, y, flip) {
   rx.save(); rx.translate(x, y); if (flip) rx.scale(-1, 1); rx.drawImage(img, f * cw, 0, cw, ch, -cw * RS / 2, -ch * RS, cw * RS, ch * RS); rx.restore();
   g.room = { x, y: y - ch * RS / 2, r: Math.max(cw, ch) * RS / 2 };
 }
+let ROOMPEEK = false;   // v99 (round seven note 56, art day 21): while the stump is being made into the house, you can look inside it too
+function stumpPeekOk() { return homeStage() === 1 && taskProg('house1') > 0 && !!art('room-stump-hollowing'); }
 function drawRoom(now, dt) {
   const stage = homeStage(), R = ROOMS[stage], ph = dayPhase();
+  if (ROOMPEEK && stumpPeekOk()) { rx.drawImage(art('room-stump-hollowing'), 0, 0, 1000, 1000); for (const g of gnomes) g.room = null;
+    const dk = 1 - ph.light; rx.save(); rx.globalCompositeOperation = 'multiply'; rx.fillStyle = `rgba(${Math.round(255 - 150 * dk)},${Math.round(255 - 140 * dk)},${Math.round(255 - 90 * dk)},1)`; rx.fillRect(0, 0, 1000, 1000); rx.restore(); return; }
   if (art(R.slot)) rx.drawImage(art(R.slot), 0, 0, 1000, 1000); else (stage === 2 ? roomStump : roomShelter)(ph, now);
   const inside = gnomes.filter(g => g.inside);
   for (const g of gnomes) g.room = null;
@@ -4956,15 +4972,16 @@ function roomCaption() {
 }
 function homeJobs() { return G.taskList().filter(v => v.def.spot === 'shelter' && v.state !== 'done'); }
 function openRoom() {
-  closeSheet(); const R = ROOMS[homeStage()];
-  $('rTitle').textContent = R.title; roomSayT = 0; roomCaption();
+  closeSheet(); const R = ROOMS[homeStage()]; if (!stumpPeekOk()) ROOMPEEK = false;
+  $('rTitle').textContent = ROOMPEEK ? 'Inside the old stump' : R.title; roomSayT = 0; roomCaption();
+  if (ROOMPEEK) $('rCap').textContent = taskProg('house3') > 0 ? 'Nearly a house. The roof is going on.' : taskProg('house2') > 0 ? 'Hollowed out, and the wall and windows are going in.' : taskProg('house1') >= 1 ? 'Hollowed out and swept. Next come the wall and the windows.' : 'Half hollowed. Shavings everywhere, and Wendel\'s tools on a crate.';
   const jobs = homeJobs(), ready = jobs.filter(v => v.state === 'ready' && v.can).length;
-  $('rBtns').innerHTML = jobs.length ? `<button class="act${ready ? '' : ' quiet'}" data-a="homejobs">Jobs for the home${ready ? ` (${ready} ready)` : ''}</button>` : '';
+  $('rBtns').innerHTML = (jobs.length ? `<button class="act${ready ? '' : ' quiet'}" data-a="homejobs">Jobs for the home${ready ? ` (${ready} ready)` : ''}</button>` : '') + (stumpPeekOk() ? ` <button class="act quiet" data-a="peek">${ROOMPEEK ? 'Back under the root' : 'Look inside the stump'}</button>` : '');
   $('room').classList.add('on'); roomOn = true; PL.add(`room open: ${R.title}`);
 }
 function closeRoom() { if (roomOn) PL.add('room closed'); $('room').classList.remove('on'); roomOn = false; }
 $('rClose').onclick = closeRoom; G.openRoom = openRoom;   // console / tests: GL.openRoom()
-$('room').addEventListener('click', e => { if (e.target.id === 'room') closeRoom(); const b = e.target.closest('[data-a="homejobs"]'); if (b) { closeRoom(); const v = homeJobs().find(v => v.state === 'ready') || homeJobs()[0]; openTasks(v ? v.def.id : ''); } });
+$('room').addEventListener('click', e => { if (e.target.closest('[data-a="peek"]')) { ROOMPEEK = !ROOMPEEK; return openRoom(); } if (e.target.id === 'room') closeRoom(); const b = e.target.closest('[data-a="homejobs"]'); if (b) { closeRoom(); const v = homeJobs().find(v => v.state === 'ready') || homeJobs()[0]; openTasks(v ? v.def.id : ''); } });
 rc.addEventListener('click', e => {   // tap a gnome in the room for a line (or a "shh" if they are asleep)
   const b = rc.getBoundingClientRect(), x = (e.clientX - b.left) * 1000 / b.width, y = (e.clientY - b.top) * 1000 / b.height;
   const g = gnomes.find(g => g.room && Math.hypot(x - g.room.x, y - g.room.y) < g.room.r); if (!g) return;
@@ -5221,7 +5238,7 @@ function openPack() {
   if (G.s.plots.seedbed.grown) html += `<h3>The pantry</h3><p>From the seed bed. They eat from it at breakfast and supper, and the shelf holds about ${C.pantry.cap} of each; the spare goes over the fence. Hazel's seed tin holds ${C.pantry.seedTin} seeds.</p>` + (pan.length <= 6 ? storeShelves(pan.map(shelf), 3) : plain(pan));   // after the first picking: the bottom two shelves of the same painting
   openSheet('pack', html);
 }
-const JOB_PIC = { ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'bench-wh', barrow: 'wheelbarrow',
+const JOB_PIC = { workcorner: 'yard-leanto-frame', leanto: 'yard-leanto', bed2: 'seedbed-rect', ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'bench-wh', barrow: 'wheelbarrow',
   woodpile: 'firewood', doorstep: 'yard-doorstep', rainbarrel: 'barrel-full', clothesline: 'washing-line', lantern: 'lanternstump', stump: 'lanternstump', windowbox: 'yard-windowbox', wormlantern: 'worm-lantern',
   wormlamp: 'worm-lamp', house1: 'house-hollowed', house2: 'house-windows', house3: 'house-finished', hedgehoghouse: 'nest-leafpile', nestbox: 'nest-nest', bridge: 'bld-bridge',
   dress_spring: 'make-dress_spring', dress_summer: 'make-dress_summer', dress_autumn: 'make-dress_autumn', dress_winter: 'make-dress_winter' };
