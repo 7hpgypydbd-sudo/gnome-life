@@ -272,7 +272,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v96</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v98</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -293,7 +293,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 97;
+const BUILD = 98;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -301,11 +301,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=97"></script>
-<script src="playlog.js?v=97"></script>
-<script src="concerns.js?v=97"></script>
-<script src="game.js?v=97"></script>
-<script src="walk.js?v=97"></script>
+<script src="content.js?v=98"></script>
+<script src="playlog.js?v=98"></script>
+<script src="concerns.js?v=98"></script>
+<script src="game.js?v=98"></script>
+<script src="walk.js?v=98"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -1977,7 +1977,9 @@ const HOUSE_ROOF = [[80, 252], [146, 180], [312, 168], [318, 240], [250, 304], [
 const CHIMNEY = [270, 196, 34, 92];   // left, bottom, width, height
 function housePoly(at, pts) { ctx.beginPath(); pts.forEach(([px, py], i) => { const [wx, wy] = at(px, py); i ? ctx.lineTo(wx, wy) : ctx.moveTo(wx, wy); }); ctx.closePath(); }
 function drawHouseStandIns(at, s, now, top) {
-  const p1 = top < 1 ? taskProg('house1') : 0, p2 = top < 2 ? taskProg('house2') : 0, p3 = top < 3 ? taskProg('house3') : 0;
+  // tracking review (round ten note 11): once a step's painting exists, drawHouse fades that painting in while the job runs,
+  // so the old code drawing for that step must not be drawn on top of it (it was, mid-job, on every house step)
+  const p1 = top < 1 && !art('house-hollowed') ? taskProg('house1') : 0, p2 = top < 2 && !art('house-windows') ? taskProg('house2') : 0, p3 = top < 3 && !art('house-finished') ? taskProg('house3') : 0;
   if (p1 > 0 && p2 < 1) {   // hollowing: a heap of pale wood shavings grows at the foot, and a round hole is carved high in the trunk
     for (let i = 0; i < Math.floor(60 * p1); i++) { const k = rnd(i + 50), [wx, wy] = at(300 + k * 130, 452 - Math.sin(k * Math.PI) * 30 * rnd(i + 51) - rnd(i + 54) * 10); blob(wx, wy, (8 + rnd(i + 52) * 7) * s, (4 + rnd(i + 53) * 3) * s, ['#e2c695', '#cfae78', '#b8935e'][i % 3]); }
     const [hx, hy] = at(HOUSE_WIN[0][0], HOUSE_WIN[0][1]); ctx.save(); ctx.globalAlpha = Math.min(1, p1 * 1.5); blob(hx, hy, HOUSE_WIN[0][2] * s, HOUSE_WIN[0][2] * s * 1.1, '#2a1c12'); ctx.restore();
@@ -2035,7 +2037,7 @@ const BEFORE = {
 const AFTER = {
   shelter(at, s, now) {
     const top = houseArt(); if (top >= 1) { drawHouseStandIns(at, s, now, top); drawWindowBox(at, s); return; }   // a painted house picture already has the roof and doorstep in it
-    const roof = top >= 0 ? 0 : taskProg('roof');
+    const roof = top >= 0 || art('shelter-mossroof') ? 0 : taskProg('roof');   // the painted moss roof fades in by itself (drawHouse); the code moss is only for when it is missing
     if (roof > 0) {   // moss creeps over the patched canvas
       const poly = [[98, 234], [150, 196], [300, 188], [296, 240], [246, 292], [180, 266]];
       ctx.save(); ctx.beginPath(); poly.forEach(([px, py], i) => { const [wx, wy] = at(px, py); i ? ctx.lineTo(wx, wy) : ctx.moveTo(wx, wy); }); ctx.closePath(); ctx.clip();
