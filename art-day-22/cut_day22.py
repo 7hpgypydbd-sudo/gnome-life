@@ -50,7 +50,6 @@ cut('05-woodpile.jpeg',['woodpile-1','woodpile-2','woodpile-3'],1)
 cut('06-stick-pile.jpeg',['stick-pile-1','stick-pile-2','stick-pile-3','stick-pile-4'],2)
 cut('07-workcorner.jpeg',['yard-workcorner'],1)
 cut('08-heap-stages.jpeg',['heap-1','heap-2','heap-3-old','heap-4-old'],2)
-# Bryce (round eleven follow-up): the last stages must have no rubbish at all
-im=Image.open(P+'09-heap-clean.jpeg'); im.crop((0,0,im.width//2,int(im.height*0.78))).save('/tmp/_h3.png')
-P0=P; P='/tmp/'; cut('_h3.png',['heap-3'],1); P=P0
-cut('10-heap-halfdug.jpeg',['heap-4'],1)
+# Bryce (round eleven follow-up, twice): the last stages have no rubbish and END IN A PIT
+cut('12-heap-pit-flat.png',['heap-3','heap-4'],1)          # gentle angle, matches heap-1/2 (only 1024 px: Chrome blocked the full download)
+cut('11-heap-pit.jpeg',['heap-3-deep','heap-4-deep'],1)    # same two seen from higher up, full size, a spare

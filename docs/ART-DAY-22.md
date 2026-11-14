@@ -18,6 +18,6 @@ Every painting hides a snail. Nothing glows.
 | woodpile-1..3 | woodpile growing, each sitting on a patch of trodden earth with chips and a contact shadow | replaces woodpile-1..3 |
 | stick-pile-1..4 | stick pile growing in four steps, grounded with shadow | new (stick-pile.webp is the old single one) |
 | yard-workcorner | Wendel's small FINISHED work corner: lashed poles, whole bark roof, plank bench, saw, mallet, chopping block | new slot, same footprint/view as yard-leanto-frame; plainer than yard-leanto |
-| heap-1..4 | rubbish heap: full junk / half cleared / completely bare tidy mound (no junk at all) / mound half dug into a pit with a spade, no junk (repainted after Bryce: the last stages still had rubbish) | new, same oval footprint, ends ready to crossfade to the hollow |
+| heap-1..4 | rubbish heap: full junk / half cleared / (no rubbish from here) a smaller mound sinking into a pit dug in its middle / just a pit in level ground with a soil rim. heap-3/4 are only 485 px wide (Chrome blocked the full download); heap-3-deep / heap-4-deep are the same two from higher up at full size | repainted twice after Bryce: the last stages must have no rubbish and end in a pit |
 
 Sizes: all cuts are big (up to 1100 px wide); set the on-screen size in code.
