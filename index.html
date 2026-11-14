@@ -753,9 +753,10 @@ class Gnome {
     this.say = null; this.sayT = 0; this.job = null; this.bob = 0;
     this.act = null; this.plan = null; this.routine = null; this.pace = null; this.aframe = 0; this.at = 0;
   }
-  goto(x, y) {   // round the seed bed (in by the gate), and round everything else standing in the way (walk.js)
+  goto(x, y, purpose) {   // round the seed bed (in by the gate), and round everything else standing in the way (walk.js)
     this.act = null; this.aframe = 0;   // up on his feet first (Bryce: Wendel slid across to the fence still sitting with his pipe)
-    const r = []; let p = [this.gx, this.gy]; for (const q of bedRoute(this.gx, this.gy, x, y)) { r.push(...Walk.route(p[0], p[1], q[0], q[1])); p = q; }
+    const r = []; let p = [this.gx, this.gy]; const via = purpose ? trailVia(this.gx, this.gy, x, y) : [];   // v99b (Bryce: "they can wander anywhere but should prefer the pathway if moving about on purpose")
+    for (const stop of [...via, [x, y]]) for (const q of bedRoute(p[0], p[1], stop[0], stop[1])) { r.push(...Walk.route(p[0], p[1], q[0], q[1])); p = q; }
     [this.tx, this.ty] = r.shift(); this.route = r; this.walking = true; }
   faceTowards(x, y, propName) { this.faceTo = Array.isArray(propName) ? propName : null;   // action strips face right; flip so the gnome faces the fire (or the middle of the tile)
     const p = typeof propName === 'string' && PROPS.find(p => p.name === propName); const [tx, ty] = Array.isArray(propName) ? propName : p ? [p.gx, p.gy] : [0.5, 0.5];   // propName may be a [gx, gy] to look at
@@ -769,11 +770,11 @@ class Gnome {
       if (this.goesIn(rt)) {   // bedtime (and the evening sit, once the house has a hearth) happen indoors: walk to the door and go in
         this.job = null; this.routine = rt;
         if (this.inside) { this.act = rt; this.wait = 2; return; }
-        this.plan = 'inside'; this.act = null; this.goto(SPOTS.door[0], SPOTS.door[1]); return;
+        this.plan = 'inside'; this.act = null; this.goto(SPOTS.door[0], SPOTS.door[1], true); return;
       }
       const [sx, sy, face] = rt === 'sit' && benchReady() ? [...BENCH_SEAT[this.who], FIRE_AT] : RHYTHM[this.who][rt]; this.job = null; this.plan = rt; this.routine = rt;   // the evening sit: on the bench once it is built
       if (this.act === rt) { this.wait = 2; return; }
-      this.goto(sx, sy); this.faceTowards(sx, sy, face); return;
+      this.goto(sx, sy, true); this.faceTowards(sx, sy, face); return;
     }
     this.routine = null;
     if (job) {
@@ -782,7 +783,7 @@ class Gnome {
       this.plan = (wp && wp[2]) || job.def.act || SPOT_ACT[job.def.spot] || (job.def.tile ? 'dig' : 'carry'); this.carryWalk = (wp && wp[3]) || false;
       if (wf && this.plan === 'carry') this.plan = 'pickup';   // gathering: she bends down to each piece, painted pick-up strip (art day 9)
       this.pace = this.plan === 'carry' && !wf ? [[sp[0], sp[1]], [sp[0] - 0.12, sp[1] + 0.06]] : null;
-      this.goto(sp[0], sp[1]); this.faceTowards(sp[0], sp[1], JOB_FACE[job.id] || (job.def.make ? makeAt(job.def) : null) || (wp && wp[5]) || null); return;
+      this.goto(sp[0], sp[1], true); this.faceTowards(sp[0], sp[1], JOB_FACE[job.id] || (job.def.make ? makeAt(job.def) : null) || (wp && wp[5]) || null); return;
     }
     const sat = this.onBench; this.job = null; this.plan = null; this.act = null; this.carryWalk = false; this.sitFor = 0;
     if (benchReady() && !sat && !DISH_FILL) {   // a sit on the bench: more likely if the other one is already sitting there alone
@@ -834,7 +835,7 @@ class Gnome {
           if (/^(sleep|fest)$/.test(routineFor(dayPhase().h))) { this.pick(); return; }
           if (this.pace) { this.pace.reverse(); const [x, y] = this.pace[0]; this.goto(x, y); this.wait = 0.6; return; }   // carrying: to and fro
           const wp = workFn(this.job);
-          if (wp) { const [x, y, act, carry, , face] = wp(taskProg(this.job), this); if (Math.hypot(x - this.gx, y - this.gy) > 0.04) { this.act = null; if (act) this.plan = act; this.carryWalk = carry || false; this.goto(x, y); this.faceTowards(x, y, JOB_FACE[this.job] || face || null); this.wait = 0.6; return; }
+          if (wp) { const [x, y, act, carry, , face] = wp(taskProg(this.job), this); if (Math.hypot(x - this.gx, y - this.gy) > 0.04) { this.act = null; if (act) this.plan = act; this.carryWalk = carry || false; this.goto(x, y, true); this.faceTowards(x, y, JOB_FACE[this.job] || face || null); this.wait = 0.6; return; }
             if (act && this.act !== act) { this.act = this.plan = act; this.aframe = 0; this.at = 0; } }   // a new task on the same spot (kneel, then tamp down)
           this.wait = 1;
         }
@@ -946,7 +947,7 @@ Gnome.prototype.startChore = function (kind, steps, onDone) {
 };
 Gnome.prototype.choreGo = function () {
   const c = this.chore, st = c.steps[c.i]; c.t = 0; this.act = null; this.carryWalk = st[3] || false;
-  this.goto(st[0], st[1]); this.faceTowards(st[0], st[1], st[5] || null);
+  this.goto(st[0], st[1], true); this.faceTowards(st[0], st[1], st[5] || null);
 };
 Gnome.prototype.choreArrive = function () {
   const st = this.chore.steps[this.chore.i]; this.faceTowards(this.gx, this.gy, st[5] || null); this.act = st[2]; this.aframe = 0; this.at = 0; this.carryWalk = false;
@@ -3055,6 +3056,32 @@ function footpathLinks() {   // short tracks joining every door into one network
   }
   return links;
 }
+const WORN = { key: '', out: [] };
+function wornTrails() {   // the worn trails as lists of points, worked out again only when the yard changes
+  const key = [taskProg('spring') >= 1, taskProg('bed') >= 1, taskProg('fence') >= 1, G.gardenOpen(), G.landStage().key, Object.values(G.s.tasks).filter(t => t.done).length].join('|');
+  if (WORN.key === key) return WORN.out; WORN.key = key; const out = WORN.out = [];
+  const door = [0.37, 0.44], sp = [SPRING.at[0] - 0.03, SPRING.at[1] + 0.10], hasSp = taskProg('spring') >= 1, hasBed = taskProg('bed') >= 1;
+  let gate = null; if (hasBed) { const f = bedFrame(), ga = (FENCE_GATE.a0 + FENCE_GATE.a1) / 2; gate = fromRing(Math.cos(ga) * 1.45, Math.sin(ga) * 1.45, f); }   // well outside the fence and the pebble edging
+  const ends = [hasSp && sp, gate].filter(Boolean); if (!ends.length) return out;
+  const fork = ends.length < 2 ? null : [(door[0] * 2 + sp[0] + gate[0]) / 4, (door[1] * 2 + sp[1] + gate[1]) / 4 + 0.03];
+  const walk = (a, b) => { let r = [a], p = a; try { for (const q of bedRoute(a[0], a[1], b[0], b[1])) { r.push(...Walk.route(p[0], p[1], q[0], q[1])); p = q; } } catch (e) { r = [a, b]; }
+    const d = []; for (let i = 0; i < r.length - 1; i++) { const n = Math.max(1, Math.round(Math.hypot(r[i + 1][0] - r[i][0], r[i + 1][1] - r[i][1]) / 0.07)); for (let t = 0; t < n; t++) d.push([r[i][0] + (r[i + 1][0] - r[i][0]) * t / n, r[i][1] + (r[i + 1][1] - r[i][1]) * t / n]); } d.push(r[r.length - 1]);
+    const seed = a[0] * 7 + b[1] * 13; return d.map((q, i) => { if (!i || i === d.length - 1) return q; const nx = d[i + 1][1] - d[i - 1][1], ny = d[i - 1][0] - d[i + 1][0], L = Math.hypot(nx, ny) || 1, w = Math.sin(i * 1.7 + seed) * 0.012 + Math.sin(i * 0.6 + seed * 2) * 0.014; return [q[0] + nx / L * w, q[1] + ny / L * w]; }); };   // a foot-worn wander, never a ruled line
+  if (fork) { out.push(walk(door, fork)); out.push(walk(fork, sp)); out.push(walk(fork, gate)); } else out.push(walk(door, ends[0]));
+  if (G.gardenOpen()) out.push(walk(fork || door, [0.40, 1.03]));   // on to the sweet-pea arch, round the bed
+  return out;
+}
+function trailVia(ax, ay, bx, by) {   // the points of the worn trails a gnome on an errand walks along between a and b ([] when the trail is no help)
+  let T; try { T = wornTrails(); } catch (e) { return []; } if (!T.length || Math.min(1, Object.values(G.s.tasks).filter(t => t.done).length / 14) <= 0.1) return [];
+  const arms = T.length > 1 ? [T[0].slice().reverse(), ...T.slice(1)] : [T[0]];   // every arm listed from the fork outwards (one trail alone: door to its end)
+  const near = (x, y) => { let best = null; arms.forEach((arm, a) => arm.forEach((q, i) => { const d = Math.hypot(q[0] - x, q[1] - y); if (!best || d < best.d) best = { a, i, d }; })); return best; };
+  const A = near(ax, ay), B = near(bx, by), direct = Math.hypot(bx - ax, by - ay); if (!A || A.d > 0.2 || B.d > 0.2 || direct < 0.25) return [];   // only when both ends are close to a trail and it is a real walk
+  let pts; if (A.a === B.a) pts = A.i <= B.i ? arms[A.a].slice(A.i, B.i + 1) : arms[A.a].slice(B.i, A.i + 1).reverse();
+  else pts = [...arms[A.a].slice(T.length > 1 ? 0 : A.i, A.i + 1).reverse(), ...arms[B.a].slice(1, B.i + 1)];
+  if (T.length === 1 && A.a !== B.a) return [];
+  let len = A.d + B.d; for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+  return len > direct * 1.6 + 0.1 ? [] : pts.filter((q, i) => i % 2 === 0 || i === pts.length - 1);   // a trail that takes them far out of their way is not worth it
+}
 function drawFootpaths() {
   const src = IM['g-path']; if (!src || !src.width) return; const pat = GR.pathPat || (GR.pathPat = ctx.createPattern(src, 'repeat'));
   ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
@@ -3068,11 +3095,13 @@ function drawFootpaths() {
   // v99 (round ten note 53, Bryce: the path should wear between the spring, the bed and the house): faint trails where the gnomes
   // really walk every day, wearing in slowly as the jobs get done (a later job can lay them in stone)
   const worn = Math.min(1, Object.values(G.s.tasks).filter(t => t.done).length / 14);
-  if (worn > 0.1) { const door = [0.37, 0.40], bedGate = [FENCE_GATE.gx + 0.02, FENCE_GATE.gy + 0.05], sp = [SPRING.at[0] - 0.02, SPRING.at[1] + 0.09], T = [];
-    if (taskProg('spring') >= 1) T.push([door, sp, 0.10]); if (taskProg('bed') >= 1) T.push([door, bedGate, -0.08]); if (taskProg('spring') >= 1 && taskProg('bed') >= 1) T.push([sp, bedGate, 0.12]);
-    if (G.gardenOpen()) T.push([bedGate, [0.47, 1.10], 0.06]);
-    for (const [[ax, ay], [bx, by], bend] of T) { const [x0, y0] = toWorld(ax, ay), [x1, y1] = toWorld(bx, by), [cx, cy] = toWorld((ax + bx) / 2 + (by - ay) * bend, (ay + by) / 2 + (ax - bx) * bend);
-      for (const [lw, al] of [[20, 0.16], [12, 0.3], [6, 0.34]]) { ctx.globalAlpha = al * worn; ctx.strokeStyle = pat; ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(cx, cy, x1, y1); ctx.stroke(); } } }
+  if (worn > 0.1) for (const pts of wornTrails()) {
+    // v99b (Bryce: "it looks like a computer drew a triangle, not a gnome's walking routes"): each trail follows the way a gnome
+    // really walks (round the bed, round the fire), all meeting at one fork in front of the door, and stops short of the bed's edging
+    const W = pts.map(q => toWorld(q[0], q[1]));
+    for (const [lw, al] of [[18, 0.14], [11, 0.26], [5, 0.3]]) { ctx.globalAlpha = al * worn; ctx.strokeStyle = pat; ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(W[0][0], W[0][1]);
+      for (let k = 1; k < W.length - 1; k++) ctx.quadraticCurveTo(W[k][0], W[k][1], (W[k][0] + W[k + 1][0]) / 2, (W[k][1] + W[k + 1][1]) / 2);
+      ctx.lineTo(W[W.length - 1][0], W[W.length - 1][1]); ctx.stroke(); } }
   ctx.restore();
 }
 // A little wild corner round each neighbour's home, from the painted kit (mossy log, fern stump, sapling stump, mossy boulder),
