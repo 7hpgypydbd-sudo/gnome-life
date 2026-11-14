@@ -272,7 +272,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v95</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v96</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -293,7 +293,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 95;
+const BUILD = 96;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -301,11 +301,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=95"></script>
-<script src="playlog.js?v=95"></script>
-<script src="concerns.js?v=95"></script>
-<script src="game.js?v=95"></script>
-<script src="walk.js?v=95"></script>
+<script src="content.js?v=96"></script>
+<script src="playlog.js?v=96"></script>
+<script src="concerns.js?v=96"></script>
+<script src="game.js?v=96"></script>
+<script src="walk.js?v=96"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -382,7 +382,7 @@ function depthOf(gx, gy, tile = '0,0') { const [tx, ty] = tile.split(',').map(Nu
 const PROPS = [
   { name:'shelter',      gx:0.30, gy:0.22, s:1.35 },   // v74: a third bigger so the door is gnome height (art review: it was ~0.6 of a gnome)
   { name:'firewood',     gx:0.33, gy:0.03, s:0.9, front:2, until:'stump' },   // round six (Bryce): the firewood is the old stump, chopped (woodStage)   // v75 (Bryce's yard moves): by the house's right roots, in front of the barrel (front:2 draws it over the barrel)
-  { name:'barrel',       gx:0.40, gy:0.19, s:0.95, front:3 },   // v75 (Bryce's yard moves): by the house's right roots; round nine note 19 (Bryce: not close enough to the roof to catch anything): tucked in right under the roof's edge, a few steps from the door
+  { name:'barrel',       gx:0.40, gy:0.19, s:0.51, front:3, hitW:0.4 },   // art day 20: repainted with the bark spout, padded so the barrel itself stays centred (s keeps it about the old size, a touch bigger);   // v75 (Bryce's yard moves): by the house's right roots; round nine note 19 (Bryce: not close enough to the roof to catch anything): tucked in right under the roof's edge, a few steps from the door
   { name:'campfire',     gx:0.22, gy:0.40, s:0.9 },   // v75 (Bryce's yard moves): in front of the house's left roots
   { name:'lanternstump', gx:0.75, gy:0.50, s:0.9, gone:'stump' },   // a plain old stump now (Bryce: the lamp post nailed to it made no sense); dug out in stages by "Dig out the old stump" (drawStump)
   { name:'seedbed',      gx:0.58, gy:0.74, s:1.0, flat:true, until:'bed' },   // until: hidden until that job is done (fades in while it runs)
@@ -629,6 +629,7 @@ for (const ws of Object.values(C.wishes.list)) for (const w of ws) ART_SLOTS['wi
 // the animals' side stories (docs/ANIMALS.md): a painting for each storybook page (page-a-<beat id>); the rabbit's portrait (not a journal visitor)
 for (const b of C.animals.beats) if (b.kind === 'page') ART_SLOTS['page-a-' + b.id] = {};
 ART_SLOTS['portrait-rabbit'] = {}; ART_SLOTS['vis-mouse-stuck'] = {}; ART_SLOTS['mouse-bottle'] = {};   // round six (art day 17): the mouse with a broken bottle neck stuck on its head, and the neck on its own once Hazel tips it off
+ART_SLOTS['herb-box'] = {};   // art day 20: the raised herb box (herbBox)
 for (const k of ['stump-1', 'stump-2', 'stump-c1', 'stump-c2', 'stump-c4', 'stump-4', 'make-pebbleline']) ART_SLOTS[k] = {};   // art day 17: the old stump dug out and chopped up in stages (paintedStump); art day 16: the thin pebble line round the seed bed (pebbleEdge)
 // art day 15 (tools/cut_day15.py): crops, healing pieces, the animals' story pieces, the neighbours' farms, the bigger oaks. Each is drawn
 // by height where its stand-in was (cropPic, HEAL_PAINT, FARM_PAINT); missing files leave the stand-ins.
@@ -1599,7 +1600,7 @@ function penPieces(k) {   // the bare patch's own leftovers (what is there befor
   for (const q of L) {
     if (!(q.always || q.go) || q.flat || q.home) continue;
     let im = null, h = q.h;
-    if (q.pic) im = healPic(q.pic);
+    if (q.pic) { im = healPic(q.pic); h *= kitGrow(q.pic); }
     else if (q.draw === 'deadtree') { im = art('heal-deadtree'); h = 250; }
     else if (q.draw && HEAL_PAINT[q.draw] && q.draw !== 'tree') { const f = HEAL_PAINT[q.draw](q); im = art(f[0]); h = f[1]; }
     if (!im) continue;
@@ -1816,6 +1817,12 @@ function drawHomeRuts() {
   if (p > 0) { ctx.globalAlpha = p; ctx.drawImage(fill, -w / 2, -h / 2, w, h); }   // the level dirt with grass creeping back fades in as he fills the gully
   ctx.restore();
 }
+// art day 20 (round nine note 1: the stumps looked small beside the gnomes, and bigger would blur): the four stump pictures are repainted
+// about 2.7x larger. KIT_HI keeps every old size rule working (the width each was painted at before) and grows them a little on screen.
+const KIT_HI = { 'stumps-rocks-01':190, 'stumps-rocks-02':101, 'stumps-rocks-07':184, 'stumps-rocks-08':126 }, KIT_GROW = 1.3;
+const kitName = k => k.replace(/^kit-/, '').replace(/^kit\//, '');
+function kitK(k, im) { const w0 = KIT_HI[kitName(k)]; return w0 && im && im.width ? w0 * KIT_GROW / im.width : 1; }   // multiply a width-based scale by this
+function kitGrow(k) { return k && KIT_HI[kitName(k)] ? KIT_GROW : 1; }   // multiply a height by this
 const HOME_KIT = [   // [piece, healed piece (null: it goes when the job is done), gx, gy, scale, job that clears it]
   ['stumps-rocks-01', 'stumps-rocks-07', 0.775, 0.07, 0.7], ['stumps-rocks-02', 'stumps-rocks-08', 0.13, 0.84, 0.7],
   ['stumps-rocks-03', 'stumps-rocks-09', 0.02, 0.17, 0.55], ['stumps-rocks-06', 'stumps-rocks-12', 0.30, 0.94, 0.6],
@@ -2273,7 +2280,7 @@ EXTRAS.push({ gx: FENCE_GATE.gx, gy: FENCE_GATE.gy, show: () => bedFenceShown() 
   drawFenceSeg(L, R, al, g, GATE_FOOT, K, [0, 62]); drawFenceSeg(L, R, al, g, GATE_FOOT, K, [228, 300], true); } });   // both posts stay where they stand
 if (NEWGROUND) for (const [a, b, gx, gy, sc, job] of HOME_KIT) EXTRAS.push({ gx, gy,
   show: () => G.landStage().key === 'barren' ? (job === 'clear' ? clearLeft(gx, gy) : 1 - (job ? taskProg(job) : 0)) : b ? 1 : 0,
-  draw(x, y, al) { const im = IM['kit-' + (G.landStage().key === 'barren' ? a : b)]; if (!im || !im.width) return; const w = im.width * sc, h = im.height * sc;
+  draw(x, y, al) { const kk = G.landStage().key === 'barren' ? a : b, im = IM['kit-' + kk]; if (!im || !im.width) return; const q = sc * kitK(kk, im), w = im.width * q, h = im.height * q;
     ctx.save(); ctx.globalAlpha = al; shadow(x, y, w * 0.38, w * 0.1); ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); ctx.restore(); } });
 for (const [a, b, gx, gy, sc, job] of HOME_KIT) if (job === 'clear') CLEAR_ITEMS.push([gx, gy]);
 let clearDust = -1;
@@ -2540,7 +2547,7 @@ function footprints() {
   if (NEWGROUND) {
     const barren = G.landStage().key === 'barren', lvl = { barren: 0, green: 1, meadow: 2, wood: 3 }[G.landStage().key] || 0;
     for (const [a, b, gx, gy, sc, job] of HOME_KIT) { const k = barren ? a : b, there = barren ? 1 - (job ? taskProg(job) : 0) : b ? 1 : 0; if (!k || there <= 0.05) continue;   // stumps and rocks that stay; the rubbish Hazel clears goes
-      const im = IM['kit-' + k]; if (im && im.width) add(k, gx, gy, im.width * sc); }
+      const im = IM['kit-' + k]; if (im && im.width) add(k, gx, gy, im.width * sc * kitK(k, im)); }
     if (lvl >= 1) for (const [n, gx, gy, sc] of yardWood(lvl)) { if (n === 15) continue; const im = IM['kit-wood-' + pad2(n)]; if (im && im.width) add('wood ' + n, gx, gy, im.width * WOOD[n] * sc / im.height, n >= 11 ? 0.3 : 0.26); }
     if (lvl >= 1 && (toadProg() <= 0 || toadProg() >= 1)) {   // the big toadstool (not while it is walking off on its root legs)
       const im = IM['kit-wood-15']; if (im && im.width) { const [tx, ty] = toadAt(); add(toadProg() >= 1 ? 'mouse house' : 'toadstool', tx, ty, im.width * WOOD[15] / im.height * (taskProg('mousering') > 0 ? 1.3 : 1), 0.3); } }
@@ -3023,7 +3030,7 @@ const NOOK = [['stumps-rocks-12', 0.10, 0.12, 0.62], ['stumps-rocks-08', 0.64, 0
 function nookItems(items, tile, seed) {
   NOOK.forEach(([k, gx, gy, sc], i) => { if (rnd(seed * 7 + i) < 0.25) return; const im = IM['kit-' + k]; if (!im || !im.width) return;
     const [ux, uy] = glob(tile, gx + (rnd(seed + i * 3) - 0.5) * 0.06, gy + (rnd(seed + i * 5) - 0.5) * 0.06);
-    items.push({ d: depthOf(ux, uy), draw: () => { const [x, y] = toWorld(ux, uy), w = im.width * sc, h = im.height * sc; shadow(x, y, w * 0.36, w * 0.1); ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); } }); });
+    items.push({ d: depthOf(ux, uy), draw: () => { const q = sc * kitK(k, im), [x, y] = toWorld(ux, uy), w = im.width * q, h = im.height * q; shadow(x, y, w * 0.36, w * 0.1); ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); } }); });
 }
 // The woodland (art day 8): giant ferns, foxgloves, trunks, logs and toadstools at gnome scale, so the land reads as a wood and not a lawn.
 // WOOD maps a piece number to its standing height in world px (a gnome is about 120 px tall).
@@ -3271,7 +3278,7 @@ function springItems(items) {
   const u = STREAM_U0, v = streamV(u);
   for (const [k, du, dv, sc] of [['stumps-rocks-09', -0.13, -0.06, 0.75], ['stumps-rocks-08', -0.10, 0.12, 0.55], ['stumps-rocks-12', 0.05, -0.16, 0.5]]) {
     const im = IM['kit-' + k]; if (!im || !im.width) continue;
-    items.push({ d: depthOf(u + du, v + dv), draw: () => { const [x, y] = toWorld(u + du, v + dv), w = im.width * sc, h = im.height * sc; shadow(x, y, w * 0.36, w * 0.1); ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); } });
+    items.push({ d: depthOf(u + du, v + dv), draw: () => { const q = sc * kitK(k, im), [x, y] = toWorld(u + du, v + dv), w = im.width * q, h = im.height * q; shadow(x, y, w * 0.36, w * 0.1); ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); } });
   }
 }
 // everything of the village that sits on the land, as depth-sorted items for the frame
@@ -3512,7 +3519,7 @@ function plank(x0, y0, x1, y1, t, col = '#8a6a44') {   // a flat-ish plank betwe
   ctx.strokeStyle = col; ctx.lineWidth = t; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); ctx.restore();
 }
 function post(x, y, h, w = 6, col = '#7a5a3a') { ctx.save(); ctx.fillStyle = col; ctx.strokeStyle = INK; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.rect(x - w / 2, y - h, w, h); ctx.fill(); ctx.stroke(); ctx.restore(); }
-function kitPiece(k, x, y, h, flat) { const im = IM[k]; if (!im || !im.width) return; const w = im.width * h / im.height; ctx.drawImage(im, x - w / 2, flat ? y - h / 2 : y - h * 0.94, w, h); }
+function kitPiece(k, x, y, h, flat) { const im = IM[k]; if (!im || !im.width) return; h *= kitGrow(k); const w = im.width * h / im.height; ctx.drawImage(im, x - w / 2, flat ? y - h / 2 : y - h * 0.94, w, h); }
 function pebble(x, y, r, col, i) { blob(x, y + r * 0.3, r * 1.1, r * 0.5, 'rgba(40,30,20,0.25)'); blob(x, y, r, r * 0.62, col); blob(x - r * 0.3, y - r * 0.2, r * 0.4, r * 0.2, 'rgba(255,255,255,0.45)'); }
 function snailShell(x, y, r) { ctx.save(); blob(x, y, r, r, '#c9a36a'); ctx.strokeStyle = '#6e4a2c'; ctx.lineWidth = 1; ctx.beginPath(); for (let a = 0; a < 9; a += 0.3) { const rr = r * (1 - a / 10); ctx.lineTo(x + Math.cos(a) * rr * 0.9, y + Math.sin(a) * rr * 0.9); } ctx.stroke(); ctx.restore(); }
 // the pond (dug in the garden; docs yard layout plan), drawn flat
@@ -3737,11 +3744,14 @@ function compostItems(items) {   // note 48 (Bryce): the compost heap sits in th
     ctx.restore(); } });
 }
 // round nine notes 13, 14, 21: the herbs grow in a raised box knocked together from the wagon's spare boards, so they stand out and
-// are plainly not in the food bed. Drawn in code (a stand-in until an art day paints it): earth on top, plank sides, ink lines.
+// are plainly not in the food bed. Painted on art day 20; the code-drawn box below is the fallback while the picture loads.
 function herbBox(x, y, k) {   // k: 0..1 how far it is built (it goes up first while Hazel works); returns how high its earth sits
   const H = 12 * k, P = (gx, gy) => { const [a, b] = toWorld(HERB_AT[0] + gx, HERB_AT[1] + gy); return [a, b]; }, a = 0.042, b = 0.034;
   const c = [P(-a, -b), P(a, -b), P(a, b), P(-a, b)];   // back, right, front, left corners on the ground
   shadow(x, y + 4, 34, 10); if (k <= 0) return 0;
+  const im = art('herb-box');   // art day 20: the painted box (old wagon boards, one still red with a rusty corner strap), fading in as it goes up
+  if (im) { const W = (c[1][0] - c[3][0]) * 1.12 / 0.977, Hh = W * im.height / im.width;   // its left and right bottom corners sit 0.977 of the picture apart, 0.645 down
+    ctx.save(); ctx.globalAlpha *= Math.min(1, k * 1.5); ctx.drawImage(im, x - W / 2, y - Hh * 0.645, W, Hh); ctx.restore(); return Hh * 0.30; }   // earth top is 0.31 down, so herbs stand that far above the ground centre
   ctx.save(); ctx.lineWidth = 1.2; ctx.strokeStyle = INK; ctx.lineJoin = 'round';
   const side = (p, q, col) => { ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); ctx.lineTo(q[0], q[1] - H); ctx.lineTo(p[0], p[1] - H); ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.save(); ctx.strokeStyle = 'rgba(42,21,16,0.35)'; ctx.lineWidth = 0.8; for (const t of [0.5]) { ctx.beginPath(); ctx.moveTo(p[0], p[1] - H * t); ctx.lineTo(q[0], q[1] - H * t); ctx.stroke(); } ctx.restore(); };
@@ -4572,7 +4582,7 @@ function tapAt(cx, cy, wx, wy) {
   if (f.tile === '0,0') {
     let best = null, bd = 1e9;
     const pad = 14 / cam.z;   // a generous margin around each prop
-    for (const p of PROPS) { if (p.gone && taskProg(p.gone) >= 1) continue; const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s, h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 4 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
+    for (const p of PROPS) { if (p.gone && taskProg(p.gone) >= 1) continue; const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s * (p.hitW || 1), h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 4 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
     if (best) { if (best.name === 'seedbed') { if (propAlpha(best) >= 1 && bedReady()) return openSeedbed(); if (openSpot('clearing')) return; return toast(bedReady() ? 'The seed bed. Hazel and Wendel are busy just now; it can wait.' : 'Rough ground, for now. One day the seed bed goes here.'); } if (best.name === 'shelter') { if (!wantsTap(best)) return openRoom(); if (openJobCard(spotJobs('shelter'))) { sheet.querySelector('.foot').insertAdjacentHTML('afterbegin', '<a href="#" data-a="room">look inside</a> · '); return; } } if (best.name === 'sapling') { showSprig(); if (taskProg('sapling') < 1 && G.taskView(G.taskDef('sapling')).show && !G.done('sapling')) return openPot(); return; }; if (best.name === 'barrel') { if (G.drawBarrel()) { const [bx, by] = toWorld(best.gx, best.gy); float(`+${C.barrel.give.water} ${C.resources.water.name}`, bx, by - 60); } return openBarrel(); } if (openSpot(best.name)) return; }
     if (stickPileShow() > 0) { const [px, py] = toWorld(STICK_PILE[0], STICK_PILE[1]); if (Math.hypot(wx - px, wy - py + 6) < Math.max(30, 38 / cam.z)) return toast(C.stickPile.replace('{n}', G.s.inv.twig || 0)); }   // round nine note 18: what the pile is, and why it never goes
     if (herbStage()) { const [hx, hy] = toWorld(HERB_AT[0], HERB_AT[1]); if (Math.hypot(wx - hx, wy - hy + 8) < Math.max(40, 44 / cam.z)) return herbStage() === 1 ? toast('Hazel is putting in the herbs: thyme, mint and the one parsley that will not die.') : toast(herbStage() === 2 ? 'The herb box, knocked together from the wagon\'s spare boards. Thyme, mint and the one parsley that will not die.' : 'The herb box is in flower, and the bees have found it.'); }
