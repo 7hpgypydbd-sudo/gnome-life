@@ -46,3 +46,16 @@ w = np.minimum(np.minimum(xx, 559 - xx) / 280, np.minimum(yy, 279 - yy) / 140); 
 Image.fromarray((A * w + B * (1 - w)).astype(np.uint8)).resize((280, 140), Image.LANCZOS).save('sprites/ground/lawn-calm.webp', quality=90); print('ground/lawn-calm')
 Image.open('art-day-21/painted/10-story-mabel-home.jpeg').convert('RGB').resize((1200, 670), Image.LANCZOS).save('sprites/story-mabel-home.webp', quality=86); print('story-mabel-home')
 Image.open('art-day-21/painted/11b-room-stump-hollowing.jpeg').convert('RGB').resize((1000, 1000), Image.LANCZOS).save('sprites/room-stump-hollowing.webp', quality=86); print('room-stump-hollowing')
+# faces for the folk with none: head-and-hat crops of their own folk sprites, 96x96 like face-her
+if len(sys.argv) > 2:
+    for f in ['mabel', 'tobias', 'fernsby', 'pebbleworth', 'clem', 'barnaby', 'nettle', 'juniper']:
+        im = bbox_crop(Image.open(f'sprites/folk-{f}.webp').convert('RGBA')); a = np.asarray(im.getchannel('A')) > 40
+        H = im.height; s = int(H * float(sys.argv[2]))
+        rgb = np.asarray(im.convert('RGB')).astype(int); r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+        skin = a & (r > g) & (g > b) & (r - b > 45) & (r > 170); skin[int(H * .5):] = False   # the face, in the top half
+        ys, xs = np.where(skin); cy, cx = int(np.median(ys)), int(np.median(xs))
+        x0 = max(0, min(im.width - s, cx - s // 2)); y0 = max(0, cy - int(s * .55))
+        im.crop((x0, y0, x0 + s, y0 + s)).resize((96, 96), Image.LANCZOS).save(f'sprites/face-{f}.webp', quality=90); print('face', f)
+for f in ['tobias', 'fernsby', 'pebbleworth', 'clem', 'barnaby', 'nettle', 'juniper']:
+    src = f'art-day-21/painted/13b-story-fernsby-home.png' if f == 'fernsby' else [p for p in __import__('glob').glob(f'art-day-21/painted/1[2-8]-story-{f}-home.jpeg')][0]
+    Image.open(src).convert('RGB').resize((1200, 670), Image.LANCZOS).save(f'sprites/story-{f}-home.webp', quality=86); print('story', f)
