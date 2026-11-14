@@ -130,6 +130,10 @@ window.CONTENT = {
       sayWhy:'That canvas lets every drop of rain in, love. A good thick roof of moss would keep us dry. Moss for the roof, next.' },   // round eleven note 13 (came back, round ten note 10): Hazel says why out loud when it comes up
     { id:'bench',   name:'Build a bench by the fire', short:'building a bench', who:'him', act:'build', spot:'logseat',  cost:{ twig:3 },          needs:['flag:firstpick'], mins:12,  green:0, magic:1,
       blurb:'They have been sitting on the cold ground every evening. A plank on two stout legs by the campfire, just long enough for two gnomes.' },
+    // round eleven notes 1-3 (Bryce: the big stump and log were in the way): the old log goes too, sawn into rounds for the woodpile
+    { id:'logsaw', name:'Saw up the old log', short:'sawing up the log', spine:true, who:'him', act:'build', spot:'logsaw', cost:{}, give:{ twig:3 }, mins:15, green:0, needs:['flag:firstpick'],
+      blurb:'The loggers\' old log lies across the bottom of the yard, right in the way. Round by round it is sawn up and stacked on the woodpile. It will keep the fire going for weeks.',
+      doneNote:'The old log is sawn up and stacked on the woodpile. The bottom of the yard is clear at last.' },
     { id:'sapling', name:'Plant the sapling out', short:'planting the sapling', spine:true, who:'her', act:'water', spot:'sapling',     cost:{ water:2, moss:2 },  mins:10, green:2, magic:3,
       needs:['clear', 'roof'], blurb:'The little oak they carried from their old home is ready for real ground. Trees bring life back faster than anything. It will outlive us all.' },
     // v99 (round ten note 18): Wendel's work corner comes early, beside the house: a frame of poles and bark where things get made before they are carried to their spot. The story's lean-to job (leanto) finishes it into his proper workshop.

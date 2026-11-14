@@ -394,7 +394,7 @@ function depthOf(gx, gy, tile = '0,0') { const [tx, ty] = tile.split(',').map(Nu
 // ---------- scene content (home tile) ----------
 const PROPS = [
   { name:'shelter',      gx:0.30, gy:0.22, s:1.35 },   // v74: a third bigger so the door is gnome height (art review: it was ~0.6 of a gnome)
-  { name:'firewood',     gx:0.53, gy:0.06, s:0.9, until:'stump' },   // round eleven note 4 (Bryce: it looked as if it was floating): out on open ground beside the house, not perched on its roots   // round six (Bryce): the firewood is the old stump, chopped (woodStage)   // v75 (Bryce's yard moves): by the house's right roots, in front of the barrel (front:2 draws it over the barrel)
+  { name:'firewood',     gx:0.43, gy:0.05, s:0.9, until:'stump' },   // round eleven note 4 (Bryce: it looked as if it was floating; and it stays next to the house): on the ground right beside the house's right roots, not perched on them   // round six (Bryce): the firewood is the old stump, chopped (woodStage)   // v75 (Bryce's yard moves): by the house's right roots, in front of the barrel (front:2 draws it over the barrel)
   { name:'barrel',       gx:0.40, gy:0.19, s:0.51, front:3, hitW:0.4 },   // art day 20: repainted with the bark spout, padded so the barrel itself stays centred (s keeps it about the old size, a touch bigger);   // v75 (Bryce's yard moves): by the house's right roots; round nine note 19 (Bryce: not close enough to the roof to catch anything): tucked in right under the roof's edge, a few steps from the door
   { name:'campfire',     gx:0.22, gy:0.40, s:0.9 },   // v75 (Bryce's yard moves): in front of the house's left roots
   { name:'lanternstump', gx:0.44, gy:0.93, s:1.25, gone:'stump' },   // round eleven notes 1-3 (Bryce: the big dead stump at the bottom of the yard is in the way, and the one Wendel dug out was tiny): the day-one stump job is that big stump now   // a plain old stump now (Bryce: the lamp post nailed to it made no sense); dug out in stages by "Dig out the old stump" (drawStump)
@@ -430,7 +430,7 @@ function routineFor(h) {   // what the couple do at this hour when no job needs 
 const CLEAR_ITEMS = [];   // filled in below from HOME_KIT: the pieces Hazel clears, in the order she takes them
 const WOOD_ITEMS = [[0.90, 0.44], [0.86, 0.66], [0.34, 0.90]], STICK_PILE = [0.52, 0.30];   // three fallen branches Wendel gathers onto the stick pile; Hazel's good sticks from clearing go there too (round six: sticks are for fences, firewood comes from the old stump)
 const STUMP_AT = [0.44, 0.93], STUMP_ST = { rock: 0.3, chop: 0.45, carry: 0.68, fill: 0.88 }, STUMP_PILE = [0.50, 0.95];   // the old stump in the yard, and how far through "Dig out the old stump" each stage starts (content.js stages)
-const WOOD_DROP = [0.57, 0.11], WATER_TRIPS = 3;   // right in front of the woodpile (firewood prop, by the house's right roots), so the wood he sets down lands on it
+const WOOD_DROP = [0.47, 0.10], WATER_TRIPS = 3;   // right in front of the woodpile (firewood prop, by the house's right roots), so the wood he sets down lands on it
 // "Look for water": the spring is between the roots of the big old stump at the back of the yard, choked with stones and dead leaves.
 // Wendel searches the yard until SPRING_FOUND, then clears it; the water rises into a little pool and trickles off toward the dry creek.
 const MOSS_SPOTS = [[0.70, 0.20], [0.12, 0.27], [0.16, 0.78], [0.58, 0.16]];   // mossy roots and rocks round the yard edge
@@ -491,12 +491,14 @@ const WORKPATH = {
   doorstep: () => [0.33, 0.27, 'dig'],   // kneeling by the door, bedding each flat stone in (stones: kneel, not hammer)
   clothesline: p => p < 0.5 ? [0.48, 0.16, 'build'] : [0.58, 0.10, 'build'],   // one post, then the other
   lantern: () => [0.71, 0.54, 'build'],   // at the old lantern stump
+  logsaw: (p, g) => {   // round eleven notes 1-3: he saws the old log round by round from its end, carrying the rounds to the woodpile as he goes
+    const e = logEnd(p); return workLoop(g, 'logsaw', () => [[e[0] + 0.03, e[1] + 0.04, actOr(g, 'chop', 'build'), false, 7, e], [e[0] + 0.02, e[1] + 0.05, 'pickup', false, 2.5, e], [WOOD_DROP[0] + 0.02, WOOD_DROP[1] + 0.02, 'putdown', 'logs', 2.5, [0.43, 0.05]]]); },
   stump: (p, g) => {   // round six (Bryce): in stages. Dig round the roots, rock it loose till it tips, chop it and carry the firewood to the pile, fill the hole
     const [sx, sy] = STUMP_AT, at = [sx, sy];
     if (p < STUMP_ST.rock) return workLoop(g, 'stump-dig', () => [[sx - 0.045, sy + 0.04, 'dig', false, 6, at], [sx + 0.045, sy + 0.045, 'dig', false, 6, at], [sx - 0.06, sy - 0.01, 'dig', false, 5, at]]);
     if (p < STUMP_ST.chop) return workLoop(g, 'stump-dig', () => [[sx - 0.045, sy + 0.04, 'dig', false, 6, at], [sx + 0.045, sy + 0.045, 'dig', false, 6, at]]);   // v80 (Bryce): still digging while it rocks loose, until it is out of the ground; then the chopping
     if (p < STUMP_ST.carry) return [sx - 0.02, sy + 0.07, actOr(g, 'chop', 'build'), false, 0, [sx + 0.03, sy + 0.04]];   // v80 (Bryce): chopping it up where it fell; the chopped pile grows beside the hole
-    if (p < STUMP_ST.fill) return workLoop(g, 'stump-carry', () => [[STUMP_PILE[0] + 0.03, STUMP_PILE[1] + 0.03, 'pickup', false, 2.5, STUMP_PILE], [WOOD_DROP[0] + 0.02, WOOD_DROP[1] + 0.02, 'putdown', 'logs', 2.5, [0.53, 0.06]]]);   // then armful by armful to the woodpile
+    if (p < STUMP_ST.fill) return workLoop(g, 'stump-carry', () => [[STUMP_PILE[0] + 0.03, STUMP_PILE[1] + 0.03, 'pickup', false, 2.5, STUMP_PILE], [WOOD_DROP[0] + 0.02, WOOD_DROP[1] + 0.02, 'putdown', 'logs', 2.5, [0.43, 0.05]]]);   // then armful by armful to the woodpile
     return workLoop(g, 'stump-fill', () => [[sx - 0.03, sy + 0.05, 'dig', false, 6, at], [sx + 0.04, sy + 0.04, 'dig', false, 5, at]]);
   },
   firering: (p, g) => workLoop(g, 'firering', c => {   // round six: he fetches flat stones and sets them round the fire one by one (the ring appears as he goes)
@@ -519,7 +521,7 @@ const CHORE_SPOTS = { 'chore:sticks': TWIG_SPOTS, 'chore:stones': [[0.62, 0.92],
 function choreWork(id, p, g) {
   const c = C.chores.list.find(c => c.id === id), home = id === 'chore:sticks' ? [STICK_PILE[0] + 0.05, STICK_PILE[1] + 0.03, 'putdown', true, 2.5, STICK_PILE] : [SPOTS.door[0] + 0.03, SPOTS.door[1] + 0.04, 'putdown', false, 2, [0.30, 0.28]];
   if (id === 'chore:weed') return workLoop(g, id, n => [2, 8, 5, 0, 6].map(k => [...wetPatchAt(k), 'gather', false, 4, bedPt(k)]));   // along the bed, pulling the odd weed
-  if (id === 'chore:moss') return workLoop(g, id, n => [...MOSS_STUMPS.map(m => [...m.at, 'gather', false, 4, m.face]), home]);
+  if (id === 'chore:moss') return workLoop(g, id, n => [...MOSS_STUMPS.filter((m, i) => i === 0 || taskProg('logsaw') <= 0).map(m => [...m.at, 'gather', false, 4, m.face]), home]);   // (the old log goes once it is sawn up)
   const S = (CHORE_SPOTS[id] || TWIG_SPOTS).filter(([x, y]) => !onBed('0,0', x, y) && !onBed('0,0', x, y - 0.05));   // never out in the middle of the seed bed
   return workLoop(g, id, n => [[...S[(n * 2) % S.length], c.act, false, 3.5], [...S[(n * 2 + 1) % S.length], c.act, false, 3.5], home]);
 }
@@ -587,7 +589,9 @@ function benchEvening() {   // tonight they sit out on the bench? Before the hou
 const JOB_FACE = { bench:BENCH, lantern:[0.75, 0.50] };   // what a working gnome turns to face (default: the middle of the yard)
 const WORKCORNER = [0.09, 0.27];
 const SALVAGE_AT = [0.07, 0.40];   // round eleven note 7: the good bits from the loggers' rubbish, stacked in front of Wendel's work corner for little makes   // v99 (note 18): Wendel's work corner, beside the house on its left (the story's lean-to grows out of it)
-const WORKSPOT = { workcorner:[WORKCORNER[0] + 0.06, WORKCORNER[1] + 0.07], logseat:[0.185,0.495], feeder:[0.82,0.66], clearing:[0.54,0.66], wheelbarrow:[0.78,0.88], shelter:[0.38,0.30], lanternstump:[0.40,0.97], fence:[0.80,0.74], sapling:[0.24,0.84], stonebench:[0.11,0.46], seedbed:[0.54,0.66], herbs:[HERB_AT[0] - 0.03, HERB_AT[1] + 0.08] };
+const LOG_AT = [0.28, 0.93], LOG_LEN = 0.22;   // round eleven: the old fallen log (HOME_KIT stumps-rocks-06), lying left-right on screen
+function logEnd(p) { return [LOG_AT[0] + LOG_LEN * (0.5 - p) * 0.5, LOG_AT[1] - LOG_LEN * (0.5 - p) * 0.5]; }   // where the sawn end is now (screen-right end first)
+const WORKSPOT = { workcorner:[WORKCORNER[0] + 0.06, WORKCORNER[1] + 0.07], logseat:[0.185,0.495], feeder:[0.82,0.66], clearing:[0.54,0.66], wheelbarrow:[0.78,0.88], shelter:[0.38,0.30], lanternstump:[0.40,0.97], logsaw:[0.36, 0.95], fence:[0.80,0.74], sapling:[0.24,0.84], stonebench:[0.11,0.46], seedbed:[0.54,0.66], herbs:[HERB_AT[0] - 0.03, HERB_AT[1] + 0.08] };
 
 // ---------- loading ----------
 const IM = {};
@@ -1866,7 +1870,7 @@ function kitGrow(k) { return k && KIT_HI[kitName(k)] ? KIT_GROW : 1; }   // mult
 const HOME_KIT = [   // [piece, healed piece (null: it goes when the job is done), gx, gy, scale, job that clears it]
   ['stumps-rocks-01', 'stumps-rocks-07', 0.775, 0.07, 0.7],   // round eleven note 1: the big dead stump at 0.44, 0.955 is the one Wendel digs out now (PROPS lanternstump)   // v99 (round ten notes 20, 21): moved clear of the little oak (it was at 0.13, 0.84, roots touching the oak's ring), and it stays the same stump when the yard greens (it used to swap to a much taller one)
  
-  ['stumps-rocks-03', 'stumps-rocks-09', 0.02, 0.17, 0.55], ['stumps-rocks-06', 'stumps-rocks-12', 0.28, 0.93, 0.6],   // true: the greened log is drawn mirrored, so it lies the same way as the bare one (note 21)
+  ['stumps-rocks-03', 'stumps-rocks-09', 0.02, 0.17, 0.55], ['stumps-rocks-06', 'stumps-rocks-12', 0.28, 0.93, 0.6, 'logsaw'],   // round eleven: sawn up for the woodpile (job logsaw)   // true: the greened log is drawn mirrored, so it lies the same way as the bare one (note 21)
   ['stumps-rocks-04', null, 0.60, 0.13, 0.6, 'clear'], ['stumps-rocks-05', null, 0.46, 0.07, 0.55, 'clear'],
   ['leftovers-01', null, 0.22, 0.50, 0.55, 'clear'], ['leftovers-02', null, 0.84, 0.36, 0.45, 'clear'], ['leftovers-03', null, 0.18, 0.74, 0.6, 'clear'],
   ['leftovers-04', null, 0.49, 0.03, 0.55, 'clear'], ['leftovers-05', null, 0.52, 0.90, 0.5, 'clear'], ['leftovers-09', null, 0.93, 0.29, 0.45, 'clear'],
@@ -2335,9 +2339,10 @@ EXTRAS.push({ gx: FENCE_GATE.gx, gy: FENCE_GATE.gy, show: () => bedFenceShown() 
   drawFenceSeg(L, M, al, g, GATE_FOOT, K, [62, 228], true);   // the gate, swung in against its post
   drawFenceSeg(L, R, al, g, GATE_FOOT, K, [0, 62]); drawFenceSeg(L, R, al, g, GATE_FOOT, K, [228, 300], true); } });   // both posts stay where they stand
 if (NEWGROUND) for (const [a, b, gx, gy, sc, job, flipB] of HOME_KIT) EXTRAS.push({ gx, gy,
-  show: () => G.landStage().key === 'barren' ? (job === 'clear' ? clearLeft(gx, gy) : 1 - (job ? taskProg(job) : 0)) : b ? 1 : 0,
+  show: () => job === 'logsaw' ? (taskProg('logsaw') >= 1 ? 0 : 1) : G.landStage().key === 'barren' ? (job === 'clear' ? clearLeft(gx, gy) : 1 - (job ? taskProg(job) : 0)) : b ? 1 : 0,
   draw(x, y, al) { const kk = G.landStage().key === 'barren' ? a : b, im = IM['kit-' + kk]; if (!im || !im.width) return; const q = sc * kitK(kk, im), w = im.width * q, h = im.height * q;
-    ctx.save(); ctx.globalAlpha = al; shadow(x, y, w * 0.38, w * 0.1); if (flipB && kk === b) { ctx.translate(x, 0); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, y - h * 0.88, w, h); } else ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); ctx.restore(); } });
+    ctx.save(); ctx.globalAlpha = al;
+    if (job === 'logsaw') { const p = taskProg('logsaw'); if (p > 0) { ctx.beginPath(); ctx.rect(x - w / 2 - 4, y - h * 1.2, w * (1 - p * 0.97) + 4, h * 1.6); ctx.clip(); } }   /* round eleven: shorter round by round as he saws it up */ shadow(x, y, w * 0.38, w * 0.1); if (flipB && kk === b) { ctx.translate(x, 0); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, y - h * 0.88, w, h); } else ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); ctx.restore(); } });
 for (const [a, b, gx, gy, sc, job] of HOME_KIT) if (job === 'clear') CLEAR_ITEMS.push([gx, gy]);
 let clearDust = -1;
 function clearLeft(gx, gy) {   // each bit of rubbish goes in its turn while Hazel works, with a little puff of dust as it goes
@@ -4850,7 +4855,7 @@ function tapAt(cx, cy, wx, wy) {
 // A flag drawn faint in pencil means the store is short; the card says what of. A red thread on the flag marks the story's job.
 // Hazel's little makes have no flags (Bryce): they stay in Hazel's list in Jobs. Jobs stays as the index of everything.
 // Spells are cast from the thing they act on: the seed bed, a patch being mended, the toadstool in the way.
-const STAKE_AT = { workcorner: () => [WORKCORNER[0] + 0.05, WORKCORNER[1] + 0.06], spring: () => [SPRING.at[0] - 0.02, SPRING.at[1] + 0.04], fire: () => [0.27, 0.43], firewood: () => [0.60, 0.15], barrel: () => [0.42, 0.14], clearing: () => [0.56, 0.62], logseat: () => [0.20, 0.53], herbs: () => [HERB_AT[0], HERB_AT[1] + 0.03] };
+const STAKE_AT = { logsaw: () => [LOG_AT[0] + 0.06, LOG_AT[1] - 0.02], workcorner: () => [WORKCORNER[0] + 0.05, WORKCORNER[1] + 0.06], spring: () => [SPRING.at[0] - 0.02, SPRING.at[1] + 0.04], fire: () => [0.27, 0.43], firewood: () => [0.50, 0.15], barrel: () => [0.42, 0.14], clearing: () => [0.56, 0.62], logseat: () => [0.20, 0.53], herbs: () => [HERB_AT[0], HERB_AT[1] + 0.03] };
 function stakeSpot(d) {   // [world x, world y] where this job's flag stands, or null (no flag)
   if (d.make || d.chore) return null;
   const tile = d.healTile || d.tile; if (tile) return G.s.tiles[tile] || d.tile ? toWorld(0.5, 0.52, tile) : null;
@@ -5339,7 +5344,7 @@ function openPack() {
   if (G.s.plots.seedbed.grown) html += `<h3>The pantry</h3><p>From the seed bed. They eat from it at breakfast and supper, and the shelf holds about ${C.pantry.cap} of each; the spare goes over the fence. Hazel's seed tin holds ${C.pantry.seedTin} seeds.</p>` + (pan.length <= 6 ? storeShelves(pan.map(shelf), 3) : plain(pan));   // after the first picking: the bottom two shelves of the same painting
   openSheet('pack', html);
 }
-const JOB_PIC = { workcorner: 'yard-leanto-frame', leanto: 'yard-leanto', bed2: 'seedbed-rect', ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'bench-wh', barrow: 'wheelbarrow',
+const JOB_PIC = { logsaw: 'kit/stumps-rocks-06', workcorner: 'yard-workcorner', leanto: 'yard-leanto', bed2: 'seedbed-rect', ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'bench-wh', barrow: 'wheelbarrow',
   woodpile: 'firewood', doorstep: 'yard-doorstep', rainbarrel: 'barrel-full', clothesline: 'washing-line', lantern: 'lanternstump', stump: 'lanternstump', windowbox: 'yard-windowbox', wormlantern: 'worm-lantern',
   wormlamp: 'worm-lamp', house1: 'house-hollowed', house2: 'house-windows', house3: 'house-finished', hedgehoghouse: 'nest-leafpile', nestbox: 'nest-nest', bridge: 'bld-bridge',
   dress_spring: 'make-dress_spring', dress_summer: 'make-dress_summer', dress_autumn: 'make-dress_autumn', dress_winter: 'make-dress_winter' };
