@@ -39,7 +39,13 @@ They are messy for the same few reasons, so one tidy-up fixes most of them:
 
 1. Repaint the grown-over ground (the `moss` ground swatch): soft deep green short moss and grass, low contrast, no dark soil between, no lumps, only a few leaves. Same calm feel as the meadow grass. It covers every finished patch and the home yard.
 2. Replace or drop the orange pine-needle ground patch (kit patch-05); a soft brown leaf-litter patch at most.
-3. If Bryce picks the rectangle bed: the woven fence kit pieces from an earlier art day (`sprites/kit/fence-straight-a/b`, corners, gate) can probably be used as they are; check them before painting anything new.
+3. The rubbish heap and what it leaves (Bryce, 2026-11-14: new graphics needed). All painted to sit on the same spot and footprint as the large pond (about 420 px wide), seen from the game's usual angle, unlit, storybook style, nothing glowing:
+   a. The rubbish heap: the loggers' junk (tins, broken crates, wire, a tyre, offcuts) piled on a low mound of spoil in the middle of the patch. Big enough to read as "the heap" from far out.
+   b. Half cleared: the same mound with most of the junk gone, a few bits left, bare trampled earth showing.
+   c. The hollow: the mound gone, a shallow bare dip of dry, cracked earth where the heap stood.
+   d. Rain in the hollow: the dip with muddy water pooling in the bottom, damp dark earth round the edge (shown while the rain spell fills it).
+   e. The finished pond at the large size: today's pond painting, checked at 420 px and repainted only if it looks soft. It needs a rim of stones and room for reeds.
+4. Rectangle bed (picked): the woven fence kit pieces from an earlier art day (`sprites/kit/fence-straight-a/b`, corners, gate) can probably be used as they are; check them before painting anything new.
 
 ## Decided
 
