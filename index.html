@@ -74,6 +74,7 @@ if (window.SANDBOX) {
   .por { width:64px; height:64px; border-radius:50%; background:radial-gradient(circle at 50% 40%, #fbf4e2, #e2d3b2); border:2px solid rgba(107,90,68,.45); overflow:hidden; display:flex; align-items:center; justify-content:center; flex:none; }
   .por img { width:100%; height:100%; object-fit:cover; } .por.pad img { object-fit:contain; padding:6px; box-sizing:border-box; } .por span { font-size:34px; }
   .tcard .por.two, .por.two { width:96px; border-radius:32px; } .por.two img { width:50%; }
+  .pips { display:block; margin:3px 0 4px; } .pips i { display:inline-block; width:13px; height:8px; margin-right:3px; border-radius:60% 10% 60% 10%; background:rgba(120,100,70,.22); border:1px solid rgba(90,70,45,.35); transform:rotate(-18deg); } .pips i.on { background:#6a8a34; border-color:#3f5a1e; }
   .por.scene { border-radius:14px; } .por.big.scene { width:200px; height:200px; border-radius:18px; }
   .por.big { width:140px; height:140px; margin:4px auto 8px; border-width:3px; } .por.big span { font-size:76px; } .por.big.pad img { padding:12px; }
   .jpage { text-align:center; } .jpage h2 { padding:0 !important; } .jpage .lore { font-size:17px; font-style:italic; color:var(--ink); margin:6px 8px 12px; } .jpage .meta { font-size:14px; margin:4px 0; }
@@ -1753,9 +1754,13 @@ function drawSprig(now) {
   const [n1, N, full] = sprigCount(SPRIG.to), [n0] = sprigCount(SPRIG.from), fresh = SPRIG.to > SPRIG.from && n1 > 0 && n0 < n1 ? Math.max(0, n0) : n1;   // leaves from `fresh` on pop on one after another
   ctx.save(); ctx.globalAlpha = a; ctx.translate(sx, sy); ctx.lineCap = 'round';
   ctx.save(); ctx.shadowColor = 'rgba(40,28,16,0.35)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2; ctx.fillStyle = '#efe4c8';   // the paper scrap (parchment, like the title label)
-  ctx.beginPath(); const pw = 70, ph2 = 40; for (let i = 0; i <= 24; i++) { const q = i / 24 * Math.PI * 2, r = 1 + 0.035 * Math.sin(i * 5.3); ctx.lineTo(Math.cos(q) * pw * r, Math.sin(q) * ph2 * r); } ctx.closePath(); ctx.fill(); ctx.restore();
+  SPRIG.screen = { x: sx, y: sy + 6, w: 150, h: 110 };
+  ctx.beginPath(); const pw = 78, ph2 = 50; ctx.translate(0, 6); for (let i = 0; i <= 24; i++) { const q = i / 24 * Math.PI * 2, r = 1 + 0.035 * Math.sin(i * 5.3); ctx.lineTo(Math.cos(q) * pw * r, Math.sin(q) * ph2 * r); } ctx.closePath(); ctx.fill(); ctx.restore();
   ctx.strokeStyle = 'rgba(120,90,50,0.35)'; ctx.lineWidth = 1; ctx.stroke();
-  ctx.translate(-50, 8);
+  { const st = G.landStage(), next = C.landStages.find(q => q.at > SPRIG.to);   // v99 (notes 8, 26): it says what it is: whose green, and how far to the next stage
+    ctx.fillStyle = '#3a2a1a'; ctx.textAlign = 'center'; ctx.font = 'italic 13px "IM Fell English", Georgia, serif'; ctx.fillText('The yard\'s green', 0, -30);
+    ctx.font = '12px "IM Fell English", Georgia, serif'; ctx.fillStyle = '#5a4630'; ctx.fillText(next ? `${next.at - SPRIG.to} more to ${next.name}` : 'as green as it gets', 0, 38); }
+  ctx.translate(-50, 4);
   // the twig: a gentle curve up and to the right
   const len = 100, P = f => [len * f, -len * 0.16 * f - 9 * Math.sin(f * Math.PI)];
   ctx.strokeStyle = INK; ctx.lineWidth = 4.2; ctx.beginPath(); for (let f = 0; f <= 1.001; f += 0.05) { const [x, y] = P(f); f ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
@@ -2828,7 +2833,7 @@ class Folk {
   spot(i) { const t = this.home; if (t.camp) return glob(CAMP.tile, CAMP.gx - 0.10 + 0.07 * i, CAMP.gy + 0.10 - 0.03 * i); const [sx, sy] = LOT.spots[i % LOT.spots.length]; return glob(t.tile, sx, sy); }
   outside() { if (G.festivalOn()) return true; const h = dayPhase().h; return this.home.camp ? h >= 6 && h < 21 : h >= 7 && h < 20; }
   update(dt) {
-    const seat = festSeat(this);   // festival evening: everyone walks to the long table
+    const seat = festSeat(this) || helpSeat(this);   // festival evening: everyone walks to the long table (v99: or a camping traveller goes to help with a job)
     if (seat && !this.walking && Math.hypot(seat[0] - this.gx, seat[1] - this.gy) > 0.01) { this.tx = seat[0]; this.ty = seat[1]; this.walking = true; this.speed = 0.08; }
     if (!this.walking) {
       if (seat) { this.dir = 'front'; return; }
@@ -4705,6 +4710,7 @@ function tapAt(cx, cy, wx, wy) {
   if (BABY_SEED.screen && hit(BABY_SEED.screen, wx, wy)) { const [x, y] = [BABY_SEED.screen.x, BABY_SEED.screen.y]; float('♥', x, y - 20); return toast(C.animals.babyTap); }
   for (const o of [...G.s.offers].reverse()) if (hit(o.screen, wx, wy)) { G.gather(o.id); float(`+1 ${C.resources[o.kind].name}`, o.screen.x, o.screen.y); driftHome(o); return; }
   if (bed2Shown() >= 1) { const [bx, by] = toWorld(...bed2Pt(0.5, 0.5)); if (Math.hypot((wx - bx) / 125, (wy - by + 6) / 62) < 1 && !stakeHit(cx, cy)) return openSeedbed('bed2'); }   // v99: the second bed
+  if (SPRIG.screen && performance.now() - SPRIG.t < 6000 && Math.abs(cx - SPRIG.screen.x) < 78 && Math.abs(cy - SPRIG.screen.y) < 52) { PL.add('tapped the green sprig'); return openGreen(); }   // v99: the sprig opens the valley's green
   { const s = stakeHit(cx, cy); if (s) { PL.add(`tapped a job flag: ${s.ids.join(', ') || (s.patch ? 'spell on ' + s.patch : 'seed bed')}`); return openStake(s); } }   // v90: a job's paper flag
   for (const fd of G.s.village.finds) if (hit(fd.screen, wx, wy)) { const st = G.questStep(fd.folk), f = G.folkDef(fd.folk); G.found(fd.id); float('✓ found', fd.screen.x, fd.screen.y); toast(`You found ${st.find.name}.`); return openFolk(f.id); }
   for (const p of [...folkOnLand].reverse()) if (hit(p.screen, wx, wy)) return G.folkState(p.f.id) ? openFolk(p.f.id) : openTraveller();
@@ -5084,6 +5090,7 @@ sheet.addEventListener('click', e => {
   if (a === 'start' && sheetKind && /^(card|patch):/.test(sheetKind) && G.taskView(G.taskDef(id)).can) { closeSheet(); }   // v90: from a thing's card, close it and watch them go
   if (a === 'start') { if (G.startTask(id)) { JOB_START = performance.now(); toast(G.asleepAt(G.now()) ? 'They will get going when they wake, at six.' : 'Set to work.'); for (const g of gnomes) if (g.who === G.taskDef(id).who) { g.walking = false; g.wait = 0.1; } } }
   if (a === 'openmagic') { openMagic(); return; }
+  if (a === 'lendhand') { const j = G.lendHand(); if (j) { closeSheet(); toast(`${G.folkDef(G.s.village.traveller.id).name} goes to help. Half the time now.`); } return; }
   if (a === 'spellgo') return goSpell(id);
   if (a === 'cast' && id === 'wake') { const runs = G.running().filter(r => r.def.tile || r.def.healTile); if (G.cast(id)) { wakeWaves(runs); closeSheet(); return; } }   // round eight note 10: you see it work
   if (a === 'cast' && (id === 'worms' || (id === 'rain' && G.castSpots('rain').length))) { const k0 = sheetKind && sheetKind.startsWith('patch:') ? sheetKind.slice(6) : null, k = G.castSpots(id).includes(k0) ? k0 : G.castSpots(id)[0];
@@ -5358,6 +5365,20 @@ function openSecret(id, fresh) {   // one little find, pressed into the journal
   openSheet('secret', `<div class="pressed"><img src="sprites/kit/secrets-${d.pic}.webp" alt=""></div><h2>${fresh ? 'A little find!' : title}<small>${fresh ? `${title} · ` : ''}${nf} of ${C.secrets.length} little finds</small></h2><p class="pnote">${d.note}</p>
   <p><button class="act" data-a="journal">${fresh ? 'Press it in the journal' : 'Back to the journal'}</button></p>`);
 }
+// v99 (round ten notes 8, 26, 30): the valley's green, patch by patch: what stage each is at, how far to the next, and what brings green there
+function leafPips(n, N) { let h = '<span class="pips">'; for (let i = 0; i < Math.min(N, 14); i++) h += `<i class="${i < n ? 'on' : ''}"></i>`; return h + '</span>'; }
+function greenRow(name, k, how) {
+  const g = G.s.tiles[k].green, S = C.landStages, st = G.landStage(k), i = S.indexOf(st), next = S[i + 1];
+  return `<div class="row"><div class="t"><b>${name}</b><span class="meta">${cap(st.name)}${next ? ` · ${next.at - g} more to ${next.name}` : ' · as green as it gets'}</span>${next ? leafPips(g - st.at, next.at - st.at) : leafPips(14, 14)}<span>${how}</span></div></div>`;
+}
+function openGreen() {
+  let html = `<h2>The valley's green</h2><p class="meta" style="margin:0 0 6px">Only living things bring the land back. Each patch has its own green.</p>`;
+  html += greenRow('The yard', '0,0', 'Crops picked from the seed bed, the little oak, herbs and flowers, and animals that make a home here.');
+  if (G.s.tiles['0,1']) html += greenRow(G.gardenOpen() ? 'Our garden' : 'The garden-to-be', '0,1', G.gardenOpen() ? 'Crops from the new bed, flowers and ferns planted here, and the pond\'s visitors.' : 'Clear it, wake the worms, and the green creeps in by itself.');
+  for (const k of G.healTiles()) { if (k === '0,1') continue; const K = C.heal.kinds[G.s.tiles[k].kind]; html += greenRow(cap(K.patch) + ', ' + G.tileWhere(k), k, 'The life that comes back after each job the gnomes do there.'); }
+  html += `<p class="meta">A crop gives about one leaf for every hour it takes to grow: the longer the wait, the more green.</p>`;
+  openSheet('green', html);
+}
 function openLand(st) {   // the home patch reached a new stage: say what happened and why
   openSheet('land', `<div class="jpage card"><p class="meta" style="margin:0">The land is waking</p><h2>${st.name[0].toUpperCase() + st.name.slice(1)}</h2><p class="lore">${st.explain || st.sub}</p></div>
     <p style="text-align:center"><button class="act" data-a="close">Have a look</button></p>`);
@@ -5597,7 +5618,14 @@ function openTraveller() {
     html += `<div class="row"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>` + (v.locked ? `<span class="bad">${v.why}</span>` : `<span class="who" data-w="${d.who}">${C.names[d.who]}</span> needs <span class="cost">${costHtml(d.cost)}</span> · ${hours(d.mins)}` + (v.can ? '' : `<br><span class="bad">The store is short of ${v.missing.join(', ')}.</span>`)) + `</span></div><button class="act" data-a="start" data-id="${d.id}" ${v.state === 'ready' && v.can ? '' : 'disabled'}>Build</button></div>`;
     html += `<p style="margin-top:12px">Not the right neighbour? <button class="act quiet" data-a="wave">Wave them on</button><br><small>They will go on along the road, and someone else will come by in a day or so.</small></p>`;
   }
+  { const c = G.canLendHand(), tk = tr.help && G.s.tasks[tr.help], on = tk && !tk.done && tk.endsAt > G.now();   // v99: a helping hand, once a day, while they camp
+    html += `<h3>A helping hand</h3><div class="row"><div class="t"><b>${on ? `${f.name} is helping with a job` : `${f.name} would gladly help`}</b><span>${on ? `Working beside ${C.names[tk.who] || 'the gnomes'} now. Two pairs of hands: half the time.` : c.ok ? `One job a day, while camped here. Just now that would be ${lcName(c.job.def.short || c.job.def.name)}, done in half the time left.` : c.why}</span></div>${on ? '' : `<button class="act" data-a="lendhand" ${c.ok ? '' : 'disabled'}>Ask</button>`}</div>`; }
   openSheet('traveller', html);
+}
+function helpSeat(folk) {   // the camping traveller, lending a hand: they walk over and stand by the gnome they are helping
+  const tr = G.s.village.traveller; if (!folk.home.camp || folk.i !== 0 || !tr || !tr.help) return null;
+  const tk = G.s.tasks[tr.help]; if (!tk || tk.done || tk.endsAt <= G.now()) return null;
+  const g = gnomes.find(g => g.who === tk.who); return g ? [g.gx + 0.07, g.gy + 0.03] : null;
 }
 function folkWish(fid) {   // v70: a little make for their own home (C.wishes); you send the basket, they make it
   const f = G.folkDef(fid), Sh = f.short[0].toUpperCase() + f.short.slice(1), d = G.wishOpen(fid), m = G.wishMaking(fid), l = (C.wishes.list[fid] || []), done = l.filter(x => G.wishProg(fid, x.id) >= 1);
@@ -5729,7 +5757,8 @@ $('bPack').onclick = openPack; $('guideSkip').onclick = () => guideTo(4);
 $('guide').addEventListener('click', e => { if (e.target.closest('button[data-a="spiritok"]')) { $('guide').classList.remove('on'); $('guideSkip').style.display = ''; return; }   // v97 (round ten note 19): the Wood spirit's Thank you lives in this strip, not the sheet, so it was never heard
   const b = e.target.closest('button[data-a="guide"]'); if (!b) return; G.s.flags.guide = b.dataset.id === 'skip' ? 4 : 1; $('guideSkip').style.display = ''; guideTo(G.s.flags.guide); });   // v87: the hello's own buttons
 $('bTasks').onclick = () => { hidePointer('bTasks'); if (guideStep() === 4) guideTo(9); openTasks(); }; $('bMagic').onclick = openMagic; $('bJournal').onclick = () => { DPAGE = 0; openJournal(); };
-G.onChange((kind, data) => { if (kind === 'green') showSprig(performance.now() - SPRIG.t < 5000 ? Math.min(SPRIG.from, data) : data); });   // v87: a burst of green (a harvest, coming back after a while) shows all its new leaves
+G.onChange((kind, data) => { if (kind === 'green' && !G.s.flags.greenIntro && G.s.tiles['0,0'].green > 0) { G.s.flags.greenIntro = true; toast('Something grew, so the yard is a little greener. The sprig by the little oak counts it: tap the sprig to see the whole valley.'); }
+  if (kind === 'green') showSprig(performance.now() - SPRIG.t < 5000 ? Math.min(SPRIG.from, data) : data); });   // v87: a burst of green (a harvest, coming back after a while) shows all its new leaves
 G.onChange((kind, data) => { if (kind === 'spell' && (data === 'rain' || data === 'cloud')) startShower(8, 90); renderInv(kind === 'inv' && typeof data === 'string' ? data : null); renderHud(); if (kind === 'task' && data && data.done) { if (data.give) { const g = gnomes.find(g => g.who === data.who); if (g && g.screen && !g.inside) float(Object.entries(data.give).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(' '), g.screen.x, g.screen.y - g.screen.h * 0.6); else toast(`${C.names[data.who]} brought in ${Object.entries(data.give).map(([k, n]) => `${n} ${C.resources[k].name}`).join(' and ')}.`); } else toast('Finished: ' + lcName(G.taskDef(data.id).name) + '.'); } if (kind === 'event') toast(data.text); if (kind === 'movein') toast(data.note);
   if (kind === 'traveller' && data) { if (!sheetKind && windowFree() && G.s.flags.welcomed) { tookWindow(); openStory(data, 'arrived'); } else toast('A traveller has camped by the path.'); }   // v87: only if this visit has had no window yet
   if (kind === 'story') { if (!sheetKind && windowFree()) { tookWindow(); openStory(data.folk, data.kind); } else toast(`${cap(G.folkDef(data.folk).short)} has news. It is in the Journal.`); }

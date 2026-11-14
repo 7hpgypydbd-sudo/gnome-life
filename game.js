@@ -951,6 +951,21 @@ const G = {
     for (const [kind, n] of Object.entries(f.building.gift)) { if (this.shelfFull(kind)) continue; s.offers.push({ id: Math.random().toString(36).slice(2, 8), kind, n, tile: d.tile, gx: d.gx + 0.06 * i, gy: d.gy + 0.05 + 0.04 * i, at: now(), gift: fid }); i++; }
     if (i) this.note(f.building.giftText);   // a full shelf: the gift waits on their step till there's room
   },
+  // v99 (round eight note 14, round ten note 1): while a traveller camps by the path they gladly lend a hand with one job a day. The job
+  // they join is done in half the time left, and they walk over to work beside the gnome (index.html helpSeat).
+  canLendHand() {
+    const tr = this.s.village.traveller, t = now(); if (!tr) return { ok: false, why: '' }; const nm = this.folkDef(tr.id).name;
+    if (tr.helpDay === dayKey(t)) return { ok: false, why: `${nm} has lent a hand today already, and will again tomorrow.` };
+    const jobs = this.running().filter(r => !r.id.startsWith('chore:') && r.endsAt - t > 2 * MIN && (r.who === 'him' || r.who === 'her')).sort((a, b) => b.endsAt - a.endsAt);
+    if (!jobs.length) return { ok: false, why: 'Start a job first, and there will be something to help with.' };
+    return { ok: true, job: jobs[0] };
+  },
+  lendHand() {
+    const c = this.canLendHand(); if (!c.ok) return false; const tr = this.s.village.traveller, t = now(), tk = this.s.tasks[c.job.id], nm = this.folkDef(tr.id).name;
+    tk.endsAt = t + (tk.endsAt - t) / 2; tr.helpDay = dayKey(t); tr.help = c.job.id;
+    if (window.PL) PL.add(`${tr.id} lends a hand with [${c.job.id}]`);
+    this.note(`${nm} went over to help ${C.names[c.job.who]} with ${lc(c.job.def.short || c.job.def.name)}. Two pairs of hands: half the time.`); this.emit('task', { id: c.job.id }); this.dirty = true; return c.job;
+  },
   waveOn() {   // send the traveller on their way (they may come back much later); someone else comes soon
     const v = this.s.village, tr = v.traveller; if (!tr || this.s.tasks['home:' + tr.id]) return false;
     v.queue.push(tr.id); v.traveller = null; v.nextAt = now() + C.village.waveGapDays * DAY();
