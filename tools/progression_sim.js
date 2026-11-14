@@ -66,6 +66,7 @@ function visit() {
     if (p.stage === 'planted') G.water();
     if (MODE === 'eager' && p.stage === 'growing' && G.canCast('coax').ok && (G.s.inv.light||0) >= 4) G.cast('coax');
     if (G.canCast('legs').ok && !process.env.NOLEGS) { G.cast('legs'); ev('SPELL', 'toadstool legs'); }
+    for (const sp of ['worms', 'rain']) if (G.castSpots(sp).length && G.canCast(sp).ok) { G.cast(sp); ev('SPELL', sp === 'worms' ? 'wake the worms' : 'rain fills the hollow'); }   // v99: a patch step that is the player's spell
     for (const sp of ['wind', 'cloud', 'seedwake', 'sing']) if (G.canCast(sp).ok && (G.s.inv.light||0) >= 3) { G.cast(sp); }
     if (G.dishBuilt() && !G.s.feeder.food) { if ((G.s.inv.berry||0) > 1) G.putFood('berry'); else if ((G.s.inv.seed||0) > 4) G.putFood('seed'); }
     if (!G.s.flags.rabbit && G.s.feeder.food && p.stage === 'growing') { G.rabbitAte(); G.rabbitRaid(); }
