@@ -73,6 +73,8 @@ if (window.SANDBOX) {
   .jcard.unseen .por img, .jcard.unseen .por span { filter:brightness(0); opacity:.22; } .jcard.unseen b { color:var(--ink2); }
   .por { width:64px; height:64px; border-radius:50%; background:radial-gradient(circle at 50% 40%, #fbf4e2, #e2d3b2); border:2px solid rgba(107,90,68,.45); overflow:hidden; display:flex; align-items:center; justify-content:center; flex:none; }
   .por img { width:100%; height:100%; object-fit:cover; } .por.pad img { object-fit:contain; padding:6px; box-sizing:border-box; } .por span { font-size:34px; }
+  .tcard .por.two, .por.two { width:96px; border-radius:32px; } .por.two img { width:50%; }
+  .pips { display:block; margin:3px 0 4px; } .pips i { display:inline-block; width:13px; height:8px; margin-right:3px; border-radius:60% 10% 60% 10%; background:rgba(120,100,70,.22); border:1px solid rgba(90,70,45,.35); transform:rotate(-18deg); } .pips i.on { background:#6a8a34; border-color:#3f5a1e; }
   .por.scene { border-radius:14px; } .por.big.scene { width:200px; height:200px; border-radius:18px; }
   .por.big { width:140px; height:140px; margin:4px auto 8px; border-width:3px; } .por.big span { font-size:76px; } .por.big.pad img { padding:12px; }
   .jpage { text-align:center; } .jpage h2 { padding:0 !important; } .jpage .lore { font-size:17px; font-style:italic; color:var(--ink); margin:6px 8px 12px; } .jpage .meta { font-size:14px; margin:4px 0; }
@@ -268,11 +270,21 @@ if (window.SANDBOX) {
   #guide .gbtns button.act { background:var(--green); color:#f6ecd2; border-radius:7px; font-family:var(--fell); font-style:normal; font-size:17px; }
   #guide .gbtns button.quiet { background:none; color:var(--ink2); text-decoration:underline; }
   #guide button { flex:none; align-self:flex-start; background:none; border:0; padding:2px 0 8px 6px; font:italic 14px var(--body); color:var(--ink2); text-decoration:underline; }
+  /* v99 (round ten note 16, Bryce: the reading text in menus, the journal and the pantry is too small): bigger text on every parchment sheet */
+  #sheet p { font-size:19px; line-height:1.38; } #sheet h2 small { font-size:17px; } #sheet h3 { font-size:19px; }
+  .row .t b, .jrow .t b { font-size:21px; } .row .t span, .jrow .t span { font-size:17.5px; line-height:1.32; } .row .t i.ribbon { font-size:14.5px; } .row .t .who { font-size:16px; }
+  .cost { font-size:17px; } .cost i small { font-size:15px; } #sheet .why, #sheet p.foot, #sheet .jpage .meta, #sheet p.meta { font-size:16.5px; }
+  .jpage .lore { font-size:20px; } .page .chap { font-size:17.5px; } .page p.tale { font-size:19.5px; } .page p.margin { font-size:18.5px; } .page p.margin span { font-size:15px; }
+  .tcard .t > span { font-size:17.5px; } .jcard b { font-size:16.5px; } .jcard i { font-size:14px; } .quest span { font-size:17.5px; }
+  .slist .meta { font-size:15.5px; } .slist button { font-size:19px; } ul.mlist, .letter ul.done { font-size:19px; } details.tools, details.older { font-size:16px; }
+  .jturn span i { font-size:15px; } #room p { font-size:18px; } .letter p { font-size:18.5px; }
+  .pack.shelves b { font-size:15px; line-height:20px; min-width:22px; border-radius:11px; top:14%; } .pack.shelves i.lab { font-size:14px; line-height:17px; padding:0 5px; } .pack.shelves span.ico { font-size:30px; }
+  .pack.shelves small.full { font-size:12px; }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v98</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v99</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -293,7 +305,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 98;
+const BUILD = 99;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -301,11 +313,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=98"></script>
-<script src="playlog.js?v=98"></script>
-<script src="concerns.js?v=98"></script>
-<script src="game.js?v=98"></script>
-<script src="walk.js?v=98"></script>
+<script src="content.js?v=99"></script>
+<script src="playlog.js?v=99"></script>
+<script src="concerns.js?v=99"></script>
+<script src="game.js?v=99"></script>
+<script src="walk.js?v=99"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -323,8 +335,8 @@ const ASSETS = {
   'tile-stream':'sprites/tile-stream.webp', 'tile-stream-spring':'sprites/tile-stream-spring.webp', 'tile-crossing':'sprites/tile-crossing.webp', 'tile-path':'sprites/tile-path.webp',
   shelter:'sprites/shelter.webp', campfire:'sprites/campfire-bare.webp',   // round six (Bryce): no stones round the fire until Wendel rings it (the painted ring is make-firering)
   firewood:'sprites/firewood.webp',
-  barrel:'sprites/barrel.webp', seedbed:'sprites/seedbed.webp', stonebench:'sprites/stonebench.webp',
-  tub:'sprites/tub.webp', lanternstump:'sprites/lanternstump.webp', wheelbarrow:'sprites/wheelbarrow.webp',
+  barrel:'sprites/barrel.webp', 'barrel-old':'sprites/barrel-old.webp', seedbed:'sprites/seedbed.webp', stonebench:'sprites/stonebench.webp',
+  tub:'sprites/tub-wash.webp',   /* v99 (note 24, art day 21): a low, wide, open wash tub; the old drum-like tub.webp is kept */ lanternstump:'sprites/lanternstump.webp', wheelbarrow:'sprites/wheelbarrow.webp',
   fence:'sprites/fence.webp', sapling:'sprites/sapling.webp',
   'him-side':'sprites/him-side.webp','him-front':'sprites/him-front.webp','him-back':'sprites/him-back.webp',
   'her-side':'sprites/her-side.webp','her-front':'sprites/her-front.webp','her-back':'sprites/her-back.webp',
@@ -347,7 +359,8 @@ const GSTICK = { dry: kit('bare', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), grass:
   bank: kit('water', 1, 2, 3, 5, 6, 7, 8, 9, 10, 12), inwater: kit('water', 4, 4, 11), path: kit('path', 7, 8, 9, 10, 11), steps: kit('path', 1, 2, 3, 4, 5, 6),
   spring: kit('seasons', 1, 2, 3), summer: kit('seasons', 4, 5, 6), autumn: kit('seasons', 7, 8, 9), winter: kit('seasons', 10, 11, 12), big: ['st-boulder', 'st-tuft-big'] };
 if (NEWGROUND) {
-  for (const n of GSWATCH) ASSETS['g-' + n] = `sprites/ground/${n}.webp`;
+  for (const n of GSWATCH) ASSETS['g-' + n] = `sprites/ground/${n === 'moss' ? 'lawn-calm' : n}.webp`;   // v99 (notes 41, 52; art day 21): the calm lawn takes over from the busy grown-over ground (moss.webp is kept)
+  for (const n of ['clover', 'buttercup', 'violet', 'moss', 'leaves', 'fresh']) ASSETS['g-st-patch-calm-' + n] = `sprites/kit/patch-calm-${n}.webp`;
   for (const n of new Set(Object.values(GSTICK).flat())) ASSETS['g-st-' + n] = `sprites/ground/${n}.webp`;
   for (const n of [...kit('marks', 1, 3, 5, 6, 8), ...kit('stumps-rocks', 1, 2, 3, 4, 5, 6, 7, 8, 9, 12), ...kit('leftovers', 1, 2, 3, 4, 5, 9, 11)]) ASSETS['kit-' + n] = `sprites/kit/${n}.webp`;
   for (const d of C.secrets) ASSETS['kit-secrets-' + d.pic] = `sprites/kit/secrets-${d.pic}.webp`;
@@ -386,7 +399,7 @@ const PROPS = [
   { name:'campfire',     gx:0.22, gy:0.40, s:0.9 },   // v75 (Bryce's yard moves): in front of the house's left roots
   { name:'lanternstump', gx:0.75, gy:0.50, s:0.9, gone:'stump' },   // a plain old stump now (Bryce: the lamp post nailed to it made no sense); dug out in stages by "Dig out the old stump" (drawStump)
   { name:'seedbed',      gx:0.58, gy:0.74, s:1.0, flat:true, until:'bed' },   // until: hidden until that job is done (fades in while it runs)
-  { name:'tub',          gx:0.50, gy:0.21, s:0.7, until:'clothesline' },   // the covered tub (Bryce: "a big drum in the way" by the bed, no job): now the wash tub under the washing line
+  { name:'tub',          gx:0.50, gy:0.21, s:0.33, until:'clothesline' },   // the covered tub (Bryce: "a big drum in the way" by the bed, no job): now the wash tub under the washing line
   { name:'wheelbarrow',  gx:0.85, gy:0.92, s:0.6, until:'barrow' },   // Bryce: small, just a decoration the gnomes make; parked by the seed bed's gate (round five)
   { name:'fence',        gx:0.75, gy:0.72, s:0.9 },   // only a tap spot now; the fence itself is drawn round the seed bed (FENCE_SEGS)
   { name:'sapling',      gx:0.18, gy:0.80, s:0.8 },
@@ -472,7 +485,7 @@ const WORKPATH = {
     const [x, y] = SPRING.at;
     return workLoop(g, 'spring-dig', () => [[x - 0.01, y + 0.1, 'gather', false, 5, [x, y]], [x + 0.11, y + 0.15, 'putdown', false, 2.5, [x + 0.06, y + 0.11]], [x + 0.03, y + 0.1, 'dig', false, 4, [x, y]]]);   // round six: kneeling at the edge to pull out a stone, then onto the heap beside it
   },
-  bench: (p, g) => workLoop(g, 'bench', () => [[0.90, 0.72, 'gather', false, 4], [BENCH[0] + 0.055, BENCH[1] - 0.005, 'build', true, 7]]),   // fetches wood from the yard edge, then pegs the bench together where it stands   // he tugs a short log free at the yard edge, rolls it over and beds it in by the fire
+  bench: (p, g) => workLoop(g, 'bench', () => [[STICK_PILE[0] + 0.05, STICK_PILE[1] + 0.03, 'pickup', false, 2.5, STICK_PILE], [BENCH[0] + 0.055, BENCH[1] - 0.005, 'build', true, 9]]),   // round ten note 15: the wood comes from the stick pile, not a bare patch of ground   // fetches wood from the yard edge, then pegs the bench together where it stands   // he tugs a short log free at the yard edge, rolls it over and beds it in by the fire
   roof: (p, g) => workLoop(g, 'roof', c => [[...MOSS_SPOTS[c % MOSS_SPOTS.length], 'pickup', false, 4], [0.30, 0.28, 'putdown', true, 2.5], [0.30, 0.28, 'build', false, 5]]),   // she gathers moss round the yard and presses it onto the low edge of the roof
   rainbarrel: (p, g) => workLoop(g, 'rainbarrel', () => [[...SPOTS.barrel, 'gather', false, 6, BARREL_AT()], [SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3], [SPOTS.barrel[0] + 0.01, SPOTS.barrel[1] - 0.01, 'water', 'can', 4, BARREL_AT()]]),   // scrub, fetch rinse water from the spring, rinse
   doorstep: () => [0.33, 0.27, 'dig'],   // kneeling by the door, bedding each flat stone in (stones: kneel, not hammer)
@@ -499,8 +512,9 @@ const WORKPATH = {
     return [[SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3, SPRING.at], [...wetPatchAt(k), 'water', 'can', 4, bedPt(k)], [...wetPatchAt(k2), 'water', false, 4, bedPt(k2)]]; }),
 };
 // little chores (build 3): a few spots each, then home with it (sticks to the stick pile, the rest to Hazel's shelf by the door)
-const MOSS_STUMPS = [{ at:[0.73, 0.115], face:[0.775, 0.07] }, { at:[0.18, 0.875], face:[0.13, 0.84] }, { at:[0.245, 0.93], face:[0.30, 0.94] }];   // round-seven note 16: she stands at the old stumps (and the old log) in HOME_KIT and picks the moss off them
+const MOSS_STUMPS = [{ at:[0.73, 0.115], face:[0.775, 0.07] }, { at:[0.50, 0.965], face:[0.44, 0.955] }, { at:[0.245, 0.93], face:[0.30, 0.94] }];   // round-seven note 16: she stands at the old stumps (and the old log) in HOME_KIT and picks the moss off them
 const CHORE_SPOTS = { 'chore:sticks': TWIG_SPOTS, 'chore:stones': [[0.62, 0.92], [0.90, 0.80], [0.44, 0.86], [0.96, 0.62], [0.74, 0.40]], 'chore:moss': MOSS_STUMPS.map(m => m.at),
+  'chore:seeds': [[0.94, 0.56], [0.84, 0.58], [0.76, 0.82], [0.20, 0.70], [0.30, 0.80]],
   'chore:dew': [[SPRING.at[0] - 0.06, SPRING.at[1] + 0.10], [SPRING.at[0] + 0.08, SPRING.at[1] + 0.14], [0.66, 0.30], [0.88, 0.30]] };
 function choreWork(id, p, g) {
   const c = C.chores.list.find(c => c.id === id), home = id === 'chore:sticks' ? [STICK_PILE[0] + 0.05, STICK_PILE[1] + 0.03, 'putdown', true, 2.5, STICK_PILE] : [SPOTS.door[0] + 0.03, SPOTS.door[1] + 0.04, 'putdown', false, 2, [0.30, 0.28]];
@@ -509,7 +523,18 @@ function choreWork(id, p, g) {
   const S = (CHORE_SPOTS[id] || TWIG_SPOTS).filter(([x, y]) => !onBed('0,0', x, y) && !onBed('0,0', x, y - 0.05));   // never out in the middle of the seed bed
   return workLoop(g, id, n => [[...S[(n * 2) % S.length], c.act, false, 3.5], [...S[(n * 2 + 1) % S.length], c.act, false, 3.5], home]);
 }
-function workFn(id) { if (id && id.startsWith('chore:')) return (p, g) => choreWork(id, p, g); return WORKPATH[id] || (id && id.startsWith('heal:') ? (p, g) => healWork(id, p, g) : id && id.startsWith('farm:') ? (p, g) => farmWork(id, p, g) : null); }   // jobs that move the gnome about as they go (the healing jobs: healWork)
+// v99 (round ten note 15): a job paid for with sticks starts at the stick pile: the gnome picks up an armful there, then carries it to where the work is
+const OWN_FETCH = new Set(['fence', 'bench', 'clear', 'woodpile', 'stump']);
+function fetchFirst(job, sp, plan, face) { return Object.assign((p, g) => { if (!g) return sp;
+  return workLoop(g, 'fetch:' + job.id, c => c === 0 ? [[STICK_PILE[0] + 0.05, STICK_PILE[1] + 0.03, 'pickup', false, 2.5, STICK_PILE], [sp[0], sp[1], plan, true, 20, face]] : [[sp[0], sp[1], plan, false, 20, face], [sp[0], sp[1], plan, false, 20, face]]); }, { fetch: true }); }
+function stickFetch(id) { const d = id && G.taskDef(id); if (!d || !(d.cost || {}).twig || OWN_FETCH.has(id) || d.folk || d.festival || d.healTile || d.farm || stickPileShow() <= 0) return null;
+  const job = { id, def: d }, sp = jobSpot(job) || WORKSPOT['job:' + id] || WORKSPOT[d.spot] || SPOTS.fire, plan = d.act || SPOT_ACT[d.spot] || 'build';
+  return fetchFirst(job, sp, plan === 'carry' ? 'build' : plan, JOB_FACE[id] || (d.make ? makeAt(d) : null)); }
+// v99 (note 18): a thing for the home is made at the work corner first (sawing and hammering there), then carried to its spot and fitted
+function cornerWork(id) { const d = id && G.taskDef(id); if (!d || !d.make || d.id === 'bed2' || !/^(craft|build)$/.test(d.act) || taskProg('workcorner') < 1) return null;
+  const sp = makeWork(d), face = makeAt(d), at = WORKSPOT.workcorner;
+  return Object.assign((p, g) => !g ? sp : p < 0.55 ? [at[0], at[1], 'build', false, 0, WORKCORNER] : [sp[0], sp[1], d.act, p < 0.7, 0, face], { fetch: true }); }
+function workFn(id) { if (id && id.startsWith('chore:')) return (p, g) => choreWork(id, p, g); return WORKPATH[id] || cornerWork(id) || (id && id.startsWith('heal:') ? (p, g) => healWork(id, p, g) : id && id.startsWith('farm:') ? (p, g) => farmWork(id, p, g) : stickFetch(id)); }   // jobs that move the gnome about as they go (the healing jobs: healWork)
 function woodTaken(i) { const [k, t] = segOf(taskProg('woodpile'), WOOD_ITEMS.length); return taskProg('woodpile') >= 1 || k > i ? 1 : k < i ? 0 : sstep(0.25, 0.6, t); }   // 0..1: how much of that lot Wendel has picked up
 function woodStage() {   // the firewood pile grows in 3 steps as the old stump is chopped and carried over (round six; a garden from before keeps its pile)
   if (G.s.flags.oldWoodpile) return 3; const p = taskProg('stump'); if (p >= 1) return 3; if (p < STUMP_ST.carry) return 0;
@@ -560,7 +585,8 @@ function benchEvening() {   // tonight they sit out on the bench? Before the hou
   let h = 7; for (const c of new Date(G.now()).toDateString()) h = (h * 31 + c.charCodeAt(0)) | 0; return (h >>> 3) % 4 !== 0;
 }
 const JOB_FACE = { bench:BENCH, lantern:[0.75, 0.50] };   // what a working gnome turns to face (default: the middle of the yard)
-const WORKSPOT = { logseat:[0.185,0.495], feeder:[0.82,0.66], clearing:[0.54,0.66], wheelbarrow:[0.78,0.88], shelter:[0.38,0.30], lanternstump:[0.71,0.54], fence:[0.80,0.74], sapling:[0.24,0.84], stonebench:[0.11,0.46], seedbed:[0.54,0.66], herbs:[HERB_AT[0] - 0.03, HERB_AT[1] + 0.08] };
+const WORKCORNER = [0.09, 0.27];   // v99 (note 18): Wendel's work corner, beside the house on its left (the story's lean-to grows out of it)
+const WORKSPOT = { workcorner:[WORKCORNER[0] + 0.06, WORKCORNER[1] + 0.07], logseat:[0.185,0.495], feeder:[0.82,0.66], clearing:[0.54,0.66], wheelbarrow:[0.78,0.88], shelter:[0.38,0.30], lanternstump:[0.71,0.54], fence:[0.80,0.74], sapling:[0.24,0.84], stonebench:[0.11,0.46], seedbed:[0.54,0.66], herbs:[HERB_AT[0] - 0.03, HERB_AT[1] + 0.08] };
 
 // ---------- loading ----------
 const IM = {};
@@ -618,6 +644,8 @@ for (const k of ['fest-idea', 'fest-secret', 'fest-night', 'fest-surprise', 'fes
 Object.assign(ART_SLOTS, { 'feeding-dish': { w: 62 },   /* Bryce: bigger for the animals */ 'nest-nest': { w: 40 }, 'nest-burrow': { w: 54 }, 'nest-leafpile': { w: 70 }, 'nest-stones': { w: 60 } });
 // the first month's story (docs/STORY.md): one painting per page (page-1-1 ...), and a painting for each little make (make-<id>)
 Object.assign(ART_SLOTS, { 'pond': { w: 146 } });
+for (const k of ['garden-heap', 'garden-heap-half', 'garden-hollow', 'garden-hollow-rain', 'garden-pond-large', 'seedbed-rect', 'wildflower-patch-1', 'wildflower-patch-2', 'wildflower-patch-3', 'yard-leanto', 'yard-leanto-frame', 'spring-paved', 'room-stump-hollowing']) ART_SLOTS[k] = {};   // art day 21 (v99)
+const ART_RAW = /^(garden-|seedbed-rect|wildflower-patch|yard-leanto|spring-paved)/;   // drawn at their own size and spot, never trimmed or settled
 for (const k of ['spirit-float', 'spirit-point', 'spirit-settle', 'toad-legs', 'toad-house']) ART_SLOTS[k] = {};   // the Wood spirit's painted poses (art day 14)
 for (const p of C.story.pages) ART_SLOTS['page-' + p.id.replace('.', '-')] = {};
 // art day 16: the neighbours' wishes, painted sizes in world px (the stand-ins were drawn 1.3x)
@@ -647,7 +675,7 @@ for (const k of ['herb', 'rhubarb', 'willow', 'fruit', 'lavender', 'wheat']) for
 for (const k of ['cabbage-1', 'cabbage-2', 'cabbage-3', 'peas-1', 'peas-2', 'straw-1', 'straw-2', 'radish', 'scarecrow', 'ladder', 'bottlebrush', 'willow-cut', 'wheat-cut',
   'flax-1', 'flax-2', 'flax-3', 'woad-1', 'woad-2', 'weld', 'indigo', 'trellis', 'moon-1', 'moon-2', 'moon-open', 'moon-closed', 'primrose']) ART_SLOTS['farm-' + k] = {};
 // painted sizes in world px (a gnome stands 111 tall): w = width, h = height, for the little makes cut by tools/cut_day14.py
-const MAKE_SIZE = { firering:{w:100}, potstools:{w:70}, spinner:{h:90}, scraper:{w:46}, doorpots:{w:50}, doormat:{w:42}, scarecrow:{h:105}, pebbles:{w:80}, yardbath:{h:40},
+const MAKE_SIZE = { firering:{w:100}, potstools:{w:70}, spinner:{h:90}, scraper:{w:30}, doorpots:{w:50}, doormat:{w:32}, scarecrow:{h:105}, pebbles:{w:80}, yardbath:{h:40},
   sundial:{h:66}, herbpots:{w:66}, wreath:{w:34}, plank:{w:84}, chime:{h:70}, nameboard:{w:40}, cushion:{w:44}, swing:{h:120}, hammock:{w:120}, sign:{h:96},
   gstones:{w:110}, wicket:{w:70}, mousering:{w:70}, sitstone:{w:52}, wildflowers:{w:86}, border:{w:140}, arch:{h:112}, mousetable:{w:40}, stonefrog:{w:42}, birddish:{h:78},
   logbench:{w:120}, ferns:{w:78}, willowseat:{w:74}, pebblepath:{w:120},
@@ -662,7 +690,7 @@ function loadArtSlots() {   // after the game starts, so missing files never slo
     // here we only ask whether each one exists; the phone fetches it the first time its page opens (about 8 MB not downloaded up front)
     if (/^(story|page|portrait)-/.test(k)) { if (k === 'page-1-1' && !G.s.flags.welcomed) new Image().src = 'sprites/page-1-1.webp';   // a first visit opens page one at once
       fetch(`sprites/${k}.webp`, { method: 'HEAD' }).then(r => { if (r.ok) ART[k] = { shownInPages: true }; }).catch(() => {}); continue; }
-    const im = new Image(); im.onload = () => { ART[k] = /^(btn|plot|room|vis|portrait|folk|face|story|page|icon|find|gift)-/.test(k) ? im : settle(im, k === 'stepping-stones'); if (k.startsWith('btn-')) paintButton(k); }; im.src = `sprites/${k}.webp`;
+    const im = new Image(); im.onload = () => { ART[k] = /^(btn|plot|room|vis|portrait|folk|face|story|page|icon|find|gift)-/.test(k) || ART_RAW.test(k) ? im : settle(im, k === 'stepping-stones'); if (k.startsWith('btn-')) paintButton(k); }; im.src = `sprites/${k}.webp`;
   }
 }
 function slotSize(k, img, w) {   // world-pixel width and height for a slot picture (w: width of the prop it replaces)
@@ -750,7 +778,7 @@ class Gnome {
     this.routine = null;
     if (job) {
       const wf = workFn(job.id), wp = wf && wf(taskProg(job.id), this);
-      const sp = jobSpot(job) || wp || WORKSPOT['job:' + job.id] || WORKSPOT[job.def.spot] || SPOTS.fire; this.job = job.id;
+      const sp = (wf && wf.fetch ? null : jobSpot(job)) || wp || WORKSPOT['job:' + job.id] || WORKSPOT[job.def.spot] || SPOTS.fire; this.job = job.id;
       this.plan = (wp && wp[2]) || job.def.act || SPOT_ACT[job.def.spot] || (job.def.tile ? 'dig' : 'carry'); this.carryWalk = (wp && wp[3]) || false;
       if (wf && this.plan === 'carry') this.plan = 'pickup';   // gathering: she bends down to each piece, painted pick-up strip (art day 9)
       this.pace = this.plan === 'carry' && !wf ? [[sp[0], sp[1]], [sp[0] - 0.12, sp[1] + 0.06]] : null;
@@ -1172,7 +1200,7 @@ function rrect(x, y, w, h, r) { r = Math.min(r, h / 2, w / 2); ctx.beginPath(); 
 const TAGFONT = '15px "IM Fell English", Georgia, serif';
 function choreTag(g) {   // the seed bed's chores and little errands get a tag too (Bryce: nothing said what Wendel was doing while he planted or watered)
   const c = g.chore; if (!c) return null; const crop = (PICKING && PICKING.crop) || G.plot().crop, cn = crop ? C.crops[crop].name.replace(/^a /, 'the ') : 'the bed';
-  const name = { sow: `sowing ${cn}`, water: 'watering the bed', pick: `picking ${cn}`, help: 'lending a hand', basket: 'taking the basket over', water2: 'watering the other half' }[c.kind]; if (!name) return null;
+  const name = { sow: `sowing ${cn}`, water: 'watering the bed', pick: `picking ${cn}`, help: 'lending a hand', basket: 'taking the basket over', water2: 'watering the other half', sow2: 'sowing the new bed', wat2: 'watering the new bed', pick2: 'picking the new bed' }[c.kind]; if (!name) return null;
   return { def: { short: name }, prog: g.choreProg() };
 }
 function drawBedTag(now) {   // build 3 (note 26): a small tag over the seed bed while something grows: what, how far on, how long to go
@@ -1192,23 +1220,17 @@ function drawBedTag(now) {   // build 3 (note 26): a small tag over the seed bed
 }
 const TAG_PIC = {};   // v87: the job's own little picture on its tag, loaded once
 function tagPic(d, key) { const k = key || jobPicKey(d) || (d.give ? 'icon-' + Object.keys(d.give)[0] : ''); if (!k) return null; if (!(k in TAG_PIC)) { const im = new Image(); TAG_PIC[k] = null; im.onload = () => TAG_PIC[k] = im; im.src = `sprites/${k}.webp`; } return TAG_PIC[k]; }
-function drawBusyTag(g, now) {   // v87 (notes 2, 29): a smaller tag, no name (you can see who it is): the job's picture, a few words, a bar and the time
+function drawBusyTag(g, now) {   // v99 (round ten note 13, Bryce: just the little picture; tap the gnome for the words): a round badge with the job's picture and a ring that fills as the work goes
   const r = G.running().find(r => r.id === g.job) || choreTag(g); if (!r) return;
-  const sx = (g.screen.x - cam.x) * cam.z + W / 2, sy = (g.screen.y - g.screen.h - cam.y) * cam.z + H / 2 - 10 + Math.sin(now / 600) * 1.5;
-  const fy = (g.screen.y - cam.y) * cam.z + H / 2; if (sx < 0 || sx > W || fy < 0 || sy > H) return;   // Bryce: the tag goes off screen with its gnome (it used to stick to the edge)
-  const label = shortName(r.def), left = r.prog !== undefined ? '' : G.jobLeft(r.endsAt, true), pic = tagPic(r.def), pw = pic ? 24 : 0;
-  ctx.save(); ctx.font = 'italic 13px "EB Garamond", Georgia'; const tw = ctx.measureText(label).width, lw = left ? ctx.measureText(left).width : 0;
-  const w = Math.min(W - 12, pw + Math.max(tw, lw + 46) + 16), h = 32, x = Math.round(Math.max(6, Math.min(W - w - 6, sx - w / 2))), y = Math.round(Math.max(90, sy - h));
-  ctx.globalAlpha = 0.93; ctx.fillStyle = '#f1e5c6'; ctx.shadowColor = 'rgba(0,0,0,.3)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 1.5;
-  rrect(x, y, w, h, 4); ctx.fill();
-  if (sx > x + 8 && sx < x + w - 8) { ctx.beginPath(); ctx.moveTo(sx - 5, y + h); ctx.lineTo(sx + 5, y + h); ctx.lineTo(sx, y + h + 5); ctx.closePath(); ctx.fill(); }
-  ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; ctx.globalAlpha = 1;
-  if (pic) { const f = 22 / Math.max(pic.width, pic.height); ctx.drawImage(pic, x + 6 + (22 - pic.width * f) / 2, y + 5 + (22 - pic.height * f) / 2, pic.width * f, pic.height * f); }
-  const tx = x + 8 + pw; ctx.fillStyle = '#33251a'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.fillText(label, tx, y + 14);
-  const p = r.prog !== undefined ? r.prog : taskProg(r.id), bw = w - (tx - x) - 8 - (lw ? lw + 6 : 0);
-  ctx.fillStyle = 'rgba(51,37,26,.13)'; rrect(tx, y + 20, bw, 5, 2.5); ctx.fill();
-  ctx.fillStyle = '#6f8a34'; rrect(tx, y + 20, Math.max(4, bw * p), 5, 2.5); ctx.fill();
-  if (left) { ctx.fillStyle = '#6a5640'; ctx.font = 'italic 11px "EB Garamond", Georgia'; ctx.textAlign = 'right'; ctx.fillText(left, x + w - 8, y + 26); }
+  const sx = (g.screen.x - cam.x) * cam.z + W / 2, sy = (g.screen.y - g.screen.h - cam.y) * cam.z + H / 2 - 8 + Math.sin(now / 600) * 1.5;
+  const fy = (g.screen.y - cam.y) * cam.z + H / 2; if (sx < 0 || sx > W || fy < 0 || sy > H) return;   // the badge goes off screen with its gnome
+  const pic = tagPic(r.def) || tagPic({}, { dig: 'icon-stone', build: 'icon-twig', craft: 'icon-twig', water: 'icon-water', gather: 'icon-moss', pickup: 'icon-twig', toss: 'icon-seed' }[r.def.act] || 'icon-twig');
+  const p = r.prog !== undefined ? r.prog : taskProg(r.id), R = 16, cx = Math.max(R + 6, Math.min(W - R - 6, sx)), cy = Math.max(104, sy - R);   // never under the title banner (note 14)
+  ctx.save(); ctx.globalAlpha = 0.94; ctx.fillStyle = '#f1e5c6'; ctx.shadowColor = 'rgba(0,0,0,.3)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 1.5;
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.fill(); ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; ctx.globalAlpha = 1;
+  ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(51,37,26,.15)'; ctx.beginPath(); ctx.arc(cx, cy, R - 2, 0, 7); ctx.stroke();
+  ctx.strokeStyle = '#6f8a34'; ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(cx, cy, R - 2, -Math.PI / 2, -Math.PI / 2 + Math.max(0.04, Math.min(1, p)) * Math.PI * 2); ctx.stroke();
+  if (pic) { const f = 21 / Math.max(pic.width, pic.height); ctx.drawImage(pic, cx - pic.width * f / 2, cy - pic.height * f / 2, pic.width * f, pic.height * f); }
   ctx.restore();
 }
 
@@ -1290,13 +1312,16 @@ function gNoise(x, y) {   // smooth noise 0..1 (bilinear), wraps every 256 units
 }
 // What one tile is made of. g = how green (0 bare .. 1 grown over), kind = which green, wet = water in the stream,
 // path = the path is worn in, wash = still misty (just revealed). Regrowing is rounded to tenths so it bakes ten times, not every frame.
+// v99 (round ten note 23, Bryce: the green should spread from the garden, not the house): each patch's green starts where its growing
+// happens and creeps outward from there (global tile coords). Home: the seed bed. The garden patch: its pond and second bed.
+const GREEN_SRC = { '0,0': [0.58, 0.74], '0,1': [0.55, 1.50] };
 function groundMat(k) {
   const tl = G.s.tiles[k]; if (!tl) return null;
   if (k === '0,0') { const st = G.landStage().key, gp = G.s.tiles['0,0'].green; return { g: Math.round(20 * Math.min(1, Math.pow(gp / 12, 1.3))) / 20,   // green creeps in point by point (1 point is a faint haze; meadow at 12)
-     kind: st === 'meadow' ? 1 : st === 'wood' ? 2 : 0, wet: 0, path: 0, wash: 0 }; }
+     kind: st === 'meadow' ? 1 : st === 'wood' ? 2 : 0, wet: 0, path: 0, wash: 0, src: GREEN_SRC['0,0'] }; }
   if (tl.kind) {   // a healing tile: green creeps in point by point as on the home tile; the creek fills as its stones go; the old track always shows
     const gp = tl.green, st = G.landStage(k).key, wet = tl.kind === 'creek' ? Math.round(10 * (0.45 * healProg(k, 'stones') + 0.55 * healProg(k, 'channel'))) / 10 : 0;
-    return { g: Math.round(20 * Math.min(1, Math.pow(gp / 12, 1.3))) / 20, kind: st === 'meadow' ? 1 : st === 'wood' ? 2 : 0, wet, path: tl.kind === 'verge' || MAP[k] === 'tile-crossing' ? 1 : 0, wash: tl.state === 'revealed' && !G.healAt(k) && !G.s.tasks[`heal:${k}:0`] ? 1 : 0 };
+    return { g: Math.round(20 * Math.min(1, Math.pow(gp / 12, 1.3))) / 20, kind: st === 'meadow' ? 1 : st === 'wood' ? 2 : 0, wet, path: tl.kind === 'verge' || MAP[k] === 'tile-crossing' ? 1 : 0, wash: tl.state === 'revealed' && !G.healAt(k) && !G.s.tasks[`heal:${k}:0`] ? 1 : 0, src: GREEN_SRC[k] || k.split(',').map(n => +n + 0.5) };
   }
   let p = 0;
   if (tl.state === 'green') p = 1;
@@ -1309,6 +1334,7 @@ const STREAM_U0 = -1.55;
 function streamV(u) { const x = u - 1.5; return -0.5 + 0.06 * Math.sin(x * 2.3) + 0.03 * Math.sin(x * 5.1); }
 function streamHW(u) { return 38 + 6 * Math.sin(u * 3.7) + 16 * Math.exp(-Math.pow((u - STREAM_U0) * 3.5, 2)); }   // half width (world px); a pool at the spring
 function pathU(v) { const y = v + 0.5; return 1.5 + 0.05 * Math.sin(y * 2.1) + 0.025 * Math.sin(y * 4.7); }
+function srcBias(m, u, v) { if (!m.src || m.g <= 0 || m.g >= 1) return 0; return Math.min(1, m.g * 5) * (1 - m.g) * (0.5 - 1.2 * Math.hypot(u - m.src[0], v - m.src[1])); }   // more green near where things grow, less far off, evening out as the patch fills
 function* bakeGroundTile(k, matFn = groundMat, into = GR.tiles) {   // a generator: yields every few rows so the work spreads over frames (the pencil valley bakes bare land into its own store)
   const [tx, ty] = k.split(',').map(Number), [ox, oy] = tileOrigin(k);
   const W = Math.round(PLOT.w * GS), H = Math.round(PLOT.h * GS);
@@ -1343,7 +1369,8 @@ function* bakeGroundTile(k, matFn = groundMat, into = GR.tiles) {   // a generat
     swatch('dirt', X, Y, nC, col); swatch('drygrass', X, Y, nA, tmp);
     const dg = sstep(0.5, 0.7, nC + 0.15 * (nD - 0.5)); for (let q = 0; q < 3; q++) col[q] += (tmp[q] - col[q]) * dg;
     // green spreads in patches; a thin darker tide line where it meets the earth, like watercolour
-    const cv = sstep(0.42, 0.58, g + 0.55 * (nB - 0.5) + 0.12 * (nD - 0.5));
+    const gb = g + w00 * srcBias(m00, u, v) + w10 * srcBias(m10, u, v) + w01 * srcBias(m01, u, v) + w11 * srcBias(m11, u, v);
+    const cv = sstep(0.42, 0.58, gb + 0.55 * (nB - 0.5) + 0.12 * (nD - 0.5));
     if (cv > 0) {
       const kg = w00 * m00.kg + w10 * m10.kg + w01 * m01.kg + w11 * m11.kg, km = w00 * m00.km + w10 * m10.km + w01 * m01.km + w11 * m11.km, kw = w00 * m00.kw + w10 * m10.kw + w01 * m01.kw + w11 * m11.kw, kt = kg + km + kw || 1;
       const gc = [0, 0, 0];
@@ -1399,14 +1426,17 @@ function* bakeGroundTile(k, matFn = groundMat, into = GR.tiles) {   // a generat
     x2.drawImage(im, (wx - ox) * GS - w / 2, (wy - oy) * GS - h / 2, w, h);
   };
   {   // soft patches of ground (art day 8): moss, clover, wildflowers, violets and pine needles on green; bare soil on earth; leaf litter in autumn
-    const green = self.g > 0.5, pset = green ? (self.kind === 2 ? ['patch-01', 'patch-05', 'patch-01'] : self.kind === 1 ? ['patch-04', 'patch-06', 'patch-02'] : ['patch-02', 'patch-01', 'patch-02']) : ['patch-07'];
+    const green = self.g > 0.5, pset = green ? (self.kind === 2 ? ['patch-calm-moss', 'patch-calm-leaves', 'patch-calm-fresh'] : self.kind === 1 ? ['patch-calm-buttercup', 'patch-calm-violet', 'patch-calm-clover'] : ['patch-calm-clover', 'patch-calm-fresh', 'patch-calm-clover']) : ['patch-07'];
     if (green && season() === 'autumn') pset.push('patch-03', 'patch-03');
-    if (green && season() === 'spring') pset.push('patch-04', 'patch-06');
-    for (let n = 0; n < (green ? 4 : 0); n++) {   // (no bare-soil patch on bare land: it read as a dug bed, or as the rubbish heap the patch card talks about, v87 note 70)
+    if (green && season() === 'spring') pset.push('patch-calm-buttercup', 'patch-calm-violet');
+    const inPond = (gx, gy) => k === '0,1' && Math.hypot((gx - GPOND[0]) / 0.27, (gy - GPOND[1]) / 0.27) < 1;   // v99: nothing scattered where the heap, the hollow and the pond are
+    self.inPond = inPond;
+    for (let n = 0; n < (green && k !== '0,1' ? 4 : 0); n++) {   // (no bare-soil patch on bare land: it read as a dug bed, or as the rubbish heap the patch card talks about, v87 note 70)
       const gx = 0.14 + 0.72 * rn(n + 400), gy = 0.14 + 0.72 * rn(n + 410); const [wx, wy] = toWorld(gx, gy, k);
       const i = Math.round((wx - ox) * GS), j = Math.round((wy - oy) * GS); if (i < 0 || j < 0 || i >= W || j >= H || zone[j * W + i]) continue;
       const cv = cov[j * W + i] / 255; if (green ? cv < 0.85 : cv > 0.15) continue;
-      x2.globalAlpha = 0.8; put(pset[Math.floor(rn(n + 420) * pset.length)], gx, gy, 0.4 + 0.2 * rn(n + 430)); x2.globalAlpha = 1;
+      const pn = pset[Math.floor(rn(n + 420) * pset.length)];   // v99 (note 52, art day 21): soft-edged patches in the lawn's own colours
+      x2.globalAlpha = 0.75 * Math.min(1, (self.g - 0.5) * 2.5); put(pn, gx, gy, 0.4 + 0.2 * rn(n + 430)); x2.globalAlpha = 1;   // and the others come in softly as the green grows
     }
   }
   bakeRibbons(x2, k, tx, ty, ox, oy, M, edgeOpen);
@@ -1415,12 +1445,13 @@ function* bakeGroundTile(k, matFn = groundMat, into = GR.tiles) {   // a generat
     const i = Math.round((wx - ox) * GS), j = Math.round((wy - oy) * GS); if (i < 0 || j < 0 || i >= W || j >= H) continue;
     const z = zone[j * W + i], cv = cov[j * W + i] / 255;
     let set = null;
-    if (z === 1) continue; else if (z === 2) set = GSTICK.path;
+    if (z === 1 || self.inPond(gx, gy)) continue; else if (z === 2) set = GSTICK.path;
     else if (cv < 0.15) set = GSTICK.dry; else if (cv > 0.85) set = GSTICK[kindSet];
     if (set && n % 6 === 5 && z !== 2) set = GSTICK[season()];   // a few touches of the season: blossom, dry grass, fallen leaves, frost
     if (set) put(set[Math.floor(rn(n + 100) * set.length)], gx, gy, 0.85 + 0.3 * rn(n + 150));
   }
-  if (self.g > 0.5 && k !== '0,0' && !self.path && !self.wet) for (let n = 0; n < 2; n++) {   // a boulder or a big tuft on grown-over land
+  if (self.g > 0.5 && k !== '0,0' && k !== '0,1' && !self.path && !self.wet) for (let n = 0; n < 2; n++) {   // (never on the couple's garden: garden plan rule 4)
+      // a boulder or a big tuft on grown-over land
     const gx = 0.2 + 0.6 * rn(n + 300), gy = 0.2 + 0.6 * rn(n + 310); const [wx, wy] = toWorld(gx, gy, k);
     const i = Math.round((wx - ox) * GS), j = Math.round((wy - oy) * GS); if (cov[j * W + i] < 200 || rn(n + 320) < 0.35) continue;
     put(GSTICK.big[n % 2], gx, gy, 0.8 + 0.2 * rn(n + 330));
@@ -1502,7 +1533,7 @@ function bakeRibbons(x2, k, tx, ty, ox, oy, M, edgeOpen) {
 function groundSig(k) {   // everything a tile's picture depends on (itself and its eight neighbours)
   const [tx, ty] = k.split(',').map(Number), out = [];
   for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const m = groundMat(`${tx + dx},${ty + dy}`); out.push(m ? [m.g, m.kind, m.wet, m.path, m.wash].join() : '-'); }
-  return out.join('|') + '|' + season() + '|a10';   // the seasonal stickers change with the season
+  return out.join('|') + '|' + season() + '|a13';   // the seasonal stickers change with the season
 }
 // Baked tiles are kept in the browser (IndexedDB) with the signature they were baked for, so the next visit opens with the
 // finished ground at once instead of baking it all again. A tile whose signature has changed is simply baked afresh.
@@ -1723,9 +1754,13 @@ function drawSprig(now) {
   const [n1, N, full] = sprigCount(SPRIG.to), [n0] = sprigCount(SPRIG.from), fresh = SPRIG.to > SPRIG.from && n1 > 0 && n0 < n1 ? Math.max(0, n0) : n1;   // leaves from `fresh` on pop on one after another
   ctx.save(); ctx.globalAlpha = a; ctx.translate(sx, sy); ctx.lineCap = 'round';
   ctx.save(); ctx.shadowColor = 'rgba(40,28,16,0.35)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2; ctx.fillStyle = '#efe4c8';   // the paper scrap (parchment, like the title label)
-  ctx.beginPath(); const pw = 70, ph2 = 40; for (let i = 0; i <= 24; i++) { const q = i / 24 * Math.PI * 2, r = 1 + 0.035 * Math.sin(i * 5.3); ctx.lineTo(Math.cos(q) * pw * r, Math.sin(q) * ph2 * r); } ctx.closePath(); ctx.fill(); ctx.restore();
+  SPRIG.screen = { x: sx, y: sy + 6, w: 150, h: 110 };
+  ctx.beginPath(); const pw = 78, ph2 = 50; ctx.translate(0, 6); for (let i = 0; i <= 24; i++) { const q = i / 24 * Math.PI * 2, r = 1 + 0.035 * Math.sin(i * 5.3); ctx.lineTo(Math.cos(q) * pw * r, Math.sin(q) * ph2 * r); } ctx.closePath(); ctx.fill(); ctx.restore();
   ctx.strokeStyle = 'rgba(120,90,50,0.35)'; ctx.lineWidth = 1; ctx.stroke();
-  ctx.translate(-50, 8);
+  { const st = G.landStage(), next = C.landStages.find(q => q.at > SPRIG.to);   // v99 (notes 8, 26): it says what it is: whose green, and how far to the next stage
+    ctx.fillStyle = '#3a2a1a'; ctx.textAlign = 'center'; ctx.font = 'italic 13px "IM Fell English", Georgia, serif'; ctx.fillText('The yard\'s green', 0, -30);
+    ctx.font = '12px "IM Fell English", Georgia, serif'; ctx.fillStyle = '#5a4630'; ctx.fillText(next ? `${next.at - SPRIG.to} more to ${next.name}` : 'as green as it gets', 0, 38); }
+  ctx.translate(-50, 4);
   // the twig: a gentle curve up and to the right
   const len = 100, P = f => [len * f, -len * 0.16 * f - 9 * Math.sin(f * Math.PI)];
   ctx.strokeStyle = INK; ctx.lineWidth = 4.2; ctx.beginPath(); for (let f = 0; f <= 1.001; f += 0.05) { const [x, y] = P(f); f ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
@@ -1824,8 +1859,9 @@ const kitName = k => k.replace(/^kit-/, '').replace(/^kit\//, '');
 function kitK(k, im) { const w0 = KIT_HI[kitName(k)]; return w0 && im && im.width ? w0 * KIT_GROW / im.width : 1; }   // multiply a width-based scale by this
 function kitGrow(k) { return k && KIT_HI[kitName(k)] ? KIT_GROW : 1; }   // multiply a height by this
 const HOME_KIT = [   // [piece, healed piece (null: it goes when the job is done), gx, gy, scale, job that clears it]
-  ['stumps-rocks-01', 'stumps-rocks-07', 0.775, 0.07, 0.7], ['stumps-rocks-02', 'stumps-rocks-08', 0.13, 0.84, 0.7],
-  ['stumps-rocks-03', 'stumps-rocks-09', 0.02, 0.17, 0.55], ['stumps-rocks-06', 'stumps-rocks-12', 0.30, 0.94, 0.6],
+  ['stumps-rocks-01', 'stumps-rocks-07', 0.775, 0.07, 0.7], ['stumps-rocks-02', 'stumps-rocks-02', 0.44, 0.955, 0.7],   // v99 (round ten notes 20, 21): moved clear of the little oak (it was at 0.13, 0.84, roots touching the oak's ring), and it stays the same stump when the yard greens (it used to swap to a much taller one)
+ 
+  ['stumps-rocks-03', 'stumps-rocks-09', 0.02, 0.17, 0.55], ['stumps-rocks-06', 'stumps-rocks-12', 0.30, 0.94, 0.6, null, true],   // true: the greened log is drawn mirrored, so it lies the same way as the bare one (note 21)
   ['stumps-rocks-04', null, 0.60, 0.13, 0.6, 'clear'], ['stumps-rocks-05', null, 0.46, 0.07, 0.55, 'clear'],
   ['leftovers-01', null, 0.22, 0.50, 0.55, 'clear'], ['leftovers-02', null, 0.84, 0.36, 0.45, 'clear'], ['leftovers-03', null, 0.18, 0.74, 0.6, 'clear'],
   ['leftovers-04', null, 0.49, 0.03, 0.55, 'clear'], ['leftovers-05', null, 0.52, 0.90, 0.5, 'clear'], ['leftovers-09', null, 0.93, 0.29, 0.45, 'clear'],
@@ -1930,7 +1966,7 @@ function drawProp(p) {
   else if (p.name === 'fence' && art('fence-fallen')) { const f = taskProg('fence'); drawSlot('fence-fallen', x, y, 1 - f, { w }); ctx.globalAlpha = a * f; ctx.drawImage(img, x - w / 2, y - h, w, h); }
   else {
     // note 34 (Bryce): the old and new barrel were drawn together at half strength, so it looked doubled while he scrubbed; now one picture at a time, swapping halfway
-    if (sp < 0.5) { ctx.globalAlpha = a; ctx.drawImage(img, x - w / 2, y - h + (p.flat ? h / 2 : 0), w, h); }
+    if (sp < 0.5) { ctx.globalAlpha = a; ctx.drawImage(p.name === 'barrel' && taskProg('rainbarrel') <= 0 ? IM['barrel-old'] : img, x - w / 2, y - h + (p.flat ? h / 2 : 0), w, h); }   // round ten note 2: the bark spout only goes up with the job (after the proper roof)
     else { ctx.globalAlpha = a; drawSlot(sw[0], x, y, 1, { w }); }
   }
   ctx.restore();
@@ -2123,7 +2159,8 @@ function drawSpring(now) {   // the hollow shows once Wendel finds it, then the 
   ctx.globalAlpha = seen * clear; if (ctx.globalAlpha > 0) ctx.drawImage(cl, x - w / 2, y - h / 2, w, h);
   ctx.restore();
   if (clear >= 1) { const r = (now / 2200) % 1; ctx.strokeStyle = `rgba(235,248,250,${0.4 * (1 - r)})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x - 4, y + 2, 26 * r + 2, 9 * r + 1, 0, 0, 7); ctx.stroke(); }   // the spring bubbling up
-  const rg = taskProg('springring'); if (rg > 0) { ctx.save(); ctx.globalAlpha = rg; for (let i = 0; i < 13; i++) { const t = i / 13 * Math.PI * 2; flatStone(x + Math.cos(t) * w * 0.36, y + 2 + Math.sin(t) * w * 0.15, 8 + rnd(i + 360) * 3, i); } ctx.restore(); }   // "Ring the spring with stones"
+  const rg = taskProg('springring'), pv = art('spring-paved'); if (rg > 0 && pv) { const pw = w * 1.62, ph2 = pw * pv.height / pv.width; ctx.save(); ctx.globalAlpha = rg; ctx.drawImage(pv, x - pw / 2 - 2, y - ph2 / 2 + 2, pw, ph2); ctx.restore(); }   // v99 (note 46, art day 21): Wendel's real pavers, the same spring and root with flat stones laid round it
+  else if (rg > 0) { ctx.save(); ctx.globalAlpha = rg; for (let i = 0; i < 13; i++) { const t = i / 13 * Math.PI * 2; flatStone(x + Math.cos(t) * w * 0.36, y + 2 + Math.sin(t) * w * 0.15, 8 + rnd(i + 360) * 3, i); } ctx.restore(); }   // "Ring the spring with stones"
   const [hx, hy] = toWorld(SPRING.at[0] + 0.06, SPRING.at[1] + 0.11);
   const out = sstep(SPRING_FOUND + 0.02, 0.9, p);   // round six (Bryce: "odd little ovals"): the stones he pulls out go on a painted heap beside it, growing as he works
   if (seen > 0 && rg < 1 && out > 0 && IM['kit-stumps-rocks-03']) { ctx.save(); ctx.globalAlpha = Math.min(1, out * 3) * (1 - rg); shadow(hx, hy, 14 + 10 * out, 5 + 3 * out); kitPiece('kit-stumps-rocks-03', hx, hy, 14 + 16 * out); ctx.restore(); }
@@ -2261,7 +2298,11 @@ function drawFenceSeg(A, B, a, img = IM['kit-fence-straight-a'], foot = FENCE_FO
   ctx.drawImage(im, 0, 0); ctx.restore();
 }
 let gateHeld = 0;
-function gateOpen() { const t = performance.now(); if (gnomes.some(g => g.screen && Math.hypot(g.gx - FENCE_GATE.gx, g.gy - FENCE_GATE.gy) < 0.26)) gateHeld = t + 1600; return t < gateHeld; }   // note 25 (Bryce): swings open as anyone nears it and stays open a moment after they pass, so you can see it   // swings open while a gnome is by the gate
+function gateOpen() {   // v99 (round ten note 14, Bryce: it swung open when Wendel only walked past): open only for a gnome who is walking THROUGH it (close by, and the step he is on crosses the gateway)
+  const t = performance.now(), gx = FENCE_GATE.gx, gy = FENCE_GATE.gy;
+  const through = g => { if (!g.screen || !g.walking || g.inside) return false; const d = Math.hypot(g.gx - gx, g.gy - gy); if (d < 0.05) return true; if (d > 0.16) return false;
+    const vx = g.tx - g.gx, vy = g.ty - g.gy, L = vx * vx + vy * vy || 1e-9, k = Math.max(0, Math.min(1, ((gx - g.gx) * vx + (gy - g.gy) * vy) / L)); return Math.hypot(g.gx + vx * k - gx, g.gy + vy * k - gy) < 0.035; };
+  if (gnomes.some(through)) gateHeld = t + 1400; return t < gateHeld; }   // note 25 (Bryce): swings open as anyone nears it and stays open a moment after they pass, so you can see it   // swings open while a gnome is by the gate
 function bedFenceShown() { return taskProg('fence') > 0 && propAlpha(PROPS.find(p => p.name === 'seedbed')) > 0; }
 // Round six (Bryce): Wendel goes round the ring in order, a panel at a time, gate last (WORKPATH.fence); each panel goes up
 // while he hammers at it, after he has fetched its sticks from the stick pile
@@ -2280,10 +2321,10 @@ EXTRAS.push({ gx: FENCE_GATE.gx, gy: FENCE_GATE.gy, show: () => bedFenceShown() 
   const [L, R] = A[0] < B[0] ? [A, B] : [B, A], M = [L[0] + (R[0] - L[0]) * 0.3, L[1] + (R[1] - L[1]) * 0.3 - 16];
   drawFenceSeg(L, M, al, g, GATE_FOOT, K, [62, 228], true);   // the gate, swung in against its post
   drawFenceSeg(L, R, al, g, GATE_FOOT, K, [0, 62]); drawFenceSeg(L, R, al, g, GATE_FOOT, K, [228, 300], true); } });   // both posts stay where they stand
-if (NEWGROUND) for (const [a, b, gx, gy, sc, job] of HOME_KIT) EXTRAS.push({ gx, gy,
+if (NEWGROUND) for (const [a, b, gx, gy, sc, job, flipB] of HOME_KIT) EXTRAS.push({ gx, gy,
   show: () => G.landStage().key === 'barren' ? (job === 'clear' ? clearLeft(gx, gy) : 1 - (job ? taskProg(job) : 0)) : b ? 1 : 0,
   draw(x, y, al) { const kk = G.landStage().key === 'barren' ? a : b, im = IM['kit-' + kk]; if (!im || !im.width) return; const q = sc * kitK(kk, im), w = im.width * q, h = im.height * q;
-    ctx.save(); ctx.globalAlpha = al; shadow(x, y, w * 0.38, w * 0.1); ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); ctx.restore(); } });
+    ctx.save(); ctx.globalAlpha = al; shadow(x, y, w * 0.38, w * 0.1); if (flipB && kk === b) { ctx.translate(x, 0); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, y - h * 0.88, w, h); } else ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); ctx.restore(); } });
 for (const [a, b, gx, gy, sc, job] of HOME_KIT) if (job === 'clear') CLEAR_ITEMS.push([gx, gy]);
 let clearDust = -1;
 function clearLeft(gx, gy) {   // each bit of rubbish goes in its turn while Hazel works, with a little puff of dust as it goes
@@ -2457,10 +2498,10 @@ const TOAD_LAMPS = [[0.36, 0.74], [0.74, 0.34]];   // toadstool lamps (lamp-toad
 const FIREFLY_STRINGS = [[0.72, 0.97]];            // firefly strings between two posts (lamp-fireflies), centred here
 const SAPLING_AT = [0.18, 0.80], POT_HOME = [0.115, 0.245];   // where the oak will grow (yard plan, "The oak" in docs/PLAN.md), and where its pot has stood since they arrived (just in front of the house, left of the door path)
 function potWhere() { const F = G.s.flags; if (taskProg('sapling') >= 1) return 'spot'; if (!F.potLifted) return 'home'; return F.potPlaced ? 'spot' : 'carried'; }
-function potInHands(g) { return g.who === 'her' && g.job === 'sapling' && !g.inside && potWhere() === 'carried'; }
+function potInHands(g) { return g.job === 'sapling' && !g.inside && potWhere() === 'carried'; }
 function saplingSpot() { const p = PROPS.find(q => q.name === 'sapling'), [x, y] = potWhere() === 'home' ? POT_HOME : SAPLING_AT; p.gx = x; p.gy = y; }
 const FEEDER = { gx: 0.24, gy: 0.67 };   // v75 (Bryce): in the open grass on the left of the yard; the animals' one meeting place, so it stays here even once the garden opens
-function gardenOpen() { const t = G.s.tiles['0,1']; return !!t && t.state === 'green' && !Object.values(G.s.village.folk).some(f => f.tile === '0,1'); }   // the couple's garden tile (Bryce: the LEFT tile)
+function gardenOpen() { return G.gardenOpen(); }   // the couple's garden tile (Bryce: the LEFT tile)
 function feederSpot() {}   // (it used to move to the garden's creature corner)
 function drawDishPart(x, y, a, part) {   // the painted dish, or only its stump (the lower part of the picture) while Hazel builds it
   const img = art('feeding-dish'); if (!img || a <= 0) return !!img;
@@ -2792,7 +2833,7 @@ class Folk {
   spot(i) { const t = this.home; if (t.camp) return glob(CAMP.tile, CAMP.gx - 0.10 + 0.07 * i, CAMP.gy + 0.10 - 0.03 * i); const [sx, sy] = LOT.spots[i % LOT.spots.length]; return glob(t.tile, sx, sy); }
   outside() { if (G.festivalOn()) return true; const h = dayPhase().h; return this.home.camp ? h >= 6 && h < 21 : h >= 7 && h < 20; }
   update(dt) {
-    const seat = festSeat(this);   // festival evening: everyone walks to the long table
+    const seat = festSeat(this) || helpSeat(this);   // festival evening: everyone walks to the long table (v99: or a camping traveller goes to help with a job)
     if (seat && !this.walking && Math.hypot(seat[0] - this.gx, seat[1] - this.gy) > 0.01) { this.tx = seat[0]; this.ty = seat[1]; this.walking = true; this.speed = 0.08; }
     if (!this.walking) {
       if (seat) { this.dir = 'front'; return; }
@@ -3001,7 +3042,7 @@ function drawJars(now) {   // Juniper's glow jars along the village path (art sl
 }
 // Worn footpaths between the doors and the main path, in the painted path colour.
 function footpathLinks() {   // short tracks joining every door into one network: each door links to the nearest of the main path or a door already joined
-  const doors = [[0.40, 0.42]];   // the couple's own yard
+  const doors = G.s.tiles['1,0'] ? [[0.40, 0.42]] : [];   // the couple's own yard (v99, round ten note 53: its track to the old lane only once the lane has woken; before that it wore away toward land nobody had found)
   for (const [fid, fs] of Object.entries(G.s.village.folk)) if (taskProg('home:' + fid) >= 1) doors.push(glob(fs.tile, LOT.home[0] + 0.10, LOT.home[1] + 0.16));
   const joined = [], links = [], left = doors.slice();
   while (left.length) {
@@ -3024,6 +3065,14 @@ function drawFootpaths() {
     const [x0, y0] = toWorld(hx, hy), [x1, y1] = toWorld(px, py), [cx, cy] = toWorld((hx + px) / 2 + (py - hy) * 0.15, (hy + py) / 2 + (hx - px) * 0.15);   // a gentle bend
     for (const [lw, al] of [[28, 0.25], [18, 0.5], [10, 0.55]]) { ctx.globalAlpha = al; ctx.strokeStyle = pat; ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(cx, cy, x1, y1); ctx.stroke(); }
   }
+  // v99 (round ten note 53, Bryce: the path should wear between the spring, the bed and the house): faint trails where the gnomes
+  // really walk every day, wearing in slowly as the jobs get done (a later job can lay them in stone)
+  const worn = Math.min(1, Object.values(G.s.tasks).filter(t => t.done).length / 14);
+  if (worn > 0.1) { const door = [0.37, 0.40], bedGate = [FENCE_GATE.gx + 0.02, FENCE_GATE.gy + 0.05], sp = [SPRING.at[0] - 0.02, SPRING.at[1] + 0.09], T = [];
+    if (taskProg('spring') >= 1) T.push([door, sp, 0.10]); if (taskProg('bed') >= 1) T.push([door, bedGate, -0.08]); if (taskProg('spring') >= 1 && taskProg('bed') >= 1) T.push([sp, bedGate, 0.12]);
+    if (G.gardenOpen()) T.push([bedGate, [0.47, 1.10], 0.06]);
+    for (const [[ax, ay], [bx, by], bend] of T) { const [x0, y0] = toWorld(ax, ay), [x1, y1] = toWorld(bx, by), [cx, cy] = toWorld((ax + bx) / 2 + (by - ay) * bend, (ay + by) / 2 + (ax - bx) * bend);
+      for (const [lw, al] of [[20, 0.16], [12, 0.3], [6, 0.34]]) { ctx.globalAlpha = al * worn; ctx.strokeStyle = pat; ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(cx, cy, x1, y1); ctx.stroke(); } } }
   ctx.restore();
 }
 // A little wild corner round each neighbour's home, from the painted kit (mossy log, fern stump, sapling stump, mossy boulder),
@@ -3202,6 +3251,8 @@ function animalItems(items, now) {
 let SPIRIT_N = 0, spiritAt = 0;
 function spiritSpot(n) {   // [gx, gy] on the home grid it hovers over, and how far to the side
   if (typeof n === 'string') { const kind = n.slice(5), k = G.healTiles().find(t => G.s.tiles[t].kind === kind && G.healAt(t) < G.healSteps(t).length) || '0,0'; const [gx, gy] = glob(k, 0.5, 0.42); return [gx, gy, 0]; }   // a new kind of bare tile: over that patch
+  if (n === 6) { const k = G.castSpots('worms')[0] || '0,1', [gx, gy] = glob(k, 0.5, 0.42); return [gx, gy, 0]; }   // v99: over the cleared patch that wants its worms woken
+  if (n === 2 && G.castSpots('rain').length) { const [gx, gy] = glob('0,1', GPOND[0], GPOND[1] - 0.1); return [gx, gy, 0]; }   // over the waiting hollow
   if (n === 1) { const sb = PROPS.find(p => p.name === 'seedbed'); return [sb.gx + 0.05, sb.gy - 0.12, 40]; }   // beside the bed, not over it: a tap on the bed is the bed's
   if (n === 2) return [SPRING.at[0], SPRING.at[1], 50];
   if (n === 3) { const [x, y] = toadAt(); return [x, y, 95]; }
@@ -3219,7 +3270,7 @@ function spiritItem(items, now) {
     SPIRIT_HINT.screen = { x, y: fy, w: ww, h: hh }; } });
 }
 function openLesson(n, again) {
-  const L = typeof n === 'string' ? Object.assign({ spell: C.heal.kinds[n.slice(5)].spell }, C.heal.kinds[n.slice(5)].lesson) : C.story.lessons[n - 1], v = G.visitorDef('spirit'), met = !!G.s.flags.spiritHello, first = !again && G.teach(n), sp = L.spell && C.spells[L.spell];
+  const L = typeof n === 'string' ? Object.assign({ spell: C.heal.kinds[n.slice(5)].spell }, C.heal.kinds[n.slice(5)].lesson) : C.story.lessons.find(l => l.n === n), v = G.visitorDef('spirit'), met = !!G.s.flags.spiritHello, first = !again && G.teach(n), sp = L.spell && C.spells[L.spell];
   if (!again) { SPIRIT_N = 0; SPIRIT_HINT.screen = null; }
   const pose = { wind:'spirit-wind', cloud:'spirit-cloud', seedwake:'spirit-seed', sing:'spirit-sing' }[L.spell];   // art day 15: the spirit showing the spell
   const pic = pose && art(pose) ? `<div class="por big pad"><img src="sprites/${pose}.webp" alt=""></div>` : v ? portraitHtml(v, true) : '';
@@ -3262,7 +3313,11 @@ function landItems(items, now) {
       if (G.s.tiles[`${tx + dx},${ty + dy}`]) continue;
       for (let i = 0; i < 4; i++) { const t = 0.12 + 0.76 * (i + rnd(seed + i * 7 + dx * 3 + dy)) / 4, a = dx ? gc : t, b = dx ? t : gc, [ux, uy] = glob(k, a, b);
         if (!openGround(ux, uy) || inFarm(k, a, b) || (home && !yardClear(a, b, lvl < 3 ? 90 : 200))) continue;
-        if (home && lvl < 3) { const pool = lvl < 2 ? [10, 6, 2, 4, 6, 10] : WOOD_LOW; woodPiece(items, pool[Math.floor(rnd(seed + i * 5 + dx * 7 + dy * 11) * pool.length)], ux, uy, vb, (lvl < 2 ? 0.55 : 0.7) + 0.2 * rnd(seed + i * 11), rnd(seed + i * 3) < 0.5); continue; }   // round six: the yard's wild edge starts low and small too
+        // v99 (round ten note 31, Bryce: first green on a patch made big dead root stumps pop in): a healing patch's wild edge comes in like
+        // the yard's: only small living plants at first green, a few at a time as its green grows, bigger plants at meadow, and old wood only once it is woodland
+        const lv = home ? lvl : tl.kind ? G.stageIndex(k) : 3;
+        if (!home && tl.kind && lv < 3) { const span = lv < 2 ? [4, 12] : [12, 26], shown = 1 + Math.floor(3.99 * Math.max(0, Math.min(1, (tl.green - span[0]) / (span[1] - span[0])))); if (lv < 2 && i >= shown) continue; }
+        if (lv < 3 || k === '0,1') { const pool = lv < 2 ? [10, 6, 2, 4, 6, 10] : home ? WOOD_LOW : [2, 4, 6, 10, 9, 1]; woodPiece(items, pool[Math.floor(rnd(seed + i * 5 + dx * 7 + dy * 11) * pool.length)], ux, uy, vb, (lv < 2 ? 0.55 : 0.7) + 0.2 * rnd(seed + i * 11), rnd(seed + i * 3) < 0.5); continue; }   // round six: the yard's wild edge starts low and small too
         const n = back ? (i === 1 && rnd(seed + 3) < 0.45 ? (rnd(seed + i) < 0.5 ? 12 : 11) : i % 2 ? WOOD_LOW[Math.floor(rnd(seed + i * 5) * WOOD_LOW.length)] : WOOD_PLANTS[Math.floor(rnd(seed + i * 5) * WOOD_PLANTS.length)]) : WOOD_LOW[Math.floor(rnd(seed + i * 5) * WOOD_LOW.length)];   // a tall trunk only now and then: they stop at the top of the picture
         if (n >= 11 && n <= 12 && (home || (tl.kind && G.stageIndex(k) < 3))) continue; woodPiece(items, n, ux, uy, vb, 0.8 + 0.4 * rnd(seed + i * 11), rnd(seed + i * 3) < 0.5); }   // round eight note 2: big old trunks only round woodland
     }
@@ -3525,7 +3580,7 @@ function kitPiece(k, x, y, h, flat) { const im = IM[k]; if (!im || !im.width) re
 function pebble(x, y, r, col, i) { blob(x, y + r * 0.3, r * 1.1, r * 0.5, 'rgba(40,30,20,0.25)'); blob(x, y, r, r * 0.62, col); blob(x - r * 0.3, y - r * 0.2, r * 0.4, r * 0.2, 'rgba(255,255,255,0.45)'); }
 function snailShell(x, y, r) { ctx.save(); blob(x, y, r, r, '#c9a36a'); ctx.strokeStyle = '#6e4a2c'; ctx.lineWidth = 1; ctx.beginPath(); for (let a = 0; a < 9; a += 0.3) { const rr = r * (1 - a / 10); ctx.lineTo(x + Math.cos(a) * rr * 0.9, y + Math.sin(a) * rr * 0.9); } ctx.stroke(); ctx.restore(); }
 // the pond (dug in the garden; docs yard layout plan), drawn flat
-const POND = { tile: '0,1', gx: 0.27, gy: 0.50 };
+const POND = { tile: '0,1', gx: 0.52, gy: 0.56 };   // v99: the big pond in the middle (drawn by HEAL_LOOK.garden)
 function drawPond(x, y, a, now) {
   if (drawSlot('pond', x, y + 4, a, { flat: true })) return;   // the painted dew pond (art day 14); the drawn one below stands in until it loads
   ctx.save(); ctx.globalAlpha = a; groundPatch(x, y, 84, 36);
@@ -3691,7 +3746,8 @@ const MAKE_PARTS = {   // makes spread over a few spots (home grid), so each pie
   ferns: () => [[0.04, 1.24, 'kit-wood-01', 74], [0.10, 1.30, 'kit-wood-02', 52], [0.06, 1.36, 'kit-wood-10', 40], [0.14, 1.26, 'kit-wood-16', 44]],
   border: () => [[0.40, 1.14, 'kit-wood-03', 46], [0.50, 1.15, 'kit-wood-09', 30], [0.395, 1.22, 'kit-wood-09', 28], [0.495, 1.23, 'kit-wood-03', 44], [0.39, 1.30, 'kit-wood-03', 42], [0.49, 1.31, 'kit-wood-09', 30], [0.385, 1.37, 'kit-wood-09', 26]],
 };
-const HOUSE_DOOR = { doormat:[-38, -14], doorpots:[-4, -8], scraper:[-70, -12], wreath:[-38, -76], nameboard:[-38, -104] };   // world px from the house's foot (its painted door) at s 1, scaled with the house; drawn in front of it
+const HOUSE_DOOR = { doormat:[-35, -13], doorpots:[-4, -8], scraper:[-90, -8],   // v99 (round ten note 42): the scraper smaller and well to the left of the door; a small mat lying on the doorstep, centred on the door
+  wreath:[-38, -76], nameboard:[-38, -104] };   // world px from the house's foot (its painted door) at s 1, scaled with the house; drawn in front of it
 const FIRERING_NUDGE = [3, 10];   // concern 2 (Bryce): the painted ring sat a little high and left of the fire's ash bed; this settles the fire in the middle of its stones
 const MAKE_FLAT = new Set(['doormat', 'pebbles', 'plank', 'gstones', 'wildflowers', 'pebblepath', 'clover']);   // things that lie on the ground (drawn under the rest)
 const MAKE_DEPTH = { firering: -0.012, wreath: 0.06, nameboard: 0.06, chime: 0.02, cushion: 0.012, mousering: -0.01, spinner: 0.01 };
@@ -3735,6 +3791,12 @@ function herbStage() {   // 0 = none yet, 1 sprouts while she plants, 2 young on
   return G.now() - (tk.endsAt || 0) > 24 * 3600 * 1000 ? 3 : 2;
 }
 const HERB_CLUMPS = [[-26, 4, 0, 1.1], [2, 11, 1, 1.3], [28, 2, 2, 1.1], [-6, -8, 1, 0.95]];   // dx, dy (world px), which painting, size
+function workCornerItems(items) {   // v99 (note 18, art day 21): poles and bark first, then (the story's lean-to job) the finished workshop
+  const a = taskProg('workcorner'), b = taskProg('leanto'); if (a <= 0 && b <= 0) return; const [gx, gy] = WORKCORNER;
+  items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy), H = 168;
+    const pic = (k, al) => { const im = art(k); if (!im || al <= 0) return; const w = H * im.width / im.height; ctx.save(); ctx.globalAlpha *= al; ctx.drawImage(im, x - w / 2, y - H * 0.93, w, H); ctx.restore(); };
+    shadow(x, y - 4, 60, 16); if (b < 1) pic('yard-leanto-frame', Math.max(a, b > 0 ? 1 : 0) * (1 - sstep(0.3, 1, b))); if (b > 0) pic('yard-leanto', sstep(0.3, 1, b)); } });
+}
 function compostItems(items) {   // note 48 (Bryce): the compost heap sits in the yard's southern corner, with the wheelbarrow close by
   const p = taskProg('compost'); if (p <= 0) return;
   const [gx, gy] = [0.70, 0.93];
@@ -3771,7 +3833,7 @@ function makeItems(items, now) {
   const garden = G.gardenOpen();
   for (const d of C.tasks) {
     if (!d.make || d.season || d.retired || (d.make !== 'yard' && !G.patchOpen(d.make))) continue;
-    const a = taskProg(d.id); if (a <= 0 || d.id === 'barrow') continue;   // the wheelbarrow is a prop already
+    const a = taskProg(d.id); if (a <= 0 || d.id === 'barrow' || d.id === 'bed2') continue;   // the wheelbarrow is a prop already; the second bed draws itself (bed2Items)
     const op = d.id === 'swing' && a >= 1 && oakPic(); if (op && !op[0].endsWith('-plain')) continue;   // the bigger oak paintings have the swing in them
     const [hx, hy] = makeAt(d);
     if (MAKE_PARTS[d.id] && !art('make-' + d.id)) { for (const [gx, gy, k, h] of MAKE_PARTS[d.id]()) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); ctx.save(); ctx.globalAlpha = a; shadow(x, y, h * 0.3, h * 0.08); kitPiece(k, x, y, h); ctx.restore(); } }); continue; }
@@ -3792,7 +3854,7 @@ function makeItems(items, now) {
     if (im) { const [lx, ly] = GARLAND_POSTS[0], [rx, ry] = GARLAND_POSTS[1], w = (rx - lx) * sh.s, h = 66 * sh.s * im.height / im.width;   // painted (art day 16): the swag hung post to post across the porch (Bryce), stretched to fit
       ctx.translate(x + lx * sh.s, y + ly * sh.s); ctx.transform(1, (ry - ly) / (rx - lx), 0, 1, 0, 0); ctx.drawImage(im, 0, -h * 0.12, w, h); }
     else garland(x - 38 * sh.s, y - 98 * sh.s, dz.season, now); ctx.restore(); } });
-  if (garden && taskProg('pond') > 0) { const [px, py] = glob(POND.tile, POND.gx, POND.gy); items.push({ d: depthOf(px, py) - 0.3, draw: () => { const [x, y] = toWorld(px, py); drawPond(x, y, taskProg('pond'), now); } }); }
+  if (garden && taskProg('pond') > 0 && G.s.tiles['0,1'].kind !== 'garden') { const [px, py] = glob(POND.tile, POND.gx, POND.gy); items.push({ d: depthOf(px, py) - 0.3, draw: () => { const [x, y] = toWorld(px, py); drawPond(x, y, taskProg('pond'), now); } }); }
 }
 
 // ---------- healing the bare tiles (CONTENT.heal; docs/PLAN.md "Healing the bare tiles") ----------
@@ -3806,7 +3868,18 @@ function makeItems(items, now) {
 // v: [side, along 0..1]. Plain, rubbish and cracked tiles keep what stays on the right and along the front (clear of where a
 // neighbour would build), and every other one is mirrored corner to corner, so no two patches look the same.
 const ROLL_AT = [0.24, 0.88], SHELF_AT = [0.32, 0.84];   // at home: where the seed balls are rolled, and the nursery shelf (Hazel's growing corner, near the oak)
+const GPOND = [0.52, 0.56];   // v99: the middle of the garden patch, where the rubbish heap stands and the pond will be (garden plan, layout 3)
 const HEAL_LOOK = {
+  // v99 (round ten notes 31, 39, 54): the couple's garden-to-be. The heap is piled where the pond will be; nothing big appears at first green.
+  garden: [
+    { always:1, draw:'gardenmid', at:GPOND, flat:1 },   // one painting at a time on the same footprint (art day 21): heap, half cleared, hollow, rain in the hollow, pond
+    { s:'fence', go:1, draw:'oldfence', at:[0.22, 0.16], h:58 }, { s:'fence', go:1, draw:'oldfence', at:[0.17, 0.34], h:54 },
+    { s:'fence', go:1, draw:'oldfence', at:[0.14, 0.54], h:58, broken:1 }, { s:'fence', go:1, draw:'oldfence', at:[0.16, 0.74], h:52 },
+    { s:'fence', pic:'fence-fallen', at:[0.60, 0.12], h:60, untilTask:'bed2' },   // the good posts, stacked where the new bed will go, until they fence it
+    ...[[0.20, 0.26], [0.80, 0.50], [0.28, 0.86], [0.84, 0.86]].map((at, i) => ({ ev:'w' + (i + 1), draw:'grass', at, n:i + 3, flat:1, fade:1 })),
+    { ev:'dragonflies', draw:'dragonflies', at:GPOND, day:[9, 17] },
+    ...[[0.10, 0.50], [0.88, 0.64], [0.38, 0.92]].map((at, i) => ({ s:'flowers', draw:'wildpatch', at, n:i })),   // each patch: sprouts, then in flower, then wider with seedlings (spread1, spread2)
+  ],
   meadow: [
     // v87 (note 70): a real rubbish heap, the loggers' junk piled on a mound of spoil in the middle; Hazel picks it off piece by piece, then levels the mound
     { s:'rubbish', go:1, pic:'kit-leftovers-03', at:[0.62, 0.40], h:30 }, { s:'rubbish', go:1, pic:'kit-leftovers-04', at:[0.36, 0.56], h:40, flat:1 },
@@ -3897,7 +3970,8 @@ function wetMarks() {   // the forked-earth picture, darkened as if soaked (made
 }
 function healPic(name) { if (IM[name] && IM[name].width) return IM[name]; const a = art(name); if (a) return a; if (!name.startsWith('kit-')) return null;
   if (!HP[name]) { const im = new Image(); im.src = `sprites/kit/${name.slice(4)}.webp`; HP[name] = im; } return HP[name].complete && HP[name].width ? HP[name] : null; }
-function healProg(k, s) { const i = HEAL_IDX[G.s.tiles[k].kind].st[s]; if (i == null) return 0; if (G.healStepDone(k, i)) return 1; return taskProg(`heal:${k}:${i}`); }
+function healProg(k, s) { const i = HEAL_IDX[G.s.tiles[k].kind].st[s]; if (i == null) return 0; if (G.healStepDone(k, i)) { const st = G.healSteps(k)[i], tk = st.cast && G.s.tasks[`heal:${k}:${i}`]; return tk ? Math.min(1, Math.max(0.02, (G.now() - tk.endsAt) / 9000)) : 1; }   // a spell's work comes in over a few seconds
+  return taskProg(`heal:${k}:${i}`); }
 function healEvAt(k, name) { const e = HEAL_IDX[G.s.tiles[k].kind].ev[name]; return e ? G.healEv(k, e[0], e[1]) : 0; }
 function healSwap(k) { const kind = G.s.tiles[k].kind, [tx, ty] = k.split(',').map(Number); return (kind === 'meadow' || kind === 'creature' || kind === 'nursery') && ((tx + ty) & 1) !== 0; }
 function healLocal(k, q) {   // a piece's spot on its tile (tile grid)
@@ -3917,6 +3991,7 @@ function healPieces(k) {   // every piece of this tile with how much of it shows
     else { const p = healProg(k, q.s), all = cnt[q.s + (q.go ? '-' : '+')] || 1, j = idx[n] - 1;
       a = q.go ? 1 - sstep((j + 0.4) / all, (j + 0.9) / all, p) : q.home ? sstep(0, 0.3, p) : sstep((j + 0.1) / all, (j + 0.6) / all, p); }
     if (a > 0 && q.until) a *= 1 - sstep(0, 0.4, healProg(k, q.until));
+    if (a > 0 && q.untilTask) a *= 1 - taskProg(q.untilTask);
     if (a > 0 && q.gone && healEvAt(k, q.gone)) a = 0;
     if (a > 0 && q.fade) a *= 1 - 0.85 * sstep(6, 16, green);
     if (a > 0 && q.day) { const h = dayPhase().h; if (h < q.day[0] || h >= q.day[1]) a = 0; }
@@ -3930,6 +4005,19 @@ function healTreeSize(q) {   // a sapling: seedling, knee-high, then taller than
   const k = q.k; if (healEvAt(k, q.grow[1])) return 2; if (healEvAt(k, q.grow[0])) return 1; return 0;
 }
 const HEAL_DRAW = {
+  // v99 (art day 21): the middle of the garden-to-be. Five paintings on one footprint, cross-faded as the work goes.
+  gardenmid(x, y, a, q, now) {
+    const k = q.k, pr = healProg(k, 'rubbish'), ps = healProg(k, 'spoil'), rn = healProg(k, 'rain'), rd = healProg(k, 'reeds'), W = 440;
+    const pic = (name, al) => { const im = art(name); if (!im || al <= 0.01) return; const w = W, h = w * im.height / im.width; ctx.save(); ctx.globalAlpha *= Math.min(1, al); ctx.drawImage(im, x - w / 2, y - h * 0.56, w, h); ctx.restore(); };
+    if (!art('garden-heap')) { blob(x, y, 130, 52, rn > 0 ? '#5f8a88' : '#7d5c3e'); return; }
+    if (ps < 1) { const half = sstep(0.3, 1, pr), hol = sstep(0.2, 1, ps); if (hol > 0) pic('garden-hollow', 1); pic('garden-heap-half', hol > 0 ? 1 - hol : 1); pic('garden-heap', (1 - half) * (hol > 0 ? 1 - hol : 1)); return; }
+    if (rd >= 1) return pic('garden-pond-large', 1);
+    pic(rn > 0.5 ? 'garden-hollow-rain' : 'garden-hollow', 1); if (rn > 0 && rn <= 0.5) pic('garden-hollow-rain', rn * 2);
+    if (rd > 0) pic('garden-pond-large', sstep(0.2, 1, rd)); },
+  wildpatch(x, y, a, q) {   // a patch of native wildflowers: sprouts, in flower, then wider (the three paintings share one scale)
+    const st = healEvAt(q.k, 'spread2') ? 3 : healEvAt(q.k, 'spread1') ? 2 : 1, im = art('wildflower-patch-' + st);
+    if (im) { const sc = 0.27, w = im.width * sc, h = im.height * sc; shadow(x, y, w * 0.3, w * 0.08); ctx.drawImage(im, x - w / 2, y - h * 0.9, w, h); return; }
+    for (let i = 0; i < 5; i++) { const g = healPic('g-st-' + GSTICK.meadow[(q.n * 5 + i * 2) % 12]); if (!g) continue; const w = g.width * 0.62, h = g.height * 0.62, px = x + (rnd(q.n * 11 + i) - 0.5) * 60, py = y + (rnd(q.n * 11 + i + 5) - 0.5) * 24; ctx.drawImage(g, px - w / 2, py - h * 0.85, w, h); } },
   oldfence(x, y, a, q) {   // a grey, leaning loggers' fence: three posts and sagging wire
     const h = q.h, lean = q.broken ? 0.28 : 0.1; ctx.save(); ctx.lineCap = 'round';
     const posts = [[-34, 0], [0, -4], [34, -8]].map(([dx, dy], i) => [x + dx, y + dy, h * (i === 1 && q.broken ? 0.55 : 1 - i * 0.06), lean * (i - 1) + (q.broken && i === 2 ? 0.5 : 0)]);
@@ -4030,13 +4118,68 @@ function healPainted(x, y, q) {
   cropPic(k, x, y, h, !!q.flip, 0.92); if (front) cropPic(front, x, y + 1, h < 30 ? 22 : 34, false, 0.92);
   return true;
 }
+// ---------- the second bed (v99, round ten notes 34, 35; garden plan: a rectangle by the yard, woven fence at the back, pebbles in front) ----------
+// A stand-in drawn in code until the "seedbed-rect" painting lands. Its crops use the same little plant paintings as the first bed.
+let BEDSEL = 'seedbed', PICKING2 = null;
+const BED2 = { tile: '0,1', g: [0.76, 0.20], lu: 0.30, lv: 0.15 };
+function bed2Pt(u, v) { return glob(BED2.tile, BED2.g[0] + (u - 0.5) * BED2.lu, BED2.g[1] + (v - 0.5) * BED2.lv); }   // u, v 0..1 across the bed -> home grid
+function bed2Shown() { return gardenOpen() ? taskProg('bed2') : 0; }
+function bed2Chore() { return gnomes.find(g => g.chore && /^(sow2|wat2|pick2)$/.test(g.chore.kind)) || null; }
+function startBed2Chore(g, kind, onDone) {
+  const at = (u, act, carry, secs) => { const [x, y] = bed2Pt(u, 1.3); return [x, y, act, carry, secs, bed2Pt(u, 0.5)]; };
+  const src = G.done('rainbarrel') ? [...SPOTS.barrel, 'pickup', false, 2, BARREL_AT()] : [SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 2.5, SPRING.at];
+  const can = g.who === 'him' ? 'can' : false, basket = g.who === 'her';
+  const steps = kind === 'sow2' ? [0.12, 0.38, 0.62, 0.88].map(u => at(u, 'putdown', false, 2.5)) : kind === 'wat2' ? [src, at(0.25, 'water', can, 3.5), at(0.75, 'water', false, 3.5)]
+    : [at(0.15, 'gather', false, 2.5), at(0.5, 'gather', false, 2.5), at(0.85, 'gather', false, 2.5), [SPOTS.door[0] + 0.03, SPOTS.door[1] + 0.04, 'putdown', basket, 2, [0.30, 0.28]]];
+  g.startChore(kind, steps, onDone);
+}
+function bed2Wants() { if (bed2Shown() < 1 || bed2Chore() || !choreGnome('her')) return false; return G.onBed('bed2', () => { const st = G.plot().stage; return st === 'ready' || (!st && G.canSow()) || (st === 'planted' && G.waterReady()); }); }
+function bed2Items(items, now) {
+  const a = bed2Shown(); if (a <= 0) return; const [cgx, cgy] = bed2Pt(0.5, 0.5), W = (u, v) => toWorld(...bed2Pt(u, v));
+  items.push({ d: depthOf(cgx, cgy) - 0.2, draw: () => {
+    ctx.save(); ctx.globalAlpha *= a;
+    const im = art('seedbed-rect'), rails = () => { rail(-0.03, 1.06, -0.03, -0.1, 5); rail(-0.03, -0.1, 1.04, -0.1, 9); };
+    // the woven fence along the back two sides, made from the old fence's good posts
+    const rail = (u0, v0, u1, v1, n) => { const pts = []; for (let i = 0; i <= n; i++) pts.push(W(u0 + (u1 - u0) * i / n, v0 + (v1 - v0) * i / n));
+      ctx.lineCap = 'round'; for (const [hh, col, lw] of [[24, INK, 4.6], [24, '#8a6a44', 2.6], [15, INK, 4.6], [15, '#9a7a50', 2.6], [7, INK, 4.6], [7, '#8a6a44', 2.6]]) { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath(); pts.forEach(([x, y], i) => { const yy = y - hh - (i % 2 ? 2 : -2) * (hh === 15 ? -1 : 1); if (i) ctx.lineTo(x, yy); else ctx.moveTo(x, yy); }); ctx.stroke(); }
+      for (const [x, y] of pts) post(x, y, 32, 4, '#7a5a3a'); };
+    if (im) {   // the painting's corners (top 356,0 · right 719,197 · left 0,203) laid on the bed's corners, a touch wider so its pebble edge sits outside the rows
+      const [tx, ty] = W(-0.05, -0.1), [rx2, ry2] = W(1.06, -0.1), [lx, ly] = W(-0.05, 1.12);
+      const e1x = rx2 - tx, e1y = ry2 - ty, e2x = lx - tx, e2y = ly - ty, det = 143821;   // image edges: top->right (363, 197), top->left (-356, 203)
+      const A11 = (e1x * 203 - e2x * 197) / det, A12 = (e1x * 356 + e2x * 363) / det, A21 = (e1y * 203 - e2y * 197) / det, A22 = (e1y * 356 + e2y * 363) / det;
+      ctx.save(); ctx.transform(A11, A21, A12, A22, tx - A11 * 356, ty - A21 * 356); ctx.drawImage(im, 0, 0); ctx.restore(); rails();
+    }
+    else {
+      const poly = (pts, fill, stroke) => { ctx.beginPath(); pts.forEach(([u, v], i) => { const [x, y] = W(u, v); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); }); ctx.closePath(); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); } };
+      poly([[-0.04, -0.08], [1.04, -0.08], [1.04, 1.08], [-0.04, 1.08]], 'rgba(96,72,48,0.35)');
+      poly([[0, 0], [1, 0], [1, 1], [0, 1]], '#5a4028', 'rgba(42,28,16,0.55)');
+      ctx.strokeStyle = 'rgba(40,26,14,0.45)'; ctx.lineWidth = 2.5; for (const v of [0.25, 0.5, 0.75]) { const [x0, y0] = W(0.03, v + 0.11), [x1, y1] = W(0.97, v + 0.11); ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); }   // the furrows between the rows
+      rails();
+    }
+    // the crop
+    const ch = bed2Chore(), pick = ch && ch.chore.kind === 'pick2' && PICKING2, sow = ch && ch.chore.kind === 'sow2';
+    const p = pick ? { stage: 'ready', crop: PICKING2.crop } : G.s.plots.bed2, prog = p.stage ? cropProg(p) : 0, look = p.crop && C.crops[p.crop] ? C.crops[p.crop].look : 'carrot';
+    const cp = pick ? ch.choreProg(3) : sow ? ch.choreProg() : 0, gone = u => pick ? u < cp : sow ? u > cp : false;
+    if (p.stage) {
+      if (look === 'pumpkin' && p.stage !== 'planted') { const [x, y] = W(0.5, 0.55); if (!(pick && cp > 0.6)) { if (prog < 0.12) seedling(x, y, prog / 0.12, 0.3, now); else drawPumpkin(x, y, 96, 34, prog, now); } }
+      else for (const v of [0.25, 0.5, 0.75]) for (let i = 0; i < 7; i++) { const u = 0.08 + i * 0.14, ph = rnd(i * 7 + v * 40 + 3); if (gone(u)) continue; const [sx, sy] = W(u, v);
+        if (p.stage === 'planted') { if (look === 'pumpkin') continue; blob(sx, sy, 3.5, 2, '#3e2c18'); blob(sx - 1, sy - 0.6, 1.4, 0.7, 'rgba(160,130,90,0.7)'); continue; }
+        const k = Math.min(1, prog * (0.8 + 0.4 * ph)); if (k < 0.3 && !art(`crop-${look}-1`)) { seedling(sx, sy, k / 0.3 * 0.7, ph, now); continue; }
+        if (paintedPlant(look, sx, sy, k, ph)) continue; const kk = (k - 0.3) / 0.7;
+        if (look === 'carrot') carrotPlant(sx, sy, kk, ph, now); else if (look === 'lettuce') lettucePlant(sx, sy, kk, ph); else beanPlant(sx, sy, kk, ph, now); }
+      if (p.stage === 'planted' && look === 'pumpkin') { const [x, y] = W(0.5, 0.55); blob(x, y, 13, 5.5, '#3e2c18'); }
+      if (p.stage === 'ready' && !pick) { const ph = ((now / 1000) % 2.8) / 2.8, [x, y] = W(0.6, 0.5); if (ph < 0.22) twinkle(x, y - 30, Math.sin(ph / 0.22 * Math.PI)); }
+    }
+    if (!art('seedbed-rect')) for (let i = 0; i <= 12; i++) { const [x, y] = W(i / 12, 1.1); pebble(x, y, 3.2 + rnd(i + 60) * 1.4, i % 2 ? '#b9b2a4' : '#a39a8a', i); const [x2, y2] = W(1.05, i / 12); if (i % 2 === 0) pebble(x2, y2, 3.2 + rnd(i + 80) * 1.4, i % 3 ? '#b9b2a4' : '#a39a8a', i + 20); }   // low pebbles along the front, so the crops show
+    ctx.restore(); } });
+}
 function healItems(items, now) {   // the pieces on every healing tile, depth-sorted with everything else
   const vb = viewBox(); vb.x0 -= 160; vb.x1 += 160; vb.y0 -= 260; vb.y1 += 80;
   for (const k of G.healTiles()) for (const q of healPieces(k)) {
     if (q.a <= 0.01) continue; const [ux, uy] = q.G;
     items.push({ d: depthOf(ux, uy) + (q.flat ? (q.over ? -0.02 : -0.25) : 0), draw: () => { const [x0, y0] = toWorld(ux, uy); if (x0 < vb.x0 || x0 > vb.x1 || y0 < vb.y0 || y0 > vb.y1) return;
       let x = x0, y = y0; if (q.crawl) x += Math.sin(now / 2400 + ux * 9) * 4; if (q.hop) y -= Math.max(0, Math.sin(now / 600 + ux * 7)) * 3;
-      if (q.perch) { x += 22; y -= 40; } if (q.onbox) y -= 69;
+      if (q.perch) { x += 22; y -= 40; } if (q.onbox) y -= 69; if (q.off) { x += q.off[0]; y += q.off[1]; }
       ctx.save(); ctx.globalAlpha *= Math.min(1, q.a);
       if (q.draw) { if (!healPainted(x, y, q)) HEAL_DRAW[q.draw](x, y, q.a, q, now); }
       else { const im = healPic(q.pic); if (im) { const w = im.width * q.h / im.height; if (!q.flat && !q.perch && !q.onbox) shadow(x, y, w * 0.32, w * 0.09); if (q.flat && /patch|marks/.test(q.pic)) ctx.globalAlpha *= 0.8;
@@ -4064,7 +4207,7 @@ function shelfItem(items, now) {
     ctx.restore(); } });
 }
 // how each job moves the gnome about (default: from piece to piece of that job, working at each one)
-const HEAL_WORK = { 'meadow:water': 'spring', 'creature:mulch': 'edge', 'nursery:gather': 'gather', 'nursery:plant1': 'shelf', 'nursery:plant2': 'shelf', 'creature:ferns': 'creek', 'nursery:mulch': 'edge' };
+const HEAL_WORK = { 'garden:spoil': 'barrow', 'garden:reeds': 'creek', 'meadow:water': 'spring', 'creature:mulch': 'edge', 'nursery:gather': 'gather', 'nursery:plant1': 'shelf', 'nursery:plant2': 'shelf', 'creature:ferns': 'creek', 'nursery:mulch': 'edge' };
 const SEED_SPOTS = [[0.92, 0.50], [0.08, 0.30], [0.62, 0.92], [0.94, 0.80], [0.40, 0.08]];   // round the yard's edges for gumnuts, wattle pods and acorns
 function healWork(id, p, g) {
   const d = G.taskDef(id); if (!d) return null;
@@ -4074,6 +4217,7 @@ function healWork(id, p, g) {
   if (w === 'spring') return workLoop(g, id, c => [[SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3, SPRING.at], [...near(at(i)), 'water', 'can', 5, at(i)]]);
   if (w === 'edge') { const e = glob(k, ...(healSwap(k) ? [0.95, 0.5] : [0.5, 0.95])); return workLoop(g, id, () => [[e[0], e[1], 'gather', false, 3, e], [...near(at(i)), 'pickup', true, 4, at(i)]]); }
   if (w === 'creek') { const e = G.s.tiles['0,-1'] ? glob('0,-1', 0.30, 0.62) : [SPRING.at[0], SPRING.at[1] + 0.06]; return workLoop(g, id, () => [[e[0], e[1], 'gather', false, 4, e], [...near(at(i)), 'pickup', false, 4, at(i)]]); }
+  if (w === 'barrow') { const m = glob(k, GPOND[0] - 0.12, GPOND[1] + 0.06), e = glob(k, 0.76, 0.24); return workLoop(g, id, c => [[m[0], m[1], 'dig', false, 5, glob(k, ...GPOND)], [e[0] + (c % 3 - 1) * 0.05, e[1], 'pickup', true, 3]]); }   // v99: digs at the mound, carries it to where the new bed will go
   if (w === 'gather') return workLoop(g, id, c => [[...SEED_SPOTS[c % SEED_SPOTS.length], 'pickup', false, 4], [...SEED_SPOTS[(c + 2) % SEED_SPOTS.length], 'pickup', false, 3]]);
   if (w === 'shelf') return workLoop(g, id + ':' + i, () => [[SHELF_AT[0] + 0.05, SHELF_AT[1] + 0.02, 'pickup', false, 2.5, SHELF_AT], [...near(at(i)), 'dig', true, 6, at(i)], [...near(at(i)), 'water', false, 4, at(i)]]);
   if (!n) return [...near(glob(k, 0.5, 0.5)), act];
@@ -4089,18 +4233,26 @@ function healStageCard(c) {   // a healing tile (or a neighbour's farm) reached 
   openSheet('land', `<div class="jpage card"><p class="meta" style="margin:0">The land is waking · ${K.name.toLowerCase()}, ${G.tileWhere(c.tile)}</p><h2>${st.name[0].toUpperCase() + st.name.slice(1)}</h2><p class="lore">${C.heal.stageText[c.key].replace('{patch}', K.patch)}</p></div>
     <p style="text-align:center"><button class="act" data-a="patch" data-id="${c.tile}">See the patch</button> <button class="act quiet" data-a="close">Have a look</button></p>`);
 }
-const STEP_PIC = { rubbish:'kit/leftovers-01', fence:'fence-fallen', fork:'kit/patch-07', water:'icon-water', roll:'icon-seed', toss:'icon-seed', logpile:'kit/wood-13', sapling:'sapling', beestone:'kit/stumps-rocks-03',
+const STEP_PIC = { spoil:'wheelbarrow', worms:'icon-light', rain:'icon-water', flowers:'icon-seed', rubbish:'kit/leftovers-01', fence:'fence-fallen', fork:'kit/patch-07', water:'icon-water', roll:'icon-seed', toss:'icon-seed', logpile:'kit/wood-13', sapling:'sapling', beestone:'kit/stumps-rocks-03',
   branches:'stick-pile', stump:'kit/stumps-rocks-02', mulch:'kit/patch-05', log:'kit/wood-14', rocks:'nest-stones', nestbox:'nest-nest', dish:'icon-seed', saplings:'sapling', ferns:'kit/wood-02',
   shelf:'sapling', gather:'icon-acorn', pot:'sapling', walk:'kit/marks-05', stones:'yard-stones', holes:'kit/marks-06', plant1:'oak-planted', plant2:'oak-planted', grass:'kit/patch-08', birdbath:'nest-stones',
   junk:'kit/leftovers-06', channel:'kit/marks-06', reeds:'kit/wood-05', flat:'yard-stones', pond:'vis-frog', perch:'vis-kingfisher', ruts:'kit/marks-01', balls:'icon-seed', birdbox:'nest-nest', hedge:'kit/wood-08' };
+function patchFace(who) { return who === 'both' ? `<div class="por two"><img src="sprites/face-him.webp" alt=""><img src="sprites/face-her.webp" alt=""></div>` : `<div class="por"><img src="sprites/face-${who}.webp" alt=""></div>`; }
 function openPatch(k) {   // tap a healing tile (v90: a small card): what this patch needs next, with its Start, and its spell while the job runs
-  const tl = G.s.tiles[k], K = C.heal.kinds[tl.kind], steps = G.healSteps(k), at = G.healAt(k), st = G.landStage(k), who = K.card.who, names = G.treeNames(k);
-  const run = G.running().find(r => r.def.healTile === k && r.endsAt > G.now()), d = at < steps.length ? G.taskDef(`heal:${k}:${at}`) : null, v = d && G.taskView(d);
+  const tl = G.s.tiles[k], K = C.heal.kinds[tl.kind], steps = G.healSteps(k), at = G.healAt(k), st = G.landStage(k), names = G.treeNames(k), all = at >= steps.length;
+  const card = (all && K.cardDone) || (at > 0 && K.cardAfter) || K.card, who = card.who;   // v99 (note 39): the garden-to-be says what it is from the start, in both their words
+  const run = G.running().find(r => r.def.healTile === k && r.endsAt > G.now()), d = !all ? G.taskDef(`heal:${k}:${at}`) : null, v = d && G.taskView(d);
   const dots = steps.map((x, i) => `<i class="${i < at ? 'on' : i === at ? 'now' : ''}"></i>`).join('');
-  let html = `<div class="tcard"><div class="por"><img src="sprites/face-${who}.webp" alt=""></div><div class="t"><b>${at > 0 && K.nameAfter ? K.nameAfter : K.name}</b><span class="meta">${cap(st.name)} · ${G.tileWhere(k)}</span><span class="steps">${dots}</span><span class="lore">"${K.card.text}" <i>· ${C.names[who]}</i></span></div></div>`;
+  let html = `<div class="tcard">${patchFace(who)}<div class="t"><b>${(all || (tl.kind === 'garden' && G.gardenOpen())) && K.nameDone ? K.nameDone : at > 0 && K.nameAfter ? K.nameAfter : K.name}</b><span class="meta">${cap(st.name)} · ${G.tileWhere(k)}</span><span class="steps">${dots}</span><span class="lore">"${card.text}"${who === 'both' ? '' : ` <i>· ${C.names[who]}</i>`}</span></div></div>`;
   if (run) { html += jobCardRow(G.taskView(run.def)); if (run.def.spell && C.spells[K.spell] && G.healTaught(tl.kind)) html += `<p class="go">${spellBtn(K.spell)}</p>`; }
+  else if (d && d.cast && G.healOpen(k)) {   // v99: this step is yours, not the gnomes'
+    const pic = STEP_PIC[d.stepId], taught = G.spellTaught(d.cast);
+    html += `<div class="row"><img class="jpic" src="sprites/${pic}.webp" alt="" onerror="this.remove()"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><span class="meta" style="display:block">${taught ? 'The gnomes have done their part. This one is your magic.' : `The gnomes have done their part. The Wood spirit will come and show you how${d.cast === 'rain' ? ', in a day or so' : ''}.`}</span></div></div>`;
+    if (taught) html += `<p class="go">${spellBtn(d.cast)}</p>`;
+  }
   else if (v && v.show && G.healOpen(k)) html += jobCardRow(v);
-  else html += `<p class="meta">${at >= steps.length ? 'Everything the gnomes can do here is done. The rest is up to the land.' : !G.healOpen(k) ? 'Someone else looks after this patch from here.' : 'Nothing to do here just now. The land is working on it.'}</p>`;
+  else html += `<p class="meta">${all ? (tl.kind === 'garden' ? 'The garden is open. Its wishes are on the wish list, and anything can be moved about later.' : 'Everything the gnomes can do here is done. The rest is up to the land.') : !G.healOpen(k) ? 'This patch has a home on it now. The folk who live here look after it.' : 'Nothing to do here just now. The land is working on it.'}</p>`;
+  if (!all && tl.kind === 'garden') { const left = steps.slice(at + (run || (d && d.cast) || (v && v.show) ? 1 : 0)).map(x => x.name.toLowerCase()); if (left.length) html += `<p class="meta">🔒 Still to come here: ${left.join(', ')}.${G.gardenOpen() ? '' : ' Then the garden opens.'}</p>`; }
   if (names.length) html += `<p class="meta">Wendel has named the trees here: ${names.join(', ')}.</p>`;
   openSheet('patch:' + k, html);
 }
@@ -4416,9 +4568,9 @@ function frame(now) {
   farmItems(items, now);
   if (PLATY.on) { const [gx, gy] = healLocal(PLATY.on.k, { c: [PLATY.on.u, -0.45] }); items.push({ d: depthOf(...glob(PLATY.on.k, gx, gy)) - 0.2, draw: () => drawPlatypus(now) }); }
   spiritItem(items, now);
-  makeItems(items, now);
+  makeItems(items, now); bed2Items(items, now);
   herbItems(items);
-  compostItems(items);
+  compostItems(items); workCornerItems(items);
   animalItems(items, now);
   festItems(items, now);
   items.sort((a, b) => a.d - b.d);
@@ -4539,7 +4691,14 @@ const ripples = [];   // a little ring where you touched, so every tap is seen t
 function tap(cx, cy) {   // the play log notes where the finger went, and whether it did anything
   const n0 = PL.n, wx = (cx - W / 2) / cam.z + cam.x, wy = (cy - H / 2) / cam.z + cam.y, f = fromWorld(wx, wy);
   PL.add(`tap on ${f.tile} at ${f.gx.toFixed(2)},${f.gy.toFixed(2)} (zoom ${cam.z.toFixed(1)})`);
+  // v99 (round ten note 45, Bryce: double tap should zoom): a second quick tap on the same spot, when the first one opened nothing and
+  // picked nothing up, glides in to that spot; when already close, it glides back out to the whole yard's width.
+  const t = performance.now(), D = tap.last;
+  if (D && t - D.t < 380 && Math.hypot(cx - D.cx, cy - D.cy) < 44 && !sheetKind && !roomOn) { tap.last = null; const near = cam.z >= Math.min(maxZ, 1.5) * 0.92, z1 = near ? homeZ() : clampZ(Math.max(cam.z * 1.9, 1.5));
+    PL.add(`double tap: zoom ${near ? 'out' : 'in'}`); ALLDONE.ease = { t: 0, d: 0.45, z0: cam.z, x0: cam.x, y0: cam.y, z1, x1: near ? cam.x : wx, y1: near ? cam.y : wy }; return; }
+  const sk0 = sheetKind, of0 = G.s.offers.length, rm0 = roomOn;
   tapAt(cx, cy, wx, wy);
+  tap.last = sheetKind === sk0 && roomOn === rm0 && G.s.offers.length === of0 ? { t, cx, cy } : null;
   if (PL.n === n0 + 1) PL.add('  (that tap did nothing)');
 }
 function tapAt(cx, cy, wx, wy) {
@@ -4550,7 +4709,9 @@ function tapAt(cx, cy, wx, wy) {
   for (const o of [...G.s.offers].reverse()) if (o.keep && hit(o.screen, wx, wy)) { G.gather(o.id); return openKeepsake(o.keep, true); }   // an animal's thank-you
   if (BABY_SEED.screen && hit(BABY_SEED.screen, wx, wy)) { const [x, y] = [BABY_SEED.screen.x, BABY_SEED.screen.y]; float('♥', x, y - 20); return toast(C.animals.babyTap); }
   for (const o of [...G.s.offers].reverse()) if (hit(o.screen, wx, wy)) { G.gather(o.id); float(`+1 ${C.resources[o.kind].name}`, o.screen.x, o.screen.y); driftHome(o); return; }
-  { const s = stakeHit(cx, cy); if (s) { PL.add(`tapped a job flag: ${s.ids.join(', ') || 'seed bed'}`); return openStake(s); } }   // v90: a job's paper flag
+  if (bed2Shown() >= 1) { const [bx, by] = toWorld(...bed2Pt(0.5, 0.5)); if (Math.hypot((wx - bx) / 125, (wy - by + 6) / 62) < 1 && !stakeHit(cx, cy)) return openSeedbed('bed2'); }   // v99: the second bed
+  if (SPRIG.screen && performance.now() - SPRIG.t < 6000 && Math.abs(cx - SPRIG.screen.x) < 78 && Math.abs(cy - SPRIG.screen.y) < 52) { PL.add('tapped the green sprig'); return openGreen(); }   // v99: the sprig opens the valley's green
+  { const s = stakeHit(cx, cy); if (s) { PL.add(`tapped a job flag: ${s.ids.join(', ') || (s.patch ? 'spell on ' + s.patch : 'seed bed')}`); return openStake(s); } }   // v90: a job's paper flag
   for (const fd of G.s.village.finds) if (hit(fd.screen, wx, wy)) { const st = G.questStep(fd.folk), f = G.folkDef(fd.folk); G.found(fd.id); float('✓ found', fd.screen.x, fd.screen.y); toast(`You found ${st.find.name}.`); return openFolk(f.id); }
   for (const p of [...folkOnLand].reverse()) if (hit(p.screen, wx, wy)) return G.folkState(p.f.id) ? openFolk(p.f.id) : openTraveller();
   if (G.s.village.traveller && hit(CAMP.screen, wx, wy)) return openTraveller();
@@ -4565,6 +4726,8 @@ function tapAt(cx, cy, wx, wy) {
   for (const g of [...gnomes].reverse()) if (hit(g.screen, wx, wy)) {
     const lines = G.linesFor(g.job ? C.lines.working[g.who] : C.lines[g.who]); g.say = lines[(Math.random() * lines.length) | 0]; PL.add(`tapped ${g.who}, says: ${g.say}`); g.sayT = sayFor(g.say); bubble.textContent = g.say;   // only lines about things that are there (note 23)
     if (!g.job && !g.act) { g.walking = false; g.wait = 3.5; g.dir = 'front'; g.frame = 0; }
+    { const r = G.running().find(r => r.id === g.job), ct = !r && choreTag(g);   // v99 (note 13): the badge is only a picture; a tap on the gnome gives the words
+      if (r) toast(`${C.names[g.who]} is ${shortName(r.def)} · ${G.jobLeft(r.endsAt)}`); else if (ct) toast(`${C.names[g.who]} is ${ct.def.short}`); }
     for (const o of gnomes) if (o !== g) o.sayT = 0; return;
   }
   if (festTile() && (hit(FEST.screen, wx, wy) || hit(FEST.archScreen, wx, wy))) return openFestGreen();
@@ -4587,6 +4750,8 @@ function tapAt(cx, cy, wx, wy) {
     for (const p of PROPS) { if (p.gone && taskProg(p.gone) >= 1) continue; const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s * (p.hitW || 1), h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 4 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
     if (best) { if (best.name === 'seedbed') { if (propAlpha(best) >= 1 && bedReady()) return openSeedbed(); if (openSpot('clearing')) return; return toast(bedReady() ? 'The seed bed. Hazel and Wendel are busy just now; it can wait.' : 'Rough ground, for now. One day the seed bed goes here.'); } if (best.name === 'shelter') { if (!wantsTap(best)) return openRoom(); if (openJobCard(spotJobs('shelter'))) { sheet.querySelector('.foot').insertAdjacentHTML('afterbegin', '<a href="#" data-a="room">look inside</a> · '); return; } } if (best.name === 'sapling') { showSprig(); if (taskProg('sapling') < 1 && G.taskView(G.taskDef('sapling')).show && !G.done('sapling')) return openPot(); return; }; if (best.name === 'barrel') { if (G.drawBarrel()) { const [bx, by] = toWorld(best.gx, best.gy); float(`+${C.barrel.give.water} ${C.resources.water.name}`, bx, by - 60); } return openBarrel(); } if (openSpot(best.name)) return; }
     if (stickPileShow() > 0) { const [px, py] = toWorld(STICK_PILE[0], STICK_PILE[1]); if (Math.hypot(wx - px, wy - py + 6) < Math.max(30, 38 / cam.z)) return toast(C.stickPile.replace('{n}', G.s.inv.twig || 0)); }   // round nine note 18: what the pile is, and why it never goes
+    if (taskProg('workcorner') >= 1 || taskProg('leanto') >= 1) { const [hx, hy] = toWorld(...WORKCORNER); if (Math.abs(wx - hx) < 62 && wy > hy - 160 && wy < hy + 12) return toast(taskProg('leanto') >= 1 ? 'Wendel\'s workshop. A hook for every tool, and a little window for the stars.' : 'The work corner. Things for the home get made here, then carried to where they go.'); }
+    if (taskProg('compost') >= 1) { const [hx, hy] = toWorld(0.70, 0.93); if (Math.hypot(wx - hx, wy - hy + 14) < Math.max(34, 40 / cam.z)) return toast('The compost heap. Peelings, weeds and old leaves go in; rich dark soil comes out for the seed bed. With it every crop grows a little faster, and every harvest gives one seed more.'); }   // v99 (note 47): it says what it does
     if (herbStage()) { const [hx, hy] = toWorld(HERB_AT[0], HERB_AT[1]); if (Math.hypot(wx - hx, wy - hy + 8) < Math.max(40, 44 / cam.z)) return herbStage() === 1 ? toast('Hazel is putting in the herbs: thyme, mint and the one parsley that will not die.') : toast(herbStage() === 2 ? 'The herb box, knocked together from the wagon\'s spare boards. Thyme, mint and the one parsley that will not die.' : 'The herb box is in flower, and the bees have found it.'); }
     // concern 1 (Bryce): the little bug bath, the pots, the doormat and the rest of the finished makes answer a tap with a line about themselves
     const near = C.tasks.filter(d => d.make === 'yard' && !d.retired && d.id !== 'barrow' && taskProg(d.id) >= 1 && !(d.season)).map(d => { const [hx, hy] = makeAt(d), [mx, my] = toWorld(hx, hy); return { d, dd: Math.hypot(wx - mx, wy - my + 12) }; }).filter(o => o.dd < Math.max(36, 44 / cam.z)).sort((a, b) => a.dd - b.dd)[0];
@@ -4599,7 +4764,7 @@ function tapAt(cx, cy, wx, wy) {
       if (Math.hypot(f.gx - 0.5, f.gy - 0.5) > 0.34) return;   // round eight note 6: only the middle of a patch opens its card (its paper flag always does); a tap near the edge is let go
       return G.s.tiles[f.tile].kind ? openPatch(f.tile) : (openJobCard(['regrow:' + f.tile]) || toast('Mending nicely. The land does the rest.')); }
   else if (!G.s.tiles[f.tile] && inValley(f.tile) && f.gx >= 0 && f.gx <= 1 && f.gy >= 0 && f.gy <= 1) {   // v90: the pencil land answers too
-    const nx = nextPatch(); return toast(f.tile === nx ? (f.tile === '0,1' ? 'The garden patch, still in pencil. It wakes when the yard turns green.' : f.tile === '1,0' ? 'The old track, still in pencil. It wakes when the yard is a meadow.' : 'Still in pencil, but it is next to wake.') : 'Asleep, drawn in pencil. Land wakes once the land beside it is green.'); }
+    const nx = nextPatch(); return toast(f.tile === nx ? (f.tile === '0,1' ? 'The garden patch, still in pencil. It wakes once the first seeds are watered in.' : f.tile === '1,0' ? 'The old track, still in pencil. It wakes when the yard is a meadow.' : 'Still in pencil, but it is next to wake.') : 'Asleep, drawn in pencil. Land wakes once the land beside it is green.'); }
 }
 
 // ---------- the land is the menu (v90, fresh-eyes review 5) ----------
@@ -4608,7 +4773,7 @@ function tapAt(cx, cy, wx, wy) {
 // A flag drawn faint in pencil means the store is short; the card says what of. A red thread on the flag marks the story's job.
 // Hazel's little makes have no flags (Bryce): they stay in Hazel's list in Jobs. Jobs stays as the index of everything.
 // Spells are cast from the thing they act on: the seed bed, a patch being mended, the toadstool in the way.
-const STAKE_AT = { spring: () => [SPRING.at[0] - 0.02, SPRING.at[1] + 0.04], fire: () => [0.27, 0.43], firewood: () => [0.41, 0.15], barrel: () => [0.42, 0.14], clearing: () => [0.56, 0.62], logseat: () => [0.20, 0.53], herbs: () => [HERB_AT[0], HERB_AT[1] + 0.03] };
+const STAKE_AT = { workcorner: () => [WORKCORNER[0] + 0.05, WORKCORNER[1] + 0.06], spring: () => [SPRING.at[0] - 0.02, SPRING.at[1] + 0.04], fire: () => [0.27, 0.43], firewood: () => [0.41, 0.15], barrel: () => [0.42, 0.14], clearing: () => [0.56, 0.62], logseat: () => [0.20, 0.53], herbs: () => [HERB_AT[0], HERB_AT[1] + 0.03] };
 function stakeSpot(d) {   // [world x, world y] where this job's flag stands, or null (no flag)
   if (d.make || d.chore) return null;
   const tile = d.healTile || d.tile; if (tile) return G.s.tiles[tile] || d.tile ? toWorld(0.5, 0.52, tile) : null;
@@ -4626,10 +4791,12 @@ function stakesNow() {   // recomputed twice a second at most
       const p = stakeSpot(v.def); if (p) add(p[0], p[1], { ids: [v.def.id], story: v.story, can: v.can });
     }
     const sb = PROPS.find(q => q.name === 'seedbed'); if (sb && propAlpha(sb) >= 1 && wantsTap(sb)) { const [x, y] = toWorld(sb.gx, sb.gy); add(x + 52, y + 4, { bed: true, can: true }); }   // on the near edge of the bed
+    if (bed2Wants()) { const [x, y] = toWorld(...bed2Pt(0.9, 1.2)); add(x, y, { bed2: true, can: true }); }
+    for (const sp of ['worms', 'rain']) if (G.spellTaught(sp)) for (const k of G.castSpots(sp)) { const [x, y] = toWorld(0.5, 0.52, k); add(x, y, { patch: k, can: G.canCast(sp).ok }); }   // v99: a patch waiting for your spell
   }
   return STAKES = out.slice(0, 8);
 }
-function stakeKey(s) { return s.ids.join(',') || 'bed'; }
+function stakeKey(s) { return s.ids.join(',') || (s.patch ? 'patch:' + s.patch : s.bed2 ? 'bed2' : 'bed'); }
 function stakeScreen(s) { return [(s.x - cam.x) * cam.z + W / 2, (s.y - cam.y) * cam.z + H / 2]; }
 function drawStakes(now) {   // screen space, so a flag stays finger-sized however far out you are
   if (roomOn) return; const placed = [];
@@ -4653,6 +4820,8 @@ function drawStakes(now) {   // screen space, so a flag stays finger-sized howev
 function stakeHit(cx, cy) { let best = null, bd = 38; for (const s of STAKES) if (s.scr) { const d = Math.hypot(cx - s.scr.x - 10, cy - s.scr.y); if (d < bd) { bd = d; best = s; } } return best; }
 function openStake(s) {
   if (guideStep() === 4) guideTo(9);
+  if (s.bed2 && !s.ids.length) return openSeedbed('bed2');
+  if (s.patch && !s.ids.length) return openPatch(s.patch);
   if (s.bed && !s.ids.length) return openSeedbed();
   if (s.ids.length === 1) { const d = G.taskDef(s.ids[0]); if (d && d.healTile) return openPatch(d.healTile); }
   return openJobCard(s.ids, s.bed);
@@ -4697,6 +4866,7 @@ function openSpot(name, fallback) {   // a thing in the yard was tapped: its job
 // spells from the Magic page: glide to what the spell acts on and open its card there
 function spellTarget(id) {
   const sb = PROPS.find(q => q.name === 'seedbed');
+  if (id === 'worms' || (id === 'rain' && G.castSpots('rain').length)) { const k = G.castSpots(id)[0]; return k ? { at: [0.5, 0.5, k], open: () => openPatch(k), what: id === 'rain' ? 'the hollow' : 'the cleared patch' } : null; }
   if (id === 'coax' || id === 'rain') return sb && propAlpha(sb) >= 1 ? { at: [sb.gx, sb.gy, '0,0'], open: openSeedbed, what: 'the seed bed' } : null;
   if (id === 'legs') return { at: [...TOAD_FROM, '0,0'], open: openToad, what: 'the big toadstool' };
   const sp = C.spells[id], run = G.running().find(r => sp.heal ? r.def.healTile && G.tileKind(r.def.healTile) === sp.heal : (r.def.tile || r.def.healTile));
@@ -4771,8 +4941,12 @@ function roomGnome(g, x, y, flip) {
   rx.save(); rx.translate(x, y); if (flip) rx.scale(-1, 1); rx.drawImage(img, f * cw, 0, cw, ch, -cw * RS / 2, -ch * RS, cw * RS, ch * RS); rx.restore();
   g.room = { x, y: y - ch * RS / 2, r: Math.max(cw, ch) * RS / 2 };
 }
+let ROOMPEEK = false;   // v99 (round seven note 56, art day 21): while the stump is being made into the house, you can look inside it too
+function stumpPeekOk() { return homeStage() === 1 && taskProg('house1') > 0 && !!art('room-stump-hollowing'); }
 function drawRoom(now, dt) {
   const stage = homeStage(), R = ROOMS[stage], ph = dayPhase();
+  if (ROOMPEEK && stumpPeekOk()) { rx.drawImage(art('room-stump-hollowing'), 0, 0, 1000, 1000); for (const g of gnomes) g.room = null;
+    const dk = 1 - ph.light; rx.save(); rx.globalCompositeOperation = 'multiply'; rx.fillStyle = `rgba(${Math.round(255 - 150 * dk)},${Math.round(255 - 140 * dk)},${Math.round(255 - 90 * dk)},1)`; rx.fillRect(0, 0, 1000, 1000); rx.restore(); return; }
   if (art(R.slot)) rx.drawImage(art(R.slot), 0, 0, 1000, 1000); else (stage === 2 ? roomStump : roomShelter)(ph, now);
   const inside = gnomes.filter(g => g.inside);
   for (const g of gnomes) g.room = null;
@@ -4804,15 +4978,16 @@ function roomCaption() {
 }
 function homeJobs() { return G.taskList().filter(v => v.def.spot === 'shelter' && v.state !== 'done'); }
 function openRoom() {
-  closeSheet(); const R = ROOMS[homeStage()];
-  $('rTitle').textContent = R.title; roomSayT = 0; roomCaption();
+  closeSheet(); const R = ROOMS[homeStage()]; if (!stumpPeekOk()) ROOMPEEK = false;
+  $('rTitle').textContent = ROOMPEEK ? 'Inside the old stump' : R.title; roomSayT = 0; roomCaption();
+  if (ROOMPEEK) $('rCap').textContent = taskProg('house3') > 0 ? 'Nearly a house. The roof is going on.' : taskProg('house2') > 0 ? 'Hollowed out, and the wall and windows are going in.' : taskProg('house1') >= 1 ? 'Hollowed out and swept. Next come the wall and the windows.' : 'Half hollowed. Shavings everywhere, and Wendel\'s tools on a crate.';
   const jobs = homeJobs(), ready = jobs.filter(v => v.state === 'ready' && v.can).length;
-  $('rBtns').innerHTML = jobs.length ? `<button class="act${ready ? '' : ' quiet'}" data-a="homejobs">Jobs for the home${ready ? ` (${ready} ready)` : ''}</button>` : '';
+  $('rBtns').innerHTML = (jobs.length ? `<button class="act${ready ? '' : ' quiet'}" data-a="homejobs">Jobs for the home${ready ? ` (${ready} ready)` : ''}</button>` : '') + (stumpPeekOk() ? ` <button class="act quiet" data-a="peek">${ROOMPEEK ? 'Back under the root' : 'Look inside the stump'}</button>` : '');
   $('room').classList.add('on'); roomOn = true; PL.add(`room open: ${R.title}`);
 }
 function closeRoom() { if (roomOn) PL.add('room closed'); $('room').classList.remove('on'); roomOn = false; }
 $('rClose').onclick = closeRoom; G.openRoom = openRoom;   // console / tests: GL.openRoom()
-$('room').addEventListener('click', e => { if (e.target.id === 'room') closeRoom(); const b = e.target.closest('[data-a="homejobs"]'); if (b) { closeRoom(); const v = homeJobs().find(v => v.state === 'ready') || homeJobs()[0]; openTasks(v ? v.def.id : ''); } });
+$('room').addEventListener('click', e => { if (e.target.closest('[data-a="peek"]')) { ROOMPEEK = !ROOMPEEK; return openRoom(); } if (e.target.id === 'room') closeRoom(); const b = e.target.closest('[data-a="homejobs"]'); if (b) { closeRoom(); const v = homeJobs().find(v => v.state === 'ready') || homeJobs()[0]; openTasks(v ? v.def.id : ''); } });
 rc.addEventListener('click', e => {   // tap a gnome in the room for a line (or a "shh" if they are asleep)
   const b = rc.getBoundingClientRect(), x = (e.clientX - b.left) * 1000 / b.width, y = (e.clientY - b.top) * 1000 / b.height;
   const g = gnomes.find(g => g.room && Math.hypot(x - g.room.x, y - g.room.y) < g.room.r); if (!g) return;
@@ -4820,7 +4995,21 @@ rc.addEventListener('click', e => {   // tap a gnome in the room for a line (or 
   $('rCap').textContent = g.routine === 'sleep' ? `${n} is fast asleep. Best not wake ${g.who === 'him' ? 'him' : 'her'}.` : `${n}: "${lines[(Math.random() * lines.length) | 0]}"`;
   roomSayT = 4;
 });
-function toast(t) { PL.add('toast: ' + t); toastEl.textContent = t; toastEl.style.opacity = 1; clearTimeout(toast.h); toast.h = setTimeout(() => toastEl.style.opacity = 0, 2200); }
+// v99 (round ten note 32, Bryce: several notes at once, on top of each other and gone too fast to read): one note at a time. Each waits
+// its turn and stays long enough to read (longer for longer words); a tap on it puts it away. While another waits, the one showing
+// keeps at least its shortest reading time, so nothing is ever cut off mid-read.
+const TOASTS = { q: [], cur: null, at: 0 };
+const toastNeed = t => Math.max(2600, Math.min(8000, 1400 + t.length * 55)), toastMin = t => Math.max(1800, Math.min(5000, 900 + t.length * 38));
+function toast(t) { t = String(t); PL.add('toast: ' + t); if (TOASTS.cur === t || TOASTS.q.includes(t)) return; TOASTS.q.push(t); if (TOASTS.q.length > 5) TOASTS.q.splice(0, TOASTS.q.length - 5); toastStep(); }
+function toastStep() {
+  const T = TOASTS, now = performance.now(); clearTimeout(toast.h);
+  if (T.cur) { const shown = now - T.at, left = (T.q.length ? toastMin(T.cur) : toastNeed(T.cur)) - shown; if (left > 0) { toast.h = setTimeout(toastStep, left + 20); return; }
+    T.cur = null; toastEl.style.opacity = 0; toastEl.style.pointerEvents = 'none'; if (T.q.length) { toast.h = setTimeout(toastStep, 320); } return; }
+  if (!T.q.length) return;
+  if (typeof gnomes !== 'undefined' && gnomes.some(g => g.sayT > 0) && (T.held = (T.held || 0) + 1) < 20) { toast.h = setTimeout(toastStep, 500); return; } T.held = 0;   // v99 (note 32): a gnome is speaking: the note waits its turn (ten seconds at most)
+  T.cur = T.q.shift(); T.at = now; toastEl.textContent = T.cur; toastEl.style.opacity = 1; toastEl.style.pointerEvents = 'auto'; toast.h = setTimeout(toastStep, (T.q.length ? toastMin(T.cur) : toastNeed(T.cur)) + 20);
+}
+toastEl.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); if (TOASTS.cur) { TOASTS.at = -1e9; toastStep(); } });
 function btnAlert(id, on) { if (id === 'bTasks') $(id).classList.toggle('leaf', !!on); }   // v87: no red badges; only Jobs ever shows a small leaf
 function renderInv(popKind) {   // the pack lives behind its button; it gives a little hop when something comes in
   const b = $('bPack');
@@ -4884,19 +5073,29 @@ sheet.addEventListener('click', e => {
   if (a === 'showspirit') return showSpirit();
   if (a === 'lookspring') { closeSheet(); const [x, y] = toWorld(SPRING.at[0], SPRING.at[1]); ALLDONE.ease = { t: 0, z0: cam.z, x0: cam.x, y0: cam.y, z1: clampZ(Math.max(cam.z, 1.6)), x1: x, y1: y }; return; }
   if (a === 'room') return openRoom();
+  const two = sheetKind === 'seedbed' && BEDSEL === 'bed2';   // v99: the second bed's buttons
+  if (two && a === 'plant') { const g = choreGnome('her'); if (g && G.onBed('bed2', () => G.plant(id, g.who))) { startBed2Chore(g, 'sow2'); toast(`${C.names[g.who]} goes to sow the ${C.crops[id].name.replace(/^a /, '')} in the new bed.`); return closeSheet(); } return; }
+  if (two && a === 'water') { const g = choreGnome('him'); if (g && G.onBed('bed2', () => G.water(g.who))) { startBed2Chore(g, 'wat2'); toast(`${C.names[g.who]} fetches the watering can.`); return closeSheet(); } return; }
+  if (two && a === 'harvest') { const g = choreGnome('her'), pl = G.s.plots.bed2, was = { crop: pl.crop }; const got = g && G.onBed('bed2', () => G.harvest(g.who));
+    if (got) { PICKING2 = was; startBed2Chore(g, 'pick2', () => { PICKING2 = null; const [x, y] = toWorld(...bed2Pt(0.5, 0.5)); float(Object.entries(got).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(' '), x, y); }); toast(`${C.names[g.who]} takes the basket to the new bed.`); return closeSheet(); } return; }
+  if (two && a === 'cast') { const ok = G.onBed('bed2', () => G.cast(id)); if (ok) { toast(C.spells[id].name + '.'); closeSheet(); const [x, y] = toWorld(...bed2Pt(0.5, 0.5)); sparkleAt(x, y - 10); } return; }
   if (a === 'plant') { const g = choreGnome('her'); if (g && G.plant(id, g.who)) { startBedChore(g, 'sow'); toast(`${C.names[g.who]} goes to sow the ${C.crops[id].name.replace(/^a /, '')}.`); return closeSheet(); } }
   // watering: the other one, if free, waters the other half with a second can (Bryce: Hazel had nothing to do while Wendel watered)
   if (a === 'water') { const g = choreGnome('him'); if (g && G.water(g.who)) { startBedChore(g, 'water'); const o = gnomes.find(x => x !== g && !x.chore && !x.dancing && !x.errand && !G.running().some(r => r.def.who === x.who)); if (o) startBedChore(o, 'water2'); toast(`${C.names[g.who]} fetches the watering can.`); return closeSheet(); } }
   if (a === 'harvest' && !G.s.flags.rabbit) { G.s.rabbitAt = 1; closeSheet(); const [x, y] = toWorld(0.72, 0.62); ALLDONE.ease = { t: 0, z0: cam.z, x0: cam.x, y0: cam.y, z1: clampZ(Math.max(cam.z, 1.2)), x1: x, y1: y }; return toast('Wait! Something with long ears is hopping over…'); }   // Bryce: the rabbit never showed; it always comes, on screen, before the first picking
   if (a === 'harvest') { const g = choreGnome('her'), pl = G.plot(), was = { crop: pl.crop, nib: !!pl.nibbled }; const got = g && G.harvest(g.who);
-    if (got) { PICKING = was; startBedChore(g, 'pick', () => { PICKING = null; const sb = PROPS.find(p => p.name === 'seedbed'); const [x, y] = toWorld(sb.gx, sb.gy); float(Object.entries(got).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(' '), x, y); greenWave = performance.now();
+    if (got) { PICKING = was; startBedChore(g, 'pick', () => { PICKING = null; const sb = PROPS.find(p => p.name === 'seedbed'); const [x, y] = toWorld(sb.gx, sb.gy); float(Object.entries(got).map(([k, n]) => `+${k === 'seed' && G.done('compost') ? n - 1 : n} ${C.resources[k].name}`).join(' '), x, y); greenWave = performance.now();
+        if (G.done('compost')) setTimeout(() => { const [cx, cy] = toWorld(0.70, 0.93); float('+1 seed from the compost', cx, cy - 10); }, 1300);   // v99 (round ten note 47): the heap's gift is shown where it comes from
         const n = G.plot().grown; if (n <= 3) setTimeout(() => gnomeSays(n === 1 ? 'her' : n === 2 ? 'him' : 'her', C.story.keepGrowing[n - 1]), 1800); });   // build 3 (note 39): a gentle word to keep growing things, after each of the first few pickings
       toast(`${C.names[g.who]} takes the basket to the seed bed.`); return closeSheet(); } }
   if (a === 'start' && sheetKind && /^(card|patch):/.test(sheetKind) && G.taskView(G.taskDef(id)).can) { closeSheet(); }   // v90: from a thing's card, close it and watch them go
   if (a === 'start') { if (G.startTask(id)) { JOB_START = performance.now(); toast(G.asleepAt(G.now()) ? 'They will get going when they wake, at six.' : 'Set to work.'); for (const g of gnomes) if (g.who === G.taskDef(id).who) { g.walking = false; g.wait = 0.1; } } }
   if (a === 'openmagic') { openMagic(); return; }
+  if (a === 'lendhand') { const j = G.lendHand(); if (j) { closeSheet(); toast(`${G.folkDef(G.s.village.traveller.id).name} goes to help. Half the time now.`); } return; }
   if (a === 'spellgo') return goSpell(id);
   if (a === 'cast' && id === 'wake') { const runs = G.running().filter(r => r.def.tile || r.def.healTile); if (G.cast(id)) { wakeWaves(runs); closeSheet(); return; } }   // round eight note 10: you see it work
+  if (a === 'cast' && (id === 'worms' || (id === 'rain' && G.castSpots('rain').length))) { const k0 = sheetKind && sheetKind.startsWith('patch:') ? sheetKind.slice(6) : null, k = G.castSpots(id).includes(k0) ? k0 : G.castSpots(id)[0];
+    if (G.cast(id, k)) { closeSheet(); const [x, y] = toWorld(0.5, 0.5, k); if (id === 'worms') { WAKE = [{ k, t: performance.now() }]; liveUntil = Math.max(liveUntil, performance.now() + 5000); toast('The worms are waking. The green will creep in over the next hour.'); } else toast('Soft rain fills the hollow. The garden has a pond.'); sparkleAt(x, y - 10); } return; }
   if (a === 'cast') { if (G.cast(id)) { toast(C.spells[id].name + '.'); if (sheetKind && /^(card|patch|seedbed):/.test(sheetKind + ':')) { const t = spellTarget(id) || {}; closeSheet(); if (t.at) { const [x, y] = toWorld(t.at[0], t.at[1], t.at[2]); sparkleAt(x, y - 10); } return; } if (id === 'legs') { closeSheet(); const [x, y] = toWorld(...TOAD_FROM); cam.x = x; cam.y = y - 40; return; } } }   // watch it walk off
   if (a === 'food') { if (G.putFood(id, b.dataset.who)) { const g = startDishFill(id); toast(g ? `${C.names[g.who]} takes ${{ seed: 'the seed', berry: 'the berries', carrot: 'a carrot' }[id]} over to the dish.` : `${cap(G.foodName(id))} in the dish.`); closeSheet(); return; } }
   if (a === 'help') return doHelp();
@@ -4980,11 +5179,11 @@ CONCERNS.hook({   // the concern button (v84, concerns.js): which window is open
   logText: playLogText, toast,
 });
 function testPeek(x, y) { if (window.SANDBOX && x < 200 && y < 80 + 20) { openTest(); return true; } return false; }   // Bryce: one tap on the title opens the test panel (five was a chore)
-function refreshSheet() { if (sheetKind === 'test') return; if (sheetKind && sheetKind.startsWith('folk:')) openFolk(sheetKind.slice(5)); else if (sheetKind === 'traveller') G.s.village.traveller ? openTraveller() : closeSheet(); else if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'barrel') openBarrel(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); else if (sheetKind === 'fest') openFestGreen(); else if (sheetKind && sheetKind.startsWith('patch:')) openPatch(sheetKind.slice(6)); else if (sheetKind && sheetKind.startsWith('card:')) { if (!openJobCard(sheetKind.slice(5).split(','))) closeSheet(); } else if (sheetKind && sheetKind.startsWith('farm:')) openFarm(sheetKind.slice(5)); renderInv(); renderHud(); }
+function refreshSheet() { if (sheetKind === 'test') return; if (sheetKind && sheetKind.startsWith('folk:')) openFolk(sheetKind.slice(5)); else if (sheetKind === 'traveller') G.s.village.traveller ? openTraveller() : closeSheet(); else if (sheetKind === 'seedbed') openSeedbed(BEDSEL); else if (sheetKind === 'barrel') openBarrel(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); else if (sheetKind === 'fest') openFestGreen(); else if (sheetKind && sheetKind.startsWith('patch:')) openPatch(sheetKind.slice(6)); else if (sheetKind && sheetKind.startsWith('card:')) { if (!openJobCard(sheetKind.slice(5).split(','))) closeSheet(); } else if (sheetKind && sheetKind.startsWith('farm:')) openFarm(sheetKind.slice(5)); renderInv(); renderHud(); }
 function seedbedBody(inJobs) {   // what the seed bed wants now (shared by the seed bed's own card and the Jobs list); null = nothing to say
   const p = G.plot(), c = C.crops[p.crop]; let body = '';
-  const busy = bedChore(), sow = choreGnome('her'), wat = choreGnome('him'), nm = g => C.names[g.who];
-  if (busy) return `<p>${nm(busy)} is ${{ sow: 'sowing', water: 'watering', pick: 'picking' }[busy.chore.kind]} the bed now.</p>`;
+  const two = G.bedSel === 'bed2', busy = two ? bed2Chore() : bedChore(), sow = choreGnome('her'), wat = choreGnome('him'), nm = g => C.names[g.who];
+  if (busy) return `<p>${nm(busy)} is ${{ sow: 'sowing', water: 'watering', pick: 'picking', sow2: 'sowing', wat2: 'watering', pick2: 'picking' }[busy.chore.kind]} the bed now.</p>`;
   if (!sow && p.stage !== 'growing') return `<p>Wendel and Hazel are ${routineFor(dayPhase().h) === 'fest' ? 'dancing on the green' : 'asleep'}. The seed bed can wait till morning.</p>`;
   const stageName = pr => pr < 0.25 ? 'Just up' : pr < 0.6 ? 'Leafing out' : pr < 0.9 ? 'Filling out' : 'Nearly there';
   if (!p.stage) {
@@ -4992,12 +5191,12 @@ function seedbedBody(inJobs) {   // what the seed bed wants now (shared by the s
     for (const [id, k] of Object.entries(C.crops)) {
       const open = G.cropOpen(id), cost = G.cropCost(id), first = k.free && !Object.keys(cost).length;
       if (!open && (!k.lock || inJobs)) continue;   // lettuces just turn up after the first picking
-      body += `<div class="row"><div class="t"><b>${cap(k.name.replace(/^a /, ''))}</b><span>${open ? `${first ? 'Wendel\'s special seed, free' : `Costs ${costHtml(cost)}`} · ready ${"about " + hours(G.trim(!p.grown && k.first ? k.first : k.grow), true)} after watering · gives ${costHtml(k.harvest)}` : k.lock}</span>${inJobs ? '' : `<span style="display:block;font-style:italic">${k.blurb}</span>`}</div>${open ? `<button class="act" data-a="plant" data-id="${id}" ${G.can(cost) ? '' : 'disabled'}>Sow</button>` : ''}</div>`;
+      body += `<div class="row"><div class="t"><b>${cap(k.name.replace(/^a /, ''))}</b><span>${open ? `${first ? 'Wendel\'s special seed, free' : `Costs ${costHtml(cost)}`} · ready ${"about " + hours(G.trim(G.firstCrop() && k.first ? k.first : k.grow), true)} after watering · gives ${costHtml(k.harvest)} and 🌿 ${k.green} green` : k.lock}</span>${inJobs ? '' : `<span style="display:block;font-style:italic">${k.blurb}</span>`}</div>${open ? `<button class="act" data-a="plant" data-id="${id}" ${G.can(cost) ? '' : 'disabled'}>Sow</button>` : ''}</div>`;
     }
     if (!G.canSow()) body += `<p>No seeds in the tin. Look for a seed lying about the land and tap it (one turns up soon when the tin is empty); every picking gives some back.</p>`;
   }
   else if (p.stage === 'planted' && !G.done('bedwater')) { const v = G.taskView(G.taskDef('bedwater')); body = v.state === 'running' ? `<p><b>${C.names[v.def.who] || 'Wendel'} is watering the seeds in now.</b></p>` : `<p>${cap(c.name.replace(/^a /, ''))} sown. Now the first watering, from the spring.</p>` + (v.show ? jobRow(v, 'bedwater') : ''); }
-  else if (p.stage === 'planted') body = `<div class="row"><div class="t"><b>${cap(c.name.replace(/^a /, ''))} sown. ${c.water > 1 ? 'They want a good drink' : 'They want water'}</b><span>${nm(wat)} fills the can${G.done('rainbarrel') ? ' at the rain barrel' : ' at the spring'}. Costs ${costHtml(G.waterCost())} dew, gathered from the ground</span>${G.can(G.waterCost()) ? '' : `<br><span class="bad">Not enough dew in the store: tap the dewdrops on the land (mornings are best).</span>`}</div><button class="act" data-a="water" ${G.can(G.waterCost()) ? '' : 'disabled'}>Water</button></div>${G.magicInfo().spells.includes('rain') ? `<p class="go">${spellBtn('rain')}</p>` : ''}`;
+  else if (p.stage === 'planted') body = `<div class="row"><div class="t"><b>${cap(c.name.replace(/^a /, ''))} sown. ${c.water > 1 ? 'They want a good drink' : 'They want water'}</b><span>${nm(wat)} fills the can${G.done('rainbarrel') ? ' at the rain barrel' : ' at the spring'}. Costs ${costHtml(G.waterCost())} water from the store</span>${G.can(G.waterCost()) ? '' : `<br><span class="bad">Not enough water in the store. Send someone to fetch a jug from the spring (a little chore in Jobs), or tap a dewdrop on the land.</span>`}</div><button class="act" data-a="water" ${G.can(G.waterCost()) ? '' : 'disabled'}>Water</button></div>${G.magicInfo().spells.includes('rain') ? `<p class="go">${spellBtn('rain')}</p>` : ''}`;
   else if (p.stage === 'growing') { const pr = cropProg(p), cc = G.canCast('coax'), known = G.magicInfo().spells.includes('coax'); body = `<div class="row"><div class="t"><b>${cap(c.name.replace(/^a /, ''))}: ${stageName(pr).toLowerCase()}</b><span>ready in ${G.timeLeft(p.readyAt)}. ${G.choreList().length ? 'Meanwhile there are little chores in Jobs' : 'Nothing to do but wait'}${known ? ', or coax them along with a little magic' : ''}.</span><div class="prog"><i style="width:${(pr * 100).toFixed(0)}%"></i></div>${known && !cc.ok ? `<span class="bad">${cc.why}</span>` : ''}</div>${known ? `<button class="act" data-a="cast" data-id="coax" ${cc.ok ? '' : 'disabled'}>Coax ✨${C.spells.coax.cost.light}</button>` : ''}</div>`; }
   else body = `<div class="row"><div class="t"><b>${cap(c.name.replace(/^a /, 'the '))} ${p.crop === 'pumpkin' ? 'is' : 'are'} ready to pick</b><span>${nm(sow)} picks them into the basket. Gives ${costHtml(c.harvest)} and a little more green</span></div><button class="act" data-a="harvest">Pick</button></div>`;
   return body;
@@ -5008,8 +5207,9 @@ function openPot() {   // note 2: tapping the little oak's pot says what it is (
     <p class="lore">${C.potLine}</p><p class="meta">${v.state === 'running' ? 'Hazel is planting it out now.' : job ? 'It is ready to go in the ground. The job is in Jobs.' : 'Hazel will plant it out when the time is right. The story will say when.'}</p></div>
     <p style="text-align:center">${job ? `<button class="act" data-a="jobs" data-id="sapling">See the job</button> ` : ''}<button class="act quiet" data-a="close">Lovely</button></p>`);
 }
-function openSeedbed() {
-  openSheet('seedbed', `<h2>The seed bed<small>${G.plot().grown} grown so far</small></h2>${seedbedBody(false)}${landNote()}`);
+function openSeedbed(id) {   // v99: the first bed, or the second one on the garden patch ('bed2')
+  BEDSEL = id === 'bed2' ? 'bed2' : 'seedbed';
+  G.onBed(BEDSEL, () => openSheet('seedbed', `<h2>${BEDSEL === 'bed2' ? 'The new bed' : 'The seed bed'}<small>${G.plot().grown} grown so far</small></h2>${seedbedBody(false)}${BEDSEL === 'bed2' ? '<p>What grows in this bed greens the garden.</p>' : landNote()}`));
 }
 function landNote() {   // why growing things matters: every harvest (and most jobs) wakes the land a little, towards the next stage
   const g = G.s.tiles['0,0'].green, st = G.landStage(), next = C.landStages.find(s => s.at > g);
@@ -5032,8 +5232,8 @@ function storeShelves(cells, from = 0) {   // cells: [html for the thing, label,
   const y0 = from ? A.plank[from - 1] + 0.005 : 0, y1 = from ? Math.min(1, A.plank[from + rows - 1] + 0.05) : 1, span = y1 - y0;
   const aspect = 1792 / (2400 * span), cw = (A.x[1] - A.x[0]) / 3, ys = y => ((y - y0) / span * 100).toFixed(2);
   let h = `<div class="pack shelves" style="aspect-ratio:${aspect.toFixed(4)};background-image:url(${A.src});background-size:100% ${(100 / span).toFixed(2)}%;background-position:0 ${span >= 1 ? 0 : (y0 / (1 - span) * 100).toFixed(2)}%">`;
-  cells.forEach(([cls, inner], i) => { const r = Math.floor(i / 3) + from, c = i % 3, top = (r ? A.stand[r] - Math.min(0.12, (A.stand[r] - A.plank[r - 1]) * 0.85) : A.stand[0] - 0.12);
-    h += `<div class="${cls}" style="left:${((A.x[0] + cw * (c + 0.1)) * 100).toFixed(2)}%;width:${(cw * 0.8 * 100).toFixed(2)}%;top:${ys(top)}%;height:${(100 * (A.stand[r] - top) / span).toFixed(2)}%">${inner}</div>`; });
+  cells.forEach(([cls, inner], i) => { const r = Math.floor(i / 3) + from, c = i % 3, top = (r ? A.stand[r] - Math.min(0.15, (A.stand[r] - A.plank[r - 1]) * 0.9) : A.stand[0] - 0.15);   // v99 (note 16): the things on the shelves a good bit bigger
+    h += `<div class="${cls}" style="left:${((A.x[0] + cw * (c + 0.04)) * 100).toFixed(2)}%;width:${(cw * 0.92 * 100).toFixed(2)}%;top:${ys(top)}%;height:${(100 * (A.stand[r] - top) / span).toFixed(2)}%">${inner}</div>`; });
   return h + '</div>';
 }
 function openPack() {
@@ -5046,7 +5246,7 @@ function openPack() {
   if (G.s.plots.seedbed.grown) html += `<h3>The pantry</h3><p>From the seed bed. They eat from it at breakfast and supper, and the shelf holds about ${C.pantry.cap} of each; the spare goes over the fence. Hazel's seed tin holds ${C.pantry.seedTin} seeds.</p>` + (pan.length <= 6 ? storeShelves(pan.map(shelf), 3) : plain(pan));   // after the first picking: the bottom two shelves of the same painting
   openSheet('pack', html);
 }
-const JOB_PIC = { ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'bench-wh', barrow: 'wheelbarrow',
+const JOB_PIC = { workcorner: 'yard-leanto-frame', leanto: 'yard-leanto', bed2: 'seedbed-rect', ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'bench-wh', barrow: 'wheelbarrow',
   woodpile: 'firewood', doorstep: 'yard-doorstep', rainbarrel: 'barrel-full', clothesline: 'washing-line', lantern: 'lanternstump', stump: 'lanternstump', windowbox: 'yard-windowbox', wormlantern: 'worm-lantern',
   wormlamp: 'worm-lamp', house1: 'house-hollowed', house2: 'house-windows', house3: 'house-finished', hedgehoghouse: 'nest-leafpile', nestbox: 'nest-nest', bridge: 'bld-bridge',
   dress_spring: 'make-dress_spring', dress_summer: 'make-dress_summer', dress_autumn: 'make-dress_autumn', dress_winter: 'make-dress_winter' };
@@ -5072,7 +5272,7 @@ function openTasks(focus = '') {
   const all = G.taskList(), makes = focus === 'makes' || (C.tasks.some(t => t.id === focus && t.make)), list = all.filter(v => !!v.def.make === makes && !(v.def.make && v.state === 'done' && !makes));
   const mk = all.filter(v => v.def.make && v.state === 'ready' && v.can).length;   // only the ones the store can pay for now
   let html = `<h2>Jobs<small>give the materials; they do the work</small></h2>`;
-  if (G.s.flags.firstpick) html += `<p class="tabs"><button class="act${makes ? ' quiet' : ''}" data-a="jobtab" data-id="">Jobs</button> <button class="act${makes ? '' : ' quiet'}" data-a="jobtab" data-id="makes">Hazel's list${mk ? ` (${mk})` : ''}</button></p>`;
+  if (G.s.flags.firstpick) html += `<p class="tabs"><button class="act${makes ? ' quiet' : ''}" data-a="jobtab" data-id="">Jobs</button> <button class="act${makes ? '' : ' quiet'}" data-a="jobtab" data-id="makes">Our wish list${mk ? ` (${mk})` : ''}</button></p>`;
   if (makes) {
     html += `<p class="meta" style="margin:0 0 4px">Little things to make, paid for with what you gather. Each appears in its own spot. ${makesLine()} made.</p>`;
     if (!list.length) html += `<p class="meta">Nothing new to make yet. More come as the land heals.</p>`;
@@ -5085,7 +5285,7 @@ function openTasks(focus = '') {
     else if (!list.some(v => v.state !== 'done') && !next) html += `<p>Nothing to do right now. The gnomes are resting.</p>`;
     for (const [key, title, f] of groups) {
       const rows = list.filter(f);
-      if (key === 'story') { html += rows.map(v => jobRow(v, focus)).join('') + (next ? `<p class="meta next">Next for the story: <b>${next.name}</b>, ${next.why}.</p>` : ''); continue; }   // the story's own jobs carry a ribbon, no heading
+      if (key === 'story') { html += rows.map(v => jobRow(v, focus)).join('') + (next ? `<p class="meta next">🔒 Not yet, but coming: <b>${next.name}</b>, ${next.why}.</p>` : ''); continue; }   // the story's own jobs carry a ribbon, no heading
       if (!rows.length) continue;
       let more = 0, moreFarms = 0;
       if (key === 'ready') {   // the patches: only a few here (the traveller's wished-for patch first, then the nearest); the rest are on each patch's own card
@@ -5104,7 +5304,7 @@ function openTasks(focus = '') {
   openSheet('tasks:' + focus, html);
 }
 function ordinal(n) { return ['zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth'][n] || n + 'th'; }
-const SPELL_PIC = { coax: 'spirit-seed', rain: 'spirit-cloud', wake: 'spirit-point', wind: 'spirit-wind', cloud: 'spirit-cloud', seedwake: 'spirit-seed', sing: 'spirit-sing', legs: 'lamp-toadstool' };
+const SPELL_PIC = { worms: 'spirit-point', coax: 'spirit-seed', rain: 'spirit-cloud', wake: 'spirit-point', wind: 'spirit-wind', cloud: 'spirit-cloud', seedwake: 'spirit-seed', sing: 'spirit-sing', legs: 'lamp-toadstool' };
 function openMagic() {   // v87 (concern 7: "a confusing mess... too much writing"): your spells, each with a picture; the words show when you tap one
   const m = G.magicInfo(), light = G.s.inv.light || 0;
   let html = `<h2>Your magic<small><img src="sprites/icon-light.webp" alt="" style="width:18px;height:18px;vertical-align:-3px"> ${light} light</small></h2><p class="meta" style="margin:0 0 6px">Spells use light, which lies about after dark in little sparks. Each is cast by touching what it works on.</p>`;
@@ -5166,6 +5366,20 @@ function openSecret(id, fresh) {   // one little find, pressed into the journal
   openSheet('secret', `<div class="pressed"><img src="sprites/kit/secrets-${d.pic}.webp" alt=""></div><h2>${fresh ? 'A little find!' : title}<small>${fresh ? `${title} · ` : ''}${nf} of ${C.secrets.length} little finds</small></h2><p class="pnote">${d.note}</p>
   <p><button class="act" data-a="journal">${fresh ? 'Press it in the journal' : 'Back to the journal'}</button></p>`);
 }
+// v99 (round ten notes 8, 26, 30): the valley's green, patch by patch: what stage each is at, how far to the next, and what brings green there
+function leafPips(n, N) { let h = '<span class="pips">'; for (let i = 0; i < Math.min(N, 14); i++) h += `<i class="${i < n ? 'on' : ''}"></i>`; return h + '</span>'; }
+function greenRow(name, k, how) {
+  const g = G.s.tiles[k].green, S = C.landStages, st = G.landStage(k), i = S.indexOf(st), next = S[i + 1];
+  return `<div class="row"><div class="t"><b>${name}</b><span class="meta">${cap(st.name)}${next ? ` · ${next.at - g} more to ${next.name}` : ' · as green as it gets'}</span>${next ? leafPips(g - st.at, next.at - st.at) : leafPips(14, 14)}<span>${how}</span></div></div>`;
+}
+function openGreen() {
+  let html = `<h2>The valley's green</h2><p class="meta" style="margin:0 0 6px">Only living things bring the land back. Each patch has its own green.</p>`;
+  html += greenRow('The yard', '0,0', 'Crops picked from the seed bed, the little oak, herbs and flowers, and animals that make a home here.');
+  if (G.s.tiles['0,1']) html += greenRow(G.gardenOpen() ? 'Our garden' : 'The garden-to-be', '0,1', G.gardenOpen() ? 'Crops from the new bed, flowers and ferns planted here, and the pond\'s visitors.' : 'Clear it, wake the worms, and the green creeps in by itself.');
+  for (const k of G.healTiles()) { if (k === '0,1') continue; const K = C.heal.kinds[G.s.tiles[k].kind]; html += greenRow(cap(K.patch) + ', ' + G.tileWhere(k), k, 'The life that comes back after each job the gnomes do there.'); }
+  html += `<p class="meta">A crop gives about one leaf for every hour it takes to grow: the longer the wait, the more green.</p>`;
+  openSheet('green', html);
+}
 function openLand(st) {   // the home patch reached a new stage: say what happened and why
   openSheet('land', `<div class="jpage card"><p class="meta" style="margin:0">The land is waking</p><h2>${st.name[0].toUpperCase() + st.name.slice(1)}</h2><p class="lore">${st.explain || st.sub}</p></div>
     <p style="text-align:center"><button class="act" data-a="close">Have a look</button></p>`);
@@ -5175,9 +5389,9 @@ function openBarrel() {   // Bryce: tapping the barrel jumped to Jobs with no wo
   // round nine note 19 (Bryce: too small for a loggers' barrel, too far from the roof, no nearer than the spring): it is the wagon's
   // own water barrel, gnome-sized, and it stands right under the roof's edge by the door, a few steps away instead of the long walk
   let html = `<h2>The wagon's water barrel<small>${done ? 'catching the rain' : 'full of dead leaves'}</small></h2>`;
-  if (done) html += `<p>Scrubbed clean, right under the edge of the roof and a few steps from the door, it catches the rain. Every few hours there is a canful in it, and it goes into the store by itself: no long walk to the spring at the far back of the yard for Wendel's watering can.</p>`;
-  else html += `<p>The little water barrel that rode up the track on the back of their wagon, now full of dead leaves and green with slime. ${G.done('spring') ? 'For now every drop of water comes from the spring at the far back of the yard, a long walk with a full can.' : 'There is no water in the yard at all yet, and the creek is dry. Wendel is looking for a spring first.'} It stands right under the edge of the roof, by the door. Scrubbed out, and with a proper roof over it, it could catch the rain.</p>`
-    + (v.show && v.state !== 'running' ? jobRow(v, 'rainbarrel') : v.state === 'running' ? `<p><b>${C.names[v.def.who]} is scrubbing it out now.</b></p>` : `<p class="meta">Not yet: ${G.done('roof') ? 'it comes on the job list soon' : 'it needs a proper roof to catch the rain from first'}.</p>`);
+  if (done) html += `<p>Scrubbed clean, under the bark spout and a few steps from the door, it catches the rain off the roof. Every few hours there is a canful of soft rainwater in it for the herbs and the pots, and it goes into the store by itself.</p>`;
+  else html += `<p>The little water barrel that rode up the track on the back of their wagon, now full of dead leaves and green with slime. ${G.done('spring') ? 'For now every drop of water comes from the spring at the far back of the yard, a long walk with a full can.' : 'There is no water in the yard at all yet, and the creek is dry. Wendel is looking for a spring first.'} It stands by the door. One day, with a proper shingle roof on the house and a bark spout to lead the rain in, it could catch soft rainwater for the herbs and the flower pots, a few steps from the door.</p>`
+    + (v.show && v.state !== 'running' ? jobRow(v, 'rainbarrel') : v.state === 'running' ? `<p><b>${C.names[v.def.who]} is scrubbing it out now.</b></p>` : `<p class="meta">Not yet: ${G.done('house3') ? 'it comes on the job list soon' : 'it waits for the house to have its proper roof'}.</p>`);
   openSheet('barrel', html);
 }
 function openSpringCard() {   // Wendel found the spring: the first water back in the valley
@@ -5307,18 +5521,20 @@ function ourStoryHtml() {   // every page read so far, to read again, and the Wo
   const beats = C.animals.beats.filter(b => G.beatDone(b.id));
   if (!pages.length && !taught.length && !beats.length) return '';
   const last = pages[pages.length - 1], nx = G.nextUp();   // note 11: where the story has got to, and what it waits for next
-  let html = `<h3>Our story</h3>${last ? `<p class="meta">So far: <b>${C.story.chapters[last.ch].replace(/^Chapter (\w+): /, (m, n) => `chapter ${n}, `)}</b>, up to "${last.title}".${nx ? ` Next for the story: ${lcName(nx.name)}, ${nx.why}.` : ''} Tap a page to read it again.</p>` : ''}<div class="slist">`, ch = 0;
+  let html = `<h3>Our story</h3>${last ? `<p class="meta">So far: <b>${C.story.chapters[last.ch].replace(/^Chapter (\w+): /, (m, n) => `chapter ${n}, `)}</b>, up to "${last.title}".${nx ? ` Coming later: ${lcName(nx.name)}, ${nx.why}.` : ''} Tap a page to read it again.</p>` : ''}<div class="slist">`, ch = 0;
   for (const p of pages) { if (p.ch !== ch) { ch = p.ch; html += `<p class="meta">${C.story.chapters[ch]}</p>`; } html += `<button data-a="page" data-id="${p.id}">${p.title}</button>`; }
   if (taught.length) { html += `<p class="meta">The Wood spirit</p>`; for (const L of taught) html += `<button data-a="lesson" data-id="${L.n}">${L.title}</button>`; }
   if (beats.length) { html += `<p class="meta">${C.animals.chapter}</p>`; for (const b of beats) html += `<button data-a="beat" data-id="${b.id}">${b.title}</button>`; }
   return html + `</div>`;
 }
-function openMakes(patch, stage) {   // Hazel's list: what they could make now this patch has healed a little more
-  const M = C.makes[patch], list = C.tasks.filter(d => d.make === patch && d.stage === stage && !d.season && !(d.needs || []).some(n => n.startsWith('flag:') && !G.s.flags[n.slice(5)]));
-  openSheet('makes', `<div class="jpage card"><p class="meta" style="margin:0">Hazel's list · ${M.name.toLowerCase()}</p><div class="por big"><img src="sprites/face-her.webp" alt=""></div><h2>Little makes</h2>
-    <p class="lore">"${M.lines[stage]}"</p><ul class="mlist">${list.map(d => `<li>${d.name}</li>`).join('')}</ul>
-    <p class="meta">They are in Jobs, on Hazel's list. Each is paid for with things you gather, and appears in its own spot once it is made.</p></div>
-    <p style="text-align:center"><button class="act" data-a="jobs" data-id="makes">See the little makes</button> <button class="act quiet" data-a="close">Later</button></p>`);
+function openMakes(patch, stage) {   // "Our wish list" (v99, round ten note 9: it was Hazel's alone, and nothing said what it was): what they could make now this patch has healed a little more
+  const M = C.makes[patch], L = M.lines[stage], who = L.who || 'her', first = !G.s.flags.wishIntro; G.s.flags.wishIntro = true; G.dirty = true;
+  const list = C.tasks.filter(d => d.make === patch && d.stage === stage && !d.season && !d.retired && !(d.needs || []).some(n => n.startsWith('flag:') && !G.s.flags[n.slice(5)]));
+  openSheet('makes', `<div class="jpage card"><p class="meta" style="margin:0">Our wish list · ${M.name.toLowerCase()}</p><div class="por big"><img src="sprites/face-${who}.webp" alt=""></div><h2>${first ? 'A wish list' : 'New wishes'}</h2>
+    ${first ? `<p class="meta">Wendel and Hazel keep a list of little things they would love for the place. Nothing on it has to be done. Each one makes the clearing a bit more theirs.</p>` : ''}
+    <p class="lore">${C.names[who]}: "${L.t || L}"</p><ul class="mlist">${list.map(d => `<li>${d.name}</li>`).join('')}</ul>
+    <p class="meta">They are in Jobs, under Our wish list. Each is paid for with things you gather, and appears in its own spot once it is made.</p></div>
+    <p style="text-align:center"><button class="act" data-a="jobs" data-id="makes">See the wish list</button> <button class="act quiet" data-a="close">Later</button></p>`);
 }
 // v87 (fresh-eyes review, "a quiet front door"): at most ONE window a visit, and none in the middle of a visit. A story page
 // opens on the first visit of a later day (G.pageCanOpen: one a day, about yesterday); an animal's beat from an earlier visit
@@ -5355,7 +5571,8 @@ function quietCard(c) {   // no window: the land shows it, a short note says it,
   if (c.k === 'land') { const st = C.landStages.find(s => s.key === c.key); if (!st) return; if (st.spirit && !guideOn()) { spiritNote(st.spirit); showSprig(); } else toast(`The yard is waking: ${st.name}.`); return diaryAdd(st.explain || st.sub); }   // round nine note 16: the Wood spirit says what just happened, and shows the oak sprig with it
   if (c.k === 'tland') { const tl = G.s.tiles[c.tile]; if (!tl) return; const st = C.landStages.find(s => s.key === c.key), fid = G.farmOn(c.tile), patch = fid ? C.farms.list[fid].patch : tl.kind ? C.heal.kinds[tl.kind].patch : 'the patch';
     toast(`${cap(patch)} is waking: ${st.name}.`); return diaryAdd(C.heal.stageText[c.key].replace('{patch}', patch)); }
-  if (c.k === 'makes') { const M = C.makes[c.patch]; toast(`Hazel has new little makes in Jobs.`); renderHud(); return diaryAdd(`"${M.lines[c.stage]}"`); }
+  if (c.k === 'makes') { const M = C.makes[c.patch]; const L = M.lines[c.stage]; if (!G.s.flags.wishIntro) { cardAt = performance.now() + 4000; return openMakes(c.patch, c.stage); }   // the first time, a small card says what the list is (note 9)
+    toast(`New wishes on Wendel and Hazel's wish list, in Jobs.`); renderHud(); return diaryAdd(`${C.names[L.who || 'her']}: "${L.t || L}"`); }
 }
 // ---------- Hazel's diary: what happened while you were away, and what the land did, kept in the Journal (v87) ----------
 function diaryAdd(line, gone) {   // today's diary page gets the line (one page a day, newest first, the last 14 kept)
@@ -5379,7 +5596,7 @@ function allDoneCheck(now) {
   if (more || now - JOB_START < 30000 || gnomes.some(g => g.chore || g.walking && g.job)) return;   // build 3: only when truly nothing is left, and never while someone is just setting off to a job
   ALLDONE.done = true; ALLDONE.on = true;
   const h = dayPhase().h, A = C.story.allDone, first = run.length ? Math.min(...run.map(r => r.endsAt)) : 0;
-  const set = h >= 21 || h < 5 ? A.night : bigDay && h >= 17 ? A.bigDay : h >= 19 ? A.evening : run.length ? A.busy : A.nothing;
+  const set = h >= C.night.bed || h < 5 ? A.night : bigDay && h >= 17 ? A.bigDay : h >= 19 ? A.evening : run.length ? A.busy : A.nothing;
   const [who, line] = pick(set), text = line.replace('{time}', first ? new Date(first).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(/\s?([ap])\.?m\.?/i, (m, x) => x.toLowerCase() + 'm') : 'later');
   PL.add(`ALL DONE FOR NOW window (${set === A.night ? 'night' : set === A.bigDay ? 'big day' : set === A.evening ? 'evening' : set === A.busy ? 'both busy' : 'nothing to do'}): ${C.names[who]}: "${text}" · running: ${run.map(r => r.id).join(', ') || 'none'}`);
   const g = gnomes.find(g => g.who === who), seen = g && g.screen && !g.inside;   // they say it if they are out in the yard; else the label carries it
@@ -5387,7 +5604,7 @@ function allDoneCheck(now) {
   clearTimeout(allDoneCheck.h); allDoneCheck.h = setTimeout(() => { ALLDONE.on = false; }, 6000);
   const [yx, yy] = toWorld(0.5, 0.52); ALLDONE.ease = { t: 0, z0: cam.z, x0: cam.x, y0: cam.y, z1: Math.min(cam.z, homeZ()), x1: yx, y1: yy };   // ease out to show the whole yard
 }
-function easeCam(dt) { const e = ALLDONE.ease; if (!e) return; e.t = Math.min(1, e.t + dt / 2.5); const k = e.t * e.t * (3 - 2 * e.t);
+function easeCam(dt) { const e = ALLDONE.ease; if (!e) return; e.t = Math.min(1, e.t + dt / (e.d || 2.5)); const k = e.t * e.t * (3 - 2 * e.t);
   cam.z = e.z0 + (e.z1 - e.z0) * k; cam.x = e.x0 + (e.x1 - e.x0) * k; cam.y = e.y0 + (e.y1 - e.y0) * k; clampCam(); if (e.t >= 1) ALLDONE.ease = null; }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - (ALLDONE.hidAt || Date.now()) > 10 * 60000) { ALLDONE.done = false; bigDay = false; ALLDONE.at = performance.now(); } if (document.hidden) ALLDONE.hidAt = Date.now(); });   // a new visit
 // ---------- neighbours: their page, the traveller's page, story pages ----------
@@ -5402,7 +5619,14 @@ function openTraveller() {
     html += `<div class="row"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><br><span>` + (v.locked ? `<span class="bad">${v.why}</span>` : `<span class="who" data-w="${d.who}">${C.names[d.who]}</span> needs <span class="cost">${costHtml(d.cost)}</span> · ${hours(d.mins)}` + (v.can ? '' : `<br><span class="bad">The store is short of ${v.missing.join(', ')}.</span>`)) + `</span></div><button class="act" data-a="start" data-id="${d.id}" ${v.state === 'ready' && v.can ? '' : 'disabled'}>Build</button></div>`;
     html += `<p style="margin-top:12px">Not the right neighbour? <button class="act quiet" data-a="wave">Wave them on</button><br><small>They will go on along the road, and someone else will come by in a day or so.</small></p>`;
   }
+  { const c = G.canLendHand(), tk = tr.help && G.s.tasks[tr.help], on = tk && !tk.done && tk.endsAt > G.now();   // v99: a helping hand, once a day, while they camp
+    html += `<h3>A helping hand</h3><div class="row"><div class="t"><b>${on ? `${f.name} is helping with a job` : `${f.name} would gladly help`}</b><span>${on ? `Working beside ${C.names[tk.who] || 'the gnomes'} now. Two pairs of hands: half the time.` : c.ok ? `One job a day, while camped here. Just now that would be ${lcName(c.job.def.short || c.job.def.name)}, done in half the time left.` : c.why}</span></div>${on ? '' : `<button class="act" data-a="lendhand" ${c.ok ? '' : 'disabled'}>Ask</button>`}</div>`; }
   openSheet('traveller', html);
+}
+function helpSeat(folk) {   // the camping traveller, lending a hand: they walk over and stand by the gnome they are helping
+  const tr = G.s.village.traveller; if (!folk.home.camp || folk.i !== 0 || !tr || !tr.help) return null;
+  const tk = G.s.tasks[tr.help]; if (!tk || tk.done || tk.endsAt <= G.now()) return null;
+  const g = gnomes.find(g => g.who === tk.who); return g ? [g.gx + 0.07, g.gy + 0.03] : null;
 }
 function folkWish(fid) {   // v70: a little make for their own home (C.wishes); you send the basket, they make it
   const f = G.folkDef(fid), Sh = f.short[0].toUpperCase() + f.short.slice(1), d = G.wishOpen(fid), m = G.wishMaking(fid), l = (C.wishes.list[fid] || []), done = l.filter(x => G.wishProg(fid, x.id) >= 1);
@@ -5534,7 +5758,8 @@ $('bPack').onclick = openPack; $('guideSkip').onclick = () => guideTo(4);
 $('guide').addEventListener('click', e => { if (e.target.closest('button[data-a="spiritok"]')) { $('guide').classList.remove('on'); $('guideSkip').style.display = ''; return; }   // v97 (round ten note 19): the Wood spirit's Thank you lives in this strip, not the sheet, so it was never heard
   const b = e.target.closest('button[data-a="guide"]'); if (!b) return; G.s.flags.guide = b.dataset.id === 'skip' ? 4 : 1; $('guideSkip').style.display = ''; guideTo(G.s.flags.guide); });   // v87: the hello's own buttons
 $('bTasks').onclick = () => { hidePointer('bTasks'); if (guideStep() === 4) guideTo(9); openTasks(); }; $('bMagic').onclick = openMagic; $('bJournal').onclick = () => { DPAGE = 0; openJournal(); };
-G.onChange((kind, data) => { if (kind === 'green') showSprig(performance.now() - SPRIG.t < 5000 ? Math.min(SPRIG.from, data) : data); });   // v87: a burst of green (a harvest, coming back after a while) shows all its new leaves
+G.onChange((kind, data) => { if (kind === 'green' && !G.s.flags.greenIntro && G.s.tiles['0,0'].green > 0) { G.s.flags.greenIntro = true; toast('Something grew, so the yard is a little greener. The sprig by the little oak counts it: tap the sprig to see the whole valley.'); }
+  if (kind === 'green') showSprig(performance.now() - SPRIG.t < 5000 ? Math.min(SPRIG.from, data) : data); });   // v87: a burst of green (a harvest, coming back after a while) shows all its new leaves
 G.onChange((kind, data) => { if (kind === 'spell' && (data === 'rain' || data === 'cloud')) startShower(8, 90); renderInv(kind === 'inv' && typeof data === 'string' ? data : null); renderHud(); if (kind === 'task' && data && data.done) { if (data.give) { const g = gnomes.find(g => g.who === data.who); if (g && g.screen && !g.inside) float(Object.entries(data.give).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(' '), g.screen.x, g.screen.y - g.screen.h * 0.6); else toast(`${C.names[data.who]} brought in ${Object.entries(data.give).map(([k, n]) => `${n} ${C.resources[k].name}`).join(' and ')}.`); } else toast('Finished: ' + lcName(G.taskDef(data.id).name) + '.'); } if (kind === 'event') toast(data.text); if (kind === 'movein') toast(data.note);
   if (kind === 'traveller' && data) { if (!sheetKind && windowFree() && G.s.flags.welcomed) { tookWindow(); openStory(data, 'arrived'); } else toast('A traveller has camped by the path.'); }   // v87: only if this visit has had no window yet
   if (kind === 'story') { if (!sheetKind && windowFree()) { tookWindow(); openStory(data.folk, data.kind); } else toast(`${cap(G.folkDef(data.folk).short)} has news. It is in the Journal.`); }
@@ -5648,7 +5873,7 @@ function nearestOffer(kind) {   // the closest thing of this kind lying about (a
 }
 // "Show me" on a job the store is short for: where the missing thing lies, or when it turns up
 const TURNS_UP = { twig: 'Twigs turn up lying about the land all day.', moss: 'Moss turns up lying about the land, most of all in the daytime.', stone: 'Stones turn up lying about the land in the daytime.',
-  acorn: 'Acorns turn up lying about now and then.', seed: 'Seeds turn up lying about in the daytime.', water: 'Dew settles on the land, most of all in the mornings.', light: 'Light comes out after dark: little sparks lying about at night.',
+  acorn: 'Acorns turn up lying about now and then.', seed: 'Seeds turn up lying about in the daytime.', water: 'Fetch a jug from the spring (a little chore in Jobs). Dewdrops settle on the land too, most of all in the mornings.', light: 'Light comes out after dark: little sparks lying about at night.',
   berry: 'Berries turn up lying about in the daytime.', feather: 'Feathers turn up now and then, day or night.', carrot: 'Carrots grow in the seed bed.', lettuce: 'Lettuces grow in the seed bed.', bean: 'Beans grow in the seed bed.', pumpkin: 'The pumpkin grows in the seed bed.' };
 function shortHelp(cost) {
   const k = Object.keys(cost || {}).find(k => (G.s.inv[k] || 0) < cost[k]); if (!k) return '';
