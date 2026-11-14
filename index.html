@@ -650,9 +650,9 @@ Object.assign(ART_SLOTS, { 'feeding-dish': { w: 62 },   /* Bryce: bigger for the
 // the first month's story (docs/STORY.md): one painting per page (page-1-1 ...), and a painting for each little make (make-<id>)
 Object.assign(ART_SLOTS, { 'pond': { w: 146 } });
 [74, 88, 104, 112].forEach((w, i) => { ART_SLOTS['stick-pile-' + (i + 1)] = { w }; });   // round eleven note 10 (art day 22): the stick pile, armful by armful
-for (const k of ['yard-workcorner', 'heap-1', 'heap-2', 'heap-3', 'heap-4']) ART_SLOTS[k] = {};   // round eleven (art day 22): the finished little work corner; the rubbish heap in four stages
+for (const k of ['yard-workcorner', 'heap-1', 'heap-2', 'heap-bare', 'heap-3', 'heap-4']) ART_SLOTS[k] = {};   // round eleven (art day 22): the finished little work corner; the rubbish heap in five stages
 for (const k of ['garden-heap', 'garden-heap-half', 'garden-hollow', 'garden-hollow-rain', 'garden-pond-large', 'seedbed-rect', 'wildflower-patch-1', 'wildflower-patch-2', 'wildflower-patch-3', 'yard-leanto', 'yard-leanto-frame', 'spring-paved', 'room-stump-hollowing']) ART_SLOTS[k] = {};   // art day 21 (v99)
-const ART_RAW = /^(garden-|heap-\d|seedbed-rect|wildflower-patch|yard-leanto|yard-workcorner|spring-paved)/;   // drawn at their own size and spot, never trimmed or settled
+const ART_RAW = /^(garden-|heap-|seedbed-rect|wildflower-patch|yard-leanto|yard-workcorner|spring-paved)/;   // drawn at their own size and spot, never trimmed or settled
 for (const k of ['spirit-float', 'spirit-point', 'spirit-settle', 'toad-legs', 'toad-house']) ART_SLOTS[k] = {};   // the Wood spirit's painted poses (art day 14)
 for (const p of C.story.pages) ART_SLOTS['page-' + p.id.replace('.', '-')] = {};
 // art day 16: the neighbours' wishes, painted sizes in world px (the stand-ins were drawn 1.3x)
@@ -4082,12 +4082,13 @@ const HEAL_DRAW = {
     if (!art('garden-heap')) { blob(x, y, 130, 52, rn > 0 ? '#5f8a88' : '#7d5c3e'); return; }
     if (ps < 1 && art('heap-1') && art('heap-3') && art('heap-4')) {   // round eleven notes 11, 12 (art day 22): the junk comes off the mound piece by piece until the
       // picking-up job is done and the mound is bare earth (heap-3); digging out what the loggers buried brings the mound down into a pit (heap-4), then the hollow
-      const st = ['heap-1', ...(art('heap-2') ? ['heap-2'] : []), 'heap-3'], m = st.length - 1, S = [...st, 'heap-4', 'garden-hollow'];
+      const st = ['heap-1', ...(art('heap-2') ? ['heap-2'] : []), ...(art('heap-bare') ? ['heap-bare'] : [])], m = st.length - 1, S = [...st, 'heap-3', 'heap-4'];   // (Bryce: it ends in a pit) junk off, a bare mound; dug into a pit, the mound sinking; just the pit
       const v = pr < 1 ? m * sstep(0.1, 0.95, pr) : m + 2 * sstep(0.05, 0.95, ps), i = Math.min(S.length - 1, Math.floor(v)), f = v - i;
       if (f > 0.001 && S[i + 1]) pic(S[i + 1], 1); pic(S[i], f > 0.001 && S[i + 1] ? 1 - f : 1); return; }   // the next stage underneath, this one fading off the top
     if (ps < 1) { const half = sstep(0.3, 1, pr), hol = sstep(0.2, 1, ps); if (hol > 0) pic('garden-hollow', 1); pic('garden-heap-half', hol > 0 ? 1 - hol : 1); pic('garden-heap', (1 - half) * (hol > 0 ? 1 - hol : 1)); return; }
     if (rd >= 1) return pic('garden-pond-large', 1);
-    pic(rn > 0.5 ? 'garden-hollow-rain' : 'garden-hollow', 1); if (rn > 0 && rn <= 0.5) pic('garden-hollow-rain', rn * 2);
+    const dry = art('heap-4') ? 'heap-4' : 'garden-hollow';   // round eleven (Bryce): the dug-out heap stays a pit until the soft rain fills it
+    pic(rn > 0.5 ? 'garden-hollow-rain' : dry, 1); if (rn > 0 && rn <= 0.5) pic('garden-hollow-rain', rn * 2);
     if (rd > 0) pic('garden-pond-large', sstep(0.2, 1, rd)); },
   wildpatch(x, y, a, q) {   // a patch of native wildflowers: sprouts, in flower, then wider (the three paintings share one scale)
     const st = healEvAt(q.k, 'spread2') ? 3 : healEvAt(q.k, 'spread1') ? 2 : 1, im = art('wildflower-patch-' + st);
@@ -4858,7 +4859,8 @@ function tapAt(cx, cy, wx, wy) {
 const STAKE_AT = { logsaw: () => [LOG_AT[0] + 0.06, LOG_AT[1] - 0.02], workcorner: () => [WORKCORNER[0] + 0.05, WORKCORNER[1] + 0.06], spring: () => [SPRING.at[0] - 0.02, SPRING.at[1] + 0.04], fire: () => [0.27, 0.43], firewood: () => [0.50, 0.15], barrel: () => [0.42, 0.14], clearing: () => [0.56, 0.62], logseat: () => [0.20, 0.53], herbs: () => [HERB_AT[0], HERB_AT[1] + 0.03] };
 function stakeSpot(d) {   // [world x, world y] where this job's flag stands, or null (no flag)
   if (d.make || d.chore) return null;
-  const tile = d.healTile || d.tile; if (tile) return G.s.tiles[tile] || d.tile ? toWorld(0.5, 0.52, tile) : null;
+  const tile = d.healTile || d.tile; if (tile === '0,1' && healProg(tile, 'spoil') >= 1 && healProg(tile, 'rain') < 1) return toWorld(0.66, 0.66, tile);   // round eleven: on the pit's front rim, not floating over the hole
+  if (tile) return G.s.tiles[tile] || d.tile ? toWorld(0.5, 0.52, tile) : null;
   if (d.spot && STAKE_AT[d.spot] && !d.folk && !d.festival) return toWorld(...STAKE_AT[d.spot]());
   const p = jobSpotXY(d); if (p) return p;
   const pr = PROPS.find(q => q.name === d.spot); return pr ? toWorld(pr.gx, pr.gy) : null;
