@@ -2,7 +2,7 @@
 
 A cosy storybook garden game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; it must run smoothly on a phone.
 
-_Last updated: 2026-11-14 (v98 waiting for Bryce's OK). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
+_Last updated: 2026-11-14 (v98 live). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
 
 ## 1. Rules for every chat (read first)
 
@@ -26,16 +26,15 @@ _Last updated: 2026-11-14 (v98 waiting for Bryce's OK). Keep this file short: on
 
 ## 2. Where we are
 
-- **Live:** v97 at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). **v98** (house jobs show only their paintings while they run, round ten note 11) is waiting for Bryce's OK, PR #127.
+- **Live:** v98 at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). v98 (PR #127): house jobs show only their paintings while they run (round ten note 11), and this one-page plan.
 - **Bryce is playing** a fresh real garden started 2026-11-14 on v96. Round-ten notes are being collected in the thread "Collect play notes round ten" (`/mnt/project-files/play-notes-round-ten/notes.md`).
 - **Two gardens:** the real one at the plain address; the sandbox at `?sandbox` (own save; tap the title for the test panel). Pretend player: `node tools/progression_sim.js 2 90`.
 
 ## 3. What's next (in order)
 
-1. Bryce's OK on v98, then merge.
-2. When round ten ends: one build of every round-ten note under the new rules. Big items already flagged in it: when Mabel arrives and how long the whole game is (note 1, Bryce undecided); jobs go to whichever gnome is free and day one shared fairly (notes 4, 12, repeat of round 8 no. 1); the barrel and spout only after the roof, with rain for the herb box as the reason (note 2, agreed); redesign the green sprig meter (note 8, show looks first); rename "Hazel's list" to a shared list (note 9); a one-line reason on every new job card (notes 3, 5, 7, 10).
-3. Next art day: the stand-ins in section 4, plus anything round ten asks for.
-4. Held until Bryce asks: month-two builds 2 to 7 (`docs/MONTH-TWO.md`), then a long robot run.
+1. When round ten ends: one build of every round-ten note under the new rules. Big items already flagged in it: when Mabel arrives and how long the whole game is (note 1, Bryce undecided); jobs go to whichever gnome is free and day one shared fairly (notes 4, 12, repeat of round 8 no. 1); the barrel and spout only after the roof, with rain for the herb box as the reason (note 2, agreed); redesign the green sprig meter (note 8, show looks first); rename "Hazel's list" to a shared list (note 9); a one-line reason on every new job card (notes 3, 5, 7, 10).
+2. Next art day: the stand-ins in section 4, plus anything round ten asks for.
+3. Held until Bryce asks: month-two builds 2 to 7 (`docs/MONTH-TWO.md`), then a long robot run.
 
 **Waiting on Bryce:** game length / Mabel timing (card open in the notes thread); is the big spring stump now too big (one number, `KIT_GROW`); stump and spring look rethink (round 9 no. 6); should Mabel help a job a day while camping.
 
