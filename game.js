@@ -250,7 +250,7 @@ const G = {
   // ---- offerings ----
   spawnOffer(t, want, home) {   // want/home: this kind, in the home yard (the seed bed's safety net)
     const s = this.s, h = new Date(t).getHours(), night = h < 6 || h >= 19;
-    const pool = C.offers.map(o => ({ kind: o.kind, w: (night ? o.night : o.day) * (o.kind === 'water' && h >= 5 && h < 10 ? 2.5 : 1) })).filter(o => o.w > 0 && !this.shelfFull(o.kind));   // a full shelf: the land leaves something else
+    const pool = C.offers.map(o => ({ kind: o.kind, w: (night ? o.night : o.day) * (o.kind === 'water' && h >= 5 && h < 10 ? 2.5 : 1) * (o.kind === 'feather' ? 1 + Math.min(4, ['robin','owl','wren','rosella','frogmouth','kookaburra','silvereye','kingfisher','cockatoo','lyrebird'].filter(b => this.met(b)).length) * 0.5 : 1) }))   /* v99 (round ten note 51): each bird you have met makes a dropped feather likelier, up to three times */.filter(o => o.w > 0 && !this.shelfFull(o.kind));   // a full shelf: the land leaves something else
     const soft = C.store.lightSoft && (s.inv.light || 0) >= C.store.lightSoft, wisp = pool.find(o => o.kind === 'light'), dew = pool.find(o => o.kind === 'water');   // v81: plenty of light saved: the wisps come a fifth as often, and the night leaves dew instead
     if (soft && wisp) { if (dew) dew.w += wisp.w * 0.8; wisp.w *= 0.2; }
     if (!pool.length && !want) return;

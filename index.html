@@ -284,7 +284,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v98</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v99</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -305,7 +305,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 98;
+const BUILD = 99;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -313,11 +313,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=98"></script>
-<script src="playlog.js?v=98"></script>
-<script src="concerns.js?v=98"></script>
-<script src="game.js?v=98"></script>
-<script src="walk.js?v=98"></script>
+<script src="content.js?v=99"></script>
+<script src="playlog.js?v=99"></script>
+<script src="concerns.js?v=99"></script>
+<script src="game.js?v=99"></script>
+<script src="walk.js?v=99"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -4243,16 +4243,16 @@ function openPatch(k) {   // tap a healing tile (v90: a small card): what this p
   const card = (all && K.cardDone) || (at > 0 && K.cardAfter) || K.card, who = card.who;   // v99 (note 39): the garden-to-be says what it is from the start, in both their words
   const run = G.running().find(r => r.def.healTile === k && r.endsAt > G.now()), d = !all ? G.taskDef(`heal:${k}:${at}`) : null, v = d && G.taskView(d);
   const dots = steps.map((x, i) => `<i class="${i < at ? 'on' : i === at ? 'now' : ''}"></i>`).join('');
-  let html = `<div class="tcard">${patchFace(who)}<div class="t"><b>${all && K.nameDone ? K.nameDone : at > 0 && K.nameAfter ? K.nameAfter : K.name}</b><span class="meta">${cap(st.name)} · ${G.tileWhere(k)}</span><span class="steps">${dots}</span><span class="lore">"${card.text}"${who === 'both' ? '' : ` <i>· ${C.names[who]}</i>`}</span></div></div>`;
+  let html = `<div class="tcard">${patchFace(who)}<div class="t"><b>${(all || (tl.kind === 'garden' && G.gardenOpen())) && K.nameDone ? K.nameDone : at > 0 && K.nameAfter ? K.nameAfter : K.name}</b><span class="meta">${cap(st.name)} · ${G.tileWhere(k)}</span><span class="steps">${dots}</span><span class="lore">"${card.text}"${who === 'both' ? '' : ` <i>· ${C.names[who]}</i>`}</span></div></div>`;
   if (run) { html += jobCardRow(G.taskView(run.def)); if (run.def.spell && C.spells[K.spell] && G.healTaught(tl.kind)) html += `<p class="go">${spellBtn(K.spell)}</p>`; }
   else if (d && d.cast && G.healOpen(k)) {   // v99: this step is yours, not the gnomes'
     const pic = STEP_PIC[d.stepId], taught = G.spellTaught(d.cast);
-    html += `<div class="row"><img class="jpic" src="sprites/${pic}.webp" alt="" onerror="this.remove()"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><span class="meta">${taught ? 'The gnomes have done their part. This one is your magic.' : `The gnomes have done their part. The Wood spirit will come and show you how${d.cast === 'rain' ? ', in a day or so' : ''}.`}</span></div></div>`;
+    html += `<div class="row"><img class="jpic" src="sprites/${pic}.webp" alt="" onerror="this.remove()"><div class="t"><b>${d.name}</b><span>${d.blurb}</span><span class="meta" style="display:block">${taught ? 'The gnomes have done their part. This one is your magic.' : `The gnomes have done their part. The Wood spirit will come and show you how${d.cast === 'rain' ? ', in a day or so' : ''}.`}</span></div></div>`;
     if (taught) html += `<p class="go">${spellBtn(d.cast)}</p>`;
   }
   else if (v && v.show && G.healOpen(k)) html += jobCardRow(v);
   else html += `<p class="meta">${all ? (tl.kind === 'garden' ? 'The garden is open. Its wishes are on the wish list, and anything can be moved about later.' : 'Everything the gnomes can do here is done. The rest is up to the land.') : !G.healOpen(k) ? 'This patch has a home on it now. The folk who live here look after it.' : 'Nothing to do here just now. The land is working on it.'}</p>`;
-  if (!all && tl.kind === 'garden') { const left = steps.slice(at + (run || (d && d.cast) || (v && v.show) ? 1 : 0)).map(x => x.name.toLowerCase()); if (left.length) html += `<p class="meta">🔒 Still to come here: ${left.join(', ')}. Then the garden opens.</p>`; }
+  if (!all && tl.kind === 'garden') { const left = steps.slice(at + (run || (d && d.cast) || (v && v.show) ? 1 : 0)).map(x => x.name.toLowerCase()); if (left.length) html += `<p class="meta">🔒 Still to come here: ${left.join(', ')}.${G.gardenOpen() ? '' : ' Then the garden opens.'}</p>`; }
   if (names.length) html += `<p class="meta">Wendel has named the trees here: ${names.join(', ')}.</p>`;
   openSheet('patch:' + k, html);
 }
@@ -5006,6 +5006,7 @@ function toastStep() {
   if (T.cur) { const shown = now - T.at, left = (T.q.length ? toastMin(T.cur) : toastNeed(T.cur)) - shown; if (left > 0) { toast.h = setTimeout(toastStep, left + 20); return; }
     T.cur = null; toastEl.style.opacity = 0; toastEl.style.pointerEvents = 'none'; if (T.q.length) { toast.h = setTimeout(toastStep, 320); } return; }
   if (!T.q.length) return;
+  if (typeof gnomes !== 'undefined' && gnomes.some(g => g.sayT > 0) && (T.held = (T.held || 0) + 1) < 20) { toast.h = setTimeout(toastStep, 500); return; } T.held = 0;   // v99 (note 32): a gnome is speaking: the note waits its turn (ten seconds at most)
   T.cur = T.q.shift(); T.at = now; toastEl.textContent = T.cur; toastEl.style.opacity = 1; toastEl.style.pointerEvents = 'auto'; toast.h = setTimeout(toastStep, (T.q.length ? toastMin(T.cur) : toastNeed(T.cur)) + 20);
 }
 toastEl.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); if (TOASTS.cur) { TOASTS.at = -1e9; toastStep(); } });
