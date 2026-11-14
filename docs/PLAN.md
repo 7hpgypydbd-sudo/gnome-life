@@ -2,7 +2,7 @@
 
 A cosy storybook garden game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; it must run smoothly on a phone.
 
-_Last updated: 2026-11-14 (v98 live). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
+_Last updated: 2026-11-15 (v98 live; v99 built and waiting for Bryce's OK). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
 
 ## 1. Rules for every chat (read first)
 
@@ -34,21 +34,22 @@ _Last updated: 2026-11-14 (v98 live). Keep this file short: one page of where we
 
 ## 3. What's next (in order)
 
-1. When round ten ends: one build of every round-ten note under the new rules. Big items already flagged in it: when Mabel arrives and the pace of the early game (note 1; no fixed game length, feel it out); jobs go to whichever gnome is free and day one shared fairly (notes 4, 12, repeat of round 8 no. 1); the barrel and spout only after the roof, with rain for the herb box as the reason (note 2, agreed); redesign the green sprig meter (note 8, show looks first); rename "Hazel's list" to a shared list (note 9); a one-line reason on every new job card (notes 3, 5, 7, 10).
-2. Next art day: the stand-ins in section 4, plus anything round ten asks for.
-3. Held until Bryce asks: month-two builds 2 to 7 (`docs/MONTH-TWO.md`), then a long robot run.
+1. **v99, the round-ten build, is built and waiting for Bryce's OK** (pull request open, previews in `/mnt/project-files/round-ten-v99/`). It holds every round-ten note (tracker has each row): jobs go to whichever gnome is free; the garden patch's new chain (rubbish, fence, spoil, the player's Wake the worms spell taught on day one, soft rain fills the large pond, reeds, three wildflower patches, garden opens) laid out to layout 3; a second rectangle bed with its own seed tin; Wendel's work corner growing into the lean-to; Mabel lends a hand with one job a day while camped; every job time reviewed (`job-times.md`); the green sprig labelled with a "valley's green" card; notes one at a time; the play log keeps the whole garden; art day 21's paintings placed (calm ground, heap to pond, paved spring, wash tub, lean-to, neighbours' pages and faces). Not in this build, because: note 1 game length (on hold, Bryce); note 27 more bug baths (new idea, maybe pile); note 35's herb use (maybe pile).
+2. When Bryce has played v99: he closes notes; anything that came back gets a proper look.
+3. Next art day: the stand-ins in section 4.
+4. Held until Bryce asks: month-two builds 2 to 7 (`docs/MONTH-TWO.md`), then a long robot run.
 
-**Garden patch layout (decided 2026-11-14, `docs/GARDEN-LAYOUT.md`):** large pond in the middle (about three times today's), filled by rain in the hollow left by the cleared rubbish heap; a second rectangle bed by the yard; mouse house far corner, rabbit corner at the far end. Build it with the round-ten build. Art day: repaint the busy final "moss" ground on every patch and the home yard, drop the orange pine-needle mats. No fixed game length any more: plan without day numbers.
+**Garden patch layout (`docs/GARDEN-LAYOUT.md`):** built in v99. The pond has reeds, NOT a ring of stones (Bryce, 2026-11-14).
 
-**Waiting on Bryce:** game length / Mabel timing (card open in the notes thread); is the big spring stump now too big (one number, `KIT_GROW`); stump and spring look rethink (round 9 no. 6); should Mabel help a job a day while camping.
+**Waiting on Bryce:** OK for v99, with his picks on the greening look, the job-time table, Mabel's helping hand and crop green; is the big spring stump now too big (one number, `KIT_GROW`); stump and spring look rethink (round 9 no. 6). Game length: on hold, feel it out.
 
-**Maybe pile:** automatic concern inbox; a spell for work past bedtime; birdsong returning as the land greens; phone sideways; Wendel hollowing the stump with an inside view (round 7 no. 56). Held back on purpose: pot seats before the bench (could strand a player).
+**Maybe pile:** automatic concern inbox; a spell for work past bedtime; birdsong returning as the land greens; phone sideways; more bug baths on patches (round 10 no. 27); a use for picked herbs (round 10 no. 35). Held back on purpose: pot seats before the bench (could strand a player).
 
-## 4. Stand-ins still in the game (2026-11-14)
+## 4. Stand-ins still in the game (2026-11-15, after v99)
 
-Month one: stepping-stone path (grey ovals; `stepping-stones` never painted); flat stones round the spring (grey ovals); the green sprig meter (code-drawn; redesign asked); the "Mabel moved in" page (shows her portrait; `story-mabel-home` missing). Fixed in v98: the moss roof and the three house steps.
-Later: the other seven neighbours' moved-in pages and portraits, `bld-juniper`, `make-owlbox`, `gift-lyrebird`. Painted but not placed: frogmouth, owl on a stake, bucket, carrot with legs.
-Drawn in code on purpose: paper job flags, growing badge, glows.
+Month one: none known. `make-bed2` has no slot painting on purpose (the bed uses `seedbed-rect`; its fence rails and crop rows are drawn in code).
+Later: `plot-ruts-filled`, `plot-cleared`, `vis-rabbit`, `bld-juniper`, `make-mousedoor`, `make-owlbox`, `gift-lyrebird`. Painted but not placed: frogmouth, owl on a stake, bucket, carrot with legs.
+Drawn in code on purpose: paper job flags, growing badge, glows, the green sprig.
 
 ## 5. The game in brief (Bryce's decisions)
 

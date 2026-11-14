@@ -62,3 +62,9 @@ They are messy for the same few reasons, so one tidy-up fixes most of them:
 
 - Check that the bigger pond painting still looks crisp at 420 px (the source is 520 px wide, so it should); repaint only if it looks soft.
 - How this joins Wake the worms (note 22) and the first green on this patch (notes 31, 39): suggested order is clear the heap, Wake the worms, grass creeps in, rain fills the hollow, garden opens.
+
+## Built in v99 (2026-11-15)
+
+- The chain as built: pick up the rubbish, pull out the old fence, barrow away the spoil, the player's Wake the worms (taught day one), Call soft rain fills the hollow, plant reeds round the pond, plant three wildflower patches, garden opens. Bryce, 2026-11-14: "The pond should not be ringed by rocks", so there is NO stone-lining job and no ring of stepping stones round the pond; reeds instead.
+- The patch appears once the first seeds are watered in. An older garden that was already open keeps its garden and finds the hollow waiting for rain.
+- Fixed spots for every garden make follow layout 3 (`content.js`, the `make:'garden'` rows). Second bed: `bed2`, painting `seedbed-rect`.
