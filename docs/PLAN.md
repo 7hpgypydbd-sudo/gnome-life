@@ -2,7 +2,7 @@
 
 A cosy storybook garden game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; it must run smoothly on a phone.
 
-_Last updated: 2026-11-15 (v98 live; v99 built and waiting for Bryce's OK). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
+_Last updated: 2026-11-15 (v99 live). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
 
 ## 1. Rules for every chat (read first)
 
@@ -28,20 +28,20 @@ _Last updated: 2026-11-15 (v98 live; v99 built and waiting for Bryce's OK). Keep
 
 ## 2. Where we are
 
-- **Live:** v98 at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). v98 (PR #127): house jobs show only their paintings while they run (round ten note 11), and this one-page plan.
-- **Bryce is playing** a fresh real garden started 2026-11-14 on v96. Round-ten notes are being collected in the thread "Collect play notes round ten" (`/mnt/project-files/play-notes-round-ten/notes.md`).
+- **Live:** v99 at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). v99 (PR #132) is the round-ten build plus art day 21 and a reworked worn path.
+- **Bryce is playing** v99. Round-ten notes are all "built, waiting for Bryce"; round-eleven notes are collected in the thread "Collect play notes round eleven".
 - **Two gardens:** the real one at the plain address; the sandbox at `?sandbox` (own save; tap the title for the test panel). Pretend player: `node tools/progression_sim.js 2 90`.
 
 ## 3. What's next (in order)
 
-1. **v99, the round-ten build, is built and waiting for Bryce's OK** (pull request open, previews in `/mnt/project-files/round-ten-v99/`). It holds every round-ten note (tracker has each row): jobs go to whichever gnome is free; the garden patch's new chain (rubbish, fence, spoil, the player's Wake the worms spell taught on day one, soft rain fills the large pond, reeds, three wildflower patches, garden opens) laid out to layout 3; a second rectangle bed with its own seed tin; Wendel's work corner growing into the lean-to; Mabel lends a hand with one job a day while camped; every job time reviewed (`job-times.md`); the green sprig labelled with a "valley's green" card; notes one at a time; the play log keeps the whole garden; art day 21's paintings placed (calm ground, heap to pond, paved spring, wash tub, lean-to, neighbours' pages and faces). Not in this build, because: note 1 game length (on hold, Bryce); note 27 more bug baths (new idea, maybe pile); note 35's herb use (maybe pile).
+1. **v99, the round-ten build, is live.** Previews are in `/mnt/project-files/round-ten-v99/`. It holds every round-ten note (tracker has each row): jobs go to whichever gnome is free; the garden patch's new chain (rubbish, fence, spoil, the player's Wake the worms spell taught on day one, soft rain fills the large pond, reeds, three wildflower patches, garden opens) laid out to layout 3; a second rectangle bed with its own seed tin; Wendel's work corner growing into the lean-to; Mabel lends a hand with one job a day while camped; every job time reviewed (`job-times.md`); the green sprig labelled with a "valley's green" card; notes one at a time; the play log keeps the whole garden; art day 21's paintings placed (calm ground, heap to pond, paved spring, wash tub, lean-to, neighbours' pages and faces). Not in this build, because: note 1 game length (on hold, Bryce); note 27 more bug baths (new idea, maybe pile); note 35's herb use (maybe pile).
 2. When Bryce has played v99: he closes notes; anything that came back gets a proper look.
 3. Next art day: the stand-ins in section 4.
 4. Held until Bryce asks: month-two builds 2 to 7 (`docs/MONTH-TWO.md`), then a long robot run.
 
 **Garden patch layout (`docs/GARDEN-LAYOUT.md`):** built in v99. The pond has reeds, NOT a ring of stones (Bryce, 2026-11-14).
 
-**Waiting on Bryce:** OK for v99, with his picks on the greening look, the job-time table, Mabel's helping hand and crop green; is the big spring stump now too big (one number, `KIT_GROW`); stump and spring look rethink (round 9 no. 6). Game length: on hold, feel it out.
+**Waiting on Bryce:** his play verdict on v99, with his picks on the greening look, the job-time table, Mabel's helping hand and crop green; is the big spring stump now too big (one number, `KIT_GROW`); stump and spring look rethink (round 9 no. 6). Game length: on hold, feel it out.
 
 **Maybe pile:** automatic concern inbox; a spell for work past bedtime; birdsong returning as the land greens; phone sideways; more bug baths on patches (round 10 no. 27); a use for picked herbs (round 10 no. 35). Held back on purpose: pot seats before the bench (could strand a player).
 
