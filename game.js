@@ -82,6 +82,7 @@ const G = {
   },
   taskFrac(id) {   // 0..1 through a job (its awake time); 1 once done
     const tk = this.s.tasks[id], t = now(); if (!tk) return 0; if (tk.done || tk.endsAt <= t) return 1;
+    if (tk.helpFrom != null) { const all = this.workBetween(tk.helpFrom, tk.endsAt), f0 = tk.f0 || 0; return all > 0 ? Math.min(1, f0 + (1 - f0) * this.workBetween(tk.helpFrom, t) / all) : 1; }   // round eleven note 8: a second pair of hands joined (or left) part way: the progress carries on from where it was
     const all = this.workBetween(tk.startedAt, tk.endsAt); return all > 0 ? Math.min(1, this.workBetween(tk.startedAt, t) / all) : 1;
   },
   jobLeft(endsAt, short) {   // "2h 10m to go", or, when a night's sleep comes first, when they'll finish
@@ -181,6 +182,7 @@ const G = {
       if (d.chore) delete s.tasks[id];   // a little chore can be done again
       this.emit('task', { id, done: true, give: d.chore && d.give, who: d.who });
     }
+    this.pairTick(t);
     this.mealTick(t);
     this.dressTick(t);
     if (this.barrelFull()) this.drawBarrel();   // the rain barrel tops up the store by itself (nobody's hands)
@@ -488,6 +490,7 @@ const G = {
     this.pay(d.cost); const t = now();
     if (!d.chore) for (const [cid, ck] of Object.entries(this.s.tasks)) if (cid.startsWith('chore:') && !ck.done && ck.endsAt > t && (ck.who || (this.taskDef(cid) || {}).who) === d.who) delete this.s.tasks[cid];   // a gnome putting a little chore down to start a real job
     const from = this.asleepAt(t) ? this.wakeAfter(t) : t;   // started at night: they get going when they wake
+    if (d.who === 'him' || d.who === 'her') this.pairLeave(d.who);   // round eleven note 8: a helper given a job of their own goes off to it
     this.s.tasks[id] = { startedAt: from, endsAt: this.workEnd(from, this.dur(this.jobMins(d.mins))), done: false }; if (d.who === 'him' || d.who === 'her') { this.s.tasks[id].who = d.who; this.worked(d.who, this.s.tasks[id].endsAt); }
     if (d.home || d.claims) this.s.tasks[id].tile = d.home ? this.homeLot(d.folk) : this.freeLot();
     if (d.claims) this.s.festival.tile = this.s.tasks[id].tile;
@@ -495,6 +498,26 @@ const G = {
     if (window.PL) PL.add(`job start [${id}] by ${d.who}, ${Math.round(this.dur(this.jobMins(d.mins)) / 60000)} min of work, done ${new Date(this.s.tasks[id].endsAt).toTimeString().slice(0, 5)}, paid ${PL.short(d.cost || {})}`);
     this.note(from > t ? `${C.names[d.who]} will start in the morning: ${lc(d.name)}.` : `${C.names[d.who]} set to work: ${lc(d.name)}.`); this.emit('task', { id }); return true;
   },
+  // round eleven note 8 (Bryce: the rubbish heap is too big for one gnome): a pair:true job is a two-gnome job. One gnome starts it;
+  // the other comes over and joins as soon as they are free, and the rest of it goes twice as fast. Give the helper a job of their
+  // own and they go off to it (the heap slows back down); they come back when they are free again.
+  pairShift(id, tk, k) { const t = now(), f = this.taskFrac(id); tk.f0 = f; tk.helpFrom = t; tk.endsAt = this.workEnd(t, this.workBetween(t, tk.endsAt) * k); },
+  pairTick(t) {
+    if (this.asleepAt(t)) return;
+    for (const [id, tk] of Object.entries(this.s.tasks)) {
+      if (tk.done || tk.endsAt <= t || tk.helper || (tk.who !== 'him' && tk.who !== 'her')) continue;
+      const d = this.taskDef(id); if (!d || !d.pair || tk.endsAt - t < 2 * MIN) continue;
+      const other = tk.who === 'him' ? 'her' : 'him'; if (this.isBusy(other, id)) continue;
+      if (Object.values(this.s.tasks).some(k => k !== tk && !k.done && k.helper === other)) continue;
+      this.pairShift(id, tk, 0.5); tk.helper = other; this.worked(other, tk.endsAt);
+      if (window.PL) PL.add(`${other} joins [${id}] (two-gnome job)`);
+      this.note(`${C.names[other]} came over to help ${C.names[tk.who]} with ${lc(d.short || d.name)}. Two pairs of hands: it goes twice as fast.`); this.emit('task', { id, helper: other });
+    }
+  },
+  pairLeave(who) {   // the helper is given a job of their own
+    for (const [id, tk] of Object.entries(this.s.tasks)) if (!tk.done && tk.helper === who && tk.endsAt > now()) { this.pairShift(id, tk, 2); tk.helper = null; if (window.PL) PL.add(`${who} leaves [${id}] for a job of their own`); }
+  },
+  helping(who) { const t = now(); const e = Object.entries(this.s.tasks).find(([, tk]) => !tk.done && tk.endsAt > t && tk.helper === who); return e ? e[0] : null; },
   running() { return Object.entries(this.s.tasks).filter(([, tk]) => !tk.done).map(([id, tk]) => Object.assign({ id }, tk, { def: this.taskDef(id) })); },
 
   // ---- land ----
@@ -962,7 +985,7 @@ const G = {
   },
   lendHand() {
     const c = this.canLendHand(); if (!c.ok) return false; const tr = this.s.village.traveller, t = now(), tk = this.s.tasks[c.job.id], nm = this.folkDef(tr.id).name;
-    tk.endsAt = t + (tk.endsAt - t) / 2; tr.helpDay = dayKey(t); tr.help = c.job.id;
+    this.pairShift(c.job.id, tk, 0.5); tr.helpDay = dayKey(t); tr.help = c.job.id;
     if (window.PL) PL.add(`${tr.id} lends a hand with [${c.job.id}]`);
     this.note(`${nm} went over to help ${C.names[c.job.who]} with ${lc(c.job.def.short || c.job.def.name)}. Two pairs of hands: half the time.`); this.emit('task', { id: c.job.id }); this.dirty = true; return c.job;
   },
