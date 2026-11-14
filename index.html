@@ -293,7 +293,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 96;
+const BUILD = 97;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -301,11 +301,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=96"></script>
-<script src="playlog.js?v=96"></script>
-<script src="concerns.js?v=96"></script>
-<script src="game.js?v=96"></script>
-<script src="walk.js?v=96"></script>
+<script src="content.js?v=97"></script>
+<script src="playlog.js?v=97"></script>
+<script src="concerns.js?v=97"></script>
+<script src="game.js?v=97"></script>
+<script src="walk.js?v=97"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -5529,7 +5529,8 @@ function lookTick(dt) {
 document.addEventListener('pointerdown', () => { if (LOOK.on) { LOOK.on = false; ALLDONE.ease = null; PL.add('look-around skipped'); } }, true);
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button,[data-a]'); if (b) PL.add(`press: ${b.dataset.a || b.id || 'button'}${b.dataset.id ? ' ' + b.dataset.id : ''} "${(b.textContent || '').trim().slice(0, 40)}"`); }, true);   // the play log: every button pressed
 $('bPack').onclick = openPack; $('guideSkip').onclick = () => guideTo(4);
-$('guide').addEventListener('click', e => { const b = e.target.closest('button[data-a="guide"]'); if (!b) return; G.s.flags.guide = b.dataset.id === 'skip' ? 4 : 1; $('guideSkip').style.display = ''; guideTo(G.s.flags.guide); });   // v87: the hello's own buttons
+$('guide').addEventListener('click', e => { if (e.target.closest('button[data-a="spiritok"]')) { $('guide').classList.remove('on'); $('guideSkip').style.display = ''; return; }   // v97 (round ten note 19): the Wood spirit's Thank you lives in this strip, not the sheet, so it was never heard
+  const b = e.target.closest('button[data-a="guide"]'); if (!b) return; G.s.flags.guide = b.dataset.id === 'skip' ? 4 : 1; $('guideSkip').style.display = ''; guideTo(G.s.flags.guide); });   // v87: the hello's own buttons
 $('bTasks').onclick = () => { hidePointer('bTasks'); if (guideStep() === 4) guideTo(9); openTasks(); }; $('bMagic').onclick = openMagic; $('bJournal').onclick = () => { DPAGE = 0; openJournal(); };
 G.onChange((kind, data) => { if (kind === 'green') showSprig(performance.now() - SPRIG.t < 5000 ? Math.min(SPRIG.from, data) : data); });   // v87: a burst of green (a harvest, coming back after a while) shows all its new leaves
 G.onChange((kind, data) => { if (kind === 'spell' && (data === 'rain' || data === 'cloud')) startShower(8, 90); renderInv(kind === 'inv' && typeof data === 'string' ? data : null); renderHud(); if (kind === 'task' && data && data.done) { if (data.give) { const g = gnomes.find(g => g.who === data.who); if (g && g.screen && !g.inside) float(Object.entries(data.give).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(' '), g.screen.x, g.screen.y - g.screen.h * 0.6); else toast(`${C.names[data.who]} brought in ${Object.entries(data.give).map(([k, n]) => `${n} ${C.resources[k].name}`).join(' and ')}.`); } else toast('Finished: ' + lcName(G.taskDef(data.id).name) + '.'); } if (kind === 'event') toast(data.text); if (kind === 'movein') toast(data.note);
