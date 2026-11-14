@@ -38,7 +38,7 @@ _Last updated: 2026-11-14 (v98 live). Keep this file short: one page of where we
 2. Next art day: the stand-ins in section 4, plus anything round ten asks for.
 3. Held until Bryce asks: month-two builds 2 to 7 (`docs/MONTH-TWO.md`), then a long robot run.
 
-**Garden patch layout (decided 2026-11-14, `docs/GARDEN-LAYOUT.md`):** pond in the middle, filled by rain in the hollow left by the cleared rubbish heap; a second rectangle bed by the yard; mouse house far corner, rabbit corner at the far end. Build it with the round-ten build. Art day: repaint the busy final "moss" ground on every patch and the home yard, drop the orange pine-needle mats. No fixed game length any more: plan without day numbers.
+**Garden patch layout (decided 2026-11-14, `docs/GARDEN-LAYOUT.md`):** large pond in the middle (about three times today's), filled by rain in the hollow left by the cleared rubbish heap; a second rectangle bed by the yard; mouse house far corner, rabbit corner at the far end. Build it with the round-ten build. Art day: repaint the busy final "moss" ground on every patch and the home yard, drop the orange pine-needle mats. No fixed game length any more: plan without day numbers.
 
 **Waiting on Bryce:** game length / Mabel timing (card open in the notes thread); is the big spring stump now too big (one number, `KIT_GROW`); stump and spring look rethink (round 9 no. 6); should Mabel help a job a day while camping.
 

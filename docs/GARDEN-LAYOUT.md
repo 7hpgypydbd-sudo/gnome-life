@@ -49,6 +49,9 @@ They are messy for the same few reasons, so one tidy-up fixes most of them:
 
 - 2026-11-14: the pond comes from the HOLLOW LEFT BY THE RUBBISH HEAP. The heap is piled in the middle, where the pond goes. Once the gnomes clear it, a dip is left; the player's Call soft rain spell fills it; the gnomes line it with stones (and the stone frog and willow seat follow). The old "fed by a trickle from the spring" wording goes.
 
+- 2026-11-14: pond size LARGE: about 420 world px wide (today's painted pond slot is 146), centred about 0.52, 0.56 on the patch, a ring of stepping stones round it, willow seat on the left facing it, stone frog on the far rim. The final picture is `6c-pond-large-whole-patch.jpg`. `6-pond-sizes.jpg` compares the sizes.
+
 ## Still to settle at build time
 
+- Check that the bigger pond painting still looks crisp at 420 px (the source is 520 px wide, so it should); repaint only if it looks soft.
 - How this joins Wake the worms (note 22) and the first green on this patch (notes 31, 39): suggested order is clear the heap, Wake the worms, grass creeps in, rain fills the hollow, garden opens.
