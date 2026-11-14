@@ -48,7 +48,7 @@ _Last updated: 2026-11-15 (v98 live; v99 built and waiting for Bryce's OK). Keep
 ## 4. Stand-ins still in the game (2026-11-15, after v99)
 
 Month one: none known. `make-bed2` has no slot painting on purpose (the bed uses `seedbed-rect`; its fence rails and crop rows are drawn in code).
-Later: `plot-ruts-filled`, `plot-cleared`, `vis-rabbit`, `bld-juniper`, `make-mousedoor`, `make-owlbox`, `gift-lyrebird`. Painted but not placed: frogmouth, owl on a stake, bucket, carrot with legs.
+Later: none (`make-mousedoor` is empty on purpose: that make is retired). Painted but not placed: frogmouth, owl on a stake, bucket, carrot with legs.
 Drawn in code on purpose: paper job flags, growing badge, glows, the green sprig.
 
 ## 5. The game in brief (Bryce's decisions)
