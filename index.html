@@ -1191,7 +1191,7 @@ function rrect(x, y, w, h, r) { r = Math.min(r, h / 2, w / 2); ctx.beginPath(); 
 const TAGFONT = '15px "IM Fell English", Georgia, serif';
 function choreTag(g) {   // the seed bed's chores and little errands get a tag too (Bryce: nothing said what Wendel was doing while he planted or watered)
   const c = g.chore; if (!c) return null; const crop = (PICKING && PICKING.crop) || G.plot().crop, cn = crop ? C.crops[crop].name.replace(/^a /, 'the ') : 'the bed';
-  const name = { sow: `sowing ${cn}`, water: 'watering the bed', pick: `picking ${cn}`, help: 'lending a hand', basket: 'taking the basket over', water2: 'watering the other half' }[c.kind]; if (!name) return null;
+  const name = { sow: `sowing ${cn}`, water: 'watering the bed', pick: `picking ${cn}`, help: 'lending a hand', basket: 'taking the basket over', water2: 'watering the other half', sow2: 'sowing the new bed', wat2: 'watering the new bed', pick2: 'picking the new bed' }[c.kind]; if (!name) return null;
   return { def: { short: name }, prog: g.choreProg() };
 }
 function drawBedTag(now) {   // build 3 (note 26): a small tag over the seed bed while something grows: what, how far on, how long to go
@@ -3813,7 +3813,7 @@ function makeItems(items, now) {
   const garden = G.gardenOpen();
   for (const d of C.tasks) {
     if (!d.make || d.season || d.retired || (d.make !== 'yard' && !G.patchOpen(d.make))) continue;
-    const a = taskProg(d.id); if (a <= 0 || d.id === 'barrow') continue;   // the wheelbarrow is a prop already
+    const a = taskProg(d.id); if (a <= 0 || d.id === 'barrow' || d.id === 'bed2') continue;   // the wheelbarrow is a prop already; the second bed draws itself (bed2Items)
     const op = d.id === 'swing' && a >= 1 && oakPic(); if (op && !op[0].endsWith('-plain')) continue;   // the bigger oak paintings have the swing in them
     const [hx, hy] = makeAt(d);
     if (MAKE_PARTS[d.id] && !art('make-' + d.id)) { for (const [gx, gy, k, h] of MAKE_PARTS[d.id]()) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); ctx.save(); ctx.globalAlpha = a; shadow(x, y, h * 0.3, h * 0.08); kitPiece(k, x, y, h); ctx.restore(); } }); continue; }
@@ -4115,6 +4115,55 @@ function healPainted(x, y, q) {
   const w = h * im.width / im.height; if (q.draw !== 'heron') shadow(x, y, w * 0.32, w * 0.09);
   cropPic(k, x, y, h, !!q.flip, 0.92); if (front) cropPic(front, x, y + 1, h < 30 ? 22 : 34, false, 0.92);
   return true;
+}
+// ---------- the second bed (v99, round ten notes 34, 35; garden plan: a rectangle by the yard, woven fence at the back, pebbles in front) ----------
+// A stand-in drawn in code until the "seedbed-rect" painting lands. Its crops use the same little plant paintings as the first bed.
+let BEDSEL = 'seedbed', PICKING2 = null;
+const BED2 = { tile: '0,1', g: [0.76, 0.20], lu: 0.30, lv: 0.15 };
+function bed2Pt(u, v) { return glob(BED2.tile, BED2.g[0] + (u - 0.5) * BED2.lu, BED2.g[1] + (v - 0.5) * BED2.lv); }   // u, v 0..1 across the bed -> home grid
+function bed2Shown() { return gardenOpen() ? taskProg('bed2') : 0; }
+function bed2Chore() { return gnomes.find(g => g.chore && /^(sow2|wat2|pick2)$/.test(g.chore.kind)) || null; }
+function startBed2Chore(g, kind, onDone) {
+  const at = (u, act, carry, secs) => { const [x, y] = bed2Pt(u, 1.3); return [x, y, act, carry, secs, bed2Pt(u, 0.5)]; };
+  const src = G.done('rainbarrel') ? [...SPOTS.barrel, 'pickup', false, 2, BARREL_AT()] : [SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 2.5, SPRING.at];
+  const can = g.who === 'him' ? 'can' : false, basket = g.who === 'her';
+  const steps = kind === 'sow2' ? [0.12, 0.38, 0.62, 0.88].map(u => at(u, 'putdown', false, 2.5)) : kind === 'wat2' ? [src, at(0.25, 'water', can, 3.5), at(0.75, 'water', false, 3.5)]
+    : [at(0.15, 'gather', false, 2.5), at(0.5, 'gather', false, 2.5), at(0.85, 'gather', false, 2.5), [SPOTS.door[0] + 0.03, SPOTS.door[1] + 0.04, 'putdown', basket, 2, [0.30, 0.28]]];
+  g.startChore(kind, steps, onDone);
+}
+function bed2Wants() { if (bed2Shown() < 1 || bed2Chore() || !choreGnome('her')) return false; return G.onBed('bed2', () => { const st = G.plot().stage; return st === 'ready' || (!st && G.canSow()) || (st === 'planted' && G.waterReady()); }); }
+function bed2Items(items, now) {
+  const a = bed2Shown(); if (a <= 0) return; const [cgx, cgy] = bed2Pt(0.5, 0.5), W = (u, v) => toWorld(...bed2Pt(u, v));
+  items.push({ d: depthOf(cgx, cgy) - 0.2, draw: () => {
+    ctx.save(); ctx.globalAlpha *= a;
+    const im = art('seedbed-rect'); if (im) { const [x, y] = W(0.5, 0.5), w = 300, h = w * im.height / im.width; ctx.drawImage(im, x - w / 2, y - h * 0.62, w, h); }
+    else {
+      const poly = (pts, fill, stroke) => { ctx.beginPath(); pts.forEach(([u, v], i) => { const [x, y] = W(u, v); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); }); ctx.closePath(); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); } };
+      poly([[-0.04, -0.08], [1.04, -0.08], [1.04, 1.08], [-0.04, 1.08]], 'rgba(96,72,48,0.35)');
+      poly([[0, 0], [1, 0], [1, 1], [0, 1]], '#5a4028', 'rgba(42,28,16,0.55)');
+      ctx.strokeStyle = 'rgba(40,26,14,0.45)'; ctx.lineWidth = 2.5; for (const v of [0.25, 0.5, 0.75]) { const [x0, y0] = W(0.03, v + 0.11), [x1, y1] = W(0.97, v + 0.11); ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); }   // the furrows between the rows
+      // the woven fence along the back two sides, made from the old fence's good posts
+      const rail = (u0, v0, u1, v1, n) => { const pts = []; for (let i = 0; i <= n; i++) pts.push(W(u0 + (u1 - u0) * i / n, v0 + (v1 - v0) * i / n));
+        ctx.lineCap = 'round'; for (const [hh, col, lw] of [[24, INK, 4.6], [24, '#8a6a44', 2.6], [15, INK, 4.6], [15, '#9a7a50', 2.6], [7, INK, 4.6], [7, '#8a6a44', 2.6]]) { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath(); pts.forEach(([x, y], i) => { const yy = y - hh - (i % 2 ? 2 : -2) * (hh === 15 ? -1 : 1); if (i) ctx.lineTo(x, yy); else ctx.moveTo(x, yy); }); ctx.stroke(); }
+        for (const [x, y] of pts) post(x, y, 32, 4, '#7a5a3a'); };
+      rail(-0.03, 1.06, -0.03, -0.1, 5); rail(-0.03, -0.1, 1.04, -0.1, 9);
+    }
+    // the crop
+    const ch = bed2Chore(), pick = ch && ch.chore.kind === 'pick2' && PICKING2, sow = ch && ch.chore.kind === 'sow2';
+    const p = pick ? { stage: 'ready', crop: PICKING2.crop } : G.s.plots.bed2, prog = p.stage ? cropProg(p) : 0, look = p.crop && C.crops[p.crop] ? C.crops[p.crop].look : 'carrot';
+    const cp = pick ? ch.choreProg(3) : sow ? ch.choreProg() : 0, gone = u => pick ? u < cp : sow ? u > cp : false;
+    if (p.stage) {
+      if (look === 'pumpkin' && p.stage !== 'planted') { const [x, y] = W(0.5, 0.55); if (!(pick && cp > 0.6)) { if (prog < 0.12) seedling(x, y, prog / 0.12, 0.3, now); else drawPumpkin(x, y, 96, 34, prog, now); } }
+      else for (const v of [0.25, 0.5, 0.75]) for (let i = 0; i < 7; i++) { const u = 0.08 + i * 0.14, ph = rnd(i * 7 + v * 40 + 3); if (gone(u)) continue; const [sx, sy] = W(u, v);
+        if (p.stage === 'planted') { if (look === 'pumpkin') continue; blob(sx, sy, 3.5, 2, '#3e2c18'); blob(sx - 1, sy - 0.6, 1.4, 0.7, 'rgba(160,130,90,0.7)'); continue; }
+        const k = Math.min(1, prog * (0.8 + 0.4 * ph)); if (k < 0.3 && !art(`crop-${look}-1`)) { seedling(sx, sy, k / 0.3 * 0.7, ph, now); continue; }
+        if (paintedPlant(look, sx, sy, k, ph)) continue; const kk = (k - 0.3) / 0.7;
+        if (look === 'carrot') carrotPlant(sx, sy, kk, ph, now); else if (look === 'lettuce') lettucePlant(sx, sy, kk, ph); else beanPlant(sx, sy, kk, ph, now); }
+      if (p.stage === 'planted' && look === 'pumpkin') { const [x, y] = W(0.5, 0.55); blob(x, y, 13, 5.5, '#3e2c18'); }
+      if (p.stage === 'ready' && !pick) { const ph = ((now / 1000) % 2.8) / 2.8, [x, y] = W(0.6, 0.5); if (ph < 0.22) twinkle(x, y - 30, Math.sin(ph / 0.22 * Math.PI)); }
+    }
+    if (!art('seedbed-rect')) for (let i = 0; i <= 12; i++) { const [x, y] = W(i / 12, 1.1); pebble(x, y, 3.2 + rnd(i + 60) * 1.4, i % 2 ? '#b9b2a4' : '#a39a8a', i); const [x2, y2] = W(1.05, i / 12); if (i % 2 === 0) pebble(x2, y2, 3.2 + rnd(i + 80) * 1.4, i % 3 ? '#b9b2a4' : '#a39a8a', i + 20); }   // low pebbles along the front, so the crops show
+    ctx.restore(); } });
 }
 function healItems(items, now) {   // the pieces on every healing tile, depth-sorted with everything else
   const vb = viewBox(); vb.x0 -= 160; vb.x1 += 160; vb.y0 -= 260; vb.y1 += 80;
@@ -4511,7 +4560,7 @@ function frame(now) {
   farmItems(items, now);
   if (PLATY.on) { const [gx, gy] = healLocal(PLATY.on.k, { c: [PLATY.on.u, -0.45] }); items.push({ d: depthOf(...glob(PLATY.on.k, gx, gy)) - 0.2, draw: () => drawPlatypus(now) }); }
   spiritItem(items, now);
-  makeItems(items, now);
+  makeItems(items, now); bed2Items(items, now);
   herbItems(items);
   compostItems(items);
   animalItems(items, now);
@@ -4652,6 +4701,7 @@ function tapAt(cx, cy, wx, wy) {
   for (const o of [...G.s.offers].reverse()) if (o.keep && hit(o.screen, wx, wy)) { G.gather(o.id); return openKeepsake(o.keep, true); }   // an animal's thank-you
   if (BABY_SEED.screen && hit(BABY_SEED.screen, wx, wy)) { const [x, y] = [BABY_SEED.screen.x, BABY_SEED.screen.y]; float('♥', x, y - 20); return toast(C.animals.babyTap); }
   for (const o of [...G.s.offers].reverse()) if (hit(o.screen, wx, wy)) { G.gather(o.id); float(`+1 ${C.resources[o.kind].name}`, o.screen.x, o.screen.y); driftHome(o); return; }
+  if (bed2Shown() >= 1) { const [bx, by] = toWorld(...bed2Pt(0.5, 0.5)); if (Math.hypot((wx - bx) / 125, (wy - by + 6) / 62) < 1 && !stakeHit(cx, cy)) return openSeedbed('bed2'); }   // v99: the second bed
   { const s = stakeHit(cx, cy); if (s) { PL.add(`tapped a job flag: ${s.ids.join(', ') || (s.patch ? 'spell on ' + s.patch : 'seed bed')}`); return openStake(s); } }   // v90: a job's paper flag
   for (const fd of G.s.village.finds) if (hit(fd.screen, wx, wy)) { const st = G.questStep(fd.folk), f = G.folkDef(fd.folk); G.found(fd.id); float('✓ found', fd.screen.x, fd.screen.y); toast(`You found ${st.find.name}.`); return openFolk(f.id); }
   for (const p of [...folkOnLand].reverse()) if (hit(p.screen, wx, wy)) return G.folkState(p.f.id) ? openFolk(p.f.id) : openTraveller();
@@ -4731,11 +4781,12 @@ function stakesNow() {   // recomputed twice a second at most
       const p = stakeSpot(v.def); if (p) add(p[0], p[1], { ids: [v.def.id], story: v.story, can: v.can });
     }
     const sb = PROPS.find(q => q.name === 'seedbed'); if (sb && propAlpha(sb) >= 1 && wantsTap(sb)) { const [x, y] = toWorld(sb.gx, sb.gy); add(x + 52, y + 4, { bed: true, can: true }); }   // on the near edge of the bed
+    if (bed2Wants()) { const [x, y] = toWorld(...bed2Pt(0.9, 1.2)); add(x, y, { bed2: true, can: true }); }
     for (const sp of ['worms', 'rain']) if (G.spellTaught(sp)) for (const k of G.castSpots(sp)) { const [x, y] = toWorld(0.5, 0.52, k); add(x, y, { patch: k, can: G.canCast(sp).ok }); }   // v99: a patch waiting for your spell
   }
   return STAKES = out.slice(0, 8);
 }
-function stakeKey(s) { return s.ids.join(',') || (s.patch ? 'patch:' + s.patch : 'bed'); }
+function stakeKey(s) { return s.ids.join(',') || (s.patch ? 'patch:' + s.patch : s.bed2 ? 'bed2' : 'bed'); }
 function stakeScreen(s) { return [(s.x - cam.x) * cam.z + W / 2, (s.y - cam.y) * cam.z + H / 2]; }
 function drawStakes(now) {   // screen space, so a flag stays finger-sized however far out you are
   if (roomOn) return; const placed = [];
@@ -4759,6 +4810,7 @@ function drawStakes(now) {   // screen space, so a flag stays finger-sized howev
 function stakeHit(cx, cy) { let best = null, bd = 38; for (const s of STAKES) if (s.scr) { const d = Math.hypot(cx - s.scr.x - 10, cy - s.scr.y); if (d < bd) { bd = d; best = s; } } return best; }
 function openStake(s) {
   if (guideStep() === 4) guideTo(9);
+  if (s.bed2 && !s.ids.length) return openSeedbed('bed2');
   if (s.patch && !s.ids.length) return openPatch(s.patch);
   if (s.bed && !s.ids.length) return openSeedbed();
   if (s.ids.length === 1) { const d = G.taskDef(s.ids[0]); if (d && d.healTile) return openPatch(d.healTile); }
@@ -5005,6 +5057,12 @@ sheet.addEventListener('click', e => {
   if (a === 'showspirit') return showSpirit();
   if (a === 'lookspring') { closeSheet(); const [x, y] = toWorld(SPRING.at[0], SPRING.at[1]); ALLDONE.ease = { t: 0, z0: cam.z, x0: cam.x, y0: cam.y, z1: clampZ(Math.max(cam.z, 1.6)), x1: x, y1: y }; return; }
   if (a === 'room') return openRoom();
+  const two = sheetKind === 'seedbed' && BEDSEL === 'bed2';   // v99: the second bed's buttons
+  if (two && a === 'plant') { const g = choreGnome('her'); if (g && G.onBed('bed2', () => G.plant(id, g.who))) { startBed2Chore(g, 'sow2'); toast(`${C.names[g.who]} goes to sow the ${C.crops[id].name.replace(/^a /, '')} in the new bed.`); return closeSheet(); } return; }
+  if (two && a === 'water') { const g = choreGnome('him'); if (g && G.onBed('bed2', () => G.water(g.who))) { startBed2Chore(g, 'wat2'); toast(`${C.names[g.who]} fetches the watering can.`); return closeSheet(); } return; }
+  if (two && a === 'harvest') { const g = choreGnome('her'), pl = G.s.plots.bed2, was = { crop: pl.crop }; const got = g && G.onBed('bed2', () => G.harvest(g.who));
+    if (got) { PICKING2 = was; startBed2Chore(g, 'pick2', () => { PICKING2 = null; const [x, y] = toWorld(...bed2Pt(0.5, 0.5)); float(Object.entries(got).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(' '), x, y); }); toast(`${C.names[g.who]} takes the basket to the new bed.`); return closeSheet(); } return; }
+  if (two && a === 'cast') { const ok = G.onBed('bed2', () => G.cast(id)); if (ok) { toast(C.spells[id].name + '.'); closeSheet(); const [x, y] = toWorld(...bed2Pt(0.5, 0.5)); sparkleAt(x, y - 10); } return; }
   if (a === 'plant') { const g = choreGnome('her'); if (g && G.plant(id, g.who)) { startBedChore(g, 'sow'); toast(`${C.names[g.who]} goes to sow the ${C.crops[id].name.replace(/^a /, '')}.`); return closeSheet(); } }
   // watering: the other one, if free, waters the other half with a second can (Bryce: Hazel had nothing to do while Wendel watered)
   if (a === 'water') { const g = choreGnome('him'); if (g && G.water(g.who)) { startBedChore(g, 'water'); const o = gnomes.find(x => x !== g && !x.chore && !x.dancing && !x.errand && !G.running().some(r => r.def.who === x.who)); if (o) startBedChore(o, 'water2'); toast(`${C.names[g.who]} fetches the watering can.`); return closeSheet(); } }
@@ -5104,11 +5162,11 @@ CONCERNS.hook({   // the concern button (v84, concerns.js): which window is open
   logText: playLogText, toast,
 });
 function testPeek(x, y) { if (window.SANDBOX && x < 200 && y < 80 + 20) { openTest(); return true; } return false; }   // Bryce: one tap on the title opens the test panel (five was a chore)
-function refreshSheet() { if (sheetKind === 'test') return; if (sheetKind && sheetKind.startsWith('folk:')) openFolk(sheetKind.slice(5)); else if (sheetKind === 'traveller') G.s.village.traveller ? openTraveller() : closeSheet(); else if (sheetKind === 'seedbed') openSeedbed(); else if (sheetKind === 'barrel') openBarrel(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); else if (sheetKind === 'fest') openFestGreen(); else if (sheetKind && sheetKind.startsWith('patch:')) openPatch(sheetKind.slice(6)); else if (sheetKind && sheetKind.startsWith('card:')) { if (!openJobCard(sheetKind.slice(5).split(','))) closeSheet(); } else if (sheetKind && sheetKind.startsWith('farm:')) openFarm(sheetKind.slice(5)); renderInv(); renderHud(); }
+function refreshSheet() { if (sheetKind === 'test') return; if (sheetKind && sheetKind.startsWith('folk:')) openFolk(sheetKind.slice(5)); else if (sheetKind === 'traveller') G.s.village.traveller ? openTraveller() : closeSheet(); else if (sheetKind === 'seedbed') openSeedbed(BEDSEL); else if (sheetKind === 'barrel') openBarrel(); else if (sheetKind === 'pack') openPack(); else if (sheetKind && sheetKind.startsWith('tasks')) openTasks(sheetKind.slice(6)); else if (sheetKind === 'magic') openMagic(); else if (sheetKind === 'journal') openJournal(); else if (sheetKind === 'feeder') openFeeder(); else if (sheetKind === 'fest') openFestGreen(); else if (sheetKind && sheetKind.startsWith('patch:')) openPatch(sheetKind.slice(6)); else if (sheetKind && sheetKind.startsWith('card:')) { if (!openJobCard(sheetKind.slice(5).split(','))) closeSheet(); } else if (sheetKind && sheetKind.startsWith('farm:')) openFarm(sheetKind.slice(5)); renderInv(); renderHud(); }
 function seedbedBody(inJobs) {   // what the seed bed wants now (shared by the seed bed's own card and the Jobs list); null = nothing to say
   const p = G.plot(), c = C.crops[p.crop]; let body = '';
-  const busy = bedChore(), sow = choreGnome('her'), wat = choreGnome('him'), nm = g => C.names[g.who];
-  if (busy) return `<p>${nm(busy)} is ${{ sow: 'sowing', water: 'watering', pick: 'picking' }[busy.chore.kind]} the bed now.</p>`;
+  const two = G.bedSel === 'bed2', busy = two ? bed2Chore() : bedChore(), sow = choreGnome('her'), wat = choreGnome('him'), nm = g => C.names[g.who];
+  if (busy) return `<p>${nm(busy)} is ${{ sow: 'sowing', water: 'watering', pick: 'picking', sow2: 'sowing', wat2: 'watering', pick2: 'picking' }[busy.chore.kind]} the bed now.</p>`;
   if (!sow && p.stage !== 'growing') return `<p>Wendel and Hazel are ${routineFor(dayPhase().h) === 'fest' ? 'dancing on the green' : 'asleep'}. The seed bed can wait till morning.</p>`;
   const stageName = pr => pr < 0.25 ? 'Just up' : pr < 0.6 ? 'Leafing out' : pr < 0.9 ? 'Filling out' : 'Nearly there';
   if (!p.stage) {
@@ -5116,7 +5174,7 @@ function seedbedBody(inJobs) {   // what the seed bed wants now (shared by the s
     for (const [id, k] of Object.entries(C.crops)) {
       const open = G.cropOpen(id), cost = G.cropCost(id), first = k.free && !Object.keys(cost).length;
       if (!open && (!k.lock || inJobs)) continue;   // lettuces just turn up after the first picking
-      body += `<div class="row"><div class="t"><b>${cap(k.name.replace(/^a /, ''))}</b><span>${open ? `${first ? 'Wendel\'s special seed, free' : `Costs ${costHtml(cost)}`} · ready ${"about " + hours(G.trim(!p.grown && k.first ? k.first : k.grow), true)} after watering · gives ${costHtml(k.harvest)}` : k.lock}</span>${inJobs ? '' : `<span style="display:block;font-style:italic">${k.blurb}</span>`}</div>${open ? `<button class="act" data-a="plant" data-id="${id}" ${G.can(cost) ? '' : 'disabled'}>Sow</button>` : ''}</div>`;
+      body += `<div class="row"><div class="t"><b>${cap(k.name.replace(/^a /, ''))}</b><span>${open ? `${first ? 'Wendel\'s special seed, free' : `Costs ${costHtml(cost)}`} · ready ${"about " + hours(G.trim(G.firstCrop() && k.first ? k.first : k.grow), true)} after watering · gives ${costHtml(k.harvest)} and 🌿 ${k.green} green` : k.lock}</span>${inJobs ? '' : `<span style="display:block;font-style:italic">${k.blurb}</span>`}</div>${open ? `<button class="act" data-a="plant" data-id="${id}" ${G.can(cost) ? '' : 'disabled'}>Sow</button>` : ''}</div>`;
     }
     if (!G.canSow()) body += `<p>No seeds in the tin. Look for a seed lying about the land and tap it (one turns up soon when the tin is empty); every picking gives some back.</p>`;
   }
@@ -5132,8 +5190,9 @@ function openPot() {   // note 2: tapping the little oak's pot says what it is (
     <p class="lore">${C.potLine}</p><p class="meta">${v.state === 'running' ? 'Hazel is planting it out now.' : job ? 'It is ready to go in the ground. The job is in Jobs.' : 'Hazel will plant it out when the time is right. The story will say when.'}</p></div>
     <p style="text-align:center">${job ? `<button class="act" data-a="jobs" data-id="sapling">See the job</button> ` : ''}<button class="act quiet" data-a="close">Lovely</button></p>`);
 }
-function openSeedbed() {
-  openSheet('seedbed', `<h2>The seed bed<small>${G.plot().grown} grown so far</small></h2>${seedbedBody(false)}${landNote()}`);
+function openSeedbed(id) {   // v99: the first bed, or the second one on the garden patch ('bed2')
+  BEDSEL = id === 'bed2' ? 'bed2' : 'seedbed';
+  G.onBed(BEDSEL, () => openSheet('seedbed', `<h2>${BEDSEL === 'bed2' ? 'The new bed' : 'The seed bed'}<small>${G.plot().grown} grown so far</small></h2>${seedbedBody(false)}${BEDSEL === 'bed2' ? '<p>What grows in this bed greens the garden.</p>' : landNote()}`));
 }
 function landNote() {   // why growing things matters: every harvest (and most jobs) wakes the land a little, towards the next stage
   const g = G.s.tiles['0,0'].green, st = G.landStage(), next = C.landStages.find(s => s.at > g);

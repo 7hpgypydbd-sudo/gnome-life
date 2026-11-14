@@ -74,14 +74,15 @@ window.CONTENT = {
   // (into the pantry, plus seed back); green: how much life it gives back to the land; needs: when it can be sown
   // (flag:x, a finished job id, or grown:n = after n harvests). free: the first sowing costs nothing (Wendel's one pumpkin seed).
   // look: how index.html draws it (drawCrop). Order here is the order in the seed bed menu.
+  // green (v99, round ten note 30): about one for every hour the crop takes to grow (after the trim: lettuces 1h20, carrots 2h, beans 4h, the pumpkin 4h and it fills the bed)
   crops: {
-    carrot:  { name:'carrots', look:'carrot', plant:{ seed:1 }, water:1, grow:180, first:15, harvest:{ carrot:3, seed:1 }, green:1,
+    carrot:  { name:'carrots', look:'carrot', plant:{ seed:1 }, water:1, grow:180, first:15, harvest:{ carrot:3, seed:1 }, green:2,
                blurb:'Feathery tops and orange shoulders. The first thing from the tin, and the quickest to trust.' },
     lettuce: { name:'lettuces', look:'lettuce', plant:{ seed:1 }, water:1, grow:120, harvest:{ lettuce:2, seed:1 }, green:1, needs:['flag:firstpick'],
                blurb:'A pinch of lettuce seed. Up fast, soft green rosettes, and the rabbit has opinions about them.' },
-    bean:    { name:'beans', look:'bean', plant:{ seed:2 }, water:1, grow:480, harvest:{ bean:4, seed:1 }, green:2, needs:['beanpoles'],
+    bean:    { name:'beans', look:'bean', plant:{ seed:2 }, water:1, grow:480, harvest:{ bean:4, seed:1 }, green:4, needs:['beanpoles'],
                lock:'Needs the bean poles first', blurb:'They climb the poles all day and hang their pods by evening. Pick them young.' },
-    pumpkin: { name:'a pumpkin', look:'pumpkin', plant:{ seed:2 }, free:'pumpkin', water:2, grow:1440, harvest:{ pumpkin:1, seed:2 }, green:3, needs:['grown:3'],
+    pumpkin: { name:'a pumpkin', look:'pumpkin', plant:{ seed:2 }, free:'pumpkin', water:2, grow:1440, harvest:{ pumpkin:1, seed:2 }, green:5, needs:['grown:3'],
                lock:'After three harvests', once:true, blurb:'Wendel\'s one enormous seed, saved "for something special". A whole day and night to swell, and it takes the whole bed.' },
   },
 
@@ -247,6 +248,8 @@ window.CONTENT = {
     { id:'sign', make:'yard', stage:'wood', at:[0.90, 0.55], name:'Carve a welcome sign', short:'carving the sign', who:'either', act:'build', cost:{ twig:6, feather:2, berry:2, stone:2 }, mins:15, green:0,
       blurb:'"All Creatures Welcome. Please Wipe Paws." The second line took three tries.' },
 
+    { id:'bed2', make:'garden', stage:'green', at:[0.76, 0.20], name:'Dig a second bed', short:'digging the new bed', who:'either', act:'dig', cost:{ twig:2 }, mins:25, green:0,
+      blurb:'A long bed where the spoil was spread, fenced along the back with the good posts from the old fence. Two beds means two crops growing at once.', doneNote:'The new bed. Tap it to sow a second crop.' },
     { id:'gstones', make:'garden', stage:'green', at:[0.42, 0.19], name:'Stepping stones into the garden', short:'laying stepping stones', who:'either', act:'dig', cost:{ stone:5 }, mins:15, green:0,
       blurb:'Flat stones, a gnome\'s stride apart. Wendel\'s stride.' },
     { id:'wicket', retired:true, make:'garden', stage:'green', at:[0.46, 0.02], name:'A little wicket gate', short:'hanging the gate', who:'either', act:'build', cost:{ twig:5 }, mins:15, green:0,

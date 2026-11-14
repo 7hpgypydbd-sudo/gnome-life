@@ -29,7 +29,7 @@ function fresh() {
     days: [dayKey(t)],                       // distinct calendar days visited (drives magic)
     inv: { twig: 6, moss: 4, stone: 4, acorn: 1, seed: 2, water: 2, light: 0 },   // enough to start a few jobs straight away
     tiles: { '0,0': { state: 'home', green: 0 } },   // "tx,ty" -> { state: home|revealed|regrowing|green, green, task }
-    plots: { seedbed: { crop: null, stage: null, readyAt: 0, grown: 0 } },
+    plots: { seedbed: { crop: null, stage: null, readyAt: 0, grown: 0 }, bed2: { crop: null, stage: null, readyAt: 0, grown: 0 } },
     tasks: {},                               // id -> { startedAt, endsAt, done }
     offers: [],                              // things lying on the land: { id, kind, tile, gx, gy }
     journal: {},                             // visitorId -> { first, count, fed: [dayKeys], helped }
@@ -110,6 +110,7 @@ const G = {
     if (this.s.plots.seedbed.grown) this.s.flags.firstpick = true;   // fenced before the rabbit's raid existed
     if (this.s.plots.seedbed.crop === 'sprout') this.s.plots.seedbed.crop = 'carrot';   // the old generic sprouts were always carrots at heart
     for (const [k, tl] of Object.entries(this.s.tiles)) if (k !== '0,0' && !tl.kind && tl.state === 'revealed') tl.kind = this.tileKind(k);
+    if (!this.s.plots.bed2) this.s.plots.bed2 = { crop: null, stage: null, readyAt: 0, grown: 0 };
     if (!this.s.flags.heal99) { this.s.flags.heal99 = true; this.healRemap99(); }   // bare tiles from before the healing chains get theirs; green ones stay as they were
     this.pantryTrim('her', true);   // older gardens with heaps of veg: the spare has quietly gone round the valley
     this.away = this.catchUp();
@@ -161,7 +162,7 @@ const G = {
     // crop
     const p = s.plots.seedbed;
     if (s.flags.sown1 && !s.tasks.bedwater && p.stage && p.stage !== 'planted') s.tasks.bedwater = { startedAt: t, endsAt: t, done: true };   // watered some other way (the rain spell): the first watering counts as done
-    if (p.stage === 'growing' && p.readyAt <= t) { p.stage = 'ready'; this.note(`${cap(this.cropName(p.crop))} ${p.crop === 'pumpkin' ? 'is' : 'are'} ready to pick.`); this.emit('plot', p); }
+    for (const q of Object.values(s.plots)) if (q.stage === 'growing' && q.readyAt <= t) { q.stage = 'ready'; this.note(`${cap(this.cropName(q.crop))} ${q.crop === 'pumpkin' ? 'is' : 'are'} ready to pick.`); this.emit('plot', q); }
     // tasks
     for (const [id, tk] of Object.entries(s.tasks)) {
       if (tk.done || tk.endsAt > t) continue;
@@ -281,14 +282,19 @@ const G = {
   tinFull() { this.shelfTrim(); },
 
   // ---- the seed bed ----
-  plot() { return this.s.plots.seedbed; },
+  // v99 (round ten notes 34, 35): a second bed on the garden patch (job bed2), so two crops can grow at once. Everything that
+  // works on "the bed" works on the first one unless it is called inside onBed('bed2', ...).
+  plot(id) { return this.s.plots[id || this.bedSel || 'seedbed']; },
+  onBed(id, fn) { const was = this.bedSel; this.bedSel = id === 'bed2' ? 'bed2' : null; try { return fn(); } finally { this.bedSel = was; } },
+  beds() { return this.done('bed2') ? ['seedbed', 'bed2'] : ['seedbed']; },
+  bedName(id) { return (id || this.bedSel) === 'bed2' ? 'the new bed' : 'the bed'; },
   cropUp() { const p = this.plot(); return p.stage === 'growing' && now() - (p.wateredAt || 0) > 0.08 * Math.max(1, p.readyAt - (p.wateredAt || 0)); },   // v99 (note 44): almost from the start (was a third grown, so a slow crop offered no weeding for an hour or more)
   cropName(id) { return C.crops[id] ? C.crops[id].name.replace(/^a /, 'the ') : 'the crop'; },
   cropOpen(id) {   // may this crop be sown yet? (needs: flag:x, grown:n harvests, or a finished job)
     const c = C.crops[id], p = this.plot(), F = this.s.flags;
     if (!F.firstpick && id !== 'carrot') return false;   // the very first sowing is carrots (story pages 1.4 and 2.1)
     if (c.once && F['sown:' + id] && !(this.s.festival.stage === 'done' && (F[id + 'Year'] || 0) < new Date(now()).getFullYear())) return false;   // Wendel's pumpkin: one until the festival, then one a year
-    return (c.needs || []).every(n => n.startsWith('flag:') ? !!this.s.flags[n.slice(5)] : n.startsWith('grown:') ? p.grown >= +n.slice(6) : this.done(n));
+    return (c.needs || []).every(n => n.startsWith('flag:') ? !!this.s.flags[n.slice(5)] : n.startsWith('grown:') ? this.s.plots.seedbed.grown + ((this.s.plots.bed2 || {}).grown || 0) >= +n.slice(6) : this.done(n));
   },
   canSow() { return Object.keys(C.crops).some(id => this.cropOpen(id) && this.can(this.cropCost(id))); },   // something in the tin we could sow right now
   cropCost(id) { const c = C.crops[id]; return c.free && !this.s.flags['sown:' + c.free] ? {} : c.plant; },   // Wendel's pumpkin seed is free the first time
@@ -298,7 +304,7 @@ const G = {
     const p = this.plot(), c = C.crops[cropId], cost = c && this.cropCost(cropId); if (!c || p.stage || !this.cropOpen(cropId) || !this.can(cost)) return false;
     this.pay(cost); if (c.free) this.s.flags['sown:' + c.free] = true; if (c.once) this.s.flags[cropId + 'Year'] = new Date(now()).getFullYear();
     p.crop = cropId; p.stage = 'planted'; p.plantedAt = now(); p.readyAt = 0; this.s.flags.sown1 = true;
-    this.worked(who); this.note(cropId === 'pumpkin' && !Object.keys(cost).length ? 'Wendel pressed his one enormous pumpkin seed into the middle of the bed, very solemnly. It wants water.' : `${C.names[who]} sowed ${c.name.replace(/^a /, 'a ')} across the bed. ${c.water > 1 ? 'They want a good drink.' : 'They want water.'}`);
+    this.worked(who); this.note(cropId === 'pumpkin' && !Object.keys(cost).length ? 'Wendel pressed his one enormous pumpkin seed into the middle of the bed, very solemnly. It wants water.' : `${C.names[who]} sowed ${c.name.replace(/^a /, 'a ')} across ${this.bedName()}. ${c.water > 1 ? 'They want a good drink.' : 'They want water.'}`);
     this.emit('plot', p); return true;
   },
   waterReady() { const p = this.plot(); return p.stage === 'planted' && this.done('bedwater') && this.can(this.waterCost()); },   // the bed's water button (the very first watering is the job "Water the seed bed")
@@ -306,7 +312,7 @@ const G = {
   water(who = 'him') {
     const p = this.plot(), cost = this.waterCost(); if (!this.waterReady()) return false;
     this.pay(cost); p.stage = 'growing'; p.wateredAt = now(); p.readyAt = now() + this.dur(this.growMins(p));
-    this.worked(who); this.note(`${C.names[who]} watered the bed. Now it grows.`); this.emit('plot', p); return true;
+    this.worked(who); this.note(`${C.names[who]} watered ${this.bedName()}. Now it grows.`); this.emit('plot', p); return true;
   },
   harvest(who = 'her') {   // returns what was picked (for the little float), or false
     const p = this.plot(); if (p.stage !== 'ready') return false; this.worked(who);
@@ -314,7 +320,8 @@ const G = {
     const c = C.crops[p.crop], got = Object.assign({}, c.harvest), nib = !!p.nibbled; let k0 = Object.keys(got)[0];
     if (nib && got[k0] > 1) got[k0]--;   // the rabbit had a few
     if (this.done('compost')) got.seed = (got.seed || 0) + 1;   // the compost heap makes the soil rich: one extra seed every harvest
-    this.give(got); this.addGreen(c.green); p.grown++; this.s.flags['picked:' + p.crop] = true; const spare = this.pantryTrim(who);
+    this.give(got); this.addGreen(c.green, this.bedSel === 'bed2' ? 'garden' : 'yard'); p.grown++;   // v99: the new bed's crops green the garden patch (note 34)
+     this.s.flags['picked:' + p.crop] = true; const spare = this.pantryTrim(who);
     const id = p.crop; p.crop = null; p.stage = null; p.readyAt = 0; p.nibbled = false; this.s.flags.firstpick = true;   // the first crop opens up the home jobs
     this.note(id === 'pumpkin' && !this.s.flags.pumpkin ? 'A pumpkin nearly as big as Wendel. He says it is for the festival, and will not hear otherwise. Hazel has saved every seed.'
       : `${C.names[who]} picked ${c.name.replace(/^a /, 'the ')}${nib ? ' (what the rabbit left)' : ''}. Into the pantry they go, and the ground remembers a little more of how to grow.`);
@@ -693,6 +700,7 @@ const G = {
     if (T.pond && !T.pond.done) delete T.pond;   // the old pond job, still being dug: the hollow and the rain take over
   },
 
+  bedAt(stage) { const sel = this.plot(); return sel.stage === stage ? sel : Object.values(this.s.plots).find(p => p.stage === stage) || null; },   // the bed a crop spell works on: the one being looked at, else whichever is at that stage
   // ---- magic ----
   magicLevel() { const d = this.s.days.length; let L = 1; C.magicLevels.forEach((m, i) => { if (d >= m.days) L = i + 1; }); return L; },
   magicInfo() { const L = this.magicLevel(), m = C.magicLevels[L - 1], next = C.magicLevels[L]; return { level: L, name: m.name, days: this.s.days.length, nextDays: next ? next.days : null, spells: C.story.lessons.filter(l => l.spell && !C.spells[l.spell].special && l.n in this.s.spirit.taught).map(l => l.spell) }; },   // v99 (note 37): a spell is yours when the Wood spirit has taught it, never before
@@ -702,10 +710,10 @@ const G = {
     if (sp.heal && !this.healSpellFor(sp.heal).length && !(sp.heal === 'nursery' && this.seedlingsWaiting().length)) return { ok: false, why: sp.heal === 'nursery' ? 'no seedlings are waiting to wake' : 'it helps a job that is under way: start it first' };   // special spells come with what they are for, not with days
     if (!this.can(sp.cost)) return { ok: false, why: `needs ${this.missing(sp.cost).join(', ')}` };
     if (id === 'legs' && this.s.flags.toadWalk) return { ok: false, why: 'it has already walked off' };
-    if (id === 'coax' && this.plot().stage !== 'growing') return { ok: false, why: this.plot().stage === 'planted' ? 'the bed needs watering first: nothing grows until it has had a drink' : this.plot().stage === 'ready' ? 'the bed is already ready to pick' : 'nothing is growing in the seed bed yet' };
+    if (id === 'coax' && !this.bedAt('growing')) return { ok: false, why: this.plot().stage === 'planted' ? 'the bed needs watering first: nothing grows until it has had a drink' : this.plot().stage === 'ready' ? 'the bed is already ready to pick' : 'nothing is growing in the seed bed yet' };
     if (id === 'worms') return this.castSpots('worms').length ? { ok: true } : { ok: false, why: 'it is for bare ground the gnomes have just cleared' };
     if (id === 'rain' && this.castSpots('rain').length) return { ok: true };   // a waiting hollow can always be filled
-    if (id === 'rain' && this.plot().stage !== 'planted') return { ok: false, why: 'nothing is waiting for water' };
+    if (id === 'rain' && !this.bedAt('planted')) return { ok: false, why: 'nothing is waiting for water' };
     if (C.spells[id].daily && this.s.spellsUsed[id] === dayKey(now())) return { ok: false, why: 'used today. Magic for the crops comes back each morning' };   // build 3 (Bryce): crop magic is a treat, saved up, not a button
     if (id === 'wake' && !this.running().some(r => r.def.tile || r.def.healTile)) return { ok: false, why: 'no patch is regrowing' };
     return { ok: true };
@@ -717,8 +725,8 @@ const G = {
       this.castStep(at, t); if (!this.s.tasks.pond) this.s.tasks.pond = { startedAt: t, endsAt: t, done: true };   // the pond the old job used to dig: the frog, the stone frog and the willow seat follow it
       if (bed) { p.stage = 'growing'; p.wateredAt = t; p.readyAt = t + this.dur(this.growMins(p)); this.s.spellsUsed.rain = dayKey(t); }
       this.give({ water: 2 }); this.note('Soft rain fell into the hollow until it brimmed. The garden has a pond.'); this.emit('spell', id); this.tick(); return true; }
-    if (id === 'coax') { this.plot().readyAt = t; this.note(`A warm hush over the bed, and ${this.cropName(this.plot().crop)} fill out all at once.`); }
-    if (id === 'rain') { const p = this.plot(); p.stage = 'growing'; p.readyAt = t + this.dur(this.growMins(p)); this.give({ water: 2 }); this.note('Soft rain falls on the bed and beads on the stones.'); }
+    if (id === 'coax') { const p = this.bedAt('growing'); p.readyAt = t; this.note(`A warm hush over the bed, and ${this.cropName(p.crop)} fill out all at once.`); }
+    if (id === 'rain') { for (const p of Object.values(this.s.plots)) if (p.stage === 'planted') { p.stage = 'growing'; p.wateredAt = t; p.readyAt = t + this.dur(this.growMins(p)); } this.give({ water: 2 }); this.note('Soft rain falls on the bed and beads on the stones.'); }
     if (id === 'legs') { this.s.flags.toadWalk = t; this.note('The big toadstool shivered, sprouted little root legs and walked off to the far corner of the garden.'); }
     if (C.spells[id].heal) this.healCast(id, t);
     if (id === 'wake') { for (const r of this.running()) if (r.def.tile || r.def.healTile) this.s.tasks[r.id].endsAt = t + (r.endsAt - t) / 2; this.note('The ground stirs under the mist.'); }
@@ -777,7 +785,8 @@ const G = {
     const p = this.s.plots.seedbed, c = p && p.stage === 'growing' && C.crops[p.crop];
     if (c && p.readyAt > t) { const was = !p.grown && c.first ? c.first : c.grow; p.readyAt = Math.round(t + (p.readyAt - t) * this.trim(was) / was); }
   },
-  growMins(p) { const c = C.crops[p.crop]; return this.trim(!p.grown && c.first ? c.first : c.grow) * (this.done('compost') ? 0.85 : 1); },   // v99 (round ten note 47): compost in the bed, and everything grows a little faster   // v81: the very first carrots come up in minutes, so day one keeps moving
+  firstCrop() { return !Object.values(this.s.plots).some(q => q.grown); },   // nothing picked yet, from either bed
+  growMins(p) { const c = C.crops[p.crop]; return this.trim(this.firstCrop() && c.first ? c.first : c.grow) * (this.done('compost') ? 0.85 : 1); },   // v99 (round ten note 47): compost in the bed, and everything grows a little faster   // v81: the very first carrots come up in minutes, so day one keeps moving
   rabbitDue() {
     const s = this.s, t = now(); if (s.flags.rabbit || !/^(growing|ready)$/.test(this.plot().stage)) { s.rabbitAt = 0; return false; }   // ready too: a spell can hurry the sprouts, and the rabbit still comes
     if (!s.rabbitAt) s.rabbitAt = t + C.rabbit.after * MIN; return t >= s.rabbitAt;
