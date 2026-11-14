@@ -59,3 +59,16 @@ if len(sys.argv) > 2:
 for f in ['tobias', 'fernsby', 'pebbleworth', 'clem', 'barnaby', 'nettle', 'juniper']:
     src = f'art-day-21/painted/13b-story-fernsby-home.png' if f == 'fernsby' else [p for p in __import__('glob').glob(f'art-day-21/painted/1[2-8]-story-{f}-home.jpeg')][0]
     Image.open(src).convert('RGB').resize((1200, 670), Image.LANCZOS).save(f'sprites/story-{f}-home.webp', quality=86); print('story', f)
+# third round (2026-11-15): sheet of four, and the two home-plot stages fitted onto plot-barren's own canvas
+if len(sys.argv) > 2:
+    for i, (name, kw) in enumerate([('vis-rabbit', {'h': 200}), ('gift-lyrebird', {'h': 200}), ('make-owlbox', {'h': 400}), ('bld-juniper', {'h': 320})]):
+        im = load(f'19-sheet_0{i}')
+        if name == 'bld-juniper':   # the glass jars show magenta through them: turn that tint to pale glass grey-blue
+            a = np.asarray(im).astype(np.float32); r, g, b = a[..., 0], a[..., 1], a[..., 2]; m = np.minimum(r, b) > g + 4
+            v = (r + g + b) / 3; a[m, 0] = v[m] * 0.96; a[m, 1] = v[m] * 0.99; a[m, 2] = np.minimum(255, v[m] * 1.06)
+            im = Image.fromarray(a.astype(np.uint8))
+        save(im, name, **kw)
+    base = Image.open('sprites/plot-barren.webp').convert('RGBA'); bb = base.getchannel('A').point(lambda v: 255 if v > 8 else 0).getbbox()
+    for src, name in [('20-plot-ruts-filled_00', 'plot-ruts-filled'), ('21-plot-cleared_00', 'plot-cleared')]:
+        p = bbox_crop(load(src)).resize((bb[2] - bb[0], bb[3] - bb[1]), Image.LANCZOS)
+        out = Image.new('RGBA', base.size); out.paste(p, bb[:2]); out.save(f'sprites/{name}.webp', quality=88, method=6); print(name, out.size)

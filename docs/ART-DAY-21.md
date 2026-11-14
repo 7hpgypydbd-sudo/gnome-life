@@ -32,3 +32,15 @@ Painted in Nano Banana (Gemini) on Bryce's Mac. Raw paintings and prompts in `ar
 | `sprites/face-{mabel,tobias,fernsby,pebbleworth,clem,barnaby,nettle,juniper}.webp` (96x96) | Head crops of each folk's existing painted sprite (no new painting), centred on the face. |
 
 Still empty after this: plot-ruts-filled, plot-cleared, vis-rabbit, bld-juniper, make-mousedoor, make-owlbox, gift-lyrebird. Gemini used about 30 pictures today (window 5-hour limit near full; weekly ~5%).
+
+## Third round (2026-11-15 morning): the last stand-ins
+
+| Sprite | What |
+|---|---|
+| `sprites/plot-ruts-filled.webp`, `plot-cleared.webp` (1225x728) | The home plot with the ruts filled, then with the ground cleared (stumps and sprout kept). Fitted onto plot-barren's own canvas and bounding box so they crossfade in place. plot-cleared is from Gemini's preview (1024 px, scaled up) because Chrome blocked the second download again. |
+| `sprites/vis-rabbit.webp` | The rabbit in side view facing right, mid-hop. |
+| `sprites/gift-lyrebird.webp` | The lyrebird's harp-shaped tail feather. |
+| `sprites/make-owlbox.webp` | The owl box freshly put up, moss on the roof, a feather at the hole. |
+| `sprites/bld-juniper.webp` | A branch lamp post with three empty glass jars on twine (unlit; the game draws any glow). |
+
+`make-mousedoor` is left empty: that make is `retired:true` in content.js. With this, every live slot from standin_check has a painting.
