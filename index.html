@@ -335,7 +335,7 @@ const ASSETS = {
   shelter:'sprites/shelter.webp', campfire:'sprites/campfire-bare.webp',   // round six (Bryce): no stones round the fire until Wendel rings it (the painted ring is make-firering)
   firewood:'sprites/firewood.webp',
   barrel:'sprites/barrel.webp', 'barrel-old':'sprites/barrel-old.webp', seedbed:'sprites/seedbed.webp', stonebench:'sprites/stonebench.webp',
-  tub:'sprites/tub.webp', lanternstump:'sprites/lanternstump.webp', wheelbarrow:'sprites/wheelbarrow.webp',
+  tub:'sprites/tub-wash.webp',   /* v99 (note 24, art day 21): a low, wide, open wash tub; the old drum-like tub.webp is kept */ lanternstump:'sprites/lanternstump.webp', wheelbarrow:'sprites/wheelbarrow.webp',
   fence:'sprites/fence.webp', sapling:'sprites/sapling.webp',
   'him-side':'sprites/him-side.webp','him-front':'sprites/him-front.webp','him-back':'sprites/him-back.webp',
   'her-side':'sprites/her-side.webp','her-front':'sprites/her-front.webp','her-back':'sprites/her-back.webp',
@@ -358,7 +358,8 @@ const GSTICK = { dry: kit('bare', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), grass:
   bank: kit('water', 1, 2, 3, 5, 6, 7, 8, 9, 10, 12), inwater: kit('water', 4, 4, 11), path: kit('path', 7, 8, 9, 10, 11), steps: kit('path', 1, 2, 3, 4, 5, 6),
   spring: kit('seasons', 1, 2, 3), summer: kit('seasons', 4, 5, 6), autumn: kit('seasons', 7, 8, 9), winter: kit('seasons', 10, 11, 12), big: ['st-boulder', 'st-tuft-big'] };
 if (NEWGROUND) {
-  for (const n of GSWATCH) ASSETS['g-' + n] = `sprites/ground/${n}.webp`;
+  for (const n of GSWATCH) ASSETS['g-' + n] = `sprites/ground/${n === 'moss' ? 'lawn-calm' : n}.webp`;   // v99 (notes 41, 52; art day 21): the calm lawn takes over from the busy grown-over ground (moss.webp is kept)
+  for (const n of ['clover', 'buttercup', 'violet', 'moss', 'leaves', 'fresh']) ASSETS['g-st-patch-calm-' + n] = `sprites/kit/patch-calm-${n}.webp`;
   for (const n of new Set(Object.values(GSTICK).flat())) ASSETS['g-st-' + n] = `sprites/ground/${n}.webp`;
   for (const n of [...kit('marks', 1, 3, 5, 6, 8), ...kit('stumps-rocks', 1, 2, 3, 4, 5, 6, 7, 8, 9, 12), ...kit('leftovers', 1, 2, 3, 4, 5, 9, 11)]) ASSETS['kit-' + n] = `sprites/kit/${n}.webp`;
   for (const d of C.secrets) ASSETS['kit-secrets-' + d.pic] = `sprites/kit/secrets-${d.pic}.webp`;
@@ -397,7 +398,7 @@ const PROPS = [
   { name:'campfire',     gx:0.22, gy:0.40, s:0.9 },   // v75 (Bryce's yard moves): in front of the house's left roots
   { name:'lanternstump', gx:0.75, gy:0.50, s:0.9, gone:'stump' },   // a plain old stump now (Bryce: the lamp post nailed to it made no sense); dug out in stages by "Dig out the old stump" (drawStump)
   { name:'seedbed',      gx:0.58, gy:0.74, s:1.0, flat:true, until:'bed' },   // until: hidden until that job is done (fades in while it runs)
-  { name:'tub',          gx:0.50, gy:0.21, s:0.7, until:'clothesline' },   // the covered tub (Bryce: "a big drum in the way" by the bed, no job): now the wash tub under the washing line
+  { name:'tub',          gx:0.50, gy:0.21, s:0.33, until:'clothesline' },   // the covered tub (Bryce: "a big drum in the way" by the bed, no job): now the wash tub under the washing line
   { name:'wheelbarrow',  gx:0.85, gy:0.92, s:0.6, until:'barrow' },   // Bryce: small, just a decoration the gnomes make; parked by the seed bed's gate (round five)
   { name:'fence',        gx:0.75, gy:0.72, s:0.9 },   // only a tap spot now; the fence itself is drawn round the seed bed (FENCE_SEGS)
   { name:'sapling',      gx:0.18, gy:0.80, s:0.8 },
@@ -637,6 +638,8 @@ for (const k of ['fest-idea', 'fest-secret', 'fest-night', 'fest-surprise', 'fes
 Object.assign(ART_SLOTS, { 'feeding-dish': { w: 62 },   /* Bryce: bigger for the animals */ 'nest-nest': { w: 40 }, 'nest-burrow': { w: 54 }, 'nest-leafpile': { w: 70 }, 'nest-stones': { w: 60 } });
 // the first month's story (docs/STORY.md): one painting per page (page-1-1 ...), and a painting for each little make (make-<id>)
 Object.assign(ART_SLOTS, { 'pond': { w: 146 } });
+for (const k of ['garden-heap', 'garden-heap-half', 'garden-hollow', 'garden-hollow-rain', 'garden-pond-large', 'seedbed-rect', 'wildflower-patch-1', 'wildflower-patch-2', 'wildflower-patch-3', 'yard-leanto', 'yard-leanto-frame', 'spring-paved', 'room-stump-hollowing']) ART_SLOTS[k] = {};   // art day 21 (v99)
+const ART_RAW = /^(garden-|seedbed-rect|wildflower-patch|yard-leanto|spring-paved)/;   // drawn at their own size and spot, never trimmed or settled
 for (const k of ['spirit-float', 'spirit-point', 'spirit-settle', 'toad-legs', 'toad-house']) ART_SLOTS[k] = {};   // the Wood spirit's painted poses (art day 14)
 for (const p of C.story.pages) ART_SLOTS['page-' + p.id.replace('.', '-')] = {};
 // art day 16: the neighbours' wishes, painted sizes in world px (the stand-ins were drawn 1.3x)
@@ -681,7 +684,7 @@ function loadArtSlots() {   // after the game starts, so missing files never slo
     // here we only ask whether each one exists; the phone fetches it the first time its page opens (about 8 MB not downloaded up front)
     if (/^(story|page|portrait)-/.test(k)) { if (k === 'page-1-1' && !G.s.flags.welcomed) new Image().src = 'sprites/page-1-1.webp';   // a first visit opens page one at once
       fetch(`sprites/${k}.webp`, { method: 'HEAD' }).then(r => { if (r.ok) ART[k] = { shownInPages: true }; }).catch(() => {}); continue; }
-    const im = new Image(); im.onload = () => { ART[k] = /^(btn|plot|room|vis|portrait|folk|face|story|page|icon|find|gift)-/.test(k) ? im : settle(im, k === 'stepping-stones'); if (k.startsWith('btn-')) paintButton(k); }; im.src = `sprites/${k}.webp`;
+    const im = new Image(); im.onload = () => { ART[k] = /^(btn|plot|room|vis|portrait|folk|face|story|page|icon|find|gift)-/.test(k) || ART_RAW.test(k) ? im : settle(im, k === 'stepping-stones'); if (k.startsWith('btn-')) paintButton(k); }; im.src = `sprites/${k}.webp`;
   }
 }
 function slotSize(k, img, w) {   // world-pixel width and height for a slot picture (w: width of the prop it replaces)
@@ -1417,16 +1420,16 @@ function* bakeGroundTile(k, matFn = groundMat, into = GR.tiles) {   // a generat
     x2.drawImage(im, (wx - ox) * GS - w / 2, (wy - oy) * GS - h / 2, w, h);
   };
   {   // soft patches of ground (art day 8): moss, clover, wildflowers, violets and pine needles on green; bare soil on earth; leaf litter in autumn
-    const green = self.g > 0.5, pset = green ? (self.kind === 2 ? ['patch-01', 'patch-05', 'patch-01'] : self.kind === 1 ? ['patch-04', 'patch-06', 'patch-02'] : ['patch-02', 'patch-01', 'patch-02']) : ['patch-07'];
+    const green = self.g > 0.5, pset = green ? (self.kind === 2 ? ['patch-calm-moss', 'patch-calm-leaves', 'patch-calm-fresh'] : self.kind === 1 ? ['patch-calm-buttercup', 'patch-calm-violet', 'patch-calm-clover'] : ['patch-calm-clover', 'patch-calm-fresh', 'patch-calm-clover']) : ['patch-07'];
     if (green && season() === 'autumn') pset.push('patch-03', 'patch-03');
-    if (green && season() === 'spring') pset.push('patch-04', 'patch-06');
+    if (green && season() === 'spring') pset.push('patch-calm-buttercup', 'patch-calm-violet');
     const inPond = (gx, gy) => k === '0,1' && Math.hypot((gx - GPOND[0]) / 0.27, (gy - GPOND[1]) / 0.27) < 1;   // v99: nothing scattered where the heap, the hollow and the pond are
     self.inPond = inPond;
     for (let n = 0; n < (green && k !== '0,1' ? 4 : 0); n++) {   // (no bare-soil patch on bare land: it read as a dug bed, or as the rubbish heap the patch card talks about, v87 note 70)
       const gx = 0.14 + 0.72 * rn(n + 400), gy = 0.14 + 0.72 * rn(n + 410); const [wx, wy] = toWorld(gx, gy, k);
       const i = Math.round((wx - ox) * GS), j = Math.round((wy - oy) * GS); if (i < 0 || j < 0 || i >= W || j >= H || zone[j * W + i]) continue;
       const cv = cov[j * W + i] / 255; if (green ? cv < 0.85 : cv > 0.15) continue;
-      const pn = pset[Math.floor(rn(n + 420) * pset.length)]; if (pn === 'patch-01' && !window.PATCH01_OK) continue;   // v99 (note 52): the dark moss cushion popped in as a hard-edged blob; it stays out until its repaint lands
+      const pn = pset[Math.floor(rn(n + 420) * pset.length)];   // v99 (note 52, art day 21): soft-edged patches in the lawn's own colours
       x2.globalAlpha = 0.75 * Math.min(1, (self.g - 0.5) * 2.5); put(pn, gx, gy, 0.4 + 0.2 * rn(n + 430)); x2.globalAlpha = 1;   // and the others come in softly as the green grows
     }
   }
@@ -1524,7 +1527,7 @@ function bakeRibbons(x2, k, tx, ty, ox, oy, M, edgeOpen) {
 function groundSig(k) {   // everything a tile's picture depends on (itself and its eight neighbours)
   const [tx, ty] = k.split(',').map(Number), out = [];
   for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const m = groundMat(`${tx + dx},${ty + dy}`); out.push(m ? [m.g, m.kind, m.wet, m.path, m.wash].join() : '-'); }
-  return out.join('|') + '|' + season() + '|a12';   // the seasonal stickers change with the season
+  return out.join('|') + '|' + season() + '|a13';   // the seasonal stickers change with the season
 }
 // Baked tiles are kept in the browser (IndexedDB) with the signature they were baked for, so the next visit opens with the
 // finished ground at once instead of baking it all again. A tile whose signature has changed is simply baked afresh.
@@ -2146,7 +2149,8 @@ function drawSpring(now) {   // the hollow shows once Wendel finds it, then the 
   ctx.globalAlpha = seen * clear; if (ctx.globalAlpha > 0) ctx.drawImage(cl, x - w / 2, y - h / 2, w, h);
   ctx.restore();
   if (clear >= 1) { const r = (now / 2200) % 1; ctx.strokeStyle = `rgba(235,248,250,${0.4 * (1 - r)})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x - 4, y + 2, 26 * r + 2, 9 * r + 1, 0, 0, 7); ctx.stroke(); }   // the spring bubbling up
-  const rg = taskProg('springring'); if (rg > 0) { ctx.save(); ctx.globalAlpha = rg; for (let i = 0; i < 13; i++) { const t = i / 13 * Math.PI * 2; flatStone(x + Math.cos(t) * w * 0.36, y + 2 + Math.sin(t) * w * 0.15, 8 + rnd(i + 360) * 3, i); } ctx.restore(); }   // "Ring the spring with stones"
+  const rg = taskProg('springring'), pv = art('spring-paved'); if (rg > 0 && pv) { const pw = w * 1.62, ph2 = pw * pv.height / pv.width; ctx.save(); ctx.globalAlpha = rg; ctx.drawImage(pv, x - pw / 2 - 2, y - ph2 / 2 + 2, pw, ph2); ctx.restore(); }   // v99 (note 46, art day 21): Wendel's real pavers, the same spring and root with flat stones laid round it
+  else if (rg > 0) { ctx.save(); ctx.globalAlpha = rg; for (let i = 0; i < 13; i++) { const t = i / 13 * Math.PI * 2; flatStone(x + Math.cos(t) * w * 0.36, y + 2 + Math.sin(t) * w * 0.15, 8 + rnd(i + 360) * 3, i); } ctx.restore(); }   // "Ring the spring with stones"
   const [hx, hy] = toWorld(SPRING.at[0] + 0.06, SPRING.at[1] + 0.11);
   const out = sstep(SPRING_FOUND + 0.02, 0.9, p);   // round six (Bryce: "odd little ovals"): the stones he pulls out go on a painted heap beside it, growing as he works
   if (seen > 0 && rg < 1 && out > 0 && IM['kit-stumps-rocks-03']) { ctx.save(); ctx.globalAlpha = Math.min(1, out * 3) * (1 - rg); shadow(hx, hy, 14 + 10 * out, 5 + 3 * out); kitPiece('kit-stumps-rocks-03', hx, hy, 14 + 16 * out); ctx.restore(); }
@@ -3852,17 +3856,13 @@ const GPOND = [0.52, 0.56];   // v99: the middle of the garden patch, where the 
 const HEAL_LOOK = {
   // v99 (round ten notes 31, 39, 54): the couple's garden-to-be. The heap is piled where the pond will be; nothing big appears at first green.
   garden: [
-    { s:'spoil', go:1, draw:'mound', at:GPOND, flat:1 },
-    ...[['03', 0.14, -0.10, 30], ['04', -0.12, 0.08, 40], ['11', 0.02, -0.08, 40], ['12', -0.05, -0.01, 44], ['06', 0.05, 0.05, 40], ['01', -0.01, -0.04, 48], ['03', -0.09, -0.07, 32], ['06', 0.10, 0.00, 36]].map(([n, dx, dy, h]) => ({ s:'rubbish', go:1, pic:'kit-leftovers-' + n, at:[GPOND[0] + dx * 0.8, GPOND[1] + dy * 0.8], h })),
+    { always:1, draw:'gardenmid', at:GPOND, flat:1 },   // one painting at a time on the same footprint (art day 21): heap, half cleared, hollow, rain in the hollow, pond
     { s:'fence', go:1, draw:'oldfence', at:[0.22, 0.16], h:58 }, { s:'fence', go:1, draw:'oldfence', at:[0.17, 0.34], h:54 },
     { s:'fence', go:1, draw:'oldfence', at:[0.14, 0.54], h:58, broken:1 }, { s:'fence', go:1, draw:'oldfence', at:[0.16, 0.74], h:52 },
     { s:'fence', pic:'fence-fallen', at:[0.60, 0.12], h:60, untilTask:'bed2' },   // the good posts, stacked where the new bed will go, until they fence it
-    { s:'spoil', draw:'hollow', at:GPOND, flat:1, until:'rain' },
-    { s:'rain', draw:'bigpond', at:GPOND, flat:1 },
     ...[[0.20, 0.26], [0.80, 0.50], [0.28, 0.86], [0.84, 0.86]].map((at, i) => ({ ev:'w' + (i + 1), draw:'grass', at, n:i + 3, flat:1, fade:1 })),
-    { s:'reeds', pic:'kit-wood-05', at:GPOND, off:[-150, 2], h:74 }, { s:'reeds', pic:'kit-wood-05', at:GPOND, off:[138, 34], h:62, flip:1 }, { s:'reeds', pic:'kit-wood-05', at:GPOND, off:[-70, 70], h:56 }, { s:'reeds', pic:'kit-wood-05', at:GPOND, off:[60, -66], h:60, flip:1 },   // at the water's edge (off: world px from the spot)
     { ev:'dragonflies', draw:'dragonflies', at:GPOND, day:[9, 17] },
-    ...[[0.10, 0.50], [0.88, 0.64], [0.38, 0.92]].flatMap((at, i) => [{ s:'flowers', draw:'wildpatch', at, n:i, size:1 }, { ev:'spread1', draw:'wildpatch', at:[at[0] + 0.05, at[1] - 0.05], n:i + 3, size:0.8 }, { ev:'spread2', draw:'wildpatch', at:[at[0] - 0.04, at[1] + 0.045], n:i + 6, size:0.7 }]),
+    ...[[0.10, 0.50], [0.88, 0.64], [0.38, 0.92]].map((at, i) => ({ s:'flowers', draw:'wildpatch', at, n:i })),   // each patch: sprouts, then in flower, then wider with seedlings (spread1, spread2)
   ],
   meadow: [
     // v87 (note 70): a real rubbish heap, the loggers' junk piled on a mound of spoil in the middle; Hazel picks it off piece by piece, then levels the mound
@@ -3989,33 +3989,19 @@ function healTreeSize(q) {   // a sapling: seedling, knee-high, then taller than
   const k = q.k; if (healEvAt(k, q.grow[1])) return 2; if (healEvAt(k, q.grow[0])) return 1; return 0;
 }
 const HEAL_DRAW = {
-  // v99 stand-ins for the garden-to-be until its paintings land (art list: heap, half heap, hollow, rain in the hollow, the big pond)
-  mound(x, y) { const im = art('garden-heap') || healPic('kit-marks-06'); if (im) { const w = 300, h = w * im.height / im.width; ctx.drawImage(im, x - w / 2, y - h / 2, w, h); } else blob(x, y, 130, 52, '#7d5c3e'); },
-  hollow(x, y, a, q) {
-    const im = art('garden-hollow'); if (im) { const w = 420, h = w * im.height / im.width; ctx.drawImage(im, x - w / 2, y - h / 2, w, h); return; }
-    ctx.save(); ctx.translate(x, y); ctx.scale(1, 0.5);
-    let g = ctx.createRadialGradient(0, 0, 60, 0, 0, 200); g.addColorStop(0, 'rgba(92,66,44,0.95)'); g.addColorStop(0.75, 'rgba(122,92,62,0.9)'); g.addColorStop(1, 'rgba(140,108,74,0)');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 200, 0, 7); ctx.fill();
-    g = ctx.createRadialGradient(0, 10, 10, 0, 0, 150); g.addColorStop(0, 'rgba(60,42,28,0.8)'); g.addColorStop(1, 'rgba(60,42,28,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 150, 0, 7); ctx.fill(); ctx.restore();
-    ctx.save(); ctx.strokeStyle = 'rgba(58,40,26,0.5)'; ctx.lineCap = 'round';
-    for (let b = 0; b < 7; b++) { let px = x + (rnd(b + 41) - 0.5) * 190, py = y + (rnd(b + 47) - 0.5) * 80, ang = rnd(b + 53) * 6.3; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(px, py); for (let i = 0; i < 4; i++) { ang += (rnd(b * 7 + i) - 0.5) * 1.3; px += Math.cos(ang) * 13; py += Math.sin(ang) * 5; ctx.lineTo(px, py); } ctx.stroke(); }
-    ctx.restore(); },
-  bigpond(x, y, a, q, now) {   // the pond in the hollow: no ring of rocks (Bryce 2026-11-14); soft earth, then water, reeds and lilies
-    const im = art('garden-pond'); if (im) { const w = 420, h = w * im.height / im.width; ctx.drawImage(im, x - w / 2, y - h / 2, w, h); return; }
-    ctx.save(); ctx.translate(x, y); ctx.scale(1, 0.5);
-    let g = ctx.createRadialGradient(0, 0, 150, 0, 0, 205); g.addColorStop(0, 'rgba(104,80,54,0.95)'); g.addColorStop(0.7, 'rgba(120,96,64,0.85)'); g.addColorStop(1, 'rgba(120,110,70,0)');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 205, 0, 7); ctx.fill();
-    const edge = () => { ctx.beginPath(); for (let i = 0; i <= 40; i++) { const t = i / 40 * Math.PI * 2, r = 158 + 9 * Math.sin(t * 3 + 1) + 5 * Math.sin(t * 7); ctx.lineTo(Math.cos(t) * r, Math.sin(t) * r); } ctx.closePath(); };
-    g = ctx.createRadialGradient(-40, -40, 10, 0, 0, 170); g.addColorStop(0, '#9cc0bb'); g.addColorStop(0.55, '#6f9c98'); g.addColorStop(1, '#4b7574');
-    edge(); ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = 'rgba(52,40,28,0.55)'; ctx.lineWidth = 5; ctx.stroke(); ctx.clip();
-    ctx.fillStyle = 'rgba(236,246,242,0.3)'; ctx.beginPath(); ctx.ellipse(-50, -60, 70, 22, -0.2, 0, 7); ctx.fill();
-    for (let i = 0; i < 2; i++) { const r = ((now / 3200) + i * 0.5) % 1; ctx.strokeStyle = `rgba(238,248,250,${0.4 * (1 - r)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(40 - i * 90, 30 + i * 30, 6 + 60 * r, 0, 7); ctx.stroke(); }
-    ctx.restore();
-    for (const [dx, dy, r] of [[70, 34, 13], [92, 22, 9], [-96, 40, 11]]) { blob(x + dx, y + dy, r, r * 0.45, '#5d7a33'); blob(x + dx + 2, y + dy - 1, r * 0.55, r * 0.25, '#6f8f3c'); }
-    blob(x + 92, y + 19, 3.4, 2.4, '#f3efe2'); snailShell(x - 150, y + 36, 3); },   // the hidden snail, as always
-  wildpatch(x, y, a, q) {   // a small patch of wildflowers (stand-in until wildflower-patch paintings land)
-    const sz = q.size || 1, im0 = art('wildflower-patch-' + ((q.n % 3) + 1)); if (im0) { const w = 110 * sz, h = w * im0.height / im0.width; ctx.drawImage(im0, x - w / 2, y - h * 0.8, w, h); return; }
-    for (let i = 0; i < 5; i++) { const im = healPic('g-st-' + GSTICK.meadow[(q.n * 5 + i * 2) % 12]); if (!im) continue; const w = im.width * 0.62 * sz, h = im.height * 0.62 * sz, px = x + (rnd(q.n * 11 + i) - 0.5) * 60 * sz, py = y + (rnd(q.n * 11 + i + 5) - 0.5) * 24 * sz; ctx.drawImage(im, px - w / 2, py - h * 0.85, w, h); } },
+  // v99 (art day 21): the middle of the garden-to-be. Five paintings on one footprint, cross-faded as the work goes.
+  gardenmid(x, y, a, q, now) {
+    const k = q.k, pr = healProg(k, 'rubbish'), ps = healProg(k, 'spoil'), rn = healProg(k, 'rain'), rd = healProg(k, 'reeds'), W = 440;
+    const pic = (name, al) => { const im = art(name); if (!im || al <= 0.01) return; const w = W, h = w * im.height / im.width; ctx.save(); ctx.globalAlpha *= Math.min(1, al); ctx.drawImage(im, x - w / 2, y - h * 0.56, w, h); ctx.restore(); };
+    if (!art('garden-heap')) { blob(x, y, 130, 52, rn > 0 ? '#5f8a88' : '#7d5c3e'); return; }
+    if (ps < 1) { const half = sstep(0.3, 1, pr), hol = sstep(0.2, 1, ps); if (hol > 0) pic('garden-hollow', 1); pic('garden-heap-half', hol > 0 ? 1 - hol : 1); pic('garden-heap', (1 - half) * (hol > 0 ? 1 - hol : 1)); return; }
+    if (rd >= 1) return pic('garden-pond-large', 1);
+    pic(rn > 0.5 ? 'garden-hollow-rain' : 'garden-hollow', 1); if (rn > 0 && rn <= 0.5) pic('garden-hollow-rain', rn * 2);
+    if (rd > 0) pic('garden-pond-large', sstep(0.2, 1, rd)); },
+  wildpatch(x, y, a, q) {   // a patch of native wildflowers: sprouts, in flower, then wider (the three paintings share one scale)
+    const st = healEvAt(q.k, 'spread2') ? 3 : healEvAt(q.k, 'spread1') ? 2 : 1, im = art('wildflower-patch-' + st);
+    if (im) { const sc = 0.27, w = im.width * sc, h = im.height * sc; shadow(x, y, w * 0.3, w * 0.08); ctx.drawImage(im, x - w / 2, y - h * 0.9, w, h); return; }
+    for (let i = 0; i < 5; i++) { const g = healPic('g-st-' + GSTICK.meadow[(q.n * 5 + i * 2) % 12]); if (!g) continue; const w = g.width * 0.62, h = g.height * 0.62, px = x + (rnd(q.n * 11 + i) - 0.5) * 60, py = y + (rnd(q.n * 11 + i + 5) - 0.5) * 24; ctx.drawImage(g, px - w / 2, py - h * 0.85, w, h); } },
   oldfence(x, y, a, q) {   // a grey, leaning loggers' fence: three posts and sagging wire
     const h = q.h, lean = q.broken ? 0.28 : 0.1; ctx.save(); ctx.lineCap = 'round';
     const posts = [[-34, 0], [0, -4], [34, -8]].map(([dx, dy], i) => [x + dx, y + dy, h * (i === 1 && q.broken ? 0.55 : 1 - i * 0.06), lean * (i - 1) + (q.broken && i === 2 ? 0.5 : 0)]);
@@ -4136,17 +4122,23 @@ function bed2Items(items, now) {
   const a = bed2Shown(); if (a <= 0) return; const [cgx, cgy] = bed2Pt(0.5, 0.5), W = (u, v) => toWorld(...bed2Pt(u, v));
   items.push({ d: depthOf(cgx, cgy) - 0.2, draw: () => {
     ctx.save(); ctx.globalAlpha *= a;
-    const im = art('seedbed-rect'); if (im) { const [x, y] = W(0.5, 0.5), w = 300, h = w * im.height / im.width; ctx.drawImage(im, x - w / 2, y - h * 0.62, w, h); }
+    const im = art('seedbed-rect'), rails = () => { rail(-0.03, 1.06, -0.03, -0.1, 5); rail(-0.03, -0.1, 1.04, -0.1, 9); };
+    // the woven fence along the back two sides, made from the old fence's good posts
+    const rail = (u0, v0, u1, v1, n) => { const pts = []; for (let i = 0; i <= n; i++) pts.push(W(u0 + (u1 - u0) * i / n, v0 + (v1 - v0) * i / n));
+      ctx.lineCap = 'round'; for (const [hh, col, lw] of [[24, INK, 4.6], [24, '#8a6a44', 2.6], [15, INK, 4.6], [15, '#9a7a50', 2.6], [7, INK, 4.6], [7, '#8a6a44', 2.6]]) { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath(); pts.forEach(([x, y], i) => { const yy = y - hh - (i % 2 ? 2 : -2) * (hh === 15 ? -1 : 1); if (i) ctx.lineTo(x, yy); else ctx.moveTo(x, yy); }); ctx.stroke(); }
+      for (const [x, y] of pts) post(x, y, 32, 4, '#7a5a3a'); };
+    if (im) {   // the painting's corners (top 356,0 · right 719,197 · left 0,203) laid on the bed's corners, a touch wider so its pebble edge sits outside the rows
+      const [tx, ty] = W(-0.05, -0.1), [rx2, ry2] = W(1.06, -0.1), [lx, ly] = W(-0.05, 1.12);
+      const e1x = rx2 - tx, e1y = ry2 - ty, e2x = lx - tx, e2y = ly - ty, det = 143821;   // image edges: top->right (363, 197), top->left (-356, 203)
+      const A11 = (e1x * 203 - e2x * 197) / det, A12 = (e1x * 356 + e2x * 363) / det, A21 = (e1y * 203 - e2y * 197) / det, A22 = (e1y * 356 + e2y * 363) / det;
+      ctx.save(); ctx.transform(A11, A21, A12, A22, tx - A11 * 356, ty - A21 * 356); ctx.drawImage(im, 0, 0); ctx.restore(); rails();
+    }
     else {
       const poly = (pts, fill, stroke) => { ctx.beginPath(); pts.forEach(([u, v], i) => { const [x, y] = W(u, v); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); }); ctx.closePath(); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); } };
       poly([[-0.04, -0.08], [1.04, -0.08], [1.04, 1.08], [-0.04, 1.08]], 'rgba(96,72,48,0.35)');
       poly([[0, 0], [1, 0], [1, 1], [0, 1]], '#5a4028', 'rgba(42,28,16,0.55)');
       ctx.strokeStyle = 'rgba(40,26,14,0.45)'; ctx.lineWidth = 2.5; for (const v of [0.25, 0.5, 0.75]) { const [x0, y0] = W(0.03, v + 0.11), [x1, y1] = W(0.97, v + 0.11); ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); }   // the furrows between the rows
-      // the woven fence along the back two sides, made from the old fence's good posts
-      const rail = (u0, v0, u1, v1, n) => { const pts = []; for (let i = 0; i <= n; i++) pts.push(W(u0 + (u1 - u0) * i / n, v0 + (v1 - v0) * i / n));
-        ctx.lineCap = 'round'; for (const [hh, col, lw] of [[24, INK, 4.6], [24, '#8a6a44', 2.6], [15, INK, 4.6], [15, '#9a7a50', 2.6], [7, INK, 4.6], [7, '#8a6a44', 2.6]]) { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath(); pts.forEach(([x, y], i) => { const yy = y - hh - (i % 2 ? 2 : -2) * (hh === 15 ? -1 : 1); if (i) ctx.lineTo(x, yy); else ctx.moveTo(x, yy); }); ctx.stroke(); }
-        for (const [x, y] of pts) post(x, y, 32, 4, '#7a5a3a'); };
-      rail(-0.03, 1.06, -0.03, -0.1, 5); rail(-0.03, -0.1, 1.04, -0.1, 9);
+      rails();
     }
     // the crop
     const ch = bed2Chore(), pick = ch && ch.chore.kind === 'pick2' && PICKING2, sow = ch && ch.chore.kind === 'sow2';
