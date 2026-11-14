@@ -2,6 +2,8 @@
 
 Big-review item 3. Thread "Plan month two to the festival". Design only: nothing here is built yet. Plan page with pictures: see the link in `docs/PLAN.md` "Start here". **Status: AGREED by Bryce 2026-10-29** (all four cards went with the recommendations; see "Decisions" at the end).
 
+> **2026-11-14 (Bryce): no fixed game length.** The day numbers below (festival about day 88/90, week-by-week pace) were the plan in October. They are no longer targets: pace is felt out through play, and the pretend player's days are measurements only. Keep the order of events; drop the calendar.
+
 Month one (days 1 to 30, chapters 1 to 3, v75 to v80) is the finish line and is not changed by this plan, with one small exception noted under "Animals".
 
 ## What the pretend player shows today (v80)
