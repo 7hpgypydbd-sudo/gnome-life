@@ -122,14 +122,20 @@ window.CONTENT = {
     { id:'fence', act:'build',   name:'Fence the seed bed', short:'fencing the bed', spine:true, who:'him', spot:'fence',       cost:{ twig:4 },           mins:10, green:0, magic:1,
       needs:['bed', 'woodpile'], blurb:'That rabbit helped itself to the sprouts. {who} fetches sticks from the stick pile and weaves a low fence all round the bed, a piece at a time, with a little gate, and something put out for it instead. It is only hungry.' },
 
-    // --- chapter two: putting down roots (from page 2.1, the first harvest). The roof first, then the bench, then the oak;
+    // --- chapter two: putting down roots (from page 2.1, the first harvest). The roof first, then the oak (round eleven note 13: the bench
+    // is a home comfort now, not a step on the way, so it has no paper flag);
     // the small jobs come a couple at a time, in this order ---
     { id:'roof',    name:'Moss for the shelter roof', short:'mossing the roof', spine:true, who:'her', spot:'shelter',     cost:{ moss:4 },           needs:['flag:firstpick'], mins:20, green:0, magic:2,
-      blurb:'The patched canvas over the old stump lets the rain straight through, and the nights up here are cold. A thick moss roof keeps the rain out and the warmth in, until there is a proper house.' },
-    { id:'bench',   name:'Build a bench by the fire', short:'building a bench', spine:true, who:'him', act:'build', spot:'logseat',  cost:{ twig:3 },          needs:['flag:firstpick'], mins:12,  green:0, magic:1,
+      blurb:'The old canvas over their door leaks: every drop of rain comes straight through onto the bed. A thick roof of moss keeps them dry and warm until there is a proper house.',
+      sayWhy:'That canvas lets every drop of rain in, love. A good thick roof of moss would keep us dry. Moss for the roof, next.' },   // round eleven note 13 (came back, round ten note 10): Hazel says why out loud when it comes up
+    { id:'bench',   name:'Build a bench by the fire', short:'building a bench', who:'him', act:'build', spot:'logseat',  cost:{ twig:3 },          needs:['flag:firstpick'], mins:12,  green:0, magic:1,
       blurb:'They have been sitting on the cold ground every evening. A plank on two stout legs by the campfire, just long enough for two gnomes.' },
+    // round eleven notes 1-3 (Bryce: the big stump and log were in the way): the old log goes too, sawn into rounds for the woodpile
+    { id:'logsaw', name:'Saw up the old log', short:'sawing up the log', spine:true, who:'him', act:'build', spot:'logsaw', cost:{}, give:{ twig:3 }, mins:15, green:0, needs:['flag:firstpick'],
+      blurb:'The loggers\' old log lies across the bottom of the yard, right in the way. Round by round it is sawn up and stacked on the woodpile. It will keep the fire going for weeks.',
+      doneNote:'The old log is sawn up and stacked on the woodpile. The bottom of the yard is clear at last.' },
     { id:'sapling', name:'Plant the sapling out', short:'planting the sapling', spine:true, who:'her', act:'water', spot:'sapling',     cost:{ water:2, moss:2 },  mins:10, green:2, magic:3,
-      needs:['clear', 'roof', 'bench'], blurb:'The little oak they carried from their old home is ready for real ground. Trees bring life back faster than anything. It will outlive us all.' },
+      needs:['clear', 'roof'], blurb:'The little oak they carried from their old home is ready for real ground. Trees bring life back faster than anything. It will outlive us all.' },
     // v99 (round ten note 18): Wendel's work corner comes early, beside the house: a frame of poles and bark where things get made before they are carried to their spot. The story's lean-to job (leanto) finishes it into his proper workshop.
     { id:'workcorner', name:'Knock up a work corner', short:'building the work corner', who:'him', fixed:true, act:'build', spot:'workcorner', cost:{ twig:3 }, mins:10, green:0, needs:['bed'],
       blurb:'Four poles and a few sheets of bark beside the house: somewhere to saw, whittle and hammer. Things for the home get made here, then carried to where they go.', doneNote:'Wendel\'s work corner. Things get made here, then carried to where they go.' },
@@ -142,12 +148,12 @@ window.CONTENT = {
       doneNote:'The washing line is up, with the old loggers\' wash tub scrubbed out underneath it. Two tunics are already flapping.' },
     // dug out in stages (index.html drawStump): the roots bared, rocked loose and tipped, chopped and carried to the woodpile, the hole filled
     { id:'stump', name:'Dig out the old stump', short:'digging round the roots', stages:[[0.3, 'rocking the stump loose'], [0.45, 'chopping firewood'], [0.68, 'carrying the firewood'], [0.88, 'filling in the hole']], spine:true, who:'either', act:'dig', spot:'lanternstump', cost:{}, give:{ twig:3 }, mins:12, green:0,
-      needs:['spring'], blurb:'An old loggers\' stump stands in the middle of the yard, dry as a bone. Whoever is free digs round its roots, rocks it loose, chops it into firewood and stacks it against the house, then fills in the hole. Their first proper firewood.',
-      doneNote:'The old stump is gone, chopped and stacked against the house. Tonight there is proper firewood.' },
+      needs:['spring'], blurb:'The big dead stump the loggers left at the bottom of the yard, dry as a bone and right in the way. Whoever is free digs round its roots, rocks it loose, chops it into firewood and stacks it by the house, then fills in the hole. Their first proper firewood.',
+      doneNote:'The big old stump is gone, chopped and stacked by the house. Tonight there is proper firewood.' },
     { id:'rainbarrel', name:'Scrub the rain barrel', short:'scrubbing the barrel',   who:'either', spot:'barrel',        cost:{ twig:2, stone:1 },  mins:8,  green:0, needs:['house3'],   // round ten note 2 (Bryce: only once there is a PROPER roof): the bark-shingle roof, not the moss over the canvas
       blurb:'Now there is a real roof, the rain runs off it in one place. The wagon\'s old water barrel, full of dead leaves and green with slime, gets scrubbed out and stood under a bark spout to catch it: soft rainwater a few steps from the door, for the herbs and the flower pots, instead of the long walk to the spring. Whoever is free will do it.' },
-    { id:'herbs',   name:'Plant a herb corner', short:'planting herbs',        who:'her', act:'gather', spot:'herbs',       cost:{ seed:2, water:2, moss:1 }, mins:15, green:1, needs:['bed', 'flag:firstpick'],
-      blurb:'Thyme, mint and the one parsley that will not die. Good for tea and for bees.' },
+    { id:'herbs',   name:'Plant a herb corner', short:'planting herbs',        who:'her', act:'gather', spot:'herbs',       cost:{ seed:2, water:2, moss:1 }, mins:15, green:1, needs:['bed', 'flag:firstpick', 'heal:0,1:0'],   // round eleven note 5 (Bryce): the box is the old crate saved from the loggers' rubbish heap
+      blurb:'The old crate from the loggers\' rubbish heap, scrubbed out and filled with good earth. Thyme, mint and the one parsley that will not die. Good for tea and for bees.' },
     { id:'compost', name:'Start a compost heap', short:'starting the compost',       who:'him', act:'dig', spot:'wheelbarrow', cost:{ twig:2, moss:3, water:1, carrot:1 }, mins:15, green:0, needs:['flag:firstpick'],
       blurb:'The seed bed is hungry ground: the loggers left it thin and tired. Peelings, weeds and leaves, heaped in a stick ring and left to rot, make rich dark soil to dig into it. Crops grow a little faster, and every harvest gives one seed more.' },
     { id:'springring', name:'Lay flat stones round the spring', short:'paving round the spring', who:'either', act:'dig', spot:'spring', cost:{ stone:5 }, mins:10, green:0, needs:['bedwater', 'flag:firstpick'],   // round nine note 2: the pool is already edged with the stones Wendel pulled out of it, so this is the flat ring outside that
@@ -158,7 +164,7 @@ window.CONTENT = {
 
     // --- chapter three: a proper home (from page 3.0, after "Our first week"). The house is the story; the garden patch
     // appears beside the yard, and when it opens, the creature corner comes with it ---
-    { id:'house1', name:'Hollow out the old stump', short:'hollowing the stump', spine:true, who:'him', act:'build', spot:'shelter', cost:{ twig:4, stone:3 }, mins:360, green:0, needs:['page:3.0', 'doorstep'],
+    { id:'house1', name:'Hollow out the old stump', short:'hollowing the stump', spine:true, who:'him', act:'build', spot:'shelter', cost:{ twig:4, stone:3 }, mins:360, green:0, needs:['page:3.0'],   /* round eleven note 13: the doorstep is a home comfort (no flag), so the house no longer waits on it */
       blurb:'The loggers left the stump; the gnomes will make it a home. Room for a bed, a hearth and, Wendel insists, a workbench.' },
     { id:'house2', name:'Fit a plank wall and windows', short:'fitting the windows', spine:true, who:'him', act:'build', spot:'shelter', cost:{ twig:6, moss:2, light:2 }, mins:360, green:0, needs:['house1'],
       blurb:'Planks across the gap, and two round windows with a wisp of light set in the glass so they never quite go dark.' },
@@ -358,14 +364,19 @@ window.CONTENT = {
       garden: { name:'The rubbish heap', nameAfter:'Our garden-to-be', nameDone:'Our garden', patch:'the garden patch',
         card:{ who:'both', text:'One day this will be our garden. First the loggers\' mess has to go.' },
         cardAfter:{ who:'both', text:'A pond in the middle, a new bed by the yard, and flowers wherever they like. One thing at a time.' },
+        cardDug:{ who:'both', text:'So that\'s why it was a mound. The loggers buried half their rubbish under it. Out it all comes.' },
         cardDone:{ who:'both', text:'Our garden. The pond came from the hollow the rubbish left behind. Nothing here was wasted.' },
         steps:[
-          { id:'rubbish', name:'Pick up the loggers\' rubbish', short:'picking up rubbish', cost:{}, give:{ twig:2, stone:2 }, mins:15, act:'pickup',
-            blurb:'Rusty tins, a cracked teacup, coils of old wire. Piece by piece it goes. This patch is to be the garden, once the mess is gone.' },
+          // round eleven (notes 5, 7, 8, 11, 12): a two-gnome job (pair: the other joins when free). Whatever is still good goes to
+          // Wendel's work corner for little makes; the loggers buried the rest under the mound, so digging it out leaves the hollow.
+          { id:'rubbish', name:'Pick up the loggers\' rubbish', short:'picking up rubbish', cost:{}, give:{ twig:2, stone:2 }, mins:15, act:'pickup', pair:true,
+            blurb:'Rusty tins, an old crate, coils of wire, a cracked teacup. A big heap for one gnome, so the other joins in as soon as they are free. Anything still good goes to Wendel\'s work corner for little makes.',
+            doneNote:'The loggers\' rubbish is off the heap. The good bits (a crate, a few tins, some wire and planks) are stacked by Wendel\'s work corner. Hazel has her eye on that crate for herbs.' },
           { id:'fence', name:'Pull out the old fence', short:'pulling out the fence', cost:{}, give:{ twig:2 }, mins:15, act:'gather',
             blurb:'A fence round nothing, keeping nobody out. Post by post it comes up, and the good posts are stacked to fence a new bed one day.' },
-          { id:'spoil', name:'Barrow away the spoil heap', short:'barrowing the spoil', cost:{}, mins:20, act:'dig',
-            blurb:'Under the junk is a mound of the loggers\' spoil. Barrow by barrow it goes to level the ground where a new bed can go. It will leave a hollow behind, and a hollow is a useful thing.' },
+          { id:'spoil', name:'Dig out the buried rubbish', short:'digging out the buried rubbish', cost:{}, mins:20, act:'dig', pair:true,
+            blurb:'That mound is not earth. The loggers buried half their rubbish under it, deep. Dig it all out and the mound goes with it, leaving a hollow behind, and a hollow is a useful thing.',
+            doneNote:'The buried rubbish is all dug out. Where the mound stood there is a deep hollow now, just the shape for a pond.' },
           { id:'worms', cast:'worms', name:'Wake the worms', short:'waking the worms',
             blurb:'The ground is packed hard and fast asleep. No fork will mend that. It wants its worms woken, and that is your magic, not the gnomes\'.',
             later:[ { after:4, green:1, ev:'w1', note:'The worms are awake under the garden patch. The first threads of green are showing.' }, { after:15, green:1, ev:'w2' }, { after:35, green:1, ev:'w3' },

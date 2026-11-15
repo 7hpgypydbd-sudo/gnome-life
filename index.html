@@ -284,7 +284,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v99</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v100</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -305,7 +305,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 99;
+const BUILD = 100;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -313,11 +313,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=99"></script>
-<script src="playlog.js?v=99"></script>
-<script src="concerns.js?v=99"></script>
-<script src="game.js?v=99"></script>
-<script src="walk.js?v=99"></script>
+<script src="content.js?v=100"></script>
+<script src="playlog.js?v=100"></script>
+<script src="concerns.js?v=100"></script>
+<script src="game.js?v=100"></script>
+<script src="walk.js?v=100"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -394,10 +394,10 @@ function depthOf(gx, gy, tile = '0,0') { const [tx, ty] = tile.split(',').map(Nu
 // ---------- scene content (home tile) ----------
 const PROPS = [
   { name:'shelter',      gx:0.30, gy:0.22, s:1.35 },   // v74: a third bigger so the door is gnome height (art review: it was ~0.6 of a gnome)
-  { name:'firewood',     gx:0.33, gy:0.03, s:0.9, front:2, until:'stump' },   // round six (Bryce): the firewood is the old stump, chopped (woodStage)   // v75 (Bryce's yard moves): by the house's right roots, in front of the barrel (front:2 draws it over the barrel)
+  { name:'firewood',     gx:0.43, gy:0.05, s:0.9, until:'stump' },   // round eleven note 4 (Bryce: it looked as if it was floating; and it stays next to the house): on the ground right beside the house's right roots, not perched on them   // round six (Bryce): the firewood is the old stump, chopped (woodStage)   // v75 (Bryce's yard moves): by the house's right roots, in front of the barrel (front:2 draws it over the barrel)
   { name:'barrel',       gx:0.40, gy:0.19, s:0.51, front:3, hitW:0.4 },   // art day 20: repainted with the bark spout, padded so the barrel itself stays centred (s keeps it about the old size, a touch bigger);   // v75 (Bryce's yard moves): by the house's right roots; round nine note 19 (Bryce: not close enough to the roof to catch anything): tucked in right under the roof's edge, a few steps from the door
   { name:'campfire',     gx:0.22, gy:0.40, s:0.9 },   // v75 (Bryce's yard moves): in front of the house's left roots
-  { name:'lanternstump', gx:0.75, gy:0.50, s:0.9, gone:'stump' },   // a plain old stump now (Bryce: the lamp post nailed to it made no sense); dug out in stages by "Dig out the old stump" (drawStump)
+  { name:'lanternstump', gx:0.44, gy:0.93, s:1.25, gone:'stump' },   // round eleven notes 1-3 (Bryce: the big dead stump at the bottom of the yard is in the way, and the one Wendel dug out was tiny): the day-one stump job is that big stump now   // a plain old stump now (Bryce: the lamp post nailed to it made no sense); dug out in stages by "Dig out the old stump" (drawStump)
   { name:'seedbed',      gx:0.58, gy:0.74, s:1.0, flat:true, until:'bed' },   // until: hidden until that job is done (fades in while it runs)
   { name:'tub',          gx:0.50, gy:0.21, s:0.33, until:'clothesline' },   // the covered tub (Bryce: "a big drum in the way" by the bed, no job): now the wash tub under the washing line
   { name:'wheelbarrow',  gx:0.85, gy:0.92, s:0.6, until:'barrow' },   // Bryce: small, just a decoration the gnomes make; parked by the seed bed's gate (round five)
@@ -429,8 +429,8 @@ function routineFor(h) {   // what the couple do at this hour when no job needs 
 // to the woodpile, then carries water up from the old creek bed (behind the bench, off the back edge) to the new bed.
 const CLEAR_ITEMS = [];   // filled in below from HOME_KIT: the pieces Hazel clears, in the order she takes them
 const WOOD_ITEMS = [[0.90, 0.44], [0.86, 0.66], [0.34, 0.90]], STICK_PILE = [0.52, 0.30];   // three fallen branches Wendel gathers onto the stick pile; Hazel's good sticks from clearing go there too (round six: sticks are for fences, firewood comes from the old stump)
-const STUMP_AT = [0.75, 0.50], STUMP_ST = { rock: 0.3, chop: 0.45, carry: 0.68, fill: 0.88 }, STUMP_PILE = [0.76, 0.54];   // the old stump in the yard, and how far through "Dig out the old stump" each stage starts (content.js stages)
-const WOOD_DROP = [0.39, 0.06], WATER_TRIPS = 3;   // right in front of the woodpile (firewood prop, by the house's right roots), so the wood he sets down lands on it
+const STUMP_AT = [0.44, 0.93], STUMP_ST = { rock: 0.3, chop: 0.45, carry: 0.68, fill: 0.88 }, STUMP_PILE = [0.50, 0.95];   // the old stump in the yard, and how far through "Dig out the old stump" each stage starts (content.js stages)
+const WOOD_DROP = [0.47, 0.10], WATER_TRIPS = 3;   // right in front of the woodpile (firewood prop, by the house's right roots), so the wood he sets down lands on it
 // "Look for water": the spring is between the roots of the big old stump at the back of the yard, choked with stones and dead leaves.
 // Wendel searches the yard until SPRING_FOUND, then clears it; the water rises into a little pool and trickles off toward the dry creek.
 const MOSS_SPOTS = [[0.70, 0.20], [0.12, 0.27], [0.16, 0.78], [0.58, 0.16]];   // mossy roots and rocks round the yard edge
@@ -491,12 +491,14 @@ const WORKPATH = {
   doorstep: () => [0.33, 0.27, 'dig'],   // kneeling by the door, bedding each flat stone in (stones: kneel, not hammer)
   clothesline: p => p < 0.5 ? [0.48, 0.16, 'build'] : [0.58, 0.10, 'build'],   // one post, then the other
   lantern: () => [0.71, 0.54, 'build'],   // at the old lantern stump
+  logsaw: (p, g) => {   // round eleven notes 1-3: he saws the old log round by round from its end, carrying the rounds to the woodpile as he goes
+    const e = logEnd(p); return workLoop(g, 'logsaw', () => [[e[0] + 0.03, e[1] + 0.04, actOr(g, 'chop', 'build'), false, 7, e], [e[0] + 0.02, e[1] + 0.05, 'pickup', false, 2.5, e], [WOOD_DROP[0] + 0.02, WOOD_DROP[1] + 0.02, 'putdown', 'logs', 2.5, [0.43, 0.05]]]); },
   stump: (p, g) => {   // round six (Bryce): in stages. Dig round the roots, rock it loose till it tips, chop it and carry the firewood to the pile, fill the hole
     const [sx, sy] = STUMP_AT, at = [sx, sy];
     if (p < STUMP_ST.rock) return workLoop(g, 'stump-dig', () => [[sx - 0.045, sy + 0.04, 'dig', false, 6, at], [sx + 0.045, sy + 0.045, 'dig', false, 6, at], [sx - 0.06, sy - 0.01, 'dig', false, 5, at]]);
     if (p < STUMP_ST.chop) return workLoop(g, 'stump-dig', () => [[sx - 0.045, sy + 0.04, 'dig', false, 6, at], [sx + 0.045, sy + 0.045, 'dig', false, 6, at]]);   // v80 (Bryce): still digging while it rocks loose, until it is out of the ground; then the chopping
     if (p < STUMP_ST.carry) return [sx - 0.02, sy + 0.07, actOr(g, 'chop', 'build'), false, 0, [sx + 0.03, sy + 0.04]];   // v80 (Bryce): chopping it up where it fell; the chopped pile grows beside the hole
-    if (p < STUMP_ST.fill) return workLoop(g, 'stump-carry', () => [[STUMP_PILE[0] + 0.03, STUMP_PILE[1] + 0.03, 'pickup', false, 2.5, STUMP_PILE], [WOOD_DROP[0] + 0.02, WOOD_DROP[1] + 0.02, 'putdown', 'logs', 2.5, [0.37, 0.11]]]);   // then armful by armful to the woodpile
+    if (p < STUMP_ST.fill) return workLoop(g, 'stump-carry', () => [[STUMP_PILE[0] + 0.03, STUMP_PILE[1] + 0.03, 'pickup', false, 2.5, STUMP_PILE], [WOOD_DROP[0] + 0.02, WOOD_DROP[1] + 0.02, 'putdown', 'logs', 2.5, [0.43, 0.05]]]);   // then armful by armful to the woodpile
     return workLoop(g, 'stump-fill', () => [[sx - 0.03, sy + 0.05, 'dig', false, 6, at], [sx + 0.04, sy + 0.04, 'dig', false, 5, at]]);
   },
   firering: (p, g) => workLoop(g, 'firering', c => {   // round six: he fetches flat stones and sets them round the fire one by one (the ring appears as he goes)
@@ -512,14 +514,14 @@ const WORKPATH = {
     return [[SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3, SPRING.at], [...wetPatchAt(k), 'water', 'can', 4, bedPt(k)], [...wetPatchAt(k2), 'water', false, 4, bedPt(k2)]]; }),
 };
 // little chores (build 3): a few spots each, then home with it (sticks to the stick pile, the rest to Hazel's shelf by the door)
-const MOSS_STUMPS = [{ at:[0.73, 0.115], face:[0.775, 0.07] }, { at:[0.50, 0.965], face:[0.44, 0.955] }, { at:[0.245, 0.93], face:[0.30, 0.94] }];   // round-seven note 16: she stands at the old stumps (and the old log) in HOME_KIT and picks the moss off them
+const MOSS_STUMPS = [{ at:[0.73, 0.115], face:[0.775, 0.07] }, { at:[0.245, 0.93], face:[0.30, 0.94] }];   // round-seven note 16: she stands at the old stumps (and the old log) in HOME_KIT and picks the moss off them
 const CHORE_SPOTS = { 'chore:sticks': TWIG_SPOTS, 'chore:stones': [[0.62, 0.92], [0.90, 0.80], [0.44, 0.86], [0.96, 0.62], [0.74, 0.40]], 'chore:moss': MOSS_STUMPS.map(m => m.at),
   'chore:seeds': [[0.94, 0.56], [0.84, 0.58], [0.76, 0.82], [0.20, 0.70], [0.30, 0.80]],
   'chore:dew': [[SPRING.at[0] - 0.06, SPRING.at[1] + 0.10], [SPRING.at[0] + 0.08, SPRING.at[1] + 0.14], [0.66, 0.30], [0.88, 0.30]] };
 function choreWork(id, p, g) {
   const c = C.chores.list.find(c => c.id === id), home = id === 'chore:sticks' ? [STICK_PILE[0] + 0.05, STICK_PILE[1] + 0.03, 'putdown', true, 2.5, STICK_PILE] : [SPOTS.door[0] + 0.03, SPOTS.door[1] + 0.04, 'putdown', false, 2, [0.30, 0.28]];
   if (id === 'chore:weed') return workLoop(g, id, n => [2, 8, 5, 0, 6].map(k => [...wetPatchAt(k), 'gather', false, 4, bedPt(k)]));   // along the bed, pulling the odd weed
-  if (id === 'chore:moss') return workLoop(g, id, n => [...MOSS_STUMPS.map(m => [...m.at, 'gather', false, 4, m.face]), home]);
+  if (id === 'chore:moss') return workLoop(g, id, n => [...MOSS_STUMPS.filter((m, i) => i === 0 || taskProg('logsaw') <= 0).map(m => [...m.at, 'gather', false, 4, m.face]), home]);   // (the old log goes once it is sawn up)
   const S = (CHORE_SPOTS[id] || TWIG_SPOTS).filter(([x, y]) => !onBed('0,0', x, y) && !onBed('0,0', x, y - 0.05));   // never out in the middle of the seed bed
   return workLoop(g, id, n => [[...S[(n * 2) % S.length], c.act, false, 3.5], [...S[(n * 2 + 1) % S.length], c.act, false, 3.5], home]);
 }
@@ -585,8 +587,11 @@ function benchEvening() {   // tonight they sit out on the bench? Before the hou
   let h = 7; for (const c of new Date(G.now()).toDateString()) h = (h * 31 + c.charCodeAt(0)) | 0; return (h >>> 3) % 4 !== 0;
 }
 const JOB_FACE = { bench:BENCH, lantern:[0.75, 0.50] };   // what a working gnome turns to face (default: the middle of the yard)
-const WORKCORNER = [0.09, 0.27];   // v99 (note 18): Wendel's work corner, beside the house on its left (the story's lean-to grows out of it)
-const WORKSPOT = { workcorner:[WORKCORNER[0] + 0.06, WORKCORNER[1] + 0.07], logseat:[0.185,0.495], feeder:[0.82,0.66], clearing:[0.54,0.66], wheelbarrow:[0.78,0.88], shelter:[0.38,0.30], lanternstump:[0.71,0.54], fence:[0.80,0.74], sapling:[0.24,0.84], stonebench:[0.11,0.46], seedbed:[0.54,0.66], herbs:[HERB_AT[0] - 0.03, HERB_AT[1] + 0.08] };
+const WORKCORNER = [0.09, 0.27];
+const SALVAGE_AT = [0.07, 0.40];   // round eleven note 7: the good bits from the loggers' rubbish, stacked in front of Wendel's work corner for little makes   // v99 (note 18): Wendel's work corner, beside the house on its left (the story's lean-to grows out of it)
+const LOG_AT = [0.28, 0.93], LOG_LEN = 0.22;   // round eleven: the old fallen log (HOME_KIT stumps-rocks-06), lying left-right on screen
+function logEnd(p) { return [LOG_AT[0] + LOG_LEN * (0.5 - p) * 0.5, LOG_AT[1] - LOG_LEN * (0.5 - p) * 0.5]; }   // where the sawn end is now (screen-right end first)
+const WORKSPOT = { workcorner:[WORKCORNER[0] + 0.06, WORKCORNER[1] + 0.07], logseat:[0.185,0.495], feeder:[0.82,0.66], clearing:[0.54,0.66], wheelbarrow:[0.78,0.88], shelter:[0.38,0.30], lanternstump:[0.40,0.97], logsaw:[0.36, 0.95], fence:[0.80,0.74], sapling:[0.24,0.84], stonebench:[0.11,0.46], seedbed:[0.54,0.66], herbs:[HERB_AT[0] - 0.03, HERB_AT[1] + 0.08] };
 
 // ---------- loading ----------
 const IM = {};
@@ -644,8 +649,10 @@ for (const k of ['fest-idea', 'fest-secret', 'fest-night', 'fest-surprise', 'fes
 Object.assign(ART_SLOTS, { 'feeding-dish': { w: 62 },   /* Bryce: bigger for the animals */ 'nest-nest': { w: 40 }, 'nest-burrow': { w: 54 }, 'nest-leafpile': { w: 70 }, 'nest-stones': { w: 60 } });
 // the first month's story (docs/STORY.md): one painting per page (page-1-1 ...), and a painting for each little make (make-<id>)
 Object.assign(ART_SLOTS, { 'pond': { w: 146 } });
+[74, 88, 104, 112].forEach((w, i) => { ART_SLOTS['stick-pile-' + (i + 1)] = { w }; });   // round eleven note 10 (art day 22): the stick pile, armful by armful
+for (const k of ['yard-workcorner', 'heap-bare']) ART_SLOTS[k] = {};   // round eleven (art day 22): the finished little work corner; the rubbish heap's bare mound once the junk is off
 for (const k of ['garden-heap', 'garden-heap-half', 'garden-hollow', 'garden-hollow-rain', 'garden-pond-large', 'seedbed-rect', 'wildflower-patch-1', 'wildflower-patch-2', 'wildflower-patch-3', 'yard-leanto', 'yard-leanto-frame', 'spring-paved', 'room-stump-hollowing']) ART_SLOTS[k] = {};   // art day 21 (v99)
-const ART_RAW = /^(garden-|seedbed-rect|wildflower-patch|yard-leanto|spring-paved)/;   // drawn at their own size and spot, never trimmed or settled
+const ART_RAW = /^(garden-|heap-|seedbed-rect|wildflower-patch|yard-leanto|yard-workcorner|spring-paved)/;   // drawn at their own size and spot, never trimmed or settled
 for (const k of ['spirit-float', 'spirit-point', 'spirit-settle', 'toad-legs', 'toad-house']) ART_SLOTS[k] = {};   // the Wood spirit's painted poses (art day 14)
 for (const p of C.story.pages) ART_SLOTS['page-' + p.id.replace('.', '-')] = {};
 // art day 16: the neighbours' wishes, painted sizes in world px (the stand-ins were drawn 1.3x)
@@ -658,7 +665,7 @@ for (const ws of Object.values(C.wishes.list)) for (const w of ws) ART_SLOTS['wi
 for (const b of C.animals.beats) if (b.kind === 'page') ART_SLOTS['page-a-' + b.id] = {};
 ART_SLOTS['portrait-rabbit'] = {}; ART_SLOTS['vis-mouse-stuck'] = {}; ART_SLOTS['mouse-bottle'] = {};   // round six (art day 17): the mouse with a broken bottle neck stuck on its head, and the neck on its own once Hazel tips it off
 ART_SLOTS['herb-box'] = {};   // art day 20: the raised herb box (herbBox)
-for (const k of ['stump-1', 'stump-2', 'stump-c1', 'stump-c2', 'stump-c4', 'stump-4', 'make-pebbleline']) ART_SLOTS[k] = {};   // art day 17: the old stump dug out and chopped up in stages (paintedStump); art day 16: the thin pebble line round the seed bed (pebbleEdge)
+for (const k of ['stump-1', 'stump-2', 'stump-c2', 'stump-c4', 'stump-4', 'make-pebbleline']) ART_SLOTS[k] = {};   // art day 17: the old stump dug out and chopped up in stages (paintedStump); art day 16: the thin pebble line round the seed bed (pebbleEdge)
 // art day 15 (tools/cut_day15.py): crops, healing pieces, the animals' story pieces, the neighbours' farms, the bigger oaks. Each is drawn
 // by height where its stand-in was (cropPic, HEAL_PAINT, FARM_PAINT); missing files leave the stand-ins.
 for (const k of ['carrot', 'lettuce', 'bean']) for (let i = 1; i <= 4; i++) ART_SLOTS[`crop-${k}-${i}`] = {};
@@ -764,7 +771,7 @@ class Gnome {
   }
   pick() {
     const h = dayPhase().h, rt = routineFor(h);
-    const job = G.running().find(r => r.def.who === this.who);
+    const job = jobOf(this.who);
     if (rt === 'fest') { const [cx, cy] = festSpot('dance'); this.job = null; this.act = null; this.routine = 'fest'; this.plan = 'dance'; this.speed = 0.16; this.goto(cx + (this.who === 'him' ? -0.05 : 0.05), cy); return; }
     if (rt === 'sleep' || (rt && !job)) {   // the daily rhythm: sleep always wins, meals and the evening sit only when no job waits
       if (this.goesIn(rt)) {   // bedtime (and the evening sit, once the house has a hearth) happen indoors: walk to the door and go in
@@ -798,7 +805,7 @@ class Gnome {
   settleIn() {   // opening the game at bedtime: they are already indoors (on festival evening: already dancing on the green)
     const rt = routineFor(dayPhase().h);
     if (rt === 'fest') { [this.gx, this.gy] = festSpot('dance'); this.tx = this.gx; this.ty = this.gy; this.routine = 'fest'; this.dancing = true; return; }
-    if (rt && this.goesIn(rt) && (rt === 'sleep' || !G.running().some(r => r.def.who === this.who))) { this.inside = true; this.routine = rt; this.act = rt; [this.gx, this.gy] = SPOTS.door; this.tx = this.gx; this.ty = this.gy; this.wait = 2; }
+    if (rt && this.goesIn(rt) && (rt === 'sleep' || !jobOf(this.who))) { this.inside = true; this.routine = rt; this.act = rt; [this.gx, this.gy] = SPOTS.door; this.tx = this.gx; this.ty = this.gy; this.wait = 2; }
   }
   update(dt) {
     if (this.sayT > 0) this.sayT -= dt;
@@ -815,7 +822,7 @@ class Gnome {
     }
     if (this.inside) {   // indoors (see the room); come out when the routine ends, or for a job unless it is bedtime
       this.wait -= dt; if (this.wait > 0) return; this.wait = 2;
-      const rt = routineFor(dayPhase().h), job = G.running().some(r => r.def.who === this.who);
+      const rt = routineFor(dayPhase().h), job = !!jobOf(this.who);
       if (rt !== this.routine || !this.goesIn(rt) || (rt !== 'sleep' && job)) { this.inside = false; this.act = null; this.routine = null; this.plan = null; this.dir = 'front'; this.wait = 0; this.pick(); }
       return;
     }
@@ -841,8 +848,8 @@ class Gnome {
         }
         return;
       }
-      if (this.act === 'sit' && !this.routine && G.running().some(r => r.def.who === this.who)) { this.pick(); return; }   // work to do: up off the bench at once
-      if (this.routine && this.wait <= 0 && routineFor(dayPhase().h) === this.routine && !G.running().some(r => r.def.who === this.who && this.routine !== 'sleep')) { this.wait = 2; return; }
+      if (this.act === 'sit' && !this.routine && jobOf(this.who)) { this.pick(); return; }   // work to do: up off the bench at once
+      if (this.routine && this.wait <= 0 && routineFor(dayPhase().h) === this.routine && !(jobOf(this.who) && this.routine !== 'sleep')) { this.wait = 2; return; }
       if (this.wait <= 0) this.pick();
       return;
     }
@@ -933,6 +940,7 @@ Gnome.prototype.drawSitting = function (now) {   // on the bench with a painted 
 // watering and picking the seed bed, helping a creature in trouble, carrying a basket over to a neighbour. A gnome walks over and
 // does it in a few steps [gx, gy, act, carry on the way, seconds, face]; onDone runs at the end. The game's state has usually
 // changed already (game.js), and the drawing follows the gnome (bedChore). A gnome on a job pops over for a moment, then goes back.
+function jobOf(who) { const R = G.running(); return R.find(r => r.def.who === who) || R.find(r => r.helper === who && r.endsAt > G.now()) || null; }   // round eleven note 8: a gnome helping on a two-gnome job works it too
 function choreGnome(pref) {   // who does it: `pref` if free, else the other if free, else whoever is up; null while they sleep or dance
   const rt = routineFor(dayPhase().h); if (rt === 'sleep' || rt === 'fest') return null;
   const can = g => !g.dancing && !g.chore && g.errand !== 'dish', free = g => !G.running().some(r => r.def.who === g.who);
@@ -1855,14 +1863,14 @@ function drawHomeRuts() {
 }
 // art day 20 (round nine note 1: the stumps looked small beside the gnomes, and bigger would blur): the four stump pictures are repainted
 // about 2.7x larger. KIT_HI keeps every old size rule working (the width each was painted at before) and grows them a little on screen.
-const KIT_HI = { 'stumps-rocks-01':190, 'stumps-rocks-02':101, 'stumps-rocks-07':184, 'stumps-rocks-08':126 }, KIT_GROW = 1.3;
+const KIT_HI = { 'stumps-rocks-01':190, 'stumps-rocks-02':101, 'stumps-rocks-07':184, 'stumps-rocks-08':126, 'stumps-rocks-06':300, 'stumps-rocks-12':300 }, KIT_GROW = 1.3;   // art day 22 (round eleven note 2): the fallen log repainted at gnome scale
 const kitName = k => k.replace(/^kit-/, '').replace(/^kit\//, '');
 function kitK(k, im) { const w0 = KIT_HI[kitName(k)]; return w0 && im && im.width ? w0 * KIT_GROW / im.width : 1; }   // multiply a width-based scale by this
 function kitGrow(k) { return k && KIT_HI[kitName(k)] ? KIT_GROW : 1; }   // multiply a height by this
 const HOME_KIT = [   // [piece, healed piece (null: it goes when the job is done), gx, gy, scale, job that clears it]
-  ['stumps-rocks-01', 'stumps-rocks-07', 0.775, 0.07, 0.7], ['stumps-rocks-02', 'stumps-rocks-02', 0.44, 0.955, 0.7],   // v99 (round ten notes 20, 21): moved clear of the little oak (it was at 0.13, 0.84, roots touching the oak's ring), and it stays the same stump when the yard greens (it used to swap to a much taller one)
+  ['stumps-rocks-01', 'stumps-rocks-07', 0.775, 0.07, 0.7],   // round eleven note 1: the big dead stump at 0.44, 0.955 is the one Wendel digs out now (PROPS lanternstump)   // v99 (round ten notes 20, 21): moved clear of the little oak (it was at 0.13, 0.84, roots touching the oak's ring), and it stays the same stump when the yard greens (it used to swap to a much taller one)
  
-  ['stumps-rocks-03', 'stumps-rocks-09', 0.02, 0.17, 0.55], ['stumps-rocks-06', 'stumps-rocks-12', 0.30, 0.94, 0.6, null, true],   // true: the greened log is drawn mirrored, so it lies the same way as the bare one (note 21)
+  ['stumps-rocks-03', 'stumps-rocks-09', 0.02, 0.17, 0.55], ['stumps-rocks-06', 'stumps-rocks-12', 0.28, 0.93, 0.6, 'logsaw'],   // round eleven: sawn up for the woodpile (job logsaw)   // true: the greened log is drawn mirrored, so it lies the same way as the bare one (note 21)
   ['stumps-rocks-04', null, 0.60, 0.13, 0.6, 'clear'], ['stumps-rocks-05', null, 0.46, 0.07, 0.55, 'clear'],
   ['leftovers-01', null, 0.22, 0.50, 0.55, 'clear'], ['leftovers-02', null, 0.84, 0.36, 0.45, 'clear'], ['leftovers-03', null, 0.18, 0.74, 0.6, 'clear'],
   ['leftovers-04', null, 0.49, 0.03, 0.55, 'clear'], ['leftovers-05', null, 0.52, 0.90, 0.5, 'clear'], ['leftovers-09', null, 0.93, 0.29, 0.45, 'clear'],
@@ -1921,16 +1929,19 @@ function drawStump(img, x, y, w, h, now) {
 }
 // art day 17: the four painted stages, all at one scale (stump-1 dug round with its roots bared, 2 rocked loose and tipped by its hole,
 // 3 chopped into firewood, 4 the hole filled), crossfaded as the job goes; the chopped wood goes to the woodpile a piece at a time
-const STUMP_K = 1.55;   // stump-1's width over the plain stump's
+const STUMP_K = 1.06;   // stump-1's width over the plain stump's (art day 22 repaint: every stage painted at one scale, each on its own patch of earth)
 function paintedStump(img, x, y, w, h, now) {
   const p = taskProg('stump'), S = STUMP_ST, k = w * STUMP_K / art('stump-1').width;
   const pic = (n, al, dx = 0, sc = 1, rot = 0, cut = null) => { const im = art('stump-' + n); if (!im || al <= 0) return; const iw = im.width * k * sc, ih = im.height * k * sc;
     ctx.save(); ctx.globalAlpha *= Math.min(1, al); ctx.translate(x + dx, y); if (rot) ctx.rotate(rot);
     if (cut) { ctx.beginPath(); ctx.rect(cut[0] * iw - iw / 2, -ih, (cut[1] - cut[0]) * iw, ih * 2); ctx.clip(); }   // cut: draw only this part of the picture, across (0..1)
-    ctx.drawImage(im, -iw / 2, -ih * 0.82, iw, ih); ctx.restore(); };
-  if (p < S.rock) { const dug = sstep(0.05, 0.4, p / S.rock); if (dug < 1) { ctx.save(); ctx.globalAlpha = 1 - dug; shadow(x, y, w * 0.48, w * 0.17); ctx.drawImage(img, x - w / 2, y - h, w, h); ctx.restore(); } pic(1, dug); return; }
+    ctx.drawImage(im, -iw / 2, -ih, iw, ih); ctx.restore(); };
+  if (p < S.rock) { const dug = sstep(0.05, 0.4, p / S.rock); pic(1, dug); if (dug < 1) { ctx.save(); ctx.globalAlpha = 1 - dug; ctx.drawImage(img, x - w / 2, y - h, w, h); ctx.restore(); } return; }   // the dug-round picture underneath, the plain stump fading off it
   if (p < S.chop) { const rk = (p - S.rock) / (S.chop - S.rock), tip = sstep(0.65, 0.9, rk); const rock = rk < 0.7 ? Math.sin(now / 240) * 0.05 * Math.min(1, rk * 2) : 0; pic(1, 1 - tip, 0, 1, 0, [0.63, 1]); pic(1, 1 - tip, 0, 1, rock, [0, 0.63]); pic(2, tip); return; }   // round nine note 4: the stump rocks, its heap of dug earth stays put   // rocked to and fro, then over it goes
   const fill = sstep(S.fill, 1, p), chop = sstep(S.chop, S.chop + 0.04, p), chopped = sstep(S.chop, S.carry, p), carried = sstep(S.carry, S.fill - 0.02, p);
+  if (!art('stump-c1')) {   // art day 22 (round eleven notes 1-3): tipped beside its hole, cut into rounds, the rounds carried off leaving the hole and chips, then filled in
+    const c2 = sstep(0.35, 0.45, chopped), c4 = sstep(0.45, 0.55, carried), f4 = sstep(0.3, 0.6, fill);   // quick swaps: the pictures are not drawn on one another
+    if (c2 < 1) { pic('c2', c2); pic(2, 1 - c2); return; } if (c4 < 1) { pic('c4', c4); pic('c2', 1 - c4); return; } pic(4, f4); pic('c4', 1 - f4); return; }
   if (chop > 0 && fill < 1) { pic(4, chop); ctx.save(); ctx.globalAlpha *= chop * (1 - fill); ctx.translate(x, y - w * 0.05); ctx.scale(1, 0.32);   // the hole: a soft dark hollow in the painted patch of dug earth
     const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, w * 0.3); gr.addColorStop(0, 'rgba(40,26,16,0.95)'); gr.addColorStop(0.6, 'rgba(58,40,26,0.8)'); gr.addColorStop(1, 'rgba(90,66,44,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(0, 0, w * 0.3, 0, 7); ctx.fill(); ctx.restore(); }
   if (!art('stump-c4')) { pic(2, 1 - chopped); return; }
@@ -1951,7 +1962,7 @@ function drawProp(p) {
   if (a < 1 && BEFORE[p.name] && !drawSlot(BEFORE_ART[p.name], x, y, 1 - a)) BEFORE[p.name](x, y, 1 - a);
   if (p.name === 'lanternstump' && a > 0 && a < 1) return drawStump(img, x, y, w, h, now);   // round six: dug out in stages, not a fade
   if (p.name === 'lanternstump' && a <= 0 && art('stump-4')) { const t = G.s.tasks.stump, gone = t ? sstep(0, 1, (G.now() - t.endsAt) / (3 * 3600000)) : 1;   // v80 (Bryce): the filled-in hole settles back into the ground; v94 (round nine, note 8): within about three hours, not a day
-    if (gone < 1 && !taskProg('yardbath')) { const im = art('stump-4'), k = w * STUMP_K / art('stump-1').width; ctx.save(); ctx.globalAlpha = 0.9 * (1 - gone); ctx.drawImage(im, x - im.width * k / 2, y - im.height * k * 0.82, im.width * k, im.height * k); ctx.restore(); } return; }
+    if (gone < 1 && !taskProg('yardbath')) { const im = art('stump-4'), k = w * STUMP_K / art('stump-1').width; ctx.save(); ctx.globalAlpha = 0.9 * (1 - gone); ctx.drawImage(im, x - im.width * k / 2, y - im.height * k, im.width * k, im.height * k); ctx.restore(); } return; }
   if (p.name === 'lanternstump' && a <= 0) { if (G.landStage().key === 'barren') { ctx.save(); ctx.globalAlpha = 0.55; kitPiece('g-st-patch-07', x, y + 4, w * 0.3, true); ctx.restore(); } return; }   // round six: a soft patch of filled-in earth where it stood (the clods looked like odd little ovals)
   if (p.gone && a < 1) { ctx.save(); ctx.globalAlpha = (1 - a) * 0.9; groundPatch(x, y, w * 0.5, w * 0.18); for (let i = 0; i < 9; i++) blob(x + (rnd(i + 90) - 0.5) * w * 0.55, y - 2 + (rnd(i + 91) - 0.5) * w * 0.14, (3 + rnd(i + 92) * 4) * 1.2, (2 + rnd(i + 93) * 2) * 1.2, ['#6e5238', '#7d6046', '#5e4632'][i % 3]); ctx.restore(); }   // a few clods of freshly turned earth where it stood
   // no glow on built things or job spots (Bryce: a fence shouldn't glow); only things you pick up glow. The Jobs badge says when there's work.
@@ -2211,7 +2222,12 @@ function stickPileShow() { return Math.max(taskProg('clear'), Math.min(1, taskPr
 // the tidy pile of gathered branches and stones, and the washing line: things that stand up, so they are depth-sorted
 const EXTRAS = [
   { gx: STICK_PILE[0], gy: STICK_PILE[1], show: stickPileShow, draw(x, y, a) {
-    if (drawSlot('stick-pile', x, y + 6, a, { scale: stickPileSize() })) return;
+    // round eleven note 10 (Bryce: the pile is there from the start): it is built up armful by armful as Hazel clears (and Wendel adds
+    // his fallen branches), then goes down as the fence takes it. Four painted sizes (art day 22); until then the one picture, growing.
+    const lv = Math.min(stickPileShow(), stickPileSize() < 1 ? (stickPileSize() - 0.3) / 0.7 : 1);
+    if (art('stick-pile-1') && art('stick-pile-4')) { const S = [1, 2, 3, 4].map(n => 'stick-pile-' + n).filter(k => art(k)), v = lv * S.length, i = Math.min(S.length - 1, Math.max(0, Math.ceil(v) - 1)), f = Math.min(1, (v - i) * 3);
+      if (i > 0 && f < 1) drawSlot(S[i - 1], x, y + 6, 1 - f); drawSlot(S[i], x, y + 6, i > 0 ? f : Math.min(1, v * 3)); return; }   // each armful fades in over the last
+    if (drawSlot('stick-pile', x, y + 6, Math.min(1, lv * 5), { scale: 0.35 + 0.65 * lv })) return;
     ctx.save(); ctx.globalAlpha = a; shadow(x, y, 40, 12);
     for (let i = 0; i < 7; i++) stick(x - 26 + rnd(i + 20) * 52, y - 6 - i * 3, 40 + rnd(i + 21) * 18, -0.35 + rnd(i + 22) * 0.7);
     stone(x + 34, y + 2, 9); stone(x + 46, y - 6, 7); ctx.restore(); } },
@@ -2323,9 +2339,10 @@ EXTRAS.push({ gx: FENCE_GATE.gx, gy: FENCE_GATE.gy, show: () => bedFenceShown() 
   drawFenceSeg(L, M, al, g, GATE_FOOT, K, [62, 228], true);   // the gate, swung in against its post
   drawFenceSeg(L, R, al, g, GATE_FOOT, K, [0, 62]); drawFenceSeg(L, R, al, g, GATE_FOOT, K, [228, 300], true); } });   // both posts stay where they stand
 if (NEWGROUND) for (const [a, b, gx, gy, sc, job, flipB] of HOME_KIT) EXTRAS.push({ gx, gy,
-  show: () => G.landStage().key === 'barren' ? (job === 'clear' ? clearLeft(gx, gy) : 1 - (job ? taskProg(job) : 0)) : b ? 1 : 0,
+  show: () => job === 'logsaw' ? (taskProg('logsaw') >= 1 ? 0 : 1) : G.landStage().key === 'barren' ? (job === 'clear' ? clearLeft(gx, gy) : 1 - (job ? taskProg(job) : 0)) : b ? 1 : 0,
   draw(x, y, al) { const kk = G.landStage().key === 'barren' ? a : b, im = IM['kit-' + kk]; if (!im || !im.width) return; const q = sc * kitK(kk, im), w = im.width * q, h = im.height * q;
-    ctx.save(); ctx.globalAlpha = al; shadow(x, y, w * 0.38, w * 0.1); if (flipB && kk === b) { ctx.translate(x, 0); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, y - h * 0.88, w, h); } else ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); ctx.restore(); } });
+    ctx.save(); ctx.globalAlpha = al;
+    if (job === 'logsaw') { const p = taskProg('logsaw'); if (p > 0) { ctx.beginPath(); ctx.rect(x - w / 2 - 4, y - h * 1.2, w * (1 - p * 0.97) + 4, h * 1.6); ctx.clip(); } }   /* round eleven: shorter round by round as he saws it up */ shadow(x, y, w * 0.38, w * 0.1); if (flipB && kk === b) { ctx.translate(x, 0); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, y - h * 0.88, w, h); } else ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); ctx.restore(); } });
 for (const [a, b, gx, gy, sc, job] of HOME_KIT) if (job === 'clear') CLEAR_ITEMS.push([gx, gy]);
 let clearDust = -1;
 function clearLeft(gx, gy) {   // each bit of rubbish goes in its turn while Hazel works, with a little puff of dust as it goes
@@ -2512,9 +2529,11 @@ function drawDishPart(x, y, a, part) {   // the painted dish, or only its stump 
 // Bryce: putting food out is not magic; a gnome walks over and tips it into the dish (whoever is free). The dish fills as they tip it in.
 let DISH_FILL = null;   // { food, g, p: 0..1 tipped in so far }
 function dishSpot() { return [FEEDER.gx - 0.045, FEEDER.gy + 0.015]; }
-function startDishFill(food) {
-  const free = gnomes.filter(g => !g.inside && !g.dancing && !(g.job && G.running().some(r => r.id === g.job))), pool = free.length ? free : [];
-  const g = pool[(Math.random() * pool.length) | 0]; if (!g) { DISH_FILL = null; return null; }
+function startDishFill(food) {   // round eleven note 14 (Bryce: the seed looked like the player put it in): it is always Hazel's hands. Busy on a job, she
+  // pops over and goes back to it; asleep, it waits by the door and she puts it out when she gets up (the dish stays empty till then).
+  const rt = routineFor(dayPhase().h), h = gnomes.find(g => g.who === 'her');
+  if (!h || rt === 'sleep' || rt === 'fest' || h.dancing || h.chore || h.errand === 'dish') { DISH_FILL = { food, g: null, p: 0, wait: true }; return null; }
+  const g = h; if (g.inside) { g.inside = false; [g.gx, g.gy] = SPOTS.door; g.tx = g.gx; g.ty = g.gy; g.dir = 'front'; }
   DISH_FILL = { food, g, p: 0 }; g.errand = 'dish'; g.job = null; g.routine = null; g.act = null; g.pace = null;
   const [x, y] = dishSpot(); g.plan = 'pickup'; g.carryWalk = g.who === 'her';   // Hazel carries her basket; Wendel's carry strip is firewood, so he just walks
   g.goto(x, y); g.faceTowards(x, y, [FEEDER.gx, FEEDER.gy]); return g;
@@ -2645,7 +2664,7 @@ function drawVisitor(v, now) {
   const coat = def.id === 'hedgehog' && G.beatDone('hogShopping') && season() === 'autumn', look = def.id === 'hedgehog' ? (coat ? 'hedgehog-coat' : season() === 'spring' && G.beatDone('hogSpring') ? 'hedgehog-thin' : null) : null;
   const dance = def.id === 'lyrebird' && !moving && Math.floor(now / 3500) % 3 === 2 && art('lyre-dance');   // the lyrebird dances now and then while it visits
   const stuck = def.id === 'mouse' && v.trouble && v.trouble.meet;   // the mouse's first meeting: an old loggers' bottle on its head (art slot vis-mouse-stuck)
-  if (def.id === 'rabbit') { const im = IM['rabbit-' + (moving || v.phase === 'eat' ? 'dish' : v.pose || 'sit')]; if (im && im.width) { const w = im.width * RABBIT_PIX, hh = im.height * RABBIT_PIX; ctx.save(); ctx.translate(x, yy); if (!v.faceR) ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, -hh, w, hh); ctx.restore(); } }
+  if (def.id === 'rabbit') { const im = IM['rabbit-' + (moving || v.phase === 'eat' || (v.meet && !v.notice) ? 'dish' : v.pose || 'sit')]; if (im && im.width) { const w = im.width * RABBIT_PIX, hh = im.height * RABBIT_PIX; ctx.save(); ctx.translate(x, yy); if (!v.faceR) ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, -hh, w, hh); ctx.restore(); } }
   else if (stuck && art('vis-mouse-stuck')) drawCreature(Object.assign({}, def, { id: 'mouse-stuck' }), x, yy, h * 1.3, v.faceR);   // the bottle neck sits above its head
   else if (dance) { const w = h * dance.width / dance.height; ctx.drawImage(dance, x - w / 2, yy - h, w, h); }
   else drawCreature(look && art('vis-' + look) ? Object.assign({}, def, { id: look, faces: 'R' }) : def, x, yy, h, v.faceR);
@@ -2666,6 +2685,7 @@ let nextAnimalAt = 0, dropAt = 0;
 function animalNext() {
   const nowMs = performance.now(); if (nowMs < nextAnimalAt || RABBIT.on) return; nextAnimalAt = nowMs + 4000;
   const n = G.nextAnimal(); if (!n) return;
+  if (n.kind === 'meet' && (nowMs - BACK_AT < 6000 || sheetKind || roomOn || document.hidden)) { nextAnimalAt = nowMs + 1500; return; }   // round eleven note 6: a first meeting waits until you are back and looking
   if (n.kind === 'drop') { const [a, b] = C.friends.dropEvery; if (!dropAt) dropAt = nowMs + (1 + Math.random() * 3) * 60000; if (nowMs < dropAt) return; dropAt = nowMs + (a + Math.random() * (b - a)) * 60000; }
   if (n.kind === 'meet' && !choreGnome(n.id === 'mouse' ? 'her' : n.id === 'robin' ? 'him' : 'her')) return;   // someone has to be up to say hello
   if (n.kind === 'ask' && n.ask.by !== 'luck' && !choreGnome(n.ask.by)) return;
@@ -2690,6 +2710,7 @@ function spawnVisitor(def, plan) {
   visitor = { def, kind: k, gx: from[0], gy: from[1], phase: 'in', t: 0, stay, perch: 0, hungry: k === 'eat', trouble, ask: k === 'home', meet: k === 'meet' && !trouble, pose,
               speed: def.speed || 0.06, faceR: to[0] - to[1] > from[0] - from[1], lift: 0 };
   Walk.go(visitor, to[0], to[1], how);
+  if (visitor.meet) { const [bx, by] = toWorld(FEEDER.gx, FEEDER.gy); ALLDONE.ease = { t: 0, z0: cam.z, x0: cam.x, y0: cam.y, z1: clampZ(Math.max(cam.z, 1.1)), x1: bx, y1: by - 30 }; liveUntil = Math.max(liveUntil, performance.now() + 30000); }   // round eleven note 6 (Bryce: it all happened too quick): a first meeting is a scene, so the camera eases over to the dish
   G.arrive(def.id);
 }
 // ---------- the rabbit: a cheeky regular (code stand-in until a painted rabbit exists) ----------
@@ -2705,9 +2726,9 @@ function updateRabbit(dt) {
   const r = RABBIT.on, nowMs = performance.now();
   if (!r) {
     if (G.rabbitDue()) {   // the first raid
-      const nibble = [0.70, 0.62, 'nibble', 8, () => { G.rabbitRaid(); gnomeSays('him', 'Oh, you poor hungry thing!'); toast('The rabbit nibbled the sprouts. Time for a fence.'); }];
-      rabbitGo(G.s.feeder.food ? [[1.05, 0.40], [FEEDER.gx + 0.07, FEEDER.gy - 0.03, 'eat', 7, () => { G.rabbitAte(); toast('A rabbit is eating everything in the dish!'); }], nibble, [1.06, 0.92]] : [[1.05, 0.40], nibble, [1.06, 0.92]]);
-      RABBIT.on.fast = 2; RABBIT.on.hold = 2.2;   // note 17 (Bryce): the raid is a scene, so the camera eases over to the bed first and the rabbit waits a beat for you to see it
+      const nibble = [0.70, 0.62, 'nibble', 8, () => { if (RABBIT.on) RABBIT.on.scene = false; QUIET_UNTIL = performance.now() + 15000; G.rabbitRaid(); gnomeSays('him', 'Oh, you poor hungry thing!'); toast('The rabbit nibbled the sprouts. Time for a fence.', true); }];
+      rabbitGo(G.s.feeder.food ? [[1.05, 0.40], [FEEDER.gx + 0.07, FEEDER.gy - 0.03, 'eat', 7, () => { G.rabbitAte(); }], nibble, [1.06, 0.92]] : [[1.05, 0.40], nibble, [1.06, 0.92]]);
+      RABBIT.on.fast = 2; RABBIT.on.hold = 2.2; RABBIT.on.scene = true;   // note 17 (Bryce): the raid is a scene, so the camera eases over to the bed first and the rabbit waits a beat for you to see it
       { const [bx, by] = toWorld(0.72, 0.62); ALLDONE.ease = { t: 0, z0: cam.z, x0: cam.x, y0: cam.y, z1: clampZ(Math.max(cam.z, 1.2)), x1: bx, y1: by }; liveUntil = Math.max(liveUntil, performance.now() + 6000); }
       return;
     }
@@ -2741,28 +2762,29 @@ function updateVisitor(dt) {
   const v = visitor; v.t += dt;
   const dx = v.tx - v.gx, dy = v.ty - v.gy, d = Math.hypot(dx, dy);
   if (d > 0.005) v.faceR = dx - dy > 0;   // screen x grows with gx - gy
-  if (v.phase === 'in') { if (Walk.step(v, v.speed * (v.def.id === 'rabbit' ? 1.6 : 1) * dt)) { v.phase = v.hungry && G.s.feeder.food ? 'eat' : 'stay'; v.t = 0; v.perch = 1;
+  if (v.phase === 'in') { if (Walk.step(v, v.speed * (v.def.id === 'rabbit' && !v.meet ? 1.6 : 1) * dt)) { v.phase = v.hungry && G.s.feeder.food ? 'eat' : 'stay'; v.t = 0; v.perch = 1;
     if (v.phase === 'eat') { const say = (C.friends[v.def.id] || {}).eat; if (say) toast(G.isFriend(v.def.id) ? say.replace(/^The (rabbit|mouse|robin)/, G.friendName(v.def.id)) : say); btnAlert('bJournal', true); }   // note 41: a visit you can't miss
-    if (v.meet) sayHello(v); } }
+  } }   // round eleven note 6: a first meeting sniffs round the dish a while before anyone comes over (see 'stay')
   else if (v.phase === 'eat') { if (v.t > 6) { v.hungry = false; v.phase = 'stay'; v.t = 0; v.stay = 8; ate(v); } }
   else if (v.phase === 'stay') { visitorMoment(v);
     const fd = G.s.feeder; if (!v.trouble && !v.ask && !v.meet && fd.food && (fd.who === v.def.id || (!fd.who && (C.friends[v.def.id] || {}).food === fd.food)) && v.t > 2) { v.hungry = true; v.stay = Math.max(v.stay, v.t + 20); v.phase = 'in'; v.perch = 0; Walk.go(v, FEEDER.gx - 0.05, FEEDER.gy + 0.05, visitorWalk(v.def)); return; }   // round nine note 23: already here when its food goes out, so it goes and eats it
-    if (v.meet && v.hello && (v.t > 25 || Math.hypot(v.hello.gx - v.gx, v.hello.gy - v.gy) < 0.13)) return dashOff(v);   // a gnome came over to say hello: off it goes
-    if (v.meet && !v.hello && v.t > 6) sayHello(v);
+    if (v.meet && v.hello && !v.notice && (v.t > 30 || (!v.hello.walking && v.t - v.helloAt > 2 && Math.hypot(v.hello.gx - v.gx, v.hello.gy - v.gy) < 0.2))) v.notice = v.t;   // a gnome came over to say hello: it sits up and looks...
+    if (v.meet && v.notice && v.t - v.notice > 2.2) return dashOff(v);   // ...for a moment, then off it goes
+    if (v.meet && !v.hello && v.t > 9) sayHello(v);   // round eleven note 6: nine seconds of sniffing at the dish first
     if ((v.trouble || v.ask) && v.t > 480 && !(v.trouble && v.trouble.helping)) { v.trouble = null; v.ask = false; v.stay = 0; }   // it waited a good while; it will come back
     if (v.def.id === 'mouse' && !v.trouble && !v.ask && Math.random() < dt * 0.4) { Walk.go(v, Math.min(0.95, Math.max(0.05, v.gx + (Math.random() - 0.5) * 0.2)), Math.min(0.95, Math.max(0.05, v.gy + (Math.random() - 0.5) * 0.2)), visitorWalk(v.def)); v.phase = 'in'; }   // a scurry, never under anything
     if (v.t > v.stay) { const [ex, ey] = Walk.edge(v.gx, v.gy); v.phase = 'out'; v.perch = 0; Walk.go(v, ex, ey, Object.assign({ exact: true }, visitorWalk(v.def))); } }   // off by the nearest wild edge
-  else if (Walk.step(v, v.speed * (v.dash ? 4 : 1.5) * dt)) visitor = null;
+  else if (Walk.step(v, v.speed * (v.dash ? 2.2 : 1.5) * dt)) visitor = null;   // round eleven note 6: a scamper you can follow, not a flash
 }
 function sayHello(v) {   // the first meeting: a gnome walks over to say hello (and that is the end of that)
-  const who = v.def.id === 'robin' ? 'him' : 'her', g = choreGnome(who); if (!g) return; v.hello = g;
+  const who = v.def.id === 'robin' ? 'him' : 'her', g = choreGnome(who); if (!g) return; v.hello = g; v.helloAt = v.t;
   g.startChore('hello', [[v.gx + 0.08, v.gy + 0.04, 'pickup', false, 2, [v.gx, v.gy]]]);
   gnomeSays(g.who, g.who === 'her' ? 'Oh! Hello, little one.' : 'Well, good morning to you.');
 }
 function dashOff(v) {
   const [x, y] = toWorld(v.gx, v.gy), who = v.hello ? C.names[v.hello.who] : 'Hazel';
-  v.meet = false; v.dash = true; v.phase = 'out'; v.perch = 0; const [ex, ey] = Walk.edge(v.gx, v.gy); Walk.go(v, ex, ey, Object.assign({ exact: true }, visitorWalk(v.def)));
-  G.meet(v.def.id); float('✎ new entry', x, y - 30); toast(C.friends[v.def.id].meet.replace('{who}', who)); btnAlert('bJournal', true);
+  QUIET_UNTIL = performance.now() + 15000; v.meet = false; v.notice = 0; v.dash = true; v.phase = 'out'; v.perch = 0; const [ex, ey] = Walk.edge(v.gx, v.gy); Walk.go(v, ex, ey, Object.assign({ exact: true }, visitorWalk(v.def)));
+  G.meet(v.def.id); float('✎ new entry', x, y - 30); toast(C.friends[v.def.id].meet.replace('{who}', who), true); btnAlert('bJournal', true);
 }
 function visitorWalk(def, perch) { return { creature: true, fly: !!(def.fly || def.spirit || perch), exact: !!perch }; }   // fliers go over things (never landing in the bed); walkers go round
 function ate(v) {   // the visitor finished at the dish
@@ -3831,7 +3853,19 @@ function workCornerItems(items) {   // v99 (note 18, art day 21): poles and bark
   const a = taskProg('workcorner'), b = taskProg('leanto'); if (a <= 0 && b <= 0) return; const [gx, gy] = WORKCORNER;
   items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy), H = 168;
     const pic = (k, al) => { const im = art(k); if (!im || al <= 0) return; const w = H * im.width / im.height; ctx.save(); ctx.globalAlpha *= al; ctx.drawImage(im, x - w / 2, y - H * 0.93, w, H); ctx.restore(); };
-    shadow(x, y - 4, 60, 16); if (b < 1) pic('yard-leanto-frame', Math.max(a, b > 0 ? 1 : 0) * (1 - sstep(0.3, 1, b))); if (b > 0) pic('yard-leanto', sstep(0.3, 1, b)); } });
+    // round eleven note 9 (Bryce: done, but it looks unfinished): the bare frame goes up during the job, then the finished little work
+    // corner (bark roof, bench, tools: yard-workcorner) fades in over the end of it. The story's lean-to later makes it a workshop.
+    const wc = art('yard-workcorner') ? sstep(0.6, 1, Math.max(a, b > 0 ? 1 : 0)) : 0, early = Math.max(a, b > 0 ? 1 : 0) * (1 - sstep(0.3, 1, b));
+    shadow(x, y - 4, 60, 16); if (b < 1) { pic('yard-leanto-frame', early * (1 - wc)); pic('yard-workcorner', early * wc); } if (b > 0) pic('yard-leanto', sstep(0.3, 1, b)); } });
+}
+// round eleven note 7 (Bryce): Hazel carries the good bits of the loggers' rubbish up to the work corner for little makes; they stack up
+// in front of it as she brings them (the same painted bits that lay about the yard).
+const SALVAGE_BITS = [['kit-leftovers-12', -14, 2, 30], ['kit-leftovers-01', 12, 6, 26], ['kit-leftovers-04', -2, 12, 24, 1], ['kit-leftovers-05', 22, -4, 26], ['kit-leftovers-11', -26, 10, 24]];
+function salvageItems(items) {
+  const k = '0,1', tl = G.s.tiles[k]; if (!tl || tl.kind !== 'garden') return;
+  const tk = G.s.tasks[`heal:${k}:0`]; if (!tk) return; const p = G.taskFrac(`heal:${k}:0`), n = p >= 1 ? SALVAGE_BITS.length : Math.floor(p * (SALVAGE_BITS.length + 0.6));
+  if (n <= 0) return; const [gx, gy] = SALVAGE_AT;
+  items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); shadow(x, y + 4, 34, 9); for (const [pc, dx, dy, h, flat] of SALVAGE_BITS.slice(0, n)) kitPiece(pc, x + dx, y + dy, h, flat); } });
 }
 function compostItems(items) {   // note 48 (Bryce): the compost heap sits in the yard's southern corner, with the wheelbarrow close by
   const p = taskProg('compost'); if (p <= 0) return;
@@ -4046,7 +4080,11 @@ const HEAL_DRAW = {
     const k = q.k, pr = healProg(k, 'rubbish'), ps = healProg(k, 'spoil'), rn = healProg(k, 'rain'), rd = healProg(k, 'reeds'), W = 440;
     const pic = (name, al) => { const im = art(name); if (!im || al <= 0.01) return; const w = W, h = w * im.height / im.width; ctx.save(); ctx.globalAlpha *= Math.min(1, al); ctx.drawImage(im, x - w / 2, y - h * 0.56, w, h); ctx.restore(); };
     if (!art('garden-heap')) { blob(x, y, 130, 52, rn > 0 ? '#5f8a88' : '#7d5c3e'); return; }
-    if (ps < 1) { const half = sstep(0.3, 1, pr), hol = sstep(0.2, 1, ps); if (hol > 0) pic('garden-hollow', 1); pic('garden-heap-half', hol > 0 ? 1 - hol : 1); pic('garden-heap', (1 - half) * (hol > 0 ? 1 - hol : 1)); return; }
+    if (ps < 1) {   // round eleven notes 11, 12 (Bryce: the art day 21 pictures were right, but the heap must not keep its rubbish once the job is done): junk comes off over
+      // the picking-up job, ending on the bare mound (heap-bare, art day 22); digging out what the loggers buried brings the mound down into the empty hollow
+      const st = ['garden-heap', ...(art('garden-heap-half') ? ['garden-heap-half'] : []), ...(art('heap-bare') ? ['heap-bare'] : [])], m = st.length - 1, S = [...st, 'garden-hollow'];
+      const v = pr < 1 ? m * sstep(0.1, 0.95, pr) : m + sstep(0.05, 0.95, ps), i = Math.min(S.length - 1, Math.floor(v)), f = v - i;
+      if (f > 0.001 && S[i + 1]) pic(S[i + 1], 1); pic(S[i], f > 0.001 && S[i + 1] ? 1 - f : 1); return; }   // the next stage underneath, this one fading off the top
     if (rd >= 1) return pic('garden-pond-large', 1);
     pic(rn > 0.5 ? 'garden-hollow-rain' : 'garden-hollow', 1); if (rn > 0 && rn <= 0.5) pic('garden-hollow-rain', rn * 2);
     if (rd > 0) pic('garden-pond-large', sstep(0.2, 1, rd)); },
@@ -4243,7 +4281,7 @@ function shelfItem(items, now) {
     ctx.restore(); } });
 }
 // how each job moves the gnome about (default: from piece to piece of that job, working at each one)
-const HEAL_WORK = { 'garden:spoil': 'barrow', 'garden:reeds': 'creek', 'meadow:water': 'spring', 'creature:mulch': 'edge', 'nursery:gather': 'gather', 'nursery:plant1': 'shelf', 'nursery:plant2': 'shelf', 'creature:ferns': 'creek', 'nursery:mulch': 'edge' };
+const HEAL_WORK = { 'garden:rubbish': 'heap', 'garden:spoil': 'barrow', 'garden:reeds': 'creek', 'meadow:water': 'spring', 'creature:mulch': 'edge', 'nursery:gather': 'gather', 'nursery:plant1': 'shelf', 'nursery:plant2': 'shelf', 'creature:ferns': 'creek', 'nursery:mulch': 'edge' };
 const SEED_SPOTS = [[0.92, 0.50], [0.08, 0.30], [0.62, 0.92], [0.94, 0.80], [0.40, 0.08]];   // round the yard's edges for gumnuts, wattle pods and acorns
 function healWork(id, p, g) {
   const d = G.taskDef(id); if (!d) return null;
@@ -4253,7 +4291,14 @@ function healWork(id, p, g) {
   if (w === 'spring') return workLoop(g, id, c => [[SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3, SPRING.at], [...near(at(i)), 'water', 'can', 5, at(i)]]);
   if (w === 'edge') { const e = glob(k, ...(healSwap(k) ? [0.95, 0.5] : [0.5, 0.95])); return workLoop(g, id, () => [[e[0], e[1], 'gather', false, 3, e], [...near(at(i)), 'pickup', true, 4, at(i)]]); }
   if (w === 'creek') { const e = G.s.tiles['0,-1'] ? glob('0,-1', 0.30, 0.62) : [SPRING.at[0], SPRING.at[1] + 0.06]; return workLoop(g, id, () => [[e[0], e[1], 'gather', false, 4, e], [...near(at(i)), 'pickup', false, 4, at(i)]]); }
-  if (w === 'barrow') { const m = glob(k, GPOND[0] - 0.12, GPOND[1] + 0.06), e = glob(k, 0.76, 0.24); return workLoop(g, id, c => [[m[0], m[1], 'dig', false, 5, glob(k, ...GPOND)], [e[0] + (c % 3 - 1) * 0.05, e[1], 'pickup', true, 3]]); }   // v99: digs at the mound, carries it to where the new bed will go
+  if (w === 'heap') {   // round eleven notes 7, 8: round the heap's rim picking it over. Hazel carries the good bits up to Wendel's work corner
+    // for little makes; whoever helps her sorts the rest onto a pile at the edge. With two of them they work opposite sides.
+    const rim = c => { const a = (c * 2.3 + (g && g.who === 'him' ? 3.1 : 0)) % 6.283; return glob(k, GPOND[0] + Math.cos(a) * 0.23, GPOND[1] + Math.sin(a) * 0.19); }, mid = glob(k, ...GPOND), sv = SALVAGE_AT, edge = glob(k, 0.84, 0.34);
+    if (g && g.who === 'her') return workLoop(g, id, c => [[...rim(c * 2), 'pickup', false, 3.5, mid], [...rim(c * 2 + 1), 'pickup', false, 3.5, mid], [sv[0] + 0.03, sv[1] + 0.04, 'putdown', true, 2.5, sv]]);
+    return workLoop(g, id, c => [[...rim(c), 'pickup', false, 4, mid], [edge[0] + (c % 3 - 1) * 0.03, edge[1], 'putdown', true, 2.5]]); }
+  if (w === 'barrow') { const m = glob(k, GPOND[0] - 0.12, GPOND[1] + 0.06), m2 = glob(k, GPOND[0] + 0.12, GPOND[1] - 0.04), e = glob(k, 0.76, 0.24), sv = SALVAGE_AT, two = g && G.s.tasks[id] && G.s.tasks[id].helper === g.who;   // v99: digs at the mound, carries it to where the new bed will go
+    if (two) return workLoop(g, id, c => [[m2[0], m2[1], 'dig', false, 5, glob(k, ...GPOND)], [m2[0] + 0.03, m2[1] + 0.05, 'pickup', false, 3, glob(k, ...GPOND)], [e[0] + (c % 3 - 1) * 0.05, e[1] + 0.06, 'putdown', true, 2.5]]);   // round eleven note 8: the helper digs from the far side
+    return workLoop(g, id, c => [[m[0], m[1], 'dig', false, 5, glob(k, ...GPOND)], [e[0] + (c % 3 - 1) * 0.05, e[1], 'pickup', true, 3]]); }
   if (w === 'gather') return workLoop(g, id, c => [[...SEED_SPOTS[c % SEED_SPOTS.length], 'pickup', false, 4], [...SEED_SPOTS[(c + 2) % SEED_SPOTS.length], 'pickup', false, 3]]);
   if (w === 'shelf') return workLoop(g, id + ':' + i, () => [[SHELF_AT[0] + 0.05, SHELF_AT[1] + 0.02, 'pickup', false, 2.5, SHELF_AT], [...near(at(i)), 'dig', true, 6, at(i)], [...near(at(i)), 'water', false, 4, at(i)]]);
   if (!n) return [...near(glob(k, 0.5, 0.5)), act];
@@ -4276,7 +4321,7 @@ const STEP_PIC = { spoil:'wheelbarrow', worms:'icon-light', rain:'icon-water', f
 function patchFace(who) { return who === 'both' ? `<div class="por two"><img src="sprites/face-him.webp" alt=""><img src="sprites/face-her.webp" alt=""></div>` : `<div class="por"><img src="sprites/face-${who}.webp" alt=""></div>`; }
 function openPatch(k) {   // tap a healing tile (v90: a small card): what this patch needs next, with its Start, and its spell while the job runs
   const tl = G.s.tiles[k], K = C.heal.kinds[tl.kind], steps = G.healSteps(k), at = G.healAt(k), st = G.landStage(k), names = G.treeNames(k), all = at >= steps.length;
-  const card = (all && K.cardDone) || (at > 0 && K.cardAfter) || K.card, who = card.who;   // v99 (note 39): the garden-to-be says what it is from the start, in both their words
+  const card = (all && K.cardDone) || (at === 2 && K.cardDug) || (at > 0 && K.cardAfter) || K.card, who = card.who;   // v99 (note 39): the garden-to-be says what it is from the start, in both their words
   const run = G.running().find(r => r.def.healTile === k && r.endsAt > G.now()), d = !all ? G.taskDef(`heal:${k}:${at}`) : null, v = d && G.taskView(d);
   const dots = steps.map((x, i) => `<i class="${i < at ? 'on' : i === at ? 'now' : ''}"></i>`).join('');
   let html = `<div class="tcard">${patchFace(who)}<div class="t"><b>${(all || (tl.kind === 'garden' && G.gardenOpen())) && K.nameDone ? K.nameDone : at > 0 && K.nameAfter ? K.nameAfter : K.name}</b><span class="meta">${cap(st.name)} · ${G.tileWhere(k)}</span><span class="steps">${dots}</span><span class="lore">"${card.text}"${who === 'both' ? '' : ` <i>· ${C.names[who]}</i>`}</span></div></div>`;
@@ -4606,7 +4651,7 @@ function frame(now) {
   spiritItem(items, now);
   makeItems(items, now); bed2Items(items, now);
   herbItems(items);
-  compostItems(items); workCornerItems(items);
+  compostItems(items); workCornerItems(items); salvageItems(items);
   animalItems(items, now);
   festItems(items, now);
   items.sort((a, b) => a.d - b.d);
@@ -4788,7 +4833,7 @@ function tapAt(cx, cy, wx, wy) {
     if (stickPileShow() > 0) { const [px, py] = toWorld(STICK_PILE[0], STICK_PILE[1]); if (Math.hypot(wx - px, wy - py + 6) < Math.max(30, 38 / cam.z)) return toast(C.stickPile.replace('{n}', G.s.inv.twig || 0)); }   // round nine note 18: what the pile is, and why it never goes
     if (taskProg('workcorner') >= 1 || taskProg('leanto') >= 1) { const [hx, hy] = toWorld(...WORKCORNER); if (Math.abs(wx - hx) < 62 && wy > hy - 160 && wy < hy + 12) return toast(taskProg('leanto') >= 1 ? 'Wendel\'s workshop. A hook for every tool, and a little window for the stars.' : 'The work corner. Things for the home get made here, then carried to where they go.'); }
     if (taskProg('compost') >= 1) { const [hx, hy] = toWorld(0.70, 0.93); if (Math.hypot(wx - hx, wy - hy + 14) < Math.max(34, 40 / cam.z)) return toast('The compost heap. Peelings, weeds and old leaves go in; rich dark soil comes out for the seed bed. With it every crop grows a little faster, and every harvest gives one seed more.'); }   // v99 (note 47): it says what it does
-    if (herbStage()) { const [hx, hy] = toWorld(HERB_AT[0], HERB_AT[1]); if (Math.hypot(wx - hx, wy - hy + 8) < Math.max(40, 44 / cam.z)) return herbStage() === 1 ? toast('Hazel is putting in the herbs: thyme, mint and the one parsley that will not die.') : toast(herbStage() === 2 ? 'The herb box, knocked together from the wagon\'s spare boards. Thyme, mint and the one parsley that will not die.' : 'The herb box is in flower, and the bees have found it.'); }
+    if (herbStage()) { const [hx, hy] = toWorld(HERB_AT[0], HERB_AT[1]); if (Math.hypot(wx - hx, wy - hy + 8) < Math.max(40, 44 / cam.z)) return herbStage() === 1 ? toast('Hazel is putting in the herbs: thyme, mint and the one parsley that will not die.') : toast(herbStage() === 2 ? 'The herb box: the old crate Hazel saved from the loggers\' rubbish. Thyme, mint and the one parsley that will not die.' : 'The herb box is in flower, and the bees have found it.'); }
     // concern 1 (Bryce): the little bug bath, the pots, the doormat and the rest of the finished makes answer a tap with a line about themselves
     const near = C.tasks.filter(d => d.make === 'yard' && !d.retired && d.id !== 'barrow' && taskProg(d.id) >= 1 && !(d.season)).map(d => { const [hx, hy] = makeAt(d), [mx, my] = toWorld(hx, hy); return { d, dd: Math.hypot(wx - mx, wy - my + 12) }; }).filter(o => o.dd < Math.max(36, 44 / cam.z)).sort((a, b) => a.dd - b.dd)[0];
     if (near) return toast(near.d.doneNote || near.d.blurb);
@@ -4809,7 +4854,7 @@ function tapAt(cx, cy, wx, wy) {
 // A flag drawn faint in pencil means the store is short; the card says what of. A red thread on the flag marks the story's job.
 // Hazel's little makes have no flags (Bryce): they stay in Hazel's list in Jobs. Jobs stays as the index of everything.
 // Spells are cast from the thing they act on: the seed bed, a patch being mended, the toadstool in the way.
-const STAKE_AT = { workcorner: () => [WORKCORNER[0] + 0.05, WORKCORNER[1] + 0.06], spring: () => [SPRING.at[0] - 0.02, SPRING.at[1] + 0.04], fire: () => [0.27, 0.43], firewood: () => [0.41, 0.15], barrel: () => [0.42, 0.14], clearing: () => [0.56, 0.62], logseat: () => [0.20, 0.53], herbs: () => [HERB_AT[0], HERB_AT[1] + 0.03] };
+const STAKE_AT = { logsaw: () => [LOG_AT[0] + 0.06, LOG_AT[1] - 0.02], workcorner: () => [WORKCORNER[0] + 0.05, WORKCORNER[1] + 0.06], spring: () => [SPRING.at[0] - 0.02, SPRING.at[1] + 0.04], fire: () => [0.27, 0.43], firewood: () => [0.50, 0.15], barrel: () => [0.42, 0.14], clearing: () => [0.56, 0.62], logseat: () => [0.20, 0.53], herbs: () => [HERB_AT[0], HERB_AT[1] + 0.03] };
 function stakeSpot(d) {   // [world x, world y] where this job's flag stands, or null (no flag)
   if (d.make || d.chore) return null;
   const tile = d.healTile || d.tile; if (tile) return G.s.tiles[tile] || d.tile ? toWorld(0.5, 0.52, tile) : null;
@@ -4817,13 +4862,16 @@ function stakeSpot(d) {   // [world x, world y] where this job's flag stands, or
   const p = jobSpotXY(d); if (p) return p;
   const pr = PROPS.find(q => q.name === d.spot); return pr ? toWorld(pr.gx, pr.gy) : null;
 }
+// round eleven note 13 (Bryce: "Flags are for things that need to be done to progress"): only jobs on the way forward get a flag (the
+// story's own jobs, mending the patches, the neighbours'). Home comforts (bench, doorstep, washing line...) wait quietly in Jobs.
+function flagJob(d) { return !!(d.spine || d.healTile || d.tile || d.folk || d.festival || d.farm || d.quest); }
 let STAKES = [], STAKE_T = 0;
 function stakesNow() {   // recomputed twice a second at most
   const t = performance.now(); if (t - STAKE_T < 500) return STAKES; STAKE_T = t;
   const out = [], add = (x, y, o) => { const near = out.find(s => Math.hypot(s.x - x, s.y - y) < 46); if (near) { near.ids.push(...(o.ids || [])); near.story = near.story || o.story; near.can = near.can || o.can; return; } out.push(Object.assign({ x, y, ids: [] }, o)); };
   if (!guideOn() || guideStep() === 4) {
     for (const v of G.taskList()) {
-      if (!v.show || v.state !== 'ready' || v.def.make || v.def.chore) continue;
+      if (!v.show || v.state !== 'ready' || v.def.make || v.def.chore || !flagJob(v.def)) continue;
       const p = stakeSpot(v.def); if (p) add(p[0], p[1], { ids: [v.def.id], story: v.story, can: v.can });
     }
     const sb = PROPS.find(q => q.name === 'seedbed'); if (sb && propAlpha(sb) >= 1 && wantsTap(sb)) { const [x, y] = toWorld(sb.gx, sb.gy); add(x + 52, y + 4, { bed: true, can: true }); }   // on the near edge of the bed
@@ -4855,6 +4903,7 @@ function drawStakes(now) {   // screen space, so a flag stays finger-sized howev
 }
 function stakeHit(cx, cy) { let best = null, bd = 38; for (const s of STAKES) if (s.scr) { const d = Math.hypot(cx - s.scr.x - 10, cy - s.scr.y); if (d < bd) { bd = d; best = s; } } return best; }
 function openStake(s) {
+  if (!G.s.flags.flagTapped) { G.s.flags.flagTapped = 1; G.dirty = true; }
   if (guideStep() === 4) guideTo(9);
   if (s.bed2 && !s.ids.length) return openSeedbed('bed2');
   if (s.patch && !s.ids.length) return openPatch(s.patch);
@@ -4995,7 +5044,7 @@ function drawRoom(now, dt) {
   if (roomSayT > 0 && (roomSayT -= dt) <= 0) roomCaption();
 }
 function doing(g) {   // where a gnome is when not indoors, in words
-  const r = G.running().find(r => r.def.who === g.who), rt = routineFor(dayPhase().h), n = C.names[g.who];
+  const r = jobOf(g.who), rt = routineFor(dayPhase().h), n = C.names[g.who];
   if (r) return `${n} is busy: ${lcName(shortName(r.def))}`;
   if (rt === 'fest') return `${n} is at the festival on the green`;
   if (rt === 'eat') return `${n} is out by the campfire, having a bite`;
@@ -5035,14 +5084,20 @@ rc.addEventListener('click', e => {   // tap a gnome in the room for a line (or 
 // its turn and stays long enough to read (longer for longer words); a tap on it puts it away. While another waits, the one showing
 // keeps at least its shortest reading time, so nothing is ever cut off mid-read.
 const TOASTS = { q: [], cur: null, at: 0 };
+let QUIET_UNTIL = 0;   // round eleven note 14: after an animal scene (and just after coming back) nobody starts a new line for a little while, so the scene's own words are read
+function quietNow() { return sceneOn() || !!visitor || !!RABBIT.on || performance.now() < QUIET_UNTIL || performance.now() - BACK_AT < 5000; }
+function sceneOn() { return typeof visitor !== 'undefined' && !!((visitor && visitor.meet) || (RABBIT.on && RABBIT.on.scene)); }   // a first meeting at the dish, or the rabbit's raid
 const toastNeed = t => Math.max(2600, Math.min(8000, 1400 + t.length * 55)), toastMin = t => Math.max(1800, Math.min(5000, 900 + t.length * 38));
-function toast(t) { t = String(t); PL.add('toast: ' + t); if (TOASTS.cur === t || TOASTS.q.includes(t)) return; TOASTS.q.push(t); if (TOASTS.q.length > 5) TOASTS.q.splice(0, TOASTS.q.length - 5); toastStep(); }
+function toast(t, first) { t = String(t); PL.add('toast: ' + t); if (TOASTS.cur === t || TOASTS.q.includes(t)) return; (TOASTS.when = TOASTS.when || {})[t] = performance.now(); if (first) TOASTS.q.unshift(t); else TOASTS.q.push(t); if (TOASTS.q.length > 5) TOASTS.q.splice(first ? 5 : 0, TOASTS.q.length - 5); toastStep(); }   // first: the scene's own words go to the front (round eleven note 14)
 function toastStep() {
   const T = TOASTS, now = performance.now(); clearTimeout(toast.h);
   if (T.cur) { const shown = now - T.at, left = (T.q.length ? toastMin(T.cur) : toastNeed(T.cur)) - shown; if (left > 0) { toast.h = setTimeout(toastStep, left + 20); return; }
     T.cur = null; toastEl.style.opacity = 0; toastEl.style.pointerEvents = 'none'; if (T.q.length) { toast.h = setTimeout(toastStep, 320); } return; }
   if (!T.q.length) return;
-  if (typeof gnomes !== 'undefined' && gnomes.some(g => g.sayT > 0) && (T.held = (T.held || 0) + 1) < 20) { toast.h = setTimeout(toastStep, 500); return; } T.held = 0;   // v99 (note 32): a gnome is speaking: the note waits its turn (ten seconds at most)
+  if (typeof gnomes !== 'undefined' && gnomes.some(g => g.sayT > 0) && (T.held = (T.held || 0) + 1) < 20) { toast.h = setTimeout(toastStep, 500); return; } T.held = 0;
+  if (sceneOn() && (T.sheld = (T.sheld || 0) + 1) < 80) { toast.h = setTimeout(toastStep, 500); return; } T.sheld = 0;   // round eleven note 14: while an animal scene plays, the other notes wait (forty seconds at most)   // v99 (note 32): a gnome is speaking: the note waits its turn (ten seconds at most)
+  if (T.q.length > 1) T.q = T.q.filter(t => !/^(Finished: |Set to work|Something new in Jobs)/.test(t) || now - ((T.when || {})[t] || now) < 25000);   // round eleven note 14: a backlog of small news goes (the journal keeps it)
+  if (!T.q.length) return;
   T.cur = T.q.shift(); T.at = now; toastEl.textContent = T.cur; toastEl.style.opacity = 1; toastEl.style.pointerEvents = 'auto'; toast.h = setTimeout(toastStep, (T.q.length ? toastMin(T.cur) : toastNeed(T.cur)) + 20);
 }
 toastEl.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); if (TOASTS.cur) { TOASTS.at = -1e9; toastStep(); } });
@@ -5067,13 +5122,19 @@ function jobKeys(tl = G.taskList()) {   // what can be started now, by name (cho
   return k;
 }
 setInterval(renderHud, 5000);   // keep the "to go" times fresh
+setInterval(() => { if (DISH_FILL && DISH_FILL.wait && G.s.feeder.food === DISH_FILL.food && !document.hidden) startDishFill(DISH_FILL.food); else if (DISH_FILL && DISH_FILL.wait && G.s.feeder.food !== DISH_FILL.food) DISH_FILL = null; }, 3000);   // round eleven note 14: food waiting for Hazel
+setInterval(() => {   // round eleven note 13 (the moss-for-the-roof card's reason never reached Bryce): when a story job with a reason to say comes up, Hazel says it out loud, once
+  if (roomOn || sheet.classList.contains('on') || document.hidden || quietNow() || gnomes.some(g => g.sayT > 0)) return;
+  const v = G.taskList().find(v => v.def.sayWhy && v.state === 'ready' && v.show && !G.s.flags['why:' + v.def.id]); if (!v) return;
+  G.s.flags['why:' + v.def.id] = G.now(); G.dirty = true; gnomeSays('her', v.def.sayWhy); ringOn({ stake: v.def.id }, 9000);
+}, 4000);
 setInterval(() => {   // round six (note 43): once the garden is open, Hazel says out loud that the big toadstool is in its way (the first step towards the legs spell)
   if (G.s.flags.toadSaid || G.s.flags.toadWalk || !G.gardenOpen() || roomOn || sheet.classList.contains('on') || document.hidden) return;
   G.s.flags.toadSaid = G.now(); G.dirty = true; gnomeSays('her', C.story.toadTooClose);
 }, 5000);
 setInterval(() => {   // round eight note 12 (Bryce: players need a daily nudge to use the dish and befriend the animals): once a day, if the dish
   // is empty and an animal they have met is not a friend yet, Hazel says so out loud and a ring goes round the dish
-  if (!G.dishBuilt() || G.s.feeder.food || roomOn || sheetKind || document.hidden || guideOn() || (visitor && visitor.trouble)) return;
+  if (!G.dishBuilt() || G.s.feeder.food || roomOn || sheetKind || document.hidden || guideOn() || (visitor && visitor.trouble) || quietNow()) return;
   const day = new Date(G.now()).toDateString(), h = dayPhase().h; if (G.s.flags.dishNudge === day || h < 7 || h >= 21) return;
   const id = C.friends.roster.find(id => G.seen(id) && !G.isFriend(id) && G.friendAwake(id, h)); if (!id || !G.can({ [C.friends[id].food]: 1 })) return;
   const f = C.friends[id], who = G.met(id) ? 'the ' + G.visitorDef(id).name.toLowerCase() : 'our little visitor';
@@ -5133,7 +5194,7 @@ sheet.addEventListener('click', e => {
   if (a === 'cast' && (id === 'worms' || (id === 'rain' && G.castSpots('rain').length))) { const k0 = sheetKind && sheetKind.startsWith('patch:') ? sheetKind.slice(6) : null, k = G.castSpots(id).includes(k0) ? k0 : G.castSpots(id)[0];
     if (G.cast(id, k)) { closeSheet(); const [x, y] = toWorld(0.5, 0.5, k); if (id === 'worms') { WAKE = [{ k, t: performance.now() }]; liveUntil = Math.max(liveUntil, performance.now() + 5000); toast('The worms are waking. The green will creep in over the next hour.'); } else toast('Soft rain fills the hollow. The garden has a pond.'); sparkleAt(x, y - 10); } return; }
   if (a === 'cast') { if (G.cast(id)) { toast(C.spells[id].name + '.'); if (sheetKind && /^(card|patch|seedbed):/.test(sheetKind + ':')) { const t = spellTarget(id) || {}; closeSheet(); if (t.at) { const [x, y] = toWorld(t.at[0], t.at[1], t.at[2]); sparkleAt(x, y - 10); } return; } if (id === 'legs') { closeSheet(); const [x, y] = toWorld(...TOAD_FROM); cam.x = x; cam.y = y - 40; return; } } }   // watch it walk off
-  if (a === 'food') { if (G.putFood(id, b.dataset.who)) { const g = startDishFill(id); toast(g ? `${C.names[g.who]} takes ${{ seed: 'the seed', berry: 'the berries', carrot: 'a carrot' }[id]} over to the dish.` : `${cap(G.foodName(id))} in the dish.`); closeSheet(); return; } }
+  if (a === 'food') { if (G.putFood(id, b.dataset.who)) { const g = startDishFill(id), what = { seed: 'the seed', berry: 'the berries', carrot: 'a carrot' }[id] || G.foodName(id); toast(g ? `Hazel takes ${what} over to the dish.` : `Hazel will put ${what} in the dish first thing when she is up.`); closeSheet(); return; } }
   if (a === 'help') return doHelp();
   if (a === 'folk') return openFolk(id);
   if (a === 'traveller') return openTraveller();
@@ -5282,7 +5343,7 @@ function openPack() {
   if (G.s.plots.seedbed.grown) html += `<h3>The pantry</h3><p>From the seed bed. They eat from it at breakfast and supper, and the shelf holds about ${C.pantry.cap} of each; the spare goes over the fence. Hazel's seed tin holds ${C.pantry.seedTin} seeds.</p>` + (pan.length <= 6 ? storeShelves(pan.map(shelf), 3) : plain(pan));   // after the first picking: the bottom two shelves of the same painting
   openSheet('pack', html);
 }
-const JOB_PIC = { workcorner: 'yard-leanto-frame', leanto: 'yard-leanto', bed2: 'seedbed-rect', ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'bench-wh', barrow: 'wheelbarrow',
+const JOB_PIC = { logsaw: 'kit/stumps-rocks-06', workcorner: 'yard-workcorner', leanto: 'yard-leanto', bed2: 'seedbed-rect', ruts: 'kit/marks-02', clear: 'stick-pile', bed: 'seedbed', roof: 'shelter-mossroof', fence: 'fence', sapling: 'oak-planted', feeder: 'feeding-dish', bench: 'bench-wh', barrow: 'wheelbarrow',
   woodpile: 'firewood', doorstep: 'yard-doorstep', rainbarrel: 'barrel-full', clothesline: 'washing-line', lantern: 'lanternstump', stump: 'lanternstump', windowbox: 'yard-windowbox', wormlantern: 'worm-lantern',
   wormlamp: 'worm-lamp', house1: 'house-hollowed', house2: 'house-windows', house3: 'house-finished', hedgehoghouse: 'nest-leafpile', nestbox: 'nest-nest', bridge: 'bld-bridge',
   dress_spring: 'make-dress_spring', dress_summer: 'make-dress_summer', dress_autumn: 'make-dress_autumn', dress_winter: 'make-dress_winter' };
@@ -5642,6 +5703,8 @@ function allDoneCheck(now) {
 }
 function easeCam(dt) { const e = ALLDONE.ease; if (!e) return; e.t = Math.min(1, e.t + dt / (e.d || 2.5)); const k = e.t * e.t * (3 - 2 * e.t);
   cam.z = e.z0 + (e.z1 - e.z0) * k; cam.x = e.x0 + (e.x1 - e.x0) * k; cam.y = e.y0 + (e.y1 - e.y0) * k; clampCam(); if (e.t >= 1) ALLDONE.ease = null; }
+let BACK_AT = performance.now();   // round eleven notes 6, 14: when the player last came back to the app (nothing big starts in the first moments)
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { BACK_AT = performance.now(); if (typeof HELP !== 'undefined') HELP.lastInput = BACK_AT; } });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - (ALLDONE.hidAt || Date.now()) > 10 * 60000) { ALLDONE.done = false; bigDay = false; ALLDONE.at = performance.now(); } if (document.hidden) ALLDONE.hidAt = Date.now(); });   // a new visit
 // ---------- neighbours: their page, the traveller's page, story pages ----------
 function folkPor(f, big) { return `<div class="por${big ? ' big' : ''}"><img src="${folkPortrait(f)}" alt=""></div>`; }
@@ -5927,11 +5990,11 @@ function spiritWaitCheck() {
 // The idle nudge, for the first week: after 20 quiet seconds, a ring on the next useful thing (the spirit, Jobs, something lying about)
 function nudgeTick() {
   const t = performance.now();
-  if (G.s.days.length > 7 || guideOn() || guideStep() === 0 || sheetKind || roomOn || ALLDONE.on || HELP.ring || ptrs.size) return;
+  if (G.s.days.length > 7 || guideOn() || guideStep() === 0 || sheetKind || roomOn || ALLDONE.on || HELP.ring || ptrs.size || sceneOn() || visitor || RABBIT.on) return;
   if (t - HELP.lastInput < 20000 || t - HELP.nudgeAt < 60000) return;
   HELP.nudgeAt = t;
   if (SPIRIT_N && SPIRIT_HINT.screen) return ringOn({ spirit: true }, 10000);
-  { const sk = STAKES.find(q => q.scr && q.can); if (sk) { ringOn({ stake: stakeKey(sk) }, 10000); return toast('A paper flag marks a job that can start. Tap it.'); } }   // v90
+  { const sk = STAKES.find(q => q.scr && q.can); if (sk) { ringOn({ stake: stakeKey(sk) }, 10000); const n = G.s.flags.flagHints || 0; if (n < 2 && !G.s.flags.flagTapped) { G.s.flags.flagHints = n + 1; G.dirty = true; toast('A paper flag marks a job that can start. Tap it.'); } return; } }   // v90; round eleven note 14: the words only until the flags are known (it came every time he came back)
   if (JOBS_REAL && $('bTasks').classList.contains('leaf')) { showPointer('Something is ready to start in Jobs.', 'bTasks'); return setTimeout(() => hidePointer('bTasks'), 9000); }
   const o = nearestOffer(); if (!o) return;
   const [x, y] = toWorld(o.gx, o.gy, o.tile), sx = (x - cam.x) * cam.z + W / 2, sy = (y - cam.y) * cam.z + H / 2;

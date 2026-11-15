@@ -2,7 +2,7 @@
 
 A cosy storybook garden game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; it must run smoothly on a phone.
 
-_Last updated: 2026-11-15 (v99 live). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
+_Last updated: 2026-11-15 (v100, the round-eleven build, live). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
 
 ## 1. Rules for every chat (read first)
 
@@ -34,8 +34,8 @@ _Last updated: 2026-11-15 (v99 live). Keep this file short: one page of where we
 
 ## 3. What's next (in order)
 
-1. **v99, the round-ten build, is live.** Previews are in `/mnt/project-files/round-ten-v99/`. It holds every round-ten note (tracker has each row): jobs go to whichever gnome is free; the garden patch's new chain (rubbish, fence, spoil, the player's Wake the worms spell taught on day one, soft rain fills the large pond, reeds, three wildflower patches, garden opens) laid out to layout 3; a second rectangle bed with its own seed tin; Wendel's work corner growing into the lean-to; Mabel lends a hand with one job a day while camped; every job time reviewed (`job-times.md`); the green sprig labelled with a "valley's green" card; notes one at a time; the play log keeps the whole garden; art day 21's paintings placed (calm ground, heap to pond, paved spring, wash tub, lean-to, neighbours' pages and faces). Not in this build, because: note 1 game length (on hold, Bryce); note 27 more bug baths (new idea, maybe pile); note 35's herb use (maybe pile).
-2. When Bryce has played v99: he closes notes; anything that came back gets a proper look.
+1. **v100, the round-eleven build (with art day 22), LIVE 2026-11-15 (Bryce: "Yes, put it live"); its notes are "built, waiting for Bryce".** Previews in `/mnt/project-files/round-eleven-v100/`. Holds round-eleven notes 1 to 14 (tracker has each row): wood comes from the big stump that was in the way (day-one dig) and the old fallen log (new job "Saw up the old log"; Bryce picked both), woodpile on the ground right beside the house, stick pile grows in four painted steps, finished little work corner (`yard-workcorner`); the garden heap is a two-gnome job (`pair:true`: the other joins when free, twice as fast), Hazel carries the good bits to a salvage pile at the work corner, the herb box is that crate, the third job is "Dig out the buried rubbish", four heap paintings (the last two repainted with no junk); flags only for story/patch/neighbour jobs (`flagJob`), bench and doorstep no longer gate anything, Hazel says why the roof wants moss (`sayWhy`); the rabbit's first visit is a slow scene, notes wait during scenes, Hazel always fills the dish. Not in this build: note 15 (seed bed hard to tap, from the play log; Bryce to confirm). v99 (round ten) is live; its notes are still "built, waiting for Bryce".
+2. When Bryce has played v100: he closes notes; anything that came back gets a proper look.
 3. Next art day: the stand-ins in section 4.
 4. Held until Bryce asks: month-two builds 2 to 7 (`docs/MONTH-TWO.md`), then a long robot run.
 
