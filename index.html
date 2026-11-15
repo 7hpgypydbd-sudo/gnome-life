@@ -282,7 +282,7 @@ if (window.SANDBOX) {
   .pack.shelves small.full { font-size:12px; }
 
   /* ---------- v102: the Journal is a real book (Bryce chose cloth tabs down the side + a Contents page) ---------- */
-  #sheet.book { background:none; -webkit-mask:none; mask:none; box-shadow:none; border-radius:0; padding:0 0 calc(var(--safe-b) + 8px); max-height:none; height:min(88vh, 900px); overflow:hidden; }
+  #sheet.book { background:none; -webkit-mask:none; mask:none; box-shadow:none; border-radius:0; padding:0 0 calc(var(--safe-b) + 6px); max-height:none; top:calc(env(safe-area-inset-top) + 58px); height:auto; overflow:hidden; }   /* v103 (Bryce: cut off at the top): the book sits below the phone's clock and the title, and fills down to the bottom */
   #sheet.book > .close { right:46px; top:2px; z-index:6; }
   .bk { position:relative; height:100%; margin:0 4px 0 8px; }
   .bkcover { position:absolute; left:0; right:38px; top:10px; bottom:0; border-radius:9px 12px 12px 9px; padding:9px 9px 10px 17px; z-index:2;
@@ -341,7 +341,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v102</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v103</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -362,7 +362,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 102;
+const BUILD = 103;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -370,11 +370,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=102"></script>
-<script src="playlog.js?v=102"></script>
-<script src="concerns.js?v=102"></script>
-<script src="game.js?v=102"></script>
-<script src="walk.js?v=102"></script>
+<script src="content.js?v=103"></script>
+<script src="playlog.js?v=103"></script>
+<script src="concerns.js?v=103"></script>
+<script src="game.js?v=103"></script>
+<script src="walk.js?v=103"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
