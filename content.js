@@ -39,15 +39,14 @@ window.CONTENT = {
   // Little chores (build 3, "never stuck"): small free jobs for whichever gnome is free, once the first day's work is done, so
   // nobody stands about while the crops grow or a story job waits. pref: who it suits (the other does it if that one is busy);
   // give: what it brings in; crop: only while something grows in the seed bed. Jobs shows `show` of them, what the story is short of first.
-  chores: { needs:['bedwater'], show:3, list:[
+  chores: { needs:['spring'], show:3, list:[
     { id:'chore:sticks', name:'Pick up sticks round the edge', short:'picking up sticks', pref:'him', act:'pickup', give:{ twig:2 }, mins:2,
       blurb:'The wind always brings a few down from the old fence line. They go on the stick pile.' },
     { id:'chore:stones', name:'Look for flat stones', short:'looking for stones', pref:'him', act:'pickup', give:{ stone:2 }, mins:2,
       blurb:'Good flat ones, for building. The loggers turned up plenty, if you know where to look.' },
     { id:'chore:moss', name:'Gather moss off the old stumps', short:'gathering moss', pref:'her', act:'gather', give:{ moss:2 }, mins:3,
       blurb:'Just a little from each stump, so it grows back thicker. It goes on Hazel\'s shelf by the door.' },
-    { id:'chore:dew', name:'Fetch a jug of water from the spring', short:'fetching water', pref:'her', act:'gather', give:{ water:2 }, mins:2, needs:['spring'],
-      blurb:'Down to the spring with the jug and back. Seeds, saplings and flower pots all want a drink.' },
+    // v104 (round twelve note 9): the jug chore is gone; water from the spring is free
     { id:'chore:weed', name:'Weed round the young crop', short:'weeding the seed bed', pref:'her', act:'gather', give:{ seed:1 }, mins:3, crop:true,
       blurb:'Now there is something growing, the weeds have noticed too. Pulling them shakes out the odd seed worth keeping.' },
     // v99 (round ten note 44, Bryce: seeds were hard to come by): a steady way to a seed, crop or no crop
@@ -115,7 +114,7 @@ window.CONTENT = {
     { id:'bed',     name:'Dig a seed bed', short:'digging the seed bed', spine:true, who:'him', act:'dig', spot:'clearing', cost:{ twig:2 },  mins:8, green:0, magic:1,
       needs:['clear'], blurb:'Now the ground is clear, the earth can be turned. {who} digs it over row by row, until there is a patch of soft dark soil for the vegetables.' },
     { id:'bedwater', name:'Water the seeds in', short:'fetching water', stages:[[0.12, 'watering the seeds in']], spine:true, who:'either', act:'water', spot:'spring', cost:{}, mins:3, green:0, magic:1,
-      needs:['bed', 'spring', 'flag:sown1'], blurb:'The first seeds are in. A can at a time from the new spring, watered patch by patch, until the soil over them is dark and damp. Then they can grow.' },   // round-seven note 15: after the first sowing, not before it
+      needs:['bed', 'spring', 'flag:sowDone'], blurb:'The first seeds are in. A can at a time from the new spring, watered patch by patch, until the soil over them is dark and damp. Then they can grow.' },   // round-seven note 15: after the first sowing, not before it
     { id:'feeder',  name:'Set out a feeding dish', short:'setting out the dish', spine:true, who:'her', act:'carry', spot:'feeder', cost:{ stone:2, twig:1 }, mins:4, green:0, magic:1, needs:['flag:rabbit'],   // Bryce: the dish is the compromise after the rabbit's raid, beside the fence
       blurb:'A flat stone dish on a stump. Put out seed or berries and see who comes. Some will come back.' },
     // the rabbit always comes for the first sprouts (game.js rabbitDue); only then is the fence offered
@@ -137,7 +136,7 @@ window.CONTENT = {
     { id:'sapling', name:'Plant the sapling out', short:'planting the sapling', spine:true, who:'her', act:'water', spot:'sapling',     cost:{ water:2, moss:2 },  mins:10, green:2, magic:3,
       needs:['clear', 'roof'], blurb:'The little oak they carried from their old home is ready for real ground. Trees bring life back faster than anything. It will outlive us all.' },
     // v99 (round ten note 18): Wendel's work corner comes early, beside the house: a frame of poles and bark where things get made before they are carried to their spot. The story's lean-to job (leanto) finishes it into his proper workshop.
-    { id:'workcorner', name:'Knock up a work corner', short:'building the work corner', who:'him', fixed:true, act:'build', spot:'workcorner', cost:{ twig:3 }, mins:10, green:0, needs:['bed'],
+    { id:'workcorner', name:'Knock up a work corner', short:'building the work corner', who:'either', act:'build', spot:'workcorner', cost:{ twig:3 }, mins:10, green:0, needs:['bed'],
       blurb:'Four poles and a few sheets of bark beside the house: somewhere to saw, whittle and hammer. Things for the home get made here, then carried to where they go.', doneNote:'Wendel\'s work corner. Things get made here, then carried to where they go.' },
     { id:'doorstep', name:'Lay a flat-stone doorstep', short:'laying the doorstep', who:'him', act:'dig', spot:'shelter',     cost:{ stone:3 },          needs:['flag:firstpick'], mins:8,  green:0,
       blurb:'So the mud stays outside. Mostly.' },
@@ -174,7 +173,7 @@ window.CONTENT = {
       blurb:'His work corner, made into a proper workshop: a bark roof, a bench, a hook for every tool and a little window for the stars. His mess lives in here now. Hazel is delighted.' },
     { id:'path',    name:'Lay a stepping-stone path', short:'laying the path',  who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:6 },          mins:240, green:0, needs:['doorstep', 'page:3.0'],
       blurb:'From the doorstep to the fire, so the grass can grow where the feet used to go.' },
-    { id:'wildmeadow', name:'Sow the meadow strip', short:'sowing the meadow',    who:'her', act:'water', spot:'wheelbarrow', cost:{ seed:5, water:3 },  mins:360, green:3, needs:['bedwater', 'page:3.0'],
+    { id:'wildmeadow', name:'Sow the meadow strip', short:'sowing the meadow',    who:'her', act:'water', spot:'wheelbarrow', cost:{ seed:5, water:3 },  mins:360, green:3, needs:['bedwater', 'page:3.0', 'fence'],
       blurb:'A long ribbon of grasses and clover along the fence, left to grow wild.' },
     { id:'windowbox', name:'Hang a window box', short:'hanging the window box',        who:'her', act:'water', spot:'shelter',     cost:{ twig:2, moss:2, seed:1 }, mins:30, green:1, needs:['house3'],
       blurb:'Now there is a proper house with a proper window. A home is not a home until something is flowering under it.' },
@@ -214,12 +213,12 @@ window.CONTENT = {
     // spot on that patch (yard layout plan); nothing to place or drag. Either gnome can make any of them, one job at a time. Only planted ones give green.
     // barrow, swing, sign and wildflowers were jobs before and keep their ids, so a garden that already made them still has them.
     { id:'barrow', make:'yard', stage:'barren', at:[0.85, 0.92], name:'Make a little wheelbarrow', short:'making a wheelbarrow', who:'either', act:'build', spot:'wheelbarrow', cost:{ twig:2, stone:1 }, mins:15, green:0,
-      blurb:'The wagon is a house now, so this is the only thing in the yard with wheels. It is mostly for carting moss and flowers about.', doneNote:'The little wheelbarrow is done, and already full of moss.' },
+      blurb:'The only thing in the yard with wheels. It is mostly for carting moss and flowers about.', doneNote:'The little wheelbarrow is done, and already full of moss.' },
     { id:'firering', make:'yard', stage:'barren', at:[0.22, 0.40], name:'Ring the fire with stones', short:'ringing the fire', who:'either', act:'dig', cost:{ stone:3 }, mins:10, green:0,
       blurb:'Flat stones set round the fire one by one, so the sparks stay where they\'re put.' },
     { id:'potstools', retired:true, make:'yard', stage:'barren', at:[0.30, 0.50], name:'Two upturned-pot stools', short:'setting out the stools', who:'either', act:'carry', cost:{ twig:1, moss:1 }, mins:8, green:0,
       blurb:'They had a lot of pots. Now they have chairs.' },
-    { id:'spinner', make:'yard', stage:'barren', at:[0.08, 0.30], name:'A tin-can wind spinner', short:'making the spinner', who:'either', act:'build', cost:{ twig:2, stone:1 }, mins:10, green:0,
+    { id:'spinner', make:'yard', stage:'barren', at:[0.04, 0.40], name:'A tin-can wind spinner', short:'making the spinner', who:'either', act:'build', cost:{ twig:2, stone:1 }, mins:10, green:0,
       blurb:'Made from the loggers\' old tins. It squeaks. Wendel calls that music.' },
     { id:'scraper', make:'yard', stage:'barren', at:[0.29, 0.39], name:'A boot-scraper stone', short:'setting the scraper', who:'either', act:'dig', cost:{ stone:2 }, mins:8, green:0,
       blurb:'For the mud. Hazel\'s idea, Wendel\'s boots.' },
@@ -228,9 +227,9 @@ window.CONTENT = {
       blurb:'Three of the travelling pots, finally with something in them.' },
     { id:'doormat', make:'yard', stage:'green', at:[0.36, 0.35], name:'A woven grass doormat', short:'weaving the doormat', who:'either', act:'craft', cost:{ moss:3, twig:2 }, mins:15, green:0,
       blurb:'Wipe your feet. Yes, you.' },
-    { id:'scarecrow', make:'yard', stage:'green', at:[0.60, 0.69], name:'A little scarecrow', short:'making the scarecrow', who:'either', act:'build', cost:{ twig:3, moss:1, feather:1 }, mins:15, green:0, needs:['bed'],
+    { id:'scarecrow', make:'yard', stage:'green', at:[0.60, 0.69], name:'A little scarecrow', short:'making the scarecrow', who:'either', act:'build', cost:{ twig:3, moss:1, feather:1 }, mins:15, green:0, needs:['bed', 'flag:rabbit'],
       blurb:'It does not scare the rabbit. The rabbit naps under it.' },
-    { id:'pebbles', make:'yard', stage:'green', at:[0.58, 0.74], name:'Pebble edging round the seed bed', short:'edging the bed', who:'either', act:'dig', cost:{ stone:5 }, mins:15, green:0, needs:['bed'],
+    { id:'pebbles', make:'yard', stage:'green', at:[0.58, 0.74], name:'Pebble edging round the seed bed', short:'edging the bed', who:'either', act:'dig', cost:{ stone:5 }, mins:15, green:0, needs:['fence'],
       blurb:'Little white pebbles, set one at a time all the way round the outside of the fence.' },
     { id:'yardbath', make:'yard', stage:'green', at:[0.75, 0.50], name:'A little bug bath where the old stump stood', short:'setting the bug bath', who:'either', act:'dig', cost:{ stone:3, water:1 }, mins:10, green:0, needs:['stump'],
       blurb:'A flat stone dish on a short stone, filled from the spring, with pebbles poking out so nobody small falls in. The bees found it before the water stopped wobbling.', doneNote:'The little bug bath is set where the old stump stood. A ladybird is already sitting on the middle pebble.' },
@@ -361,7 +360,7 @@ window.CONTENT = {
       // heap is piled where the pond will be; clearing it leaves a hollow; the player wakes the worms (first green, creeping in
       // slowly) and calls soft rain into the hollow; the gnomes plant reeds and a few wildflower patches; then the garden opens.
       // cast: a step that is the player's spell, not a gnome's job (game.js castStep).
-      garden: { name:'The rubbish heap', nameAfter:'Our garden-to-be', nameDone:'Our garden', patch:'the garden patch',
+      garden: { name:'The rubbish heap', nameAfter:'Our garden-to-be', nameDone:'Our garden', patch:'the garden patch', spell:'wind',   // v104: the wind spreads its wildflowers
         card:{ who:'both', text:'One day this will be our garden. First the loggers\' mess has to go.' },
         cardAfter:{ who:'both', text:'A pond in the middle, a new bed by the yard, and flowers wherever they like. One thing at a time.' },
         cardDug:{ who:'both', text:'So that\'s why it was a mound. The loggers buried half their rubbish under it. Out it all comes.' },
@@ -371,37 +370,39 @@ window.CONTENT = {
           // Wendel's work corner for little makes; the loggers buried the rest under the mound, so digging it out leaves the hollow.
           { id:'rubbish', name:'Pick up the loggers\' rubbish', short:'picking up rubbish', cost:{}, give:{ twig:2, stone:2 }, mins:15, act:'pickup', pair:true,
             blurb:'Rusty tins, an old crate, coils of wire, a cracked teacup. A big heap for one gnome, so the other joins in as soon as they are free. Anything still good goes to Wendel\'s work corner for little makes.',
-            doneNote:'The loggers\' rubbish is off the heap. The good bits (a crate, a few tins, some wire and planks) are stacked by Wendel\'s work corner. Hazel has her eye on that crate for herbs.' },
+            doneNote:'The loggers\' rubbish is off the heap. The few good bits went into Wendel\'s work corner, out of sight. Hazel has her eye on the old crate for herbs.' },
           { id:'fence', name:'Pull out the old fence', short:'pulling out the fence', cost:{}, give:{ twig:2 }, mins:15, act:'gather',
             blurb:'A fence round nothing, keeping nobody out. Post by post it comes up, and the good posts are stacked to fence a new bed one day.' },
           { id:'spoil', name:'Dig out the buried rubbish', short:'digging out the buried rubbish', cost:{}, mins:20, act:'dig', pair:true,
             blurb:'That mound is not earth. The loggers buried half their rubbish under it, deep. Dig it all out and the mound goes with it, leaving a hollow behind, and a hollow is a useful thing.',
             doneNote:'The buried rubbish is all dug out. Where the mound stood there is a deep hollow now, just the shape for a pond.' },
-          { id:'worms', cast:'worms', name:'Wake the worms', short:'waking the worms',
-            blurb:'The ground is packed hard and fast asleep. No fork will mend that. It wants its worms woken, and that is your magic, not the gnomes\'.',
-            later:[ { after:4, green:1, ev:'w1', note:'The worms are awake under the garden patch. The first threads of green are showing.' }, { after:15, green:1, ev:'w2' }, { after:35, green:1, ev:'w3' },
+          // v104 (round twelve notes 8, 15): no spell here any more. With the junk dug out, the ground breathes again by itself and the
+          // grass creeps in slowly (auto: done the moment it is reached; kept in the chain so older gardens keep their places).
+          { id:'worms', cast:'worms', auto:true, name:'The ground breathes again', short:'waking up',
+            blurb:'With the loggers\' junk dug out, the ground can breathe again. Grass creeps in by itself, a little at a time.',
+            later:[ { after:4, green:1, ev:'w1', note:'With the junk gone, the first threads of green are showing on the garden patch.' }, { after:15, green:1, ev:'w2' }, { after:35, green:1, ev:'w3' },
                     { after:60, green:1, ev:'w4', note:'Grass is creeping across the garden patch, a little further every time you look.' } ] },
           { id:'rain', cast:'rain', name:'Fill the hollow with soft rain', short:'filling the hollow',
             blurb:'The hollow where the heap stood would hold water, if any came. Call soft rain and it will fill: a pond, right in the middle of the garden.' },
           { id:'reeds', name:'Plant reeds round the pond', short:'planting reeds', cost:{ water:1 }, mins:15, act:'dig',
             blurb:'Reed roots from the spring, pressed into the mud at the water\'s edge. Reeds keep a pond clean, and give the dragonflies somewhere to sit.',
             later:[ { after:120, green:1, ev:'dragonflies', note:'Dragonflies have found the new pond in the garden.' } ] },
-          { id:'flowers', name:'Plant three wildflower patches', short:'planting wildflowers', cost:{ seed:2, water:1 }, mins:20, act:'dig', green:1,
+          { id:'flowers', name:'Plant three wildflower patches', short:'planting wildflowers', cost:{ seed:2, water:1 }, mins:20, act:'dig', green:1, spell:true,
             blurb:'Three small patches of wildflower seed, pressed in by hand. No digging over, no rows. They will spread by themselves, in their own time.',
             later:[ { after:180, green:1, ev:'spread1', note:'The wildflower patches in the garden are spreading.' }, { after:600, green:1, ev:'spread2' } ] },
         ] },
       // the other rubbish heaps: cleared, the worms woken, then wildflowers from seed balls (v99: the fork-and-water jobs gave way to Wake the worms, note 22)
       meadow: { name:'The rubbish heap', nameAfter:'Where the rubbish heap was', patch:'the old rubbish heap', spell:'wind',   // nameAfter (round eight note 6): once the rubbish is picked up, the card stops calling it a heap
-        card:{ who:'both', text:'Loggers\' junk and a fence that fences nothing. Clear it, wake the ground, and let the wildflowers have it. They\'ll know what to do.' },
-        lesson:{ title:'Ask the wind', text:`"Seeds are travellers. They only need a lift. The wind goes everywhere and sees everything, and it loves to be asked a favour. Throw your seeds, old heart, and ask the wind to carry them to the corners nobody can reach."` },
+        card:{ who:'both', text:'Loggers\' junk and a fence that fences nothing. Clear it, let the ground breathe, and let the wildflowers have it. They\'ll know what to do.' },
+        // v104: no lesson card here any more; this patch uses one of the three spells
         steps:[
           { id:'rubbish', name:'Pick up the loggers\' rubbish', short:'picking up rubbish', cost:{}, give:{ twig:2, stone:2 }, mins:15, act:'pickup',
             blurb:'Rusty tins, a cracked teacup, coils of old wire. Piece by piece it goes. Some of it might come in useful one day, or so Wendel says about everything.' },
           { id:'fence', name:'Pull out the old fence', short:'pulling out the fence', cost:{}, give:{ twig:2 }, mins:15, act:'gather',
             blurb:'A fence round nothing, keeping nobody out. Post by post it comes up, and the good posts are stacked to use again.' },
-          { id:'worms', cast:'worms', name:'Wake the worms', short:'waking the worms',
-            blurb:'Boots and cart wheels have pressed this earth as hard as a plate. It wants its worms woken, and that is your magic, not the gnomes\'.',
-            later:[ { after:4, green:1, ev:'w1', note:'The worms are awake where the rubbish heap was. The first threads of green are showing.' }, { after:15, green:1, ev:'w2' }, { after:35, green:1, ev:'w3' },
+          { id:'worms', cast:'worms', auto:true, name:'The ground breathes again', short:'waking up',   // v104: no spell; done the moment it is reached
+            blurb:'With the junk and the old fence gone, the ground can breathe again. Grass creeps in by itself, a little at a time.',
+            later:[ { after:4, green:1, ev:'w1', note:'The first threads of green are showing where the rubbish heap was.' }, { after:15, green:1, ev:'w2' }, { after:35, green:1, ev:'w3' },
                     { after:60, green:1, ev:'haze', note:'Old seeds that had waited years in the hard ground have woken. There is a haze of green by the old rubbish heap.' } ] },
           { id:'roll', name:'Roll seed balls', short:'rolling seed balls', cost:{ seed:2, water:1, moss:1 }, mins:15, act:'dig', atHome:true,
             blurb:'Back at home: mud, a little moss and wildflower seed, rolled between the palms into balls the size of a pea. Tossed onto the patch, each one becomes a clump of wildflowers.' },
@@ -422,9 +423,9 @@ window.CONTENT = {
                     { after:600, green:2, ev:'butterflies', note:'Butterflies over the meadow. Clem says the honey tastes of it.' },
                     { after:1200, green:2, ev:'flowers', note:'Wildflowers have seeded themselves round the bee stone.' } ] },
         ] },
-      creature: { name:'The cracked earth', patch:'the cracked earth', spell:'cloud',
+      creature: { name:'The cracked earth', patch:'the cracked earth', spell:'rain',
         card:{ who:'him', text:'Poor old ground, cracked like a dry loaf. We can\'t fix it on our own, love. But we know some diggers who could, if we make them welcome.' },
-        lesson:{ title:'Call a rain cloud', text:`"See how the ground has split, like lips that have gone too long without a drink? Ask a small cloud to stop over it. Only one, only for a while. The cracks will close themselves once they have something to close round."` },
+        // v104: no lesson card here any more; this patch uses one of the three spells
         steps:[
           { id:'branches', name:'Clear the dead branches', short:'clearing branches', cost:{}, give:{ twig:3 }, mins:30, act:'pickup',
             blurb:'The old tree has dropped its limbs everywhere. They go into a heap at the edge. The tree itself stays: something will want to live in it.' },
@@ -453,9 +454,9 @@ window.CONTENT = {
             blurb:'Fern spores shaken from the creek bank onto a leaf, carried over very carefully, and scattered in the shade of the young trees.',
             later:[ { after:240, green:3, ev:'ferns1', note:'Ferns are uncurling in the shade on the old cracked earth.' }, { after:720, green:3, ev:'ferns2' } ] },
         ] },
-      nursery: { name:'The bare plain', patch:'the bare plain', spell:'seedwake',
+      nursery: { name:'The bare plain', patch:'the bare plain', spell:'coax',
         card:{ who:'him', text:'Nothing here at all, not even a stump. That\'s all right. It just needs trees, and trees we can grow. I\'ll find each of them a good spot.' },
-        lesson:{ title:'Wake a sleeping seed', text:`"A seed is a little sleeper with its whole tree folded up inside. Some wake in a day, some in ten years, some never, because nobody asked. Ask them. Gently. Like waking somebody you love on a cold morning."` },
+        // v104: no lesson card here any more; this patch uses one of the three spells
         steps:[
           { id:'shelf', name:'Build a nursery shelf', short:'building a shelf', cost:{ twig:3 }, mins:30, act:'build', atHome:true, once:'nurseryShelf',
             blurb:'A plank shelf on two stumps by Hazel\'s growing corner at home, for pots of tree seedlings. Every wood starts somewhere.' },
@@ -486,9 +487,9 @@ window.CONTENT = {
             blurb:'A ring of leaf litter round each tree to keep its feet cool. Moss and ferns come up in the shade.',
             later:[ { after:360, green:3, ev:'moss', note:'Moss and little ferns have come up in the shade of the young trees on the plain.' }, { after:1440, green:3, ev:'moss2' } ] },
         ] },
-      creek: { name:'The dry creek', patch:'the dry creek', spell:'sing',
+      creek: { name:'The dry creek', patch:'the dry creek', spell:'rain',
         card:{ who:'her', text:'There was water here once. You can see where it ran. The spring at home wants to come this way, I\'m sure of it. We just need to clear its path.' },
-        lesson:{ title:'Sing the water on', text:`"Water is shy. It will turn back at the first stone if it thinks nobody wants it. Hum to it. It doesn't matter what. Your Wendel hums all day and the spring loves him for it."` },
+        // v104: no lesson card here any more; this patch uses one of the three spells
         steps:[
           { id:'junk', name:'Pull the rubbish out of the creek bed', short:'clearing the creek bed', cost:{}, give:{ twig:1, stone:2 }, mins:30, act:'pickup',
             blurb:'A rusty tin, a broken bucket, an old cart wheel. Wendel keeps the wheel. He will think of something.' },
@@ -559,24 +560,14 @@ window.CONTENT = {
       explain:`Young trees are coming up all round the yard now, some planted and some that came by themselves, and the little oak has a new crown of leaves. The creatures who left long ago are finding their way back, one by one, following the green. This isn't a clearing any more. It's the beginning of a wood.` },
   ],
 
-  // Magic grows with the days you visit (level by distinct days visited). It only grows the magic: spells, and jobs go a little faster. The story decides the jobs.
-  magicLevels: [ // daysNeeded, name, what it unlocks
-    { days:1, name:'a flicker',     unlock:null },
-    { days:2, name:'a glow',        unlock:'coax' },
-    { days:3, name:'a steady light',unlock:'rain' },
-    { days:5, name:'a warm flame',  unlock:'wake' },
-    { days:8, name:'a bright fire', unlock:null },
-  ],
+  // v104 (round twelve notes 8, 15, Bryce chose option C): three spells for everything. Magic grows with the LAND, never with the
+  // days: the home yard's stage (C.landStages: bare ground, first green, young meadow, young woodland) names it and says how many
+  // times a day each spell can be cast (game.js spellUses). The Wood spirit teaches each spell at its moment in the story.
+  magicLevels: [ { name:'a flicker' }, { name:'a glow' }, { name:'a steady light' }, { name:'a warm flame' } ],
   spells: {
-    coax: { name:'Coax a sprout',  cost:{ light:3 }, daily:true, blurb:'Finish whatever is growing in the bed, right now. Once a day.' },
-    rain: { name:'Call soft rain', cost:{ light:3 }, daily:true, blurb:'Waters every planted bed and leaves water beading on the stones. Once a day. It can also fill a waiting hollow.' },
-    worms: { name:'Wake the worms', cost:{ light:1 }, blurb:'For bare, hard ground the gnomes have cleared. The worms stir, the earth loosens, and green creeps in by itself over the next hour.' },   // v99 (notes 22, 28): the first spell, taught on day one
-    wake: { name:'Wake the land',  cost:{ light:4 }, blurb:'Halves the time left on a regrowing patch.' },
-    // taught by the Wood spirit the first time each kind of bare tile appears (CONTENT.heal); each helps one job that is already under way
-    wind:  { name:'Ask the wind', cost:{ light:2 }, heal:'meadow', blurb:'While the seed balls are being tossed, the wind carries them into the far corners. The job goes twice as fast.' },
-    cloud: { name:'Call a rain cloud', cost:{ light:2 }, heal:'creature', blurb:'A soft shower over the cracked earth only, while the mulch goes down. The cracks close twice as fast.' },
-    seedwake: { name:'Wake a sleeping seed', cost:{ light:2 }, heal:'nursery', blurb:'The tree seedlings in their pots wake up and are ready to plant out now.' },
-    sing:  { name:'Sing the water on', cost:{ light:2 }, heal:'creek', blurb:'Hum the trickle round the last stones while they are being rolled away. Twice as fast.' },
+    coax: { name:'Coax a sprout',  cost:{ light:3 }, daily:true, blurb:'Hurries whatever is growing in a seed bed. Wakes seedlings waiting in their pots.' },
+    rain: { name:'Call soft rain', cost:{ light:3 }, daily:true, blurb:'Waters the seed beds and fills a waiting hollow. Helps mulch and creek work go twice as fast.' },
+    wind: { name:'Ask the wind',   cost:{ light:2 }, daily:true, blurb:'Carries seed: new wildflowers and tossed seed balls spread twice as fast.' },
     legs: { name:'Give the toadstool legs', cost:{ light:2 }, blurb:'The big red toadstool has come up hard against the garden fence, right where Hazel wants her rows, and it is far too big to shift. Wendel and Hazel wish they could move it. Answer their wish: a little magic and it sprouts root legs and walks off to the garden\'s quiet far corner.', special:true },   // only shown while the toadstool still blocks the open garden
   },
 
@@ -599,7 +590,7 @@ window.CONTENT = {
     { id:'owl',      name:'Tawny owl',   hours:[19,24], weight:2, h:72, faces:'L', icon:'🦉', speed:0.3, alsoHours:[0,5], note:'Watches from the top of the woodpile. Says nothing.' },
     { id:'ladybird', name:'Ladybird',    hours:[8,17],  weight:3, h:18, faces:'R', icon:'🐞', speed:0.05, stage:'green', note:'Only came once there was something green to land on.' },
     // the Wood spirit only comes to teach (game.js spiritLesson); never as a random night visitor. Kept for its journal entry.
-    { id:'spirit',   name:'Wood spirit', hours:[0,0], weight:0, h:84, faces:'R', icon:'✨', fly:30, speed:0.06, note:'Soft and green, like a handful of new leaves that forgot to fall. It comes when there is something to teach, and the gnomes cannot see it.' },
+    { id:'spirit',   name:'Wood spirit', hours:[0,0], weight:0, h:84, faces:'R', icon:'✨', fly:30, speed:0.06, note:'Soft and green, like a handful of new leaves that forgot to fall. It comes when there is something to teach, and the gnomes cannot see it. It once said: you will find light in the dark, in wisps and dew, and every time you are kind. Help the small ones when they are in trouble; that is the brightest magic there is.' },   // v104: the old "A bright fire" lesson's words live here now
     { id:'wren',      name:'Fairy-wren',     hours:[6,17],  weight:3, h:26, icon:'🐦', fly:14, speed:0.2, task:'birdbath', eats:['seed'], nest:'nest',
       note:'A tiny blue flicker with a cocked tail. It bathed, looked at everyone, and left.',
       trouble:{ text:'is caught in a loop of the loggers\' old string.', by:'him', act:'Untangle it', thanks:'Wendel knelt, and with one careful tug the wren was free. It scolded everybody, then sang.' } },
@@ -1234,14 +1225,18 @@ window.CONTENT = {
     spiritFirst: `Something soft and green drifts out of the trees, like a handful of new leaves that forgot to fall. It turns and looks straight at you, as if it has always known you were there. It is a little spark of you, old as the hill, that never quite went to sleep. The gnomes can't see it. But you can.`,
     spiritBack: `The Wood spirit drifts out of the trees again, the soft green shape from your first day. It looks straight at you, pleased, as if you are old friends already.`,   // its first lesson, when you met it on day 1
     lessons: [
-      // v99 (round ten notes 28, 37): the first lesson, on day one, the moment a cleared patch is waiting for it. n is only a name (6: added after the first five); game.js spiritLesson has the order
-      { n:6, at:'patch', spell:'worms', title:'Wake the worms', text:`"Hello, old heart. See that ground the gnomes have cleared? Hard as a plate, and fast asleep. They could fork it for a week and it would only sulk. But under it the worms are sleeping too, and worms listen to you. Touch the bare patch and wake them. They'll do the digging, and the green will follow, slowly, the way it likes to."`, after:`"You'll need a little light for it. Light lies about in sparks and dewdrops. Here, have a little of mine to begin with."` },
-      { n:1, at:'seedbed', spell:'coax', title:'Coax a sprout', text:`"Hello again, old heart. I've been watching you help them. The glimmers you gather, the dew and the wisps, are light, and light is your magic. It can't make anything grow. Nothing can. But it can whisper to a seed that is already trying, and tell it to hurry, because somebody is hungry."` },
-      { n:2, at:'spring', spell:'rain', title:'Call soft rain', text:`"The clouds pass over this hill without stopping. They think nothing lives here any more. Ask them nicely to look down, and they might. But never ask for a storm, old heart. A garden wants a drink, not a bath."` },
+      // v104 (round twelve notes 8, 15, Bryce chose option C): four lessons in the whole game, each at its moment in the story, never
+      // on a day count. n is only a name (game.js spiritLesson has the order). Coax is also the first meeting, so it is one card.
+      { n:1, at:'seedbed', spell:'coax', title:'Coax a sprout',
+        text:`"Hello, old heart. See the seeds they've just put in? Light can't make anything grow. Nothing can. But it can whisper to a seed that is already trying, and tell it to hurry."`,
+        after:`"Here's a little of my light. Once the seeds have had their drink, touch the seed bed."` },
+      { n:2, at:'hollow', spell:'rain', title:'Call soft rain',
+        text:`"A hollow, just the shape for a pond. The clouds pass over this hill without stopping; they think nothing lives here any more. Ask them nicely to look down, and they'll fill it. They'll water the seed beds too, whenever you ask. A drink, mind, never a storm."`,
+        after:`"A little more of my light. Touch the hollow."` },
+      { n:7, at:'garden', spell:'wind', title:'Ask the wind',
+        text:`"Wildflower seed is a traveller. It only wants a lift. The wind goes everywhere and loves to be asked a favour: ask it, and it will carry the seed to corners the gnomes can't reach. Later it will do the same for the old rubbish heaps."`,
+        after:`"There. Touch the garden while they plant."` },
       { n:3, at:'toadstool', spell:'legs', title:'Give the toadstool legs', text:`"Big, isn't he? And very settled. You could push him all day and he wouldn't mind you one bit. But ask him kindly, give him a little light, and he'll find his own legs. He might even like the corner better."` },
-      { n:4, at:'edge', spell:'wake', title:'Wake the land', text:`"See out there, past the garden, where the land is still dark? It isn't dead. It's only asleep, dreaming of what it used to be. When the gnomes have done their part, you can help it wake a little sooner. Only a little. Waking up is not something you rush."` },
-      { n:5, at:'fire', spell:null, title:'A bright fire', text:`"Your light is strong now, old heart, stronger than it has been since the trees came down. There's nothing new to teach you today. Only this: you'll find light in the dark, in wisps and dew, and you'll find it every time you are kind. Help the small ones when they're in trouble. That is the brightest magic there is."`,
-        after:`"I'll be about. Whenever this hill needs something new, I'll come and show you."` },
     ],
     // creatures moving into a home the gnomes made bring the land back too (+1 green each), a while after the home is made
     moveIns: [

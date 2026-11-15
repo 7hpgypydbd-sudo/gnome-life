@@ -290,6 +290,8 @@ That night, for the first time, they slept under a real roof in a real house, on
 
 ## The Wood spirit's lessons
 
+**v104 (round twelve notes 8 and 15, Bryce chose option C): the live lessons are now four, each at its moment in the story, never on a day count.** `CONTENT.story.lessons` in content.js holds the words. Coax a sprout: the moment the first seeds are in (also the first meeting). Call soft rain: when the garden hollow is dug out (or the second day of visits, if the hollow is slow). Ask the wind: when the garden's wildflowers go in. The toadstool's legs: when the garden opens. Wake the worms, Wake the land, the patch lessons and "A bright fire" are gone; the bright-fire words live on the Wood spirit's Journal page. The older five-lesson text below is kept for the record.
+
 The Wood spirit comes five times in the first month, once each time the player's magic grows, and teaches one new thing on a greeting card (small card size, not a full story page). Its one big lesson, repeated gently each time: **magic is for asking, not pushing**; it only helps what is already trying to live. It floats beside the thing it is teaching about until tapped. The gnomes cannot see it, though Hazel sometimes looks right at it.
 
 Whichever lesson comes first gets this opening line: *"Something soft and green drifts out of the trees, like a handful of new leaves that forgot to fall. It turns and looks straight at you, as if it has always known you were there. The gnomes can't see it. But you can."*

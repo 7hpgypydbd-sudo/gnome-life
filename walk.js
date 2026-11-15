@@ -23,7 +23,7 @@ const Walk = (() => {
     const pad = opts.creature ? 0.01 : 0, list = [];
     for (const f of footprints()) if (f && f.r > 0) list.push(circle(f, pad));
     for (const fn of extra) for (const f of fn() || []) if (f && f.r > 0) list.push(circle(f, pad));
-    const b = bed(); if (b) list.push(Object.assign({ hard: !!opts.creature }, b));   // creatures never go in; gnomes may (to work it), in by the gate once it is fenced (bedRoute in index.html)
+    const b = !opts.intoBed && bed(); if (b) list.push(Object.assign({ hard: !!opts.creature }, b));   // creatures never go in; gnomes may (to work it), in by the gate once it is fenced (bedRoute in index.html)
     return list;
   }
   // The way round: a fine grid over the ground (CELL tile units), each cell blocked if it is inside something; the shortest way
