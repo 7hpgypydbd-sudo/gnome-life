@@ -460,7 +460,7 @@ const PROPS = [
   { name:'campfire',     gx:0.22, gy:0.40, s:0.9 },   // v75 (Bryce's yard moves): in front of the house's left roots
   { name:'lanternstump', gx:0.75, gy:0.50, s:1.25, gone:'stump' },   // round twelve note 1 (Bryce): Wendel's day-one stump stays where it always was, where the bug bath goes; only the art day 22 repaint is used, a little bigger. The big stump at the bottom of the yard is gone for good (its art didn't fit)   // a plain old stump now (Bryce: the lamp post nailed to it made no sense); dug out in stages by "Dig out the old stump" (drawStump)
   { name:'seedbed',      gx:0.58, gy:0.74, s:1.0, flat:true, until:'bed' },   // until: hidden until that job is done (fades in while it runs)
-  { name:'tub',          gx:0.63, gy:0.24, s:0.33, until:'clothesline' },   // v104 (round twelve note 17): moved right with the washing line, clear of the woodpile and barrel   // the covered tub (Bryce: "a big drum in the way" by the bed, no job): now the wash tub under the washing line
+  { name:'tub',          gx:0.575, gy:0.09, s:0.33, until:'clothesline' },   // v104 (round twelve note 17): moved right with the washing line, clear of the woodpile and barrel   // the covered tub (Bryce: "a big drum in the way" by the bed, no job): now the wash tub under the washing line
   { name:'wheelbarrow',  gx:0.85, gy:0.92, s:0.6, until:'barrow' },   // Bryce: small, just a decoration the gnomes make; parked by the seed bed's gate (round five)
   { name:'fence',        gx:0.75, gy:0.72, s:0.9 },   // only a tap spot now; the fence itself is drawn round the seed bed (FENCE_SEGS)
   { name:'sapling',      gx:0.18, gy:0.80, s:0.8 },
@@ -550,7 +550,7 @@ const WORKPATH = {
   roof: (p, g) => workLoop(g, 'roof', c => [[...MOSS_SPOTS[c % MOSS_SPOTS.length], 'pickup', false, 4], [0.30, 0.28, 'putdown', true, 2.5], [0.30, 0.28, 'build', false, 5]]),   // she gathers moss round the yard and presses it onto the low edge of the roof
   rainbarrel: (p, g) => workLoop(g, 'rainbarrel', () => [[...SPOTS.barrel, 'gather', false, 6, BARREL_AT()], [SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3], [SPOTS.barrel[0] + 0.01, SPOTS.barrel[1] - 0.01, 'water', 'can', 4, BARREL_AT()]]),   // scrub, fetch rinse water from the spring, rinse
   doorstep: () => [0.33, 0.27, 'dig'],   // kneeling by the door, bedding each flat stone in (stones: kneel, not hammer)
-  clothesline: p => p < 0.5 ? [0.60, 0.22, 'build'] : [0.69, 0.16, 'build'],   // one post, then the other
+  clothesline: p => p < 0.5 ? [0.56, 0.22, 'build'] : [0.56, -0.04, 'build'],   // one post, then the other
   lantern: () => [0.71, 0.54, 'build'],   // at the old lantern stump
   logsaw: (p, g) => {   // round eleven notes 1-3: he saws the old log round by round from its end, carrying the rounds to the woodpile as he goes
     const e = logEnd(p); return workLoop(g, 'logsaw', () => [[e[0] + 0.03, e[1] + 0.04, actOr(g, 'chop', 'build'), false, 7, e], [e[0] + 0.02, e[1] + 0.05, 'pickup', false, 2.5, e], [WOOD_DROP[0] + 0.02, WOOD_DROP[1] + 0.02, 'putdown', 'logs', 2.5, [0.43, 0.05]]]); },
@@ -771,6 +771,18 @@ function cropPic(k, x, y, h, flip, foot = 0.9) {   // a painted plant or piece b
   const im = art(k); if (!im) return false; const w = h * im.width / im.height;
   if (flip) { ctx.save(); ctx.translate(x, 0); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, y - h * foot, w, h); ctx.restore(); } else ctx.drawImage(im, x - w / 2, y - h * foot, w, h);
   return true;
+}
+// v104 (round twelve note 17, Bryce: "too close to the stump and the angle of it is wrong, perspective wise"): the painting is front-on,
+// so it is stretched between the two posts and slanted (a vertical shear keeps the posts upright) to run along the ground like everything else
+let WL_POSTS = [[0.53, 0.20], [0.53, -0.06]];   // Bryce picked: longer, running back from the stick pile towards the woodpile
+function drawWashingLine(x1, y1, x2, y2, a) {
+  const img = art('washing-line'); if (!img || a <= 0) return false;
+  if (x2 < x1) [x1, y1, x2, y2] = [x2, y2, x1, y1];
+  const span = Math.max(20, x2 - x1), W = span / 0.88, H = W * img.height / img.width, k = (y2 - y1) / span;
+  ctx.save(); ctx.globalAlpha *= Math.min(1, a);
+  ctx.transform(1, k, 0, 1, (x1 + x2) / 2, (y1 + y2) / 2 + 3);
+  ctx.drawImage(img, -W / 2, -H, W, H);
+  ctx.restore(); return true;
 }
 function drawSlot(k, x, y, a = 1, opts = {}) {   // bottom-centre at (x, y); flat pieces are centred on (x, y) instead
   const img = art(k); if (!img || a <= 0) return false;
@@ -2255,10 +2267,10 @@ const EXTRAS = [
       ctx.strokeStyle = 'rgba(60,38,20,0.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(ax + 6, ay - H); ctx.lineTo(bx - 6, by - H); ctx.stroke();   // wood grain
       ctx.fillStyle = '#5a3c22'; for (const f of [0.15, 0.85]) { ctx.beginPath(); ctx.arc(ax + (bx - ax) * f, ay + (by - ay) * f - H, 1.8, 0, 7); ctx.fill(); } }   // the pegs
     ctx.restore(); } },
-  { gx: 0.58, gy: 0.19, show: () => taskProg('clothesline'),   // comes up as she builds it
-    draw(x, y, a, now) {   // up beside the house, on its right (Bryce)
-    const [x2, y2] = toWorld(0.67, 0.13), top = 70;   // v104 (round twelve note 17): further right, clear of the woodpile
-    if (drawSlot('washing-line', (x + x2) / 2, (y + y2) / 2 + 4, a)) return;
+  { gx: WL_POSTS[0][0], gy: WL_POSTS[0][1], show: () => taskProg('clothesline'),   // comes up as she builds it
+    draw(x, y, a, now) {
+    const [x2, y2] = toWorld(WL_POSTS[1][0], WL_POSTS[1][1]), top = 70;
+    if (drawWashingLine(x, y, x2, y2, a)) return;
     stick(x, y - top / 2, top, Math.PI / 2); stick(x2, y2 - top / 2, top, Math.PI / 2);
     const sag = (t) => [x + (x2 - x) * t, y - top + 4 + (y2 - y) * t + Math.sin(t * Math.PI) * 14];
     ctx.strokeStyle = 'rgba(60,40,25,0.9)'; ctx.lineWidth = 1.5; ctx.beginPath(); for (let t = 0; t <= 1.001; t += 0.1) { const [lx, ly] = sag(t); t ? ctx.lineTo(lx, ly) : ctx.moveTo(lx, ly); } ctx.stroke();
@@ -2610,7 +2622,7 @@ function footprints() {
     if (p.name === 'shelter') { const r = footR(w, 0.36); out.push({ name: 'house', gx: p.gx - r * 0.55, gy: p.gy - r * 0.55, r }); continue; }   // its foot is the front of the doorstep; the house stands behind it
     add(p.name, p.gx, p.gy, w); }
   if (taskProg('bench') > 0) add('bench', BENCH[0], BENCH[1], 90, 0.4);
-  if (taskProg('clothesline') > 0) for (const [gx, gy] of [[0.58, 0.19], [0.67, 0.13]]) add('clothesline post', gx, gy, 16, 0.6);
+  if (taskProg('clothesline') > 0) for (const [gx, gy] of WL_POSTS) add('clothesline post', gx, gy, 16, 0.6);
   if (taskProg('spring') >= SPRING_FOUND) add('spring', SPRING.at[0], SPRING.at[1], SPRING_W, 0.3);
   if (taskProg('feeder') > 0) add('feeding dish', FEEDER.gx, FEEDER.gy, 64);
   if (stickPileShow() > 0) add('stick pile', STICK_PILE[0], STICK_PILE[1], 80);
@@ -5933,7 +5945,7 @@ G.onChange((kind, data) => { if (kind === 'spell' && (data === 'rain' || data ==
 // round six (Bryce): little finds turn up where they make sense, a button under the washing line, a pebble by the water, a bell by the old track
 const healed = k => { const tl = G.s.tiles[k]; return tl && (tl.state === 'green' || (tl.kind && G.stageIndex(k) >= 1)); };
 const FIND_PLACES = {   // [tile, gx, gy] near the place, or null while it isn't there yet (j: a little jitter)
-  line: j => taskProg('clothesline') >= 1 && ['0,0', 0.62 + j(0.08), 0.24 + j(0.04)],
+  line: j => taskProg('clothesline') >= 1 && ['0,0', 0.58 + j(0.06), 0.15 + j(0.04)],
   door: j => ['0,0', 0.42 + j(0.05), 0.45 + j(0.03)],
   fire: j => ['0,0', 0.34 + j(0.04), 0.42 + j(0.03)],
   bed: j => taskProg('bed') >= 1 && ['0,0', 0.74 + j(0.04), 0.60 + j(0.03)],
