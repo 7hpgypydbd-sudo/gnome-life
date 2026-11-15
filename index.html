@@ -280,11 +280,68 @@ if (window.SANDBOX) {
   .jturn span i { font-size:15px; } #room p { font-size:18px; } .letter p { font-size:18.5px; }
   .pack.shelves b { font-size:15px; line-height:20px; min-width:22px; border-radius:11px; top:14%; } .pack.shelves i.lab { font-size:14px; line-height:17px; padding:0 5px; } .pack.shelves span.ico { font-size:30px; }
   .pack.shelves small.full { font-size:12px; }
+
+  /* ---------- v102: the Journal is a real book (Bryce chose cloth tabs down the side + a Contents page) ---------- */
+  #sheet.book { background:none; -webkit-mask:none; mask:none; box-shadow:none; border-radius:0; padding:0 0 calc(var(--safe-b) + 8px); max-height:none; height:min(88vh, 900px); overflow:hidden; }
+  #sheet.book > .close { right:46px; top:2px; z-index:6; }
+  .bk { position:relative; height:100%; margin:0 4px 0 8px; }
+  .bkcover { position:absolute; left:0; right:38px; top:10px; bottom:0; border-radius:9px 12px 12px 9px; padding:9px 9px 10px 17px; z-index:2;
+    background: radial-gradient(ellipse at 30% 20%, rgba(255,220,170,.12), transparent 60%), repeating-linear-gradient(35deg, rgba(0,0,0,.05) 0 2px, transparent 2px 5px), #5b3a22;
+    box-shadow: 0 8px 24px rgba(0,0,0,.55), inset 0 0 0 2px rgba(255,220,160,.12), inset 0 0 18px rgba(0,0,0,.5); }
+  .bkcover::before { content:""; position:absolute; left:7px; top:16px; bottom:16px; width:2px; background: repeating-linear-gradient(transparent 0 7px, rgba(240,210,160,.55) 7px 13px); }
+  .bkleaf { position:relative; height:100%; box-sizing:border-box; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y; padding:16px 16px 0 24px; display:flex; flex-direction:column;
+    background: linear-gradient(90deg, rgba(70,45,15,.34), rgba(70,45,15,.08) 18px, transparent 30px), var(--parch), var(--paper); background-blend-mode: normal, normal, normal, multiply; border-radius:2px 5px 5px 2px;
+    box-shadow: 2px 0 0 #e9dcbb, 3px 0 0 #b9a679, 4px 1px 0 #ebdfc0, 5px 1px 0 #b9a679, 6px 2px 0 rgba(0,0,0,.25), inset 0 0 30px rgba(130,90,35,.28); }
+  .bkleaf::after { content:""; position:sticky; display:block; flex:none; align-self:flex-end; bottom:0; width:34px; height:34px; margin:-34px -16px 0 0; pointer-events:none;
+    background: linear-gradient(135deg, transparent 50%, #d9c79e 50%, #f3e8cc 72%, #cbb78a); border-top-left-radius:6px; box-shadow:-2px -2px 4px rgba(0,0,0,.12); }
+  .bkpage { flex:1; }
+  .bkhead { text-align:center; margin:0 0 4px !important; font-family: var(--fell); font-variant: small-caps; letter-spacing:2px; font-size:15px !important; color:var(--ink2); padding-right:40px; padding-left:40px; }
+  .bkturn { position:sticky; bottom:0; display:flex; align-items:center; justify-content:space-between; margin:10px -16px 0 -24px; padding:6px 44px 8px 20px;
+    background: linear-gradient(rgba(241,229,198,0), rgba(238,225,192,.96) 35%); }
+  .bkturn button { background:none; border:0; font-family: var(--fell); font-size:17px; color:var(--ink2); padding:8px 4px; min-width:64px; text-align:left; }
+  .bkturn button:last-child { text-align:right; }
+  .bkturn .folio { font-family: var(--fell); font-size:16px; color:var(--ink2); }
+  .bktabs { position:absolute; right:0; top:76px; display:flex; flex-direction:column; gap:7px; z-index:1; }
+  .bktab { width:46px; height:64px; border:0; border-radius:0 9px 9px 0; padding:0 0 0 6px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    box-shadow: 2px 2px 3px rgba(0,0,0,.35); font-family: var(--fell); font-size:11.5px; color:#f6ecd6; }
+  .bktab img { width:28px; height:28px; object-fit:cover; border-radius:50%; border:1px solid rgba(255,240,210,.5); } .bktab img.fit { object-fit:contain; background:#e8dcbc; }
+  .bktab.on { width:52px; margin-left:-6px; filter:brightness(1.08); }
+  .bktab.t1 { background:#5f7a35 } .bktab.t2 { background:#8a5a3a } .bktab.t3 { background:#6c4f7a } .bktab.t4 { background:#9a6b2e } .bktab.t5 { background:#4f6f7a }
+  /* Contents */
+  .bktitle { text-align:center; } .bktitle .faces { display:flex; justify-content:center; gap:6px; margin:4px 0 2px; }
+  .bktitle .faces img { width:48px; height:48px; border-radius:50%; border:2px solid #b9a679; object-fit:cover; }
+  #sheet .bktitle h2 { padding:0; font-size:32px; } #sheet .bktitle h2::after { margin:4px auto 0; background-position:center; }
+  .bkch { text-align:center; font-family: var(--fell) !important; font-variant: small-caps; letter-spacing:3px; color:var(--green) !important; margin:2px 0 2px !important; }
+  .crow { display:flex; align-items:center; gap:12px; width:100%; padding:8px 0; background:none; border:0; text-align:left; font:inherit; color:var(--ink); }
+  .crow .pic { width:56px; height:56px; border-radius:50%; overflow:hidden; flex:none; border:2px solid #b9a679; background:#e8d9b4; box-shadow: inset 0 0 6px rgba(80,50,20,.3); }
+  .crow .pic img { width:100%; height:100%; object-fit:cover; display:block; } .crow .pic.fit img { object-fit:contain; padding:5px; box-sizing:border-box; }
+  .crow .tx { flex:1; min-width:0; } .crow b { font-family: var(--fell); font-weight:400; font-size:21px; display:flex; align-items:baseline; gap:4px; }
+  .crow b em { flex:1; border-bottom:2px dotted rgba(106,86,64,.45); margin:0 3px; transform:translateY(-4px); } .crow b span { font-size:17px; color:var(--ink2); }
+  .crow i { font-size:15.5px; color:var(--ink2); display:block; line-height:1.2; margin-top:1px; }
+  .crow .new { display:inline-block; font-style:normal; font-family: var(--fell); font-size:12.5px; color:#fffaf0; background:#8a3a2a; padding:0 6px; border-radius:2px; margin-left:4px; vertical-align:1px; }
+  /* Our land */
+  .bkmap { text-align:center; margin:4px 0 0 !important; } .bkmap img { width:100%; max-width:300px; }
+  .lkey { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:0 0 6px !important; font-size:14px !important; font-style:italic; }
+  .lkey span { white-space:nowrap; } .lkey s { display:inline-block; width:13px; height:13px; vertical-align:-1px; margin-right:3px; } .lkey svg, .ldots svg { width:100%; height:100%; display:block; }
+  .lrow { display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px dashed rgba(51,37,26,.22); }
+  .lrow .dia { width:22px; height:13px; flex:none; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); box-shadow: inset 0 0 0 1px rgba(60,44,30,.5); }
+  .lrow .nm { flex:1; min-width:0; } .lrow b { display:block; font-family: var(--fell); font-weight:400; font-size:19px; line-height:1.1; } .lrow .nm span { font-size:15px; font-style:italic; color:var(--ink2); }
+  .ldots { display:flex; gap:3px; flex:none; } .ldots s { width:17px; height:17px; display:block; }
+  .lnews p { font-size:16px !important; margin:3px 0 !important; }
+  #sheet.book p.bkfoot { margin-top:12px; }
+  /* Friends: portraits in oval gilt frames, unmet ones a dashed empty frame */
+  #sheet.book .jgrid { grid-template-columns:repeat(3, 1fr); gap:10px 6px; }
+  #sheet.book .jcard { background:none; border:0; padding:2px 0; }
+  #sheet.book .jcard .por, #sheet.book .jcard .por.scene { width:76px; height:88px; border-radius:50%; border:0; padding:3px; box-sizing:border-box; background: linear-gradient(145deg,#c9a463,#8a6630); box-shadow: 1px 2px 3px rgba(0,0,0,.3); }
+  #sheet.book .jcard .por img { border-radius:50%; background: radial-gradient(circle at 50% 40%, #fbf4e2, #e8d8b4); }
+  #sheet.book .jcard.unseen .por { background:none; box-shadow:none; border:2px dashed rgba(106,86,64,.4); }
+  #sheet.book .jcard.unseen .por img, #sheet.book .jcard.unseen .por span { opacity:0; }
+  #sheet.book .jcard.unseen b { font-family: var(--fell); font-size:22px; color:rgba(106,86,64,.45); margin-top:-60px; height:60px; }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v101</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v102</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -305,7 +362,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 101;
+const BUILD = 102;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -313,11 +370,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=101"></script>
-<script src="playlog.js?v=101"></script>
-<script src="concerns.js?v=101"></script>
-<script src="game.js?v=101"></script>
-<script src="walk.js?v=101"></script>
+<script src="content.js?v=102"></script>
+<script src="playlog.js?v=102"></script>
+<script src="concerns.js?v=102"></script>
+<script src="game.js?v=102"></script>
+<script src="walk.js?v=102"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -1739,56 +1796,7 @@ function drawPaperEdge() {   // screen space: the paper darkens a little toward 
   const g = ctx.createRadialGradient(W / 2, H * 0.45, Math.min(W, H) * 0.35, W / 2, H * 0.45, Math.hypot(W, H) * 0.62);
   g.addColorStop(0, 'rgba(120,96,64,0)'); g.addColorStop(1, 'rgba(120,96,64,0.22)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
 }
-// ---------- the little oak shows the green (v87: fresh-eyes review 4; notes 66, 67) ----------
-// No meter sits on the screen. Whenever the yard earns green, a little sprig of oak leaves appears beside the oak for a few
-// seconds: one new leaf pops on, the leaves still to come are empty buds, and a full sprig means the yard moves on to its
-// next stage. Tap the oak (or its pot) to see the sprig again. Grown woodland gets a full sprig with an acorn.
-const SPRIG = { t: -1e9, from: 0, to: 0 };
-function sprigCount(g) {   // [leaves out, buds in all] for the stage the yard is in
-  const S = C.landStages; let i = 0; for (let j = 0; j < S.length; j++) if (g >= S[j].at) i = j;
-  if (i >= S.length - 1) return [14, 14, true];
-  const span = S[i + 1].at - S[i].at; return [g - S[i].at, span, false];
-}
-function showSprig(prev) { const g = G.s.tiles['0,0'].green; SPRIG.from = prev == null ? g : prev; SPRIG.to = g; SPRIG.t = performance.now(); liveUntil = Math.max(liveUntil, performance.now() + 6500); }
-function drawSprig(now) {
-  const t = (performance.now() - SPRIG.t) / 1000; if (t < 0 || t > 6) return;
-  const a = Math.min(1, t / 0.4, (6 - t) / 0.9); if (a <= 0) return;
-  const p = PROPS.find(q => q.name === 'sapling'); if (!p) return; const [wx, wy] = toWorld(p.gx, p.gy);
-  const ok = taskProg('sapling') >= 1 && oakPic(), oh = ok ? ok[1] : taskProg('sapling') >= 1 ? 90 : 60, odx = ok ? ok[2] : 0;   // on a scrap of paper just above the oak's crown
-  // round nine note 16 (Bryce: it popped up in the sky, out of nowhere): it sits right beside the oak, half way up, and only when the
-  // oak is on screen, so it is plainly the oak's
-  const ox = (wx + odx - cam.x) * cam.z + W / 2, oy = (wy - oh * 0.5 - cam.y) * cam.z + H / 2; if (ox < 0 || ox > W || oy < 90 || oy > H - 110) return;
-  let sx = ox + (ox < W / 2 ? 1 : -1) * (oh * 0.25 * cam.z + 80), sy = oy;
-  sx = Math.min(W - 72, Math.max(72, sx)); sy = Math.min(H - 150, Math.max(130, sy));
-  const [n1, N, full] = sprigCount(SPRIG.to), [n0] = sprigCount(SPRIG.from), fresh = SPRIG.to > SPRIG.from && n1 > 0 && n0 < n1 ? Math.max(0, n0) : n1;   // leaves from `fresh` on pop on one after another
-  ctx.save(); ctx.globalAlpha = a; ctx.translate(sx, sy); ctx.lineCap = 'round';
-  ctx.save(); ctx.shadowColor = 'rgba(40,28,16,0.35)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2; ctx.fillStyle = '#efe4c8';   // the paper scrap (parchment, like the title label)
-  SPRIG.screen = { x: sx, y: sy + 6, w: 150, h: 110 };
-  ctx.beginPath(); const pw = 78, ph2 = 50; ctx.translate(0, 6); for (let i = 0; i <= 24; i++) { const q = i / 24 * Math.PI * 2, r = 1 + 0.035 * Math.sin(i * 5.3); ctx.lineTo(Math.cos(q) * pw * r, Math.sin(q) * ph2 * r); } ctx.closePath(); ctx.fill(); ctx.restore();
-  ctx.strokeStyle = 'rgba(120,90,50,0.35)'; ctx.lineWidth = 1; ctx.stroke();
-  { const st = G.landStage(), next = C.landStages.find(q => q.at > SPRIG.to);   // v99 (notes 8, 26): it says what it is: whose green, and how far to the next stage
-    ctx.fillStyle = '#3a2a1a'; ctx.textAlign = 'center'; ctx.font = 'italic 13px "IM Fell English", Georgia, serif'; ctx.fillText('The yard\'s green', 0, -30);
-    ctx.font = '12px "IM Fell English", Georgia, serif'; ctx.fillStyle = '#5a4630'; ctx.fillText(next ? `${next.at - SPRIG.to} more to ${next.name}` : 'as green as it gets', 0, 38); }
-  ctx.translate(-50, 4);
-  // the twig: a gentle curve up and to the right
-  const len = 100, P = f => [len * f, -len * 0.16 * f - 9 * Math.sin(f * Math.PI)];
-  ctx.strokeStyle = INK; ctx.lineWidth = 4.2; ctx.beginPath(); for (let f = 0; f <= 1.001; f += 0.05) { const [x, y] = P(f); f ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
-  ctx.strokeStyle = '#7a5a3a'; ctx.lineWidth = 2.4; ctx.stroke();
-  for (let i = 0; i < N; i++) {
-    const f = 0.1 + 0.88 * (i + 0.5) / N, [x, y] = P(f), [x2, y2] = P(f + 0.01), th = Math.atan2(y2 - y, x2 - x), side = i % 2 ? 1 : -1, phi = th + side * 1.05;   // alternate leaves, up and down the twig
-    const lx = x, ly = y;
-    ctx.save(); ctx.translate(lx, ly); ctx.rotate(phi - Math.PI / 2);
-    if (i < n1) {   // a leaf (the newest pop on in turn, with a little bounce)
-      const d = i >= fresh ? t - 0.5 - 0.35 * (i - fresh) : 9; if (d < 0) { ctx.restore(); drawBud(lx, ly); continue; }
-      const k = d > 0.5 ? 1 : 0.4 + 0.6 * Math.sin(Math.min(1, d / 0.5) * Math.PI * 0.75) / Math.sin(Math.PI * 0.75);
-      ctx.scale(k, k); oakLeaf(i);
-    } else { ctx.restore(); drawBud(lx, ly); continue; }
-    ctx.restore();
-  }
-  if (full) { const [x, y] = P(1); ctx.fillStyle = '#9a6a38'; ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(x + 3, y + 7, 4.2, 5.4, 0, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#6a4a2a'; ctx.beginPath(); ctx.ellipse(x + 3, y + 2.6, 5, 2.6, 0, 0, 7); ctx.fill(); ctx.stroke(); }
-  ctx.restore();
-}
-function drawBud(x, y) { ctx.fillStyle = 'rgba(184,154,106,0.9)'; ctx.strokeStyle = 'rgba(42,21,16,0.7)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x, y - 1, 2.6, 3.4, 0.3, 0, 7); ctx.fill(); ctx.stroke(); }
+// v102 (round twelve note 13): the oak sprig that counted the yard's green is gone; the Journal's "Our land" page shows it.
 function oakLeaf(i) {   // a small lobed oak leaf, pointing along +y from its stalk
   const L = 17, Wd = 6.5; ctx.beginPath(); ctx.moveTo(0, 0);
   for (let s = -1; s <= 1; s += 2) { ctx.moveTo(0, 2); for (let j = 1; j <= 4; j++) { const yy = 2 + (L - 2) * j / 4, ww = Wd * Math.sin(Math.PI * j / 4.6) + 1; ctx.quadraticCurveTo(s * (ww + 2.2), yy - (L / 8), s * (ww * 0.55), yy); } ctx.lineTo(0, L + 1); }
@@ -1812,12 +1820,7 @@ function valleyMap() {
   }
   return c.toDataURL();
 }
-function openValley() {
-  const chip = (c, t) => `<span style="white-space:nowrap"><i style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${c};vertical-align:-1px;margin-right:4px;border:1px solid rgba(60,44,30,.4)"></i>${t}</span>`;
-  openSheet('valley', `<p style="margin:0 0 4px"><button class="act quiet" data-a="journal">‹ Journal</button></p><h2>The valley<small>${Object.keys(G.s.tiles).length} of ${(2 * VALLEY + 1) ** 2} patches awake</small></h2>
-    <p style="text-align:center;margin:6px 0"><img src="${valleyMap()}" alt="A little map of the valley" style="width:100%;max-width:360px"></p>
-    <p class="meta" style="text-align:center;line-height:1.9">${chip('#cdb48a', 'bare')} · ${chip('#b9c486', 'first green')} · ${chip('#8fae5c', 'meadow')} · ${chip('#5f8a45', 'woodland')}</p>`);
-}
+function openValley() { openJournal(1); }   // v102: the valley map lives on the Journal's "Our land" page
 // ---------- night light layer (#newground) ----------
 // Darkness is its own layer. Every light cuts a soft hole in it, so the ground and walls near a lamp are really lit, and far
 // from lights the night stays a soft moonlit blue (it never gets darker than that). The lamp itself keeps a small warm halo.
@@ -4686,7 +4689,6 @@ function frame(now) {
   if (ph.warm > 0) { ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = `rgba(255,170,90,${0.28 * ph.warm})`; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); ctx.restore(); }
   ctx.restore();
 
-  drawSprig(now);   // v87: the little oak's sprig of leaves, when green is earned or the oak is tapped
   if (NEWGROUND) drawMorningMist(dt, now);
   // screen-space overlays: "busy" tags over working gnomes, and tap ripples
   drawNameTags();
@@ -4791,7 +4793,6 @@ function tapAt(cx, cy, wx, wy) {
   if (BABY_SEED.screen && hit(BABY_SEED.screen, wx, wy)) { const [x, y] = [BABY_SEED.screen.x, BABY_SEED.screen.y]; float('♥', x, y - 20); return toast(C.animals.babyTap); }
   for (const o of [...G.s.offers].reverse()) if (hit(o.screen, wx, wy)) { G.gather(o.id); float(`+1 ${C.resources[o.kind].name}`, o.screen.x, o.screen.y); driftHome(o); return; }
   if (bed2Shown() >= 1) { const [bx, by] = toWorld(...bed2Pt(0.5, 0.5)); if (Math.hypot((wx - bx) / 125, (wy - by + 6) / 62) < 1 && !stakeHit(cx, cy)) return openSeedbed('bed2'); }   // v99: the second bed
-  if (SPRIG.screen && performance.now() - SPRIG.t < 6000 && Math.abs(cx - SPRIG.screen.x) < 78 && Math.abs(cy - SPRIG.screen.y) < 52) { PL.add('tapped the green sprig'); return openGreen(); }   // v99: the sprig opens the valley's green
   { const s = stakeHit(cx, cy); if (s) { PL.add(`tapped a job flag: ${s.ids.join(', ') || (s.patch ? 'spell on ' + s.patch : 'seed bed')}`); return openStake(s); } }   // v90: a job's paper flag
   for (const fd of G.s.village.finds) if (hit(fd.screen, wx, wy)) { const st = G.questStep(fd.folk), f = G.folkDef(fd.folk); G.found(fd.id); float('✓ found', fd.screen.x, fd.screen.y); toast(`You found ${st.find.name}.`); return openFolk(f.id); }
   for (const p of [...folkOnLand].reverse()) if (hit(p.screen, wx, wy)) return G.folkState(p.f.id) ? openFolk(p.f.id) : openTraveller();
@@ -4829,7 +4830,7 @@ function tapAt(cx, cy, wx, wy) {
     let best = null, bd = 1e9;
     const pad = 14 / cam.z;   // a generous margin around each prop
     for (const p of PROPS) { if (p.gone && taskProg(p.gone) >= 1) continue; const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s * (p.hitW || 1), h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 4 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
-    if (best) { if (best.name === 'seedbed') { if (propAlpha(best) >= 1 && bedReady()) return openSeedbed(); if (openSpot('clearing')) return; return toast(bedReady() ? 'The seed bed. Hazel and Wendel are busy just now; it can wait.' : 'Rough ground, for now. One day the seed bed goes here.'); } if (best.name === 'shelter') { if (!wantsTap(best)) return openRoom(); if (openJobCard(spotJobs('shelter'))) { sheet.querySelector('.foot').insertAdjacentHTML('afterbegin', '<a href="#" data-a="room">look inside</a> · '); return; } } if (best.name === 'sapling') { showSprig(); if (taskProg('sapling') < 1 && G.taskView(G.taskDef('sapling')).show && !G.done('sapling')) return openPot(); return; }; if (best.name === 'barrel') { if (G.drawBarrel()) { const [bx, by] = toWorld(best.gx, best.gy); float(`+${C.barrel.give.water} ${C.resources.water.name}`, bx, by - 60); } return openBarrel(); } if (openSpot(best.name)) return; }
+    if (best) { if (best.name === 'seedbed') { if (propAlpha(best) >= 1 && bedReady()) return openSeedbed(); if (openSpot('clearing')) return; return toast(bedReady() ? 'The seed bed. Hazel and Wendel are busy just now; it can wait.' : 'Rough ground, for now. One day the seed bed goes here.'); } if (best.name === 'shelter') { if (!wantsTap(best)) return openRoom(); if (openJobCard(spotJobs('shelter'))) { sheet.querySelector('.foot').insertAdjacentHTML('afterbegin', '<a href="#" data-a="room">look inside</a> · '); return; } } if (best.name === 'sapling') { if (taskProg('sapling') < 1 && G.taskView(G.taskDef('sapling')).show && !G.done('sapling')) return openPot(); if (taskProg('sapling') >= 1) return openJournal(1); return; }; if (best.name === 'barrel') { if (G.drawBarrel()) { const [bx, by] = toWorld(best.gx, best.gy); float(`+${C.barrel.give.water} ${C.resources.water.name}`, bx, by - 60); } return openBarrel(); } if (openSpot(best.name)) return; }
     if (stickPileShow() > 0) { const [px, py] = toWorld(STICK_PILE[0], STICK_PILE[1]); if (Math.hypot(wx - px, wy - py + 6) < Math.max(30, 38 / cam.z)) return toast(C.stickPile.replace('{n}', G.s.inv.twig || 0)); }   // round nine note 18: what the pile is, and why it never goes
     if (taskProg('workcorner') >= 1 || taskProg('leanto') >= 1) { const [hx, hy] = toWorld(...WORKCORNER); if (Math.abs(wx - hx) < 62 && wy > hy - 160 && wy < hy + 12) return toast(taskProg('leanto') >= 1 ? 'Wendel\'s workshop. A hook for every tool, and a little window for the stars.' : 'The work corner. Things for the home get made here, then carried to where they go.'); }
     if (taskProg('compost') >= 1) { const [hx, hy] = toWorld(0.70, 0.93); if (Math.hypot(wx - hx, wy - hy + 14) < Math.max(34, 40 / cam.z)) return toast('The compost heap. Peelings, weeds and old leaves go in; rich dark soil comes out for the seed bed. With it every crop grows a little faster, and every harvest gives one seed more.'); }   // v99 (note 47): it says what it does
@@ -5143,7 +5144,7 @@ setInterval(() => {   // round eight note 12 (Bryce: players need a daily nudge 
 const sheet = $('sheet'), shade = $('shade');
 let sheetKind = null, cardAt = 0;
 const plTitle = html => ((/<h2[^>]*>(.*?)<\/h2>/.exec(html) || /<b>(.*?)<\/b>/.exec(html) || [])[1] || '').replace(/<small/g, ' · <small').replace(/<[^>]+>/g, '').slice(0, 70);
-function openSheet(kind, html) { PL.add(`window open: ${kind} "${plTitle(html)}"`); sheetKind = kind; sheet.innerHTML = `<button class="close" data-a="close">×</button>` + html; sheet.classList.add('on'); shade.classList.add('on'); }
+function openSheet(kind, html) { PL.add(`window open: ${kind} "${plTitle(html)}"`); sheetKind = kind; sheet.classList.toggle('book', kind === 'journal'); sheet.innerHTML = `<button class="close" data-a="close">×</button>` + html; sheet.classList.add('on'); shade.classList.add('on'); }
 function closeSheet() { const was = sheetKind; if (was) PL.add(`window closed: ${was}`); sheetKind = null; sheet.classList.remove('on'); shade.classList.remove('on'); cardAt = performance.now() + 1500;
   if (was === 'welcome' && FIRST_WELCOME) { FIRST_WELCOME = false; const pg = G.pageDef('1.1'); openSheet('welcome1', pageHtml(pg) + `<p style="margin-top:12px;text-align:center"><button class="act" data-a="close">${pg.button}</button></p>`); }   // the welcome, then page one,
   else if (was === 'welcome1') { G.seePage('1.1'); G.s.flags.welcomed = true; tookWindow(); G.save(); openSpiritHello(); }   // then the Wood spirit floats up (Bryce: met on day 1). v87: only now is the welcome done, so a reload before this shows it again
@@ -5432,30 +5433,78 @@ function journalFoot(v) {   // what you know about a creature's feeding, home an
   if (e.helped) bits.push(`Helped ${e.helped === 1 ? 'once' : e.helped + ' times'}.`);
   return bits.join(' ');
 }
-// round nine note 24 (Bryce loved the journal but it was one long list): a real book of pages, turned one at a time. Same content.
+// v102 (Bryce: "it's just ugly and should look like a real book; it's confusing what is in it"): a leather-bound book with cloth
+// tabs down the side (look A) that opens on a Contents page (look B). Design: /mnt/project-files/journal-book/PLAN.md.
+// Sections: 0 Contents, 1 Our land, 2 Hazel's diary (with the small news that was "Lately"), 3 Our story, 4 Friends, 5 Little treasures.
 let JPAGE = 0, DPAGE = 0;
+const LAND_COL = ['#cdb48a', '#b9c486', '#8fae5c', '#5f8a45'];   // bare, first green, young meadow, young woodland (the valley map's colours)
+// THE LAND MEASURE (round twelve note 13; the magic build ties "stronger as the land greens" to it). Every awake patch has its own
+// green points (G.s.tiles[k].green). C.landStages turns them into one of four stages: bare ground (0), first green (4), young meadow
+// (12), young woodland (26). landLeaves(k) says how many of the four leaves are out (1 to 4: bare ground already has its first) and
+// how far the next leaf has grown (0 to 1). Our land shows it as four leaves a row; landTotal() adds every patch up.
+function landLeaves(k) {
+  const S = C.landStages, g = (G.s.tiles[k] || {}).green || 0, st = G.landStage(k), i = S.indexOf(st), next = S[i + 1];
+  return { n: i + 1, part: next ? Math.max(0, Math.min(1, (g - st.at) / (next.at - st.at))) : 0, st, next, g };
+}
+function landTotal() { const ks = Object.keys(G.s.tiles); return { leaves: ks.reduce((t, k) => t + landLeaves(k).n, 0), of: ks.length * 4, patches: ks.length }; }
+function leafSvg(fill, c, id) {   // one leaf: fill 1 = out, 0 = still to come, in between = growing (filled from the stalk up)
+  const grad = fill > 0 && fill < 1 ? `<defs><linearGradient id="${id}" x1="0" y1="1" x2="0" y2="0"><stop offset="${fill}" stop-color="${c}"/><stop offset="${fill}" stop-color="rgba(0,0,0,0)"/></linearGradient></defs>` : '';
+  const on = fill >= 1, f = on ? c : grad ? `url(#${id})` : 'none';
+  return `<svg viewBox="0 0 16 16" aria-hidden="true">${grad}<path d="M8 1.5C12.5 4 13.5 9 8 14.5C2.5 9 3.5 4 8 1.5Z" fill="${f}" stroke="${on || grad ? '#3e4a1f' : 'rgba(106,86,64,.55)'}" stroke-width="1.1"/><path d="M8 3.5V13" stroke="${on ? 'rgba(240,230,190,.6)' : 'rgba(106,86,64,.35)'}" stroke-width=".8"/></svg>`;
+}
+function landDots(k) { const L = landLeaves(k); return `<span class="ldots">${[0, 1, 2, 3].map(i => `<s>${leafSvg(i < L.n ? 1 : i === L.n ? L.part : 0, LAND_COL[i], `lf${k.replace(/[^0-9]/g, '_')}${i}`)}</s>`).join('')}</span>`; }
+function patchTitle(k) {
+  if (k === '0,0') return 'The home yard';
+  if (k === '0,1') return G.gardenOpen() ? 'Our garden' : 'The garden-to-be';
+  const fid = G.farmOn && G.farmOn(k), tl = G.s.tiles[k];
+  if (fid) return cap(C.farms.list[fid].patch);
+  return tl.kind ? cap(C.heal.kinds[tl.kind].patch) : 'New land';
+}
+function ourLandHtml() {
+  const ks = Object.keys(G.s.tiles).sort((a, b) => (a === '0,0' ? -2 : a === '0,1' ? -1 : 0) - (b === '0,0' ? -2 : b === '0,1' ? -1 : 0));
+  let h = `<h2>Our land<small>${ks.length} of ${(2 * VALLEY + 1) ** 2} patches awake</small></h2>
+    <p class="bkmap"><img src="${valleyMap()}" alt="A little map of the valley"></p>
+    <p class="lkey">${C.landStages.map((st, i) => `<span><s>${leafSvg(1, LAND_COL[i])}</s>${st.key === 'barren' ? 'bare' : st.key === 'green' ? 'first green' : st.key === 'meadow' ? 'meadow' : 'woodland'}</span>`).join('')}</p>`;
+  for (const k of ks) { const L = landLeaves(k), fid = G.farmOn && G.farmOn(k), tap = k === '0,0' ? '' : fid ? ` data-a="farm" data-id="${fid}"` : G.s.tiles[k].kind ? ` data-a="patch" data-id="${k}"` : '';
+    h += `<div class="lrow"${tap}><i class="dia" style="background:${LAND_COL[L.n - 1]}"></i><div class="nm"><b>${patchTitle(k)}</b><span>${cap(L.st.name)}${k === '0,0' ? '' : ` · ${G.tileWhere(k)}`}</span></div>${landDots(k)}</div>`; }
+  return h + `<p class="meta bkfoot">Only living things bring the land back: crops picked, plants and trees, and animals that make a home. The next leaf fills as it grows.</p>`;
+}
+function journalPages() {   // every section: its name, tab picture, one line for the Contents page, and the page itself
+  const list = C.visitors.filter(v => C.friends.roster.includes(v.id) || G.met(v.id)), seen = list.filter(v => G.met(v.id)).length, regs = C.friends.roster.filter(id => G.isFriend(id)).length;
+  const nb = neighboursHtml(), nfolk = Object.keys(G.s.village.folk).length;
+  const P = [{ name: 'Contents', short: 'Contents' }];
+  const T = landTotal();
+  P.push({ name: 'Our land', short: 'Land', pic: 'oak-young', fit: 1, line: 'How green the yard and every patch are', html: () => ourLandHtml() });
+  const D = G.s.diary || [], dnew = D.length && D[0].day === new Date(G.now()).toDateString() && G.s.flags.diarySeen !== `${D[0].day}:${D[0].lines.length}`;
+  P.push({ name: "Hazel's diary", short: 'Diary', pic: 'face-her', line: 'What happened while you were away', isNew: dnew, html: () => {
+    const log = [...G.s.log].reverse().slice(0, 8), dh = diaryHtml().replace(/^<h3>Hazel's diary<\/h3>/, '');
+    return `<h2>Hazel's diary<small>${D.length ? `${D.length} day${D.length > 1 ? 's' : ''} written` : 'not begun yet'}</small></h2>${dh || '<p>Nothing written yet. Hazel writes a page on any day something happens.</p>'}${log.length ? `<h3>Little news</h3><div class="lnews">${log.map(l => `<p>${l.text}</p>`).join('')}</div>` : ''}`; } });
+  P.push({ name: 'Our story', short: 'Story', pic: 'page-1-1', line: 'Chapters to read again, and the quest', html: () => {
+    const st = ourStoryHtml().replace(/^<h3>Our story<\/h3>/, '');
+    return `<h2>Our story<small>${Object.keys(G.s.pages.seen).length} pages so far</small></h2>${questHtml()}${G.s.festival.stage !== 'waiting' ? `<p><button class="act quiet" data-a="festgreen">${C.festival.name}</button></p>` : ''}${st || '<p>The story begins on your first day. Each new page comes in the morning.</p>'}`; } });
+  P.push({ name: 'Friends', short: 'Friends', pic: 'portrait-mouse', line: nfolk ? 'Neighbours and creatures you have met' : 'Creatures you have met', html: () => {
+    let cr = `<h2>Friends<small>${seen} of ${list.length} creatures met${regs ? ` · ${regs} friend${regs > 1 ? 's' : ''}` : ''}${nfolk ? ` · ${nfolk} neighbour${nfolk > 1 ? 's' : ''}` : ''}</small></h2>${nb || ''}${nb ? '' : '<h3>Creatures</h3>'}<p class="meta">Tap an animal in the garden to say hello.</p><div class="jgrid">`;
+    for (const v of list) { const m = G.met(v.id), fr = C.friends[v.id] && G.isFriend(v.id); cr += `<button class="jcard${m ? '' : ' unseen'}" data-a="${m ? 'entry' : ''}" data-id="${v.id}">${portraitHtml(v)}<b>${m ? (fr ? C.friends[v.id].name : v.name) : '?'}</b>${G.hasNest(v.id) ? '<i>lives here</i>' : fr ? '<i>a friend</i>' : G.isRegular(v.id) ? '<i>regular</i>' : ''}</button>`; }
+    return cr + '</div>'; } });
+  const nf = Object.keys(G.s.secrets.found).length, kept = Object.keys(C.animals.gifts).filter(id => G.s.animals.gifts[id]);
+  P.push({ name: 'Little treasures', short: 'Finds', pic: 'kit/secrets-nature-04', fit: 1, line: 'Finds and gifts, pressed between the pages', html: () => {
+    let fd = `<h2>Little treasures<small>${nf} of ${C.secrets.length} finds${kept.length ? ` · ${kept.length} gift${kept.length > 1 ? 's' : ''}` : ''}</small></h2><p class="meta">${nf ? 'Pressed between the pages. Tap one to look again.' : 'Tiny things hide in the healed grass. Watch for a glint.'}</p><div class="finds">`;
+    for (const d of C.secrets) { const f = G.s.secrets.found[d.id]; fd += f ? `<button class="find" data-a="secret" data-id="${d.id}"><img src="sprites/kit/secrets-${d.pic}.webp" alt=""></button>` : `<span class="find unseen">?</span>`; }
+    fd += `</div>`;
+    if (kept.length) fd += `<h3>Gifts</h3><div class="slist">${kept.map(id => `<button data-a="keepsake" data-id="${id}">${C.animals.gifts[id].name}</button>`).join('')}</div>`;
+    return fd; } });
+  P[0].html = () => `<div class="bktitle"><div class="faces"><img src="sprites/face-him.webp" alt=""><img src="sprites/face-her.webp" alt=""></div><h2>Our Book<small>kept by Wendel and Hazel</small></h2></div><p class="bkch">Contents</p>`
+    + P.slice(1).map((q, k) => `<button class="crow" data-a="jpage" data-n="${k + 1}"><span class="pic${q.fit ? ' fit' : ''}"><img src="sprites/${q.pic}.webp" alt=""></span><span class="tx"><b>${q.name}<em></em><span>${k + 1}</span></b><i>${q.line}${q.isNew ? ' <span class="new">new</span>' : ''}</i></span></button>`).join('')
+    + `<button class="crow" data-a="howto"><span class="pic fit"><img src="sprites/icon-light.webp" alt=""></span><span class="tx"><b>How to play<em></em><span>${P.length}</span></b><i>At the back of the book</i></span></button>`;
+  return P;
+}
 function openJournal(pg) {
   if (pg !== undefined) JPAGE = pg;
-  const list = C.visitors.filter(v => C.friends.roster.includes(v.id) || G.met(v.id)), seen = list.filter(v => G.met(v.id)).length, regs = C.friends.roster.filter(id => G.isFriend(id)).length;   // round six: only the mouse, robin and rabbit for now (others come in month two)
-  const nb = neighboursHtml(), pages = [];
-  const diary = diaryHtml(); if (diary) pages.push({ name: "Hazel's diary", html: diary });
-  pages.push({ name: 'Our story', html: `${questHtml()}${G.s.festival.stage !== 'waiting' ? `<p><button class="act quiet" data-a="festgreen">🎉 ${C.festival.name}</button></p>` : ''}${ourStoryHtml()}${G.s.flags.firstpick ? `<h3>Little makes</h3><p>${makesLine()} little makes.</p>` : ''}` });
-  let cr = `${nb || '<h3>Creatures</h3>'}<p>Tap an animal in the garden to say hello. Once you have met one, its favourite food shows on the feeding dish. Tap a page to read it.</p><div class="jgrid">`;
-  for (const v of list) { const m = G.met(v.id), fr = C.friends[v.id] && G.isFriend(v.id); cr += `<button class="jcard${m ? '' : ' unseen'}" data-a="${m ? 'entry' : ''}" data-id="${v.id}">${portraitHtml(v)}<b>${m ? (fr ? C.friends[v.id].name : v.name) : '?'}</b>${G.hasNest(v.id) ? '<i>lives here</i>' : fr ? '<i>a friend</i>' : G.isRegular(v.id) ? '<i>regular</i>' : ''}</button>`; }
-  pages.push({ name: nb ? 'Neighbours and creatures' : 'Creatures', html: cr + '</div>' });
-  const nf = Object.keys(G.s.secrets.found).length;
-  let fd = `<h3>Little finds</h3><p>${nf ? `${nf} of ${C.secrets.length} pressed between the pages.` : 'Tiny things hide in the healed grass. Watch for a glint.'}</p><div class="finds">`;
-  for (const d of C.secrets) { const f = G.s.secrets.found[d.id]; fd += f ? `<button class="find" data-a="secret" data-id="${d.id}"><img src="sprites/kit/secrets-${d.pic}.webp" alt=""></button>` : `<span class="find unseen">?</span>`; }
-  fd += `</div>`;
-  const kept = Object.keys(C.animals.gifts).filter(id => G.s.animals.gifts[id]);
-  if (kept.length) fd += `<h3>Gifts</h3><div class="slist">${kept.map(id => `<button data-a="keepsake" data-id="${id}">${C.animals.gifts[id].name}</button>`).join('')}</div>`;
-  pages.push({ name: kept.length ? 'Little finds and gifts' : 'Little finds', html: fd });
-  const log = [...G.s.log].reverse().slice(0, 12);
-  pages.push({ name: 'Lately', html: (log.length ? `<h3>Lately</h3>` + log.map(l => `<p style="margin:2px 0">${l.text}</p>`).join('') : '<h3>Lately</h3><p>Nothing yet. It fills up as things happen.</p>') + `<p style="margin-top:14px"><button class="act quiet" data-a="howto">How to play</button></p>` });   // first-time review: a new player looks for help in the book first
-  JPAGE = Math.max(0, Math.min(pages.length - 1, JPAGE)); const P = pages[JPAGE], n = pages.length;
-  const turn = `<div class="jturn"><button class="act quiet" data-a="jpage" data-n="${JPAGE - 1}" ${JPAGE ? '' : 'disabled'}>‹</button><span><b>${P.name}</b><i>page ${JPAGE + 1} of ${n}</i></span><button class="act quiet" data-a="jpage" data-n="${JPAGE + 1}" ${JPAGE < n - 1 ? '' : 'disabled'}>›</button></div>`;
-  const tabs = `<p class="jtabs">${pages.map((q, k) => `<button class="${k === JPAGE ? 'on' : ''}" data-a="jpage" data-n="${k}" aria-label="${q.name}"></button>`).join('')}</p>`;
-  const html = `<h2>Field journal<small>${seen} of ${list.length} met${regs ? ` · ${regs} friend${regs > 1 ? 's' : ''}` : ''}</small></h2><p><button class="act quiet" data-a="valley">The valley</button></p>${turn}<div class="jleaf">${P.html}</div>${tabs}`;
+  const P = journalPages(), n = P.length; JPAGE = Math.max(0, Math.min(n - 1, JPAGE)); const cur = P[JPAGE];
+  if (JPAGE === 2) { const D = G.s.diary || []; if (D.length) { G.s.flags.diarySeen = `${D[0].day}:${D[0].lines.length}`; G.dirty = true; } }
+  const tabs = P.slice(1).map((q, k) => `<button class="bktab t${k + 1}${k + 1 === JPAGE ? ' on' : ''}" data-a="jpage" data-n="${k + 1}" aria-label="${q.name}"><img class="${q.fit ? 'fit' : ''}" src="sprites/${q.pic}.webp" alt=""><span>${q.short}</span></button>`).join('');
+  const prev = JPAGE > 0 ? `<button data-a="jpage" data-n="${JPAGE - 1}">‹ ${P[JPAGE - 1].short}</button>` : '<span></span>', next = JPAGE < n - 1 ? `<button data-a="jpage" data-n="${JPAGE + 1}">${P[JPAGE + 1].short} ›</button>` : '<span></span>';
+  const html = `<div class="bk"><div class="bktabs">${tabs}</div><div class="bkcover"><div class="bkleaf">${JPAGE ? `<p class="bkhead">${cur.name}</p>` : ''}<div class="bkpage">${cur.html()}</div><div class="bkturn">${prev}<span class="folio">${JPAGE ? `— ${JPAGE} —` : ''}</span>${next}</div></div></div></div>`;
   openSheet('journal', html); btnAlert('bJournal', false);
 }
 function openSecret(id, fresh) {   // one little find, pressed into the journal
@@ -5463,20 +5512,7 @@ function openSecret(id, fresh) {   // one little find, pressed into the journal
   openSheet('secret', `<div class="pressed"><img src="sprites/kit/secrets-${d.pic}.webp" alt=""></div><h2>${fresh ? 'A little find!' : title}<small>${fresh ? `${title} · ` : ''}${nf} of ${C.secrets.length} little finds</small></h2><p class="pnote">${d.note}</p>
   <p><button class="act" data-a="journal">${fresh ? 'Press it in the journal' : 'Back to the journal'}</button></p>`);
 }
-// v99 (round ten notes 8, 26, 30): the valley's green, patch by patch: what stage each is at, how far to the next, and what brings green there
-function leafPips(n, N) { let h = '<span class="pips">'; for (let i = 0; i < Math.min(N, 14); i++) h += `<i class="${i < n ? 'on' : ''}"></i>`; return h + '</span>'; }
-function greenRow(name, k, how) {
-  const g = G.s.tiles[k].green, S = C.landStages, st = G.landStage(k), i = S.indexOf(st), next = S[i + 1];
-  return `<div class="row"><div class="t"><b>${name}</b><span class="meta">${cap(st.name)}${next ? ` · ${next.at - g} more to ${next.name}` : ' · as green as it gets'}</span>${next ? leafPips(g - st.at, next.at - st.at) : leafPips(14, 14)}<span>${how}</span></div></div>`;
-}
-function openGreen() {
-  let html = `<h2>The valley's green</h2><p class="meta" style="margin:0 0 6px">Only living things bring the land back. Each patch has its own green.</p>`;
-  html += greenRow('The yard', '0,0', 'Crops picked from the seed bed, the little oak, herbs and flowers, and animals that make a home here.');
-  if (G.s.tiles['0,1']) html += greenRow(G.gardenOpen() ? 'Our garden' : 'The garden-to-be', '0,1', G.gardenOpen() ? 'Crops from the new bed, flowers and ferns planted here, and the pond\'s visitors.' : 'Clear it, wake the worms, and the green creeps in by itself.');
-  for (const k of G.healTiles()) { if (k === '0,1') continue; const K = C.heal.kinds[G.s.tiles[k].kind]; html += greenRow(cap(K.patch) + ', ' + G.tileWhere(k), k, 'The life that comes back after each job the gnomes do there.'); }
-  html += `<p class="meta">A crop gives about one leaf for every hour it takes to grow: the longer the wait, the more green.</p>`;
-  openSheet('green', html);
-}
+function openGreen() { openJournal(1); }   // v102: the valley's green is the Journal's "Our land" page
 function openLand(st) {   // the home patch reached a new stage: say what happened and why
   openSheet('land', `<div class="jpage card"><p class="meta" style="margin:0">The land is waking</p><h2>${st.name[0].toUpperCase() + st.name.slice(1)}</h2><p class="lore">${st.explain || st.sub}</p></div>
     <p style="text-align:center"><button class="act" data-a="close">Have a look</button></p>`);
@@ -5665,7 +5701,7 @@ function cardCheck() {
 }
 function quietCard(c) {   // no window: the land shows it, a short note says it, Hazel's diary keeps the words
   if (c.k === 'spring') { toast('Water! Wendel has found a spring.'); const [x, y] = toWorld(SPRING.at[0], SPRING.at[1]); ALLDONE.ease = { t: 0, z0: cam.z, x0: cam.x, y0: cam.y, z1: clampZ(Math.max(cam.z, 1.3)), x1: x, y1: y }; sparkleAt(x, y); return diaryAdd(`Wendel found a spring between the roots of an old stump. Clear water, the first on this hill in years.`); }
-  if (c.k === 'land') { const st = C.landStages.find(s => s.key === c.key); if (!st) return; if (st.spirit && !guideOn()) { spiritNote(st.spirit); showSprig(); } else toast(`The yard is waking: ${st.name}.`); return diaryAdd(st.explain || st.sub); }   // round nine note 16: the Wood spirit says what just happened, and shows the oak sprig with it
+  if (c.k === 'land') { const st = C.landStages.find(s => s.key === c.key); if (!st) return; if (st.spirit && !guideOn()) spiritNote(st.spirit); else toast(`The yard is waking: ${st.name}.`); return diaryAdd(st.explain || st.sub); }   // round nine note 16: the Wood spirit says what just happened, and shows the oak sprig with it
   if (c.k === 'tland') { const tl = G.s.tiles[c.tile]; if (!tl) return; const st = C.landStages.find(s => s.key === c.key), fid = G.farmOn(c.tile), patch = fid ? C.farms.list[fid].patch : tl.kind ? C.heal.kinds[tl.kind].patch : 'the patch';
     toast(`${cap(patch)} is waking: ${st.name}.`); return diaryAdd(C.heal.stageText[c.key].replace('{patch}', patch)); }
   if (c.k === 'makes') { const M = C.makes[c.patch]; const L = M.lines[c.stage]; if (!G.s.flags.wishIntro) { cardAt = performance.now() + 4000; return openMakes(c.patch, c.stage); }   // the first time, a small card says what the list is (note 9)
@@ -5856,9 +5892,7 @@ document.addEventListener('click', e => { const b = e.target.closest && e.target
 $('bPack').onclick = openPack; $('guideSkip').onclick = () => guideTo(4);
 $('guide').addEventListener('click', e => { if (e.target.closest('button[data-a="spiritok"]')) { $('guide').classList.remove('on'); $('guideSkip').style.display = ''; return; }   // v97 (round ten note 19): the Wood spirit's Thank you lives in this strip, not the sheet, so it was never heard
   const b = e.target.closest('button[data-a="guide"]'); if (!b) return; G.s.flags.guide = b.dataset.id === 'skip' ? 4 : 1; $('guideSkip').style.display = ''; guideTo(G.s.flags.guide); });   // v87: the hello's own buttons
-$('bTasks').onclick = () => { hidePointer('bTasks'); if (guideStep() === 4) guideTo(9); openTasks(); }; $('bMagic').onclick = openMagic; $('bJournal').onclick = () => { DPAGE = 0; openJournal(); };
-G.onChange((kind, data) => { if (kind === 'green' && !G.s.flags.greenIntro && G.s.tiles['0,0'].green > 0) { G.s.flags.greenIntro = true; toast('Something grew, so the yard is a little greener. The sprig by the little oak counts it: tap the sprig to see the whole valley.'); }
-  if (kind === 'green') showSprig(performance.now() - SPRIG.t < 5000 ? Math.min(SPRIG.from, data) : data); });   // v87: a burst of green (a harvest, coming back after a while) shows all its new leaves
+$('bTasks').onclick = () => { hidePointer('bTasks'); if (guideStep() === 4) guideTo(9); openTasks(); }; $('bMagic').onclick = openMagic; $('bJournal').onclick = () => { DPAGE = 0; openJournal(0); };   // v102: the book opens on its Contents page
 G.onChange((kind, data) => { if (kind === 'spell' && (data === 'rain' || data === 'cloud')) startShower(8, 90); renderInv(kind === 'inv' && typeof data === 'string' ? data : null); renderHud(); if (kind === 'task' && data && data.done) { if (data.give) { const g = gnomes.find(g => g.who === data.who); if (g && g.screen && !g.inside) float(Object.entries(data.give).map(([k, n]) => `+${n} ${C.resources[k].name}`).join(' '), g.screen.x, g.screen.y - g.screen.h * 0.6); else toast(`${C.names[data.who]} brought in ${Object.entries(data.give).map(([k, n]) => `${n} ${C.resources[k].name}`).join(' and ')}.`); } else toast('Finished: ' + lcName(G.taskDef(data.id).name) + '.'); } if (kind === 'event') toast(data.text); if (kind === 'movein') toast(data.note);
   if (kind === 'traveller' && data) { if (!sheetKind && windowFree() && G.s.flags.welcomed) { tookWindow(); openStory(data, 'arrived'); } else toast('A traveller has camped by the path.'); }   // v87: only if this visit has had no window yet
   if (kind === 'story') { if (!sheetKind && windowFree()) { tookWindow(); openStory(data.folk, data.kind); } else toast(`${cap(G.folkDef(data.folk).short)} has news. It is in the Journal.`); }

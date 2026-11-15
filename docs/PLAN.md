@@ -39,6 +39,9 @@ _Last updated: 2026-11-15 (v100, the round-eleven build, live). Keep this file s
 3. Next art day: the stand-ins in section 4.
 4. Held until Bryce asks: month-two builds 2 to 7 (`docs/MONTH-TWO.md`), then a long robot run.
 
+**The Journal book and the land measure (v102, thread "Make the Journal look like a real book"; design `/mnt/project-files/journal-book/PLAN.md`):** the Journal is a leather-bound book with cloth tabs down the side, opening on a Contents page (Bryce picked looks A and B together). Sections: Our land, Hazel's diary (the old "Lately" list is its "Little news"), Our story, Friends, Little treasures; How to play at the back. The oak sprig, its "Something grew" note and "The valley's green" window are gone (round twelve note 13); tapping the grown little oak opens Our land.
+*How the land measure works* (the magic build ties "stronger as the land greens" to it): each awake patch keeps its own green points (`G.s.tiles[k].green`; the rules that earn them are unchanged). `C.landStages` turns points into four stages: bare ground (0), first green (4), young meadow (12), young woodland (26). `landLeaves(k)` in `index.html` gives `n`, how many of the four leaves are out (1 to 4; bare ground already counts its first), and `part`, how far the next leaf has grown (0 to 1). `landTotal()` adds every patch: `{ leaves, of, patches }`, where `of` is 4 per awake patch. Use `landTotal().leaves` (or the per-patch `n`) for anything that should grow with the land.
+
 **Garden patch layout (`docs/GARDEN-LAYOUT.md`):** built in v99. The pond has reeds, NOT a ring of stones (Bryce, 2026-11-14).
 
 **Waiting on Bryce:** his play verdict on v99, with his picks on the greening look, the job-time table, Mabel's helping hand and crop green; is the big spring stump now too big (one number, `KIT_GROW`); stump and spring look rethink (round 9 no. 6). Game length: on hold, feel it out.
@@ -49,7 +52,7 @@ _Last updated: 2026-11-15 (v100, the round-eleven build, live). Keep this file s
 
 Month one: none known. `make-bed2` has no slot painting on purpose (the bed uses `seedbed-rect`; its fence rails and crop rows are drawn in code).
 Later: none (`make-mousedoor` is empty on purpose: that make is retired). Painted but not placed: frogmouth, owl on a stake, bucket, carrot with legs.
-Drawn in code on purpose: paper job flags, growing badge, glows, the green sprig.
+Drawn in code on purpose: paper job flags, growing badge, glows, the Journal's cover, tabs and leaves (v102; the green sprig is gone).
 
 ## 5. The game in brief (Bryce's decisions)
 
