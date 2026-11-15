@@ -2,7 +2,7 @@
 
 A cosy storybook garden game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; it must run smoothly on a phone.
 
-_Last updated: 2026-11-15 (v100, the round-eleven build, live). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
+_Last updated: 2026-11-15 (v104, the round-twelve build, waiting for Bryce's OK). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
 
 ## 1. Rules for every chat (read first)
 
@@ -28,12 +28,21 @@ _Last updated: 2026-11-15 (v100, the round-eleven build, live). Keep this file s
 
 ## 2. Where we are
 
-- **Live:** v99 at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). v99 (PR #132) is the round-ten build plus art day 21 and a reworked worn path.
+- **Live:** v103 (v104 waiting for Bryce's OK) at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). v99 (PR #132) is the round-ten build plus art day 21 and a reworked worn path.
 - **Bryce is playing** v99. Round-ten notes are all "built, waiting for Bryce"; round-eleven notes are collected in the thread "Collect play notes round eleven".
 - **Two gardens:** the real one at the plain address; the sandbox at `?sandbox` (own save; tap the title for the test panel). Pretend player: `node tools/progression_sim.js 2 90`.
 
 ## 3. What's next (in order)
 
+0. **v104, the round-twelve build (thread "Build the round twelve notes"), waiting for Bryce's OK.** Previews in `/mnt/project-files/round-twelve-v104/`. Holds round-twelve notes 2 to 12, 15 to 17 and the pop-up review (`/mnt/project-files/popup-review/popup-review-v101.md`):
+   - *Pop-ups:* `TOAST_HUSH` in index.html drops every note the land or a gnome already shows (Set to work, Finished, Something new in Jobs, new wishes and favours, sow/water/pick chore lines, "brought in", patch "is waking", spell names); the play log still records them as `quiet:`. Notes carry a small portrait of who is talking (`toastFace`). One voice at a time: a gnome waits for a note to finish; tapping a busy gnome gives the job in their own bubble, no note. The idle Jobs reminder is a bob of the button, no words; the "lying in the ring" words come once only.
+   - *Jobs match their words:* Water the seeds in waits for `flags.sowDone` (set when the sowing walk ends, or 90 s after sowing). Pebbles and the meadow strip wait for the fence, the scarecrow for the rabbit.
+   - *Never idle:* little chores from the moment the spring is found; a free gnome always gets at least one chore; the work corner goes to whoever is free.
+   - *Water:* once the spring is found, water is free (`G.springFree()`: never short, never spent, hidden in costs and the store); the jug chore is gone; no water dewdrops after the spring.
+   - *Magic option C:* see docs/VISION.md (Magic) and docs/STORY.md (lessons). `G.magicLevel()` comes from the home yard's land stage; `G.spellUses()` 1/1/2/3 a day. Patch steps marked `auto` (the old Wake the worms) finish by themselves. `magicRemap104` moves older gardens over.
+   - *Yard:* the saved-junk pile is never drawn; the fence panel shows only once the second bed is offered (and is gone from the meadow heaps); the wind spinner stands in open ground left of the work corner; the doorstep is centred under the door; the washing line and tub moved right, clear of the woodpile and barrel; the woodpile is back in its v99 spot behind the barrel, next to the house (Bryce).
+   - *Animals and gnomes:* the rabbit hops into the bed to nibble (`Walk` option `intoBed`); a two-gnome job's helper joins the moment their own job ends, even while the phone is away (`pairTick`); a watering-can badge while watering (`icon-wateringcan.webp`, cut from Wendel's can sprite: a painted icon would be nicer on an art day).
+   Not in this build: note 1 (v101), note 13 (v102), note 14 (no such note).
 1. **v100, the round-eleven build (with art day 22), LIVE 2026-11-15 (Bryce: "Yes, put it live"); its notes are "built, waiting for Bryce".** Previews in `/mnt/project-files/round-eleven-v100/`. Holds round-eleven notes 1 to 14 (tracker has each row): wood comes from the big stump that was in the way (day-one dig) and the old fallen log (new job "Saw up the old log"; Bryce picked both), woodpile on the ground right beside the house, stick pile grows in four painted steps, finished little work corner (`yard-workcorner`); the garden heap is a two-gnome job (`pair:true`: the other joins when free, twice as fast), Hazel carries the good bits to a salvage pile at the work corner, the herb box is that crate, the third job is "Dig out the buried rubbish", four heap paintings (the last two repainted with no junk); flags only for story/patch/neighbour jobs (`flagJob`), bench and doorstep no longer gate anything, Hazel says why the roof wants moss (`sayWhy`); the rabbit's first visit is a slow scene, notes wait during scenes, Hazel always fills the dish. Not in this build: note 15 (seed bed hard to tap, from the play log; Bryce to confirm). v99 (round ten) is live; its notes are still "built, waiting for Bryce".
 2. When Bryce has played v100: he closes notes; anything that came back gets a proper look.
 3. Next art day: the stand-ins in section 4.

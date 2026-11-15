@@ -112,7 +112,9 @@ const G = {
     if (this.s.plots.seedbed.crop === 'sprout') this.s.plots.seedbed.crop = 'carrot';   // the old generic sprouts were always carrots at heart
     for (const [k, tl] of Object.entries(this.s.tiles)) if (k !== '0,0' && !tl.kind && tl.state === 'revealed') tl.kind = this.tileKind(k);
     if (!this.s.plots.bed2) this.s.plots.bed2 = { crop: null, stage: null, readyAt: 0, grown: 0 };
-    if (!this.s.flags.heal99) { this.s.flags.heal99 = true; this.healRemap99(); }   // bare tiles from before the healing chains get theirs; green ones stay as they were
+    if (!this.s.flags.heal99) { this.s.flags.heal99 = true; this.healRemap99(); }
+    delete this.s.tasks['chore:dew'];   // v104: the jug chore is gone (water from the spring is free)
+    if (!this.s.flags.magic104) { this.s.flags.magic104 = true; this.magicRemap104(); }   // v104: three spells   // bare tiles from before the healing chains get theirs; green ones stay as they were
     this.pantryTrim('her', true);   // older gardens with heaps of veg: the spare has quietly gone round the valley
     this.away = this.catchUp();
     if (window.PL) { const a = this.away; PL.add(`=== opened v${typeof BUILD !== 'undefined' ? BUILD : '?'}${window.SANDBOX ? ' sandbox' : ''}, away ${Math.round(a.gone / 60000)} min${a.newDay ? ', a new day' : ''} ===`); if (a.finished.length) PL.add(`while away: ${a.finished.join('; ')}`); PL.add(this.snap()); }
@@ -162,8 +164,10 @@ const G = {
     this.markVisit(t);
     // crop
     const p = s.plots.seedbed;
+    if (s.flags.sown1 && !s.flags.sowDone && (p.stage !== 'planted' || t - (p.plantedAt || 0) > 90000)) s.flags.sowDone = t;   // v104 (round twelve note 3): the seeds are really in (the sowing walk finishes sooner and says so itself)
     if (s.flags.sown1 && !s.tasks.bedwater && p.stage && p.stage !== 'planted') s.tasks.bedwater = { startedAt: t, endsAt: t, done: true };   // watered some other way (the rain spell): the first watering counts as done
     for (const q of Object.values(s.plots)) if (q.stage === 'growing' && q.readyAt <= t) { q.stage = 'ready'; this.note(`${cap(this.cropName(q.crop))} ${q.crop === 'pumpkin' ? 'is' : 'are'} ready to pick.`); this.emit('plot', q); }
+    this.pairTick(t);   // v104: a helper who came free while you were away joins before the job is counted finished
     // tasks
     for (const [id, tk] of Object.entries(s.tasks)) {
       if (tk.done || tk.endsAt > t) continue;
@@ -183,6 +187,7 @@ const G = {
       this.emit('task', { id, done: true, give: d.chore && d.give, who: d.who });
     }
     this.pairTick(t);
+    this.autoSteps(t);
     this.mealTick(t);
     this.dressTick(t);
     if (this.barrelFull()) this.drawBarrel();   // the rain barrel tops up the store by itself (nobody's hands)
@@ -252,7 +257,7 @@ const G = {
   // ---- offerings ----
   spawnOffer(t, want, home) {   // want/home: this kind, in the home yard (the seed bed's safety net)
     const s = this.s, h = new Date(t).getHours(), night = h < 6 || h >= 19;
-    const pool = C.offers.map(o => ({ kind: o.kind, w: (night ? o.night : o.day) * (o.kind === 'water' && h >= 5 && h < 10 ? 2.5 : 1) * (o.kind === 'feather' ? 1 + Math.min(4, ['robin','owl','wren','rosella','frogmouth','kookaburra','silvereye','kingfisher','cockatoo','lyrebird'].filter(b => this.met(b)).length) * 0.5 : 1) }))   /* v99 (round ten note 51): each bird you have met makes a dropped feather likelier, up to three times */.filter(o => o.w > 0 && !this.shelfFull(o.kind));   // a full shelf: the land leaves something else
+    const pool = C.offers.filter(o => !(o.kind === 'water' && this.springFree())).map(o => ({ kind: o.kind, w: (night ? o.night : o.day) * (o.kind === 'water' && h >= 5 && h < 10 ? 2.5 : 1) * (o.kind === 'feather' ? 1 + Math.min(4, ['robin','owl','wren','rosella','frogmouth','kookaburra','silvereye','kingfisher','cockatoo','lyrebird'].filter(b => this.met(b)).length) * 0.5 : 1) }))   /* v99 (round ten note 51): each bird you have met makes a dropped feather likelier, up to three times */.filter(o => o.w > 0 && !this.shelfFull(o.kind));   // a full shelf: the land leaves something else
     const soft = C.store.lightSoft && (s.inv.light || 0) >= C.store.lightSoft, wisp = pool.find(o => o.kind === 'light'), dew = pool.find(o => o.kind === 'water');   // v81: plenty of light saved: the wisps come a fifth as often, and the night leaves dew instead
     if (soft && wisp) { if (dew) dew.w += wisp.w * 0.8; wisp.w *= 0.2; }
     if (!pool.length && !want) return;
@@ -273,9 +278,12 @@ const G = {
   },
 
   // ---- inventory ----
-  can(cost) { return Object.entries(cost || {}).every(([k, n]) => (this.s.inv[k] || 0) >= n); },
+  // v104 (round twelve note 9, Bryce: "with a spring they just water with the can, they shouldn't run out"): once the spring is found,
+  // water comes from it for nothing, as much as anyone needs. Costs may still name water (for the words), but it is never short or spent.
+  springFree() { return !!(this.s && this.s.tasks.spring && this.s.tasks.spring.done); },
+  can(cost) { const f = this.springFree(); return Object.entries(cost || {}).every(([k, n]) => (f && k === 'water') || (this.s.inv[k] || 0) >= n); },
   missing(cost) { return Object.entries(cost || {}).filter(([k, n]) => (this.s.inv[k] || 0) < n).map(([k, n]) => `${n - (this.s.inv[k] || 0)} ${C.resources[k].name}`); },
-  pay(cost) { for (const [k, n] of Object.entries(cost || {})) this.s.inv[k] -= n; this.emit('inv'); },
+  pay(cost) { const f = this.springFree(); for (const [k, n] of Object.entries(cost || {})) if (!(f && k === 'water')) this.s.inv[k] -= n; this.emit('inv'); },
   give(items) { for (const [k, n] of Object.entries(items || {})) this.s.inv[k] = (this.s.inv[k] || 0) + n; this.shelfTrim(); this.emit('inv'); },
   // the store's shelves (v70, C.store): 40 of each land find, 20 of each neighbour's gift; Hazel's seed tin 30; the pantry has its own (pantryTrim); light has no limit
   shelf(k) { const r = C.resources[k] || {}; return k === 'seed' ? C.pantry.seedTin : k === 'light' || r.pantry || !C.store ? Infinity : r.gift ? C.store.giftCap : C.store.cap; },
@@ -398,6 +406,7 @@ const G = {
     const all = K.list.filter(ok).sort((a, b) => score(a) - score(b)), out = [];
     for (const w of ['her', 'him'].filter(w => !this.isBusy(w))) { const c = all.find(c => c.pref === w && !out.includes(c)) || all.find(c => !out.includes(c)); if (c) out.push(c); }   // one that suits each free gnome
     for (const c of all) if (out.length < K.show && !out.includes(c)) out.push(c);
+    if (!out.length) { const c = K.list.find(c => c.id === 'chore:sticks' && !s.tasks[c.id]) || K.list.find(c => !s.tasks[c.id] && !c.crop); if (c) out.push(c); }   // v104 (round twelve note 4): a free gnome ALWAYS has a little job, even with full shelves
     return out.slice(0, K.show);
   },
   taskList() {   // everything the player could start or is waiting on, in a sensible order
@@ -501,15 +510,21 @@ const G = {
   // round eleven note 8 (Bryce: the rubbish heap is too big for one gnome): a pair:true job is a two-gnome job. One gnome starts it;
   // the other comes over and joins as soon as they are free, and the rest of it goes twice as fast. Give the helper a job of their
   // own and they go off to it (the heap slows back down); they come back when they are free again.
-  pairShift(id, tk, k) { const t = now(), f = this.taskFrac(id); tk.f0 = f; tk.helpFrom = t; tk.endsAt = this.workEnd(t, this.workBetween(t, tk.endsAt) * k); },
+  pairShift(id, tk, k, at) { const t = at || now(), f = this.fracAt(tk, t); tk.f0 = f; tk.helpFrom = t; tk.endsAt = this.workEnd(t, this.workBetween(t, tk.endsAt) * k); },
+  fracAt(tk, t) { if (tk.done || tk.endsAt <= t) return 1; const a = tk.helpFrom != null ? tk.helpFrom : tk.startedAt, f0 = tk.helpFrom != null ? tk.f0 || 0 : 0, all = this.workBetween(a, tk.endsAt); return all > 0 ? Math.min(1, f0 + (1 - f0) * this.workBetween(a, t) / all) : 1; },
   pairTick(t) {
-    if (this.asleepAt(t)) return;
+    // v104 (round twelve note 6: the rubbish pick-up was done by Hazel alone): the helper joins the moment their own job ends, even
+    // while the phone is put away, so a two-gnome job really is done by two. (Before, they only joined if you happened to be watching.)
     for (const [id, tk] of Object.entries(this.s.tasks)) {
-      if (tk.done || tk.endsAt <= t || tk.helper || (tk.who !== 'him' && tk.who !== 'her')) continue;
-      const d = this.taskDef(id); if (!d || !d.pair || tk.endsAt - t < 2 * MIN) continue;
-      const other = tk.who === 'him' ? 'her' : 'him'; if (this.isBusy(other, id)) continue;
-      if (Object.values(this.s.tasks).some(k => k !== tk && !k.done && k.helper === other)) continue;
-      this.pairShift(id, tk, 0.5); tk.helper = other; this.worked(other, tk.endsAt);
+      if (tk.done || tk.helper || (tk.who !== 'him' && tk.who !== 'her')) continue;
+      const d = this.taskDef(id); if (!d || !d.pair) continue;
+      const other = tk.who === 'him' ? 'her' : 'him';
+      if (Object.entries(this.s.tasks).some(([i, k]) => i !== id && !k.done && k.endsAt > t && !i.startsWith('chore:') && (k.who || (C.tasks.find(x => x.id === i) || {}).who) === other)) continue;   // still busy on a job of their own
+      if (Object.values(this.s.tasks).some(k => k !== tk && !k.done && k.endsAt > t && k.helper === other)) continue;
+      let at = Math.max(tk.startedAt, ...Object.entries(this.s.tasks).filter(([i, k]) => i !== id && (k.who || (C.tasks.find(x => x.id === i) || {}).who) === other && k.endsAt <= t).map(([, k]) => k.endsAt));
+      if (this.asleepAt(at)) at = this.wakeAfter(at);
+      if (at > t || tk.endsAt - at < 2 * MIN) continue;
+      this.pairShift(id, tk, 0.5, at); tk.helper = other; this.worked(other, tk.endsAt);
       if (window.PL) PL.add(`${other} joins [${id}] (two-gnome job)`);
       this.note(`${C.names[other]} came over to help ${C.names[tk.who]} with ${lc(d.short || d.name)}. Two pairs of hands: it goes twice as fast.`); this.emit('task', { id, helper: other });
     }
@@ -623,7 +638,7 @@ const G = {
     }
   },
   healEv(k, i, j) { const tl = this.s.tiles[k]; return tl && tl.ev ? tl.ev[`${i}.${j}`] || 0 : 0; },   // when that happened (0: not yet)
-  healTaught(kind) { return ('heal:' + kind) in this.s.spirit.taught; },
+  healTaught(kind) { const sp = (C.heal.kinds[kind] || {}).spell; return !!sp && this.magicInfo().spells.includes(sp); },   // v104: a patch's spell is one of the three
   healSpellFor(kind) { return this.running().filter(r => r.def.healTile && r.def.heal === kind && r.def.spell && r.endsAt > now()); },
   seedlingsWaiting() { return this.healTiles().filter(k => { const i = this.healAt(k), w = this.healWait(k, i); return w > now(); }); },
   healCast(id, t) {
@@ -725,35 +740,45 @@ const G = {
 
   bedAt(stage) { const sel = this.plot(); return sel.stage === stage ? sel : Object.values(this.s.plots).find(p => p.stage === stage) || null; },   // the bed a crop spell works on: the one being looked at, else whichever is at that stage
   // ---- magic ----
-  magicLevel() { const d = this.s.days.length; let L = 1; C.magicLevels.forEach((m, i) => { if (d >= m.days) L = i + 1; }); return L; },
-  magicInfo() { const L = this.magicLevel(), m = C.magicLevels[L - 1], next = C.magicLevels[L]; return { level: L, name: m.name, days: this.s.days.length, nextDays: next ? next.days : null, spells: C.story.lessons.filter(l => l.spell && !C.spells[l.spell].special && l.n in this.s.spirit.taught).map(l => l.spell) }; },   // v99 (note 37): a spell is yours when the Wood spirit has taught it, never before
-  spellTaught(id) { const L = C.story.lessons.find(l => l.spell === id); return !L || L.n in this.s.spirit.taught; },   // first-time review: a spell is yours once the Wood spirit has taught it, not just when the days come round
+  // v104 (round twelve notes 8, 15, Bryce chose option C): three spells, Coax, Rain and Wind (and the toadstool's one-off legs).
+  // Magic grows with the land, never with days visited: the home yard's stage gives the level, and each spell can be cast once a
+  // day on bare ground and first green, twice at young meadow, three times at young woodland.
+  magicLevel() { return 1 + Math.max(0, C.landStages.indexOf(this.landStage('0,0'))); },
+  spellUses() { return [1, 1, 2, 3][this.magicLevel() - 1] || 1; },
+  usedToday(id) { const u = this.s.spellsUsed[id], d = dayKey(now()); return !u ? 0 : typeof u === 'string' ? (u === d ? 1 : 0) : u.d === d ? u.n : 0; },
+  useSpell(id) { const d = dayKey(now()), n = this.usedToday(id); this.s.spellsUsed[id] = { d, n: n + 1 }; },
+  magicInfo() { const L = this.magicLevel(), m = C.magicLevels[L - 1] || C.magicLevels[0]; return { level: L, name: m.name, uses: this.spellUses(), spells: C.story.lessons.filter(l => l.spell && C.spells[l.spell] && !C.spells[l.spell].special && l.n in this.s.spirit.taught).map(l => l.spell) }; },   // a spell is yours when the Wood spirit has taught it
+  spellTaught(id) { const L = C.story.lessons.find(l => l.spell === id); return !L || L.n in this.s.spirit.taught; },
+  spellJobs(id) { return this.running().filter(r => r.def.healTile && r.def.spell && C.heal.kinds[r.def.heal] && C.heal.kinds[r.def.heal].spell === id && r.endsAt > now()); },   // patch jobs under way that this spell helps
   canCast(id) {
-    const sp = C.spells[id]; if (!(sp.heal ? this.healTaught(sp.heal) : sp.special ? this.gardenOpen() && (this.spellTaught(id) || !!this.s.flags.toadWalk) : this.magicInfo().spells.includes(id))) return { ok: false, why: 'not yet learned' };
-    if (sp.heal && !this.healSpellFor(sp.heal).length && !(sp.heal === 'nursery' && this.seedlingsWaiting().length)) return { ok: false, why: sp.heal === 'nursery' ? 'no seedlings are waiting to wake' : 'it helps a job that is under way: start it first' };   // special spells come with what they are for, not with days
+    const sp = C.spells[id]; if (!sp) return { ok: false, why: 'not a spell any more' };
+    if (!(sp.special ? this.gardenOpen() && (this.spellTaught(id) || !!this.s.flags.toadWalk) : this.magicInfo().spells.includes(id))) return { ok: false, why: 'not yet learned' };
     if (!this.can(sp.cost)) return { ok: false, why: `needs ${this.missing(sp.cost).join(', ')}` };
-    if (id === 'legs' && this.s.flags.toadWalk) return { ok: false, why: 'it has already walked off' };
-    if (id === 'coax' && !this.bedAt('growing')) return { ok: false, why: this.plot().stage === 'planted' ? 'the bed needs watering first: nothing grows until it has had a drink' : this.plot().stage === 'ready' ? 'the bed is already ready to pick' : 'nothing is growing in the seed bed yet' };
-    if (id === 'worms') return this.castSpots('worms').length ? { ok: true } : { ok: false, why: 'it is for bare ground the gnomes have just cleared' };
-    if (id === 'rain' && this.castSpots('rain').length) return { ok: true };   // a waiting hollow can always be filled
-    if (id === 'rain' && !this.bedAt('planted')) return { ok: false, why: 'nothing is waiting for water' };
-    if (C.spells[id].daily && this.s.spellsUsed[id] === dayKey(now())) return { ok: false, why: 'used today. Magic for the crops comes back each morning' };   // build 3 (Bryce): crop magic is a treat, saved up, not a button
-    if (id === 'wake' && !this.running().some(r => r.def.tile || r.def.healTile)) return { ok: false, why: 'no patch is regrowing' };
+    if (id === 'legs') return this.s.flags.toadWalk ? { ok: false, why: 'it has already walked off' } : { ok: true };
+    if (sp.daily && this.usedToday(id) >= this.spellUses()) return { ok: false, why: `used ${this.spellUses() > 1 ? this.spellUses() + ' times ' : ''}today. It comes back each morning, and grows stronger as the yard greens` };
+    const jobs = this.spellJobs(id).length > 0;
+    if (id === 'coax' && !this.bedAt('growing') && !this.seedlingsWaiting().length && !jobs) return { ok: false, why: this.plot().stage === 'planted' ? 'the bed needs its drink first: nothing grows until it has been watered' : this.plot().stage === 'ready' ? 'the bed is already ready to pick' : 'nothing is growing just now' };
+    if (id === 'rain' && !this.castSpots('rain').length && !this.bedAt('planted') && !jobs) return { ok: false, why: 'nothing is waiting for water' };
+    if (id === 'wind' && !jobs) return { ok: false, why: 'it carries seed: use it while wildflowers or seed balls are going in' };
     return { ok: true };
   },
   cast(id, k) {
-    if (!this.canCast(id).ok) return false; this.pay(C.spells[id].cost); const t = now();
-    if (id === 'worms') { const sp = this.castSpots('worms'), at = sp.includes(k) ? k : sp[0]; this.castStep(at, t); this.note(`The worms woke under ${this.patchName(at)}. Give them an hour: the green comes slowly.`); this.emit('spell', id); this.tick(); return true; }
-    if (id === 'rain' && this.castSpots('rain').length) { const at = this.castSpots('rain')[0], p = this.plot(), bed = p.stage === 'planted' && this.s.spellsUsed.rain !== dayKey(t);
+    if (!this.canCast(id).ok) return false; this.pay(C.spells[id].cost); const t = now(), sp = C.spells[id];
+    const jobs = this.spellJobs(id); for (const r of jobs) this.s.tasks[r.id].endsAt = t + (r.endsAt - t) / 2;   // a patch job under way goes twice as fast
+    if (id === 'rain' && this.castSpots('rain').length) { const at = this.castSpots(id).includes(k) ? k : this.castSpots('rain')[0];
       this.castStep(at, t); if (!this.s.tasks.pond) this.s.tasks.pond = { startedAt: t, endsAt: t, done: true };   // the pond the old job used to dig: the frog, the stone frog and the willow seat follow it
-      if (bed) { p.stage = 'growing'; p.wateredAt = t; p.readyAt = t + this.dur(this.growMins(p)); this.s.spellsUsed.rain = dayKey(t); }
-      this.give({ water: 2 }); this.note('Soft rain fell into the hollow until it brimmed. The garden has a pond.'); this.emit('spell', id); this.tick(); return true; }
-    if (id === 'coax') { const p = this.bedAt('growing'); p.readyAt = t; this.note(`A warm hush over the bed, and ${this.cropName(p.crop)} fill out all at once.`); }
-    if (id === 'rain') { for (const p of Object.values(this.s.plots)) if (p.stage === 'planted') { p.stage = 'growing'; p.wateredAt = t; p.readyAt = t + this.dur(this.growMins(p)); } this.give({ water: 2 }); this.note('Soft rain falls on the bed and beads on the stones.'); }
+      for (const p of Object.values(this.s.plots)) if (p.stage === 'planted') { p.stage = 'growing'; p.wateredAt = t; p.readyAt = t + this.dur(this.growMins(p)); }
+      this.note('Soft rain fell into the hollow until it brimmed. The garden has a pond.'); }
+    else if (id === 'rain') { for (const p of Object.values(this.s.plots)) if (p.stage === 'planted') { p.stage = 'growing'; p.wateredAt = t; p.readyAt = t + this.dur(this.growMins(p)); } this.note(jobs.length ? 'A small soft rain, just where it was wanted.' : 'Soft rain falls on the beds and beads on the stones.'); }
+    if (id === 'coax') { const p = this.bedAt('growing'); if (p) { p.readyAt = t; this.note(`A warm hush over the bed, and ${this.cropName(p.crop)} fill out all at once.`); }
+      const w = this.seedlingsWaiting(); for (const q of w) this.s.tiles[q].woke = true; if (w.length && !p) this.note('The seedlings in their pots stretched, as if somebody had opened the curtains.'); }
+    if (id === 'wind') this.note('The wind lifted the seed and carried it into the far corners.');
     if (id === 'legs') { this.s.flags.toadWalk = t; this.note('The big toadstool shivered, sprouted little root legs and walked off to the far corner of the garden.'); }
-    if (C.spells[id].heal) this.healCast(id, t);
-    if (id === 'wake') { for (const r of this.running()) if (r.def.tile || r.def.healTile) this.s.tasks[r.id].endsAt = t + (r.endsAt - t) / 2; this.note('The ground stirs under the mist.'); }
-    this.s.spellsUsed[id] = dayKey(t); this.emit('spell', id); this.tick(); return true;
+    if (sp.daily) this.useSpell(id);
+    this.emit('spell', id); this.tick(); return true;
+  },
+  autoSteps(t) {   // v104: a patch step marked auto (the old "Wake the worms") is done the moment it is reached; its slow green follows
+    for (const k of this.healTiles()) { const i = this.healAt(k), st = this.healSteps(k)[i]; if (st && st.auto && this.healOpen(k)) this.castStep(k, t); }
   },
 
   // ---- journal, visitors and the feeding dish ----
@@ -1142,19 +1167,23 @@ const G = {
   // 1 coax (the seed bed is dug), 2 rain (the spring is found), 3 the toadstool (the garden opens with it in the way), 4 wake the
   // land, 5 "nothing new today" by the fire, the last of the first month. Magic level only says when it can come. After lesson 5
   // it comes back to teach each new kind of bare patch (never the garden: its chain stops at first green).
-  spiritLesson() {   // the lesson it is waiting by now (its number, or 'heal:<kind>'), or 0
-    const s = this.s, sp = s.spirit.taught, L = this.magicLevel(), h = new Date(now()).getHours();
-    if (Object.values(sp).some(at => at && dayKey(at) === dayKey(now()))) return 0;   // one lesson a day, so each has room to sink in
-    const hollow = this.castSpots('rain').length > 0, coax = [1, L >= 2 && this.done('bed')], rain = [2, hollow || (L >= 3 && this.done('spring'))];   // v99: a hollow waiting for rain brings that lesson first
-    for (const [n, ok] of [[6, this.castSpots('worms').length > 0], ...(hollow ? [rain, coax] : [coax, rain]), [3, this.gardenOpen()], [4, L >= 4], [5, L >= 5 && (h >= 17 || h < 5)]]) {
-      if (n in sp) continue; if (n === 6 && !ok) continue;   // Wake the worms (v99, day one) comes when a cleared patch wants it and never holds the others up if (n === 3 && s.flags.toadWalk) continue;   // an older garden whose toadstool already walked
-      return ok ? n : 0;   // in order: a later lesson waits for the one before
-    }
-    for (const k of this.healTiles()) { if (k === '0,1') continue; const kind = this.s.tiles[k].kind, Ls = C.heal.kinds[kind].lesson; if (Ls && !this.healTaught(kind) && this.healAt(k) < this.healSteps(k).length) return 'heal:' + kind; }   // the first time a kind of bare patch appears, it comes to teach that patch's spell
+  spiritLesson() {   // v104: the lesson it is waiting with now (its number), or 0. Coax always first (it is the first meeting); then each at its moment
+    const s = this.s, sp = s.spirit.taught;
+    const hollow = this.castSpots('rain').length > 0, windDue = this.healTiles().some(k => this.healSteps(k).slice(0, this.healAt(k) + 1).some(x => x.id === 'flowers' || x.id === 'toss'));
+    if (!(1 in sp)) return s.flags.sowDone ? 1 : 0;
+    for (const [n, ok] of [[2, hollow || (s.days.length >= 2 && this.done('spring'))], [7, windDue], [3, this.gardenOpen() && !s.flags.toadWalk]]) if (!(n in sp) && ok) return n;
     return 0;
   },
-  teach(n) { const first = !Object.keys(this.s.spirit.taught).length; this.s.spirit.taught[n] = now(); if (n === 6) this.give({ light: 2 });   // a little of the Wood spirit's own light, so the first spell can be cast at once
-     if (!this.met('spirit')) this.noteVisitor('spirit'); this.dirty = true; return first; },
+  teach(n) { const first = !Object.keys(this.s.spirit.taught).length; this.s.spirit.taught[n] = now();
+    const sp = (C.story.lessons.find(l => l.n === n) || {}).spell; if (sp && C.spells[sp] && !C.spells[sp].special) { const need = C.spells[sp].cost.light || 0, have = this.s.inv.light || 0; if (have < need) this.give({ light: need - have }); }   // enough of the Wood spirit's own light to cast it straight away
+    if (!this.met('spirit')) this.noteVisitor('spirit'); this.dirty = true; return first; },
+  magicRemap104() {   // an older garden: keep the spells it effectively had (Coax and Rain for anyone taught any of the first ones; Wind for any patch spell)
+    const sp = this.s.spirit.taught, keys = Object.keys(sp);
+    if (keys.some(k => ['1', '2', '4', '5', '6'].includes(k))) { if (!('1' in sp)) sp[1] = 0; if (!('2' in sp)) sp[2] = 0; }
+    if (keys.some(k => k.startsWith('heal:'))) sp[7] = 0;
+    for (const k of keys) if (['4', '5', '6'].includes(k) || k.startsWith('heal:')) delete sp[k];
+    if (this.s.flags.sown1) this.s.flags.sowDone = this.s.flags.sowDone || now();
+  },
   // ---- creatures moving into homes the gnomes made: +1 green each (the greening rule) ----
   moveInTick(t) {
     const s = this.s;
