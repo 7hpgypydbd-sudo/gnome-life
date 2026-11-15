@@ -455,7 +455,7 @@ function depthOf(gx, gy, tile = '0,0') { const [tx, ty] = tile.split(',').map(Nu
 // ---------- scene content (home tile) ----------
 const PROPS = [
   { name:'shelter',      gx:0.30, gy:0.22, s:1.35 },   // v74: a third bigger so the door is gnome height (art review: it was ~0.6 of a gnome)
-  { name:'firewood',     gx:0.43, gy:0.05, s:0.9, until:'stump' },   // round eleven note 4 (Bryce: it looked as if it was floating; and it stays next to the house): on the ground right beside the house's right roots, not perched on them   // round six (Bryce): the firewood is the old stump, chopped (woodStage)   // v75 (Bryce's yard moves): by the house's right roots, in front of the barrel (front:2 draws it over the barrel)
+  { name:'firewood',     gx:0.33, gy:0.03, s:0.9, front:2, until:'stump' },   // v104 (Bryce: "fine right behind the barrel and next to the house where it used to be"): back in its v99 spot
   { name:'barrel',       gx:0.40, gy:0.19, s:0.51, front:3, hitW:0.4 },   // art day 20: repainted with the bark spout, padded so the barrel itself stays centred (s keeps it about the old size, a touch bigger);   // v75 (Bryce's yard moves): by the house's right roots; round nine note 19 (Bryce: not close enough to the roof to catch anything): tucked in right under the roof's edge, a few steps from the door
   { name:'campfire',     gx:0.22, gy:0.40, s:0.9 },   // v75 (Bryce's yard moves): in front of the house's left roots
   { name:'lanternstump', gx:0.75, gy:0.50, s:1.25, gone:'stump' },   // round twelve note 1 (Bryce): Wendel's day-one stump stays where it always was, where the bug bath goes; only the art day 22 repaint is used, a little bigger. The big stump at the bottom of the yard is gone for good (its art didn't fit)   // a plain old stump now (Bryce: the lamp post nailed to it made no sense); dug out in stages by "Dig out the old stump" (drawStump)
@@ -491,7 +491,7 @@ function routineFor(h) {   // what the couple do at this hour when no job needs 
 const CLEAR_ITEMS = [];   // filled in below from HOME_KIT: the pieces Hazel clears, in the order she takes them
 const WOOD_ITEMS = [[0.90, 0.44], [0.86, 0.66], [0.34, 0.90]], STICK_PILE = [0.52, 0.30];   // three fallen branches Wendel gathers onto the stick pile; Hazel's good sticks from clearing go there too (round six: sticks are for fences, firewood comes from the old stump)
 const STUMP_AT = [0.75, 0.50], STUMP_ST = { rock: 0.3, chop: 0.45, carry: 0.68, fill: 0.88 }, STUMP_PILE = [0.76, 0.54];   // the old stump in the yard, and how far through "Dig out the old stump" each stage starts (content.js stages)
-const WOOD_DROP = [0.47, 0.10], WATER_TRIPS = 3;   // right in front of the woodpile (firewood prop, by the house's right roots), so the wood he sets down lands on it
+const WOOD_DROP = [0.39, 0.06], WATER_TRIPS = 3;   // right in front of the woodpile (firewood prop, by the house's right roots), so the wood he sets down lands on it
 // "Look for water": the spring is between the roots of the big old stump at the back of the yard, choked with stones and dead leaves.
 // Wendel searches the yard until SPRING_FOUND, then clears it; the water rises into a little pool and trickles off toward the dry creek.
 const MOSS_SPOTS = [[0.70, 0.20], [0.12, 0.27], [0.16, 0.78], [0.58, 0.16]];   // mossy roots and rocks round the yard edge
