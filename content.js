@@ -551,7 +551,7 @@ window.CONTENT = {
   landStages: [
     { at:0, key:'barren', name:'bare ground',  sub:'a bare patch of ground, waiting' },
     { at:4, key:'green',  name:'first green',  sub:'a haze of green over the bare earth',
-      spirit:`"Look, old heart! The first green. The spring brought the water back, and everything the gnomes grow teaches the soil to grow again. See the little oak's sprig? Each time something grows here, a leaf comes out on it. When the sprig is full, the yard wakes a little more."`,   // round nine note 16: said by the Wood spirit when the yard first greens
+      spirit:`"Look, old heart! The first green. The spring brought the water back, and everything the gnomes grow teaches the soil to grow again. Each time something grows here, the yard gets a little greener. Your Journal keeps count: look on its Our land page, where every patch has four leaves to fill."`,   // round nine note 16: said by the Wood spirit when the yard first greens
       explain:`You'd have to kneel down to see it: a haze of green over the bare brown earth, so faint that Hazel thought it was her eyes. It isn't. Every living thing the gnomes grow here teaches the soil to grow again. The spring brought the water back, and each crop leaves a little more life behind. Keep things growing, and the green will spread.` },
     { at:12,key:'meadow', name:'young meadow', sub:'grass, clover and the first daisies',
       explain:`One morning there was grass round the house. Not a haze any more, but real grass, with clover in it, and the first daisies, and a magpie strutting about as if he had planted it all himself. The ground remembers now. Plant things that stay, like trees and bushes and flowers, and the woods will start to come home.` },
