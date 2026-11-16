@@ -351,7 +351,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v108</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v109</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -372,7 +372,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 108;
+const BUILD = 109;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -380,11 +380,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=108"></script>
-<script src="playlog.js?v=108"></script>
-<script src="concerns.js?v=108"></script>
-<script src="game.js?v=108"></script>
-<script src="walk.js?v=108"></script>
+<script src="content.js?v=109"></script>
+<script src="playlog.js?v=109"></script>
+<script src="concerns.js?v=109"></script>
+<script src="game.js?v=109"></script>
+<script src="walk.js?v=109"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -719,7 +719,10 @@ Object.assign(ART_SLOTS, { 'feeding-dish': { w: 62 },   /* Bryce: bigger for the
 // the first month's story (docs/STORY.md): one painting per page (page-1-1 ...), and a painting for each little make (make-<id>)
 Object.assign(ART_SLOTS, { 'pond': { w: 146 } });
 [74, 88, 104, 112].forEach((w, i) => { ART_SLOTS['stick-pile-' + (i + 1)] = { w }; });   // round eleven note 10 (art day 22): the stick pile, armful by armful
-for (const k of ['yard-workcorner', 'heap-bare']) ART_SLOTS[k] = {};   // round eleven (art day 22): the finished little work corner; the rubbish heap's bare mound once the junk is off
+for (const k of ['yard-workcorner', 'heap-bare']) ART_SLOTS[k] = {};
+// v109 (art day 24): the loggers' old camp. Ash bed and raked bed share one outline (drawn 450 world px wide); ring stones drawn 80-104 px tall
+// (clean ones, sooted in code unless camp-stone-soot-N is painted); a wattle seedling clump and a gold wattle bush.
+for (const k of ['camp-ash', 'camp-raked', 'camp-stone-1', 'camp-stone-2', 'camp-stone-3', 'camp-sprouts', 'camp-wattle']) ART_SLOTS[k] = {};   // round eleven (art day 22): the finished little work corner; the rubbish heap's bare mound once the junk is off
 for (const k of ['garden-heap', 'garden-heap-half', 'garden-hollow', 'garden-hollow-rain', 'garden-pond-large', 'garden-pond-new', 'seedbed-rect', 'wildflower-patch-1', 'wildflower-patch-2', 'wildflower-patch-3', 'yard-leanto', 'yard-leanto-frame', 'spring-paved', 'room-stump-hollowing']) ART_SLOTS[k] = {};   // art day 21 (v99)
 const ART_RAW = /^(garden-|heap-|seedbed-rect|wildflower-patch|yard-leanto|yard-workcorner|spring-paved)/;   // drawn at their own size and spot, never trimmed or settled
 for (const k of ['spirit-float', 'spirit-point', 'spirit-settle', 'toad-legs', 'toad-house']) ART_SLOTS[k] = {};   // the Wood spirit's painted poses (art day 14)
@@ -2700,6 +2703,7 @@ function footprints() {
     if (MAKE_TWICE[d.id]) add(d.id, ...MAKE_TWICE[d.id], sz.w || 50); }
   if (G.s.tiles['0,1'] && G.s.tiles['0,1'].kind === 'garden' && healProg('0,1', 'rain') > 0) { const [px, py] = glob('0,1', GPOND[0], GPOND[1] - 0.01); add('pond', px, py, 440, 0.33); }   // round thirteen note 20: nobody walks in the pond, from the moment the rain fills the hollow (it used to count only once the garden opened, and as a puddle-sized spot)
   if (shelfStage().made > 0) add('nursery shelf', SHELF_AT[0], SHELF_AT[1], 60);
+  for (const k of G.healTiles()) if (G.s.tiles[k].kind === 'camp') for (const q of healPieces(k)) if (q.ring && q.a > 0.5) { const im = ringStone(q); if (im && im.width) add('ring stone', q.G[0], q.G[1], q.h * im.width / im.height, 0.3); }   // v109: the loggers' ring stones are boulders to a gnome
   return out;
 }
 // the yard's wild edges, where creatures come in and go out: [from, to, a step inwards]. Not the back edges: the house, the
@@ -3236,7 +3240,7 @@ const LIVE_TREE = { gum: ['heal-gum-3', 210], wattle: ['heal-wattle-3', 180], bu
 for (const [n, [, h]] of Object.entries(LIVE_TREE)) WOOD[n] = h;
 function woodImg(n) { const t = LIVE_TREE[n]; return t ? art(t[0]) : IM['kit-wood-' + pad2(n)]; }
 // v108 (Bryce picked "each patch its own way"): each kind of patch grows its own plants as it greens
-const GREEN_POOL = { creek: [5, 2, 4, 5, 10, 1], meadow: [9, 4, 5, 6, 9, 4], nursery: [10, 2, 1, 'bush', 2, 10], creature: [7, 1, 6, 15, 2, 7], verge: [9, 4, 6, 10, 9, 6] };   // round eight note 11: the flat mossy rock (18) is left out of the scatter; Bryce could not tell what it was
+const GREEN_POOL = { creek: [5, 2, 4, 5, 10, 1], meadow: [9, 4, 5, 6, 9, 4], nursery: [10, 2, 1, 'bush', 2, 10], creature: [7, 1, 6, 15, 2, 7], verge: [9, 4, 6, 10, 9, 6], camp: [9, 'bush', 6, 10, 4, 'bush'] };   // round eight note 11: the flat mossy rock (18) is left out of the scatter; Bryce could not tell what it was
 // the yard: [piece, gx, gy, land stage it appears with (1 green, 2 meadow, 3 wood)]; kept to the margins so the yard stays open.
 // Round six (Bryce): the first greening is small stuff (moss, fiddleheads, strawberries, a tuft of grass, bluebells); the big
 // stump, ferns and logs come with the meadow, the tall trunk, foxglove and wattle only with the wood. Round eight note 2 (Bryce: no big
@@ -4124,6 +4128,25 @@ const HEAL_LOOK = {
     ...[0.76, 0.86, 0.96].map((y, i) => ({ s:'hedge', draw:'wattlebush', v:[-2.4 + i * 0.3, y], n:i })),
   ],
 };
+// v109: the loggers' old camp (tile 1,0). Their fire ring is people-sized: to gnomes it fills most of the patch and each stone is a boulder.
+// A gap faces the travellers' camp (CAMP) so the gnomes can walk in. Stand-ins drawn in code (ash bed, raked bed, sooty stones) until the paintings land.
+const CAMP_RING = { c: [0.36, 0.36], r: 0.26 };
+HEAL_LOOK.camp = [
+  { s:'ash', go:1, draw:'ashbed', at:CAMP_RING.c, flat:1 },
+  { s:'ash', draw:'rakedbed', at:CAMP_RING.c, flat:1, fade:1 },
+  ...Array.from({ length: 13 }, (_, i) => i / 13 * 6.283 + 0.3).map((t, i) => ({ t, i })).filter(({ t }) => Math.abs(t - 0.55) > 0.35).flatMap(({ t, i }) => {
+    const r = CAMP_RING.r + 0.02 * Math.sin(i * 2.3), at = [CAMP_RING.c[0] + Math.cos(t) * r, CAMP_RING.c[1] + Math.sin(t) * r], h = 80 + 12 * ((i * 7) % 3), flip = i % 2, n = 1 + (i % 3);   // Bryce: big enough for gnome scale
+    return [{ s:'scrub', go:1, pic:'kit-stumps-rocks-03', soot:1, ring:n, at, h, flip }, { s:'scrub', pic:'kit-stumps-rocks-03', ring:n, at, h, flip }]; }),
+  ...[[0.66, 0.16], [0.70, 0.40], [0.56, 0.70], [0.24, 0.72], [0.08, 0.50], [0.10, 0.16]].map((at, i) => ({ s:'ground', pic:'kit-patch-07', at, h:64, flat:1, fade:1, flip: i % 2 })),
+  ...[[0.30, 0.30], [0.44, 0.34], [0.34, 0.46], [0.24, 0.40], [0.42, 0.46], [0.36, 0.24]].map((at, i) => ({ s:'wattle', draw:'dots', at, flat:1, n:i, gone:'sprout1' })),
+  ...[[0.30, 0.30], [0.44, 0.34], [0.34, 0.46], [0.24, 0.40], [0.42, 0.46]].map((at, i) => ({ ev: i % 2 ? 'sprout2' : 'sprout1', draw:'campsprout', at, n:i })),
+  ...[[0.30, 0.32], [0.45, 0.38], [0.36, 0.48], [0.25, 0.42], [0.37, 0.24]].map((at, i) => ({ ev: i % 2 ? 'thicket2' : 'thicket1', draw:'campbush', at, n:i })),
+  ...[[0.36, 0.38], [0.28, 0.36], [0.42, 0.42]].map((at, i) => ({ ev:'thicket2', pic: i ? 'kit-patch-08' : 'kit-patch-04', at, h:70, flat:1, over:1 })),
+  ...[[0.68, 0.18], [0.72, 0.42], [0.22, 0.74], [0.08, 0.48], [0.12, 0.14]].map((at, i) => ({ s:'tussock', draw:'grass', at, n:i })),
+  ...[[0.58, 0.68], [0.04, 0.30], [0.46, 0.90]].map((at, i) => ({ ev:'tussock2', draw:'grass', at, n:i + 5 })),
+  { s:'sapling', draw:'tree', tree:'gum', at:[0.86, 0.14], grow:['knee', 'tall'] },
+  { ev:'lizard', pic:'vis-bluetongue', at:[CAMP_RING.c[0] + Math.cos(1.25) * CAMP_RING.r, CAMP_RING.c[1] + Math.sin(1.25) * CAMP_RING.r], h:15, off:[0, -46], day:[9, 17] },
+];
 // which job a piece belongs to, as a step index, and which "later" an ev name is (filled in once)
 const HEAL_IDX = {};
 for (const [kind, K] of Object.entries(C.heal.kinds)) { const st = {}, ev = {}; K.steps.forEach((s, i) => { st[s.id] = i; (s.later || []).forEach((l, j) => { ev[l.ev] = [i, j]; }); }); HEAL_IDX[kind] = { st, ev }; }
@@ -4133,6 +4156,17 @@ function wetMarks() {   // the forked-earth picture, darkened as if soaked (made
   if (WETM) return WETM; const im = healPic('kit-marks-05'); if (!im) return null;
   const c = Object.assign(document.createElement('canvas'), { width: im.width, height: im.height }), x = c.getContext('2d'); x.drawImage(im, 0, 0);
   x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(52,34,20,0.42)'; x.fillRect(0, 0, c.width, c.height); return (WETM = c);
+}
+const SOOT = {};
+function ringStone(q) {   // v109: a ring stone of the loggers' camp: its painting (art day 24) once it lands, else the kit boulder; sooty until scrubbed
+  const k = 'camp-stone-' + q.ring, own = art(k);
+  if (!q.soot) return own || healPic(q.pic);
+  return art('camp-stone-soot-' + q.ring) || (own ? sootPic(k, own) : sootPic(q.pic));
+}
+function sootPic(name, src) {   // v109: a painting blackened as if by an old fire (the loggers' ring stones before they are scrubbed)
+  if (SOOT[name]) return SOOT[name]; const im = src || healPic(name); if (!im || !im.width) return null;
+  const c = Object.assign(document.createElement('canvas'), { width: im.width, height: im.height }), x = c.getContext('2d'); x.drawImage(im, 0, 0);
+  x.globalCompositeOperation = 'source-atop'; const g = x.createLinearGradient(0, 0, 0, c.height); g.addColorStop(0, 'rgba(40,32,28,0.45)'); g.addColorStop(1, 'rgba(24,18,16,0.72)'); x.fillStyle = g; x.fillRect(0, 0, c.width, c.height); return (SOOT[name] = c);
 }
 function healPic(name) { if (IM[name] && IM[name].width) return IM[name]; const a = art(name); if (a) return a; if (!name.startsWith('kit-')) return null;
   if (!HP[name]) { const im = new Image(); im.src = `sprites/kit/${name.slice(4)}.webp`; HP[name] = im; } return HP[name].complete && HP[name].width ? HP[name] : null; }
@@ -4188,6 +4222,7 @@ function seedBallRing(x, y, al) {   // round thirteen note 18: little dark seed 
     ctx.strokeStyle = '#6f8f3e'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(px, py - 3); ctx.lineTo(px - 1.5, py - 9); ctx.moveTo(px + 0.5, py - 3); ctx.lineTo(px + 2, py - 8); ctx.stroke(); }
   ctx.restore();
 }
+function campBed(k, x, y) { const im = art(k); if (!im) return false; const w = 450, h = w * im.height / im.width; ctx.drawImage(im, x - w / 2, y - h / 2, w, h); return true; }   // v109: the camp's ash / raked bed paintings, centred on the ring
 const HEAL_DRAW = {
   // v99 (art day 21): the middle of the garden-to-be. Five paintings on one footprint, cross-faded as the work goes.
   gardenmid(x, y, a, q, now) {
@@ -4293,6 +4328,22 @@ const HEAL_DRAW = {
   step(x, y, a, q) { const r = (q.big ? 17 : 9) + rnd((q.n || 0) + 300) * 2.5; flatStone(x, y, r, q.n || 0); if (q.big) flatStone(x + r * 1.3, y + r * 0.35, r * 0.7, (q.n || 0) + 40); },
   birdbox(x, y) { shadow(x, y, 5, 2); post(x, y, 46, 4, '#8a6a48'); ctx.save(); ctx.fillStyle = '#8a6a48'; ctx.strokeStyle = INK; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.rect(x - 8, y - 62, 16, 16); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#5d7a33'; ctx.beginPath(); ctx.moveTo(x - 10, y - 61); ctx.lineTo(x, y - 69); ctx.lineTo(x + 10, y - 61); ctx.closePath(); ctx.fill(); ctx.stroke(); blob(x, y - 55, 2.6, 2.6, '#2a1d14'); ctx.restore(); },
+  ashbed(x, y, a, q) {   // v109 stand-in: the loggers' old fire, a wide grey bed of ash with charcoal and a few burnt ends (camp-ash takes over)
+    if (campBed('camp-ash', x, y)) return; const k = q.k, c = q.local, ring = (r) => Array.from({ length: 40 }, (_, i) => { const t = i / 40 * 6.283, rr = r * (1 + 0.06 * Math.sin(i * 1.7)); return toWorld(...glob(k, c[0] + Math.cos(t) * rr, c[1] + Math.sin(t) * rr)); });
+    const poly = (pts, fill) => { ctx.beginPath(); pts.forEach(([px, py], i) => i ? ctx.lineTo(px, py) : ctx.moveTo(px, py)); ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); };
+    const at = (t, r) => toWorld(...glob(k, c[0] + Math.cos(t) * r, c[1] + Math.sin(t) * r));
+    ctx.save(); ctx.filter = 'blur(6px)'; poly(ring(0.33), 'rgba(90,72,58,0.3)'); ctx.filter = 'blur(3px)'; poly(ring(0.24), 'rgba(58,50,46,0.85)'); poly(ring(0.17), 'rgba(110,104,98,0.75)'); poly(ring(0.08), 'rgba(160,154,146,0.6)'); ctx.filter = 'none';
+    for (let i = 0; i < 60; i++) { const [px, py] = at(rnd(i + 500) * 6.283, Math.sqrt(rnd(i + 600)) * 0.21); ctx.fillStyle = i % 3 ? 'rgba(30,24,22,0.8)' : 'rgba(200,196,188,0.6)'; ctx.beginPath(); ctx.ellipse(px, py, 2 + rnd(i) * 5, 1 + rnd(i + 9) * 2, rnd(i + 3), 0, 7); ctx.fill(); }
+    ctx.lineCap = 'round'; for (let i = 0; i < 9; i++) { const [px, py] = at(rnd(i + 700) * 6.283, 0.04 + rnd(i + 710) * 0.13), L = 14 + rnd(i + 720) * 22, an = rnd(i + 730) * 3;
+      ctx.strokeStyle = '#1e1816'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(px - Math.cos(an) * L, py - Math.sin(an) * L * 0.4); ctx.lineTo(px + Math.cos(an) * L, py + Math.sin(an) * L * 0.4); ctx.stroke(); ctx.strokeStyle = '#3a2e28'; ctx.lineWidth = 2.5; ctx.stroke(); }
+    ctx.restore(); },
+  rakedbed(x, y, a, q) {   // v109 stand-in: the ash raked into the earth, dark and crumbly, with flecks of charcoal (camp-raked takes over)
+    if (campBed('camp-raked', x, y)) return; const k = q.k, c = q.local, at = (t, r) => toWorld(...glob(k, c[0] + Math.cos(t) * r, c[1] + Math.sin(t) * r));
+    ctx.save(); ctx.filter = 'blur(4px)'; ctx.beginPath(); for (let i = 0; i < 40; i++) { const t = i / 40 * 6.283, [px, py] = at(t, 0.23 * (1 + 0.06 * Math.sin(i * 1.7))); if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); } ctx.closePath(); ctx.fillStyle = 'rgba(70,52,38,0.8)'; ctx.fill(); ctx.filter = 'none';
+    for (let i = 0; i < 70; i++) { const [px, py] = at(rnd(i + 800) * 6.283, Math.sqrt(rnd(i + 900)) * 0.21); ctx.fillStyle = i % 4 ? 'rgba(96,72,52,0.9)' : 'rgba(30,24,22,0.7)'; ctx.beginPath(); ctx.ellipse(px, py, 3 + rnd(i) * 4, 1.5 + rnd(i + 9) * 2, 0, 0, 7); ctx.fill(); }
+    ctx.restore(); },
+  campsprout(x, y, a, q) { const im = art('camp-sprouts'); if (!im) return HEAL_DRAW.sprout(x, y, a, q); const h = 30, w = h * im.width / im.height; ctx.drawImage(im, x - w / 2, y - h * 0.9, w, h); },
+  campbush(x, y, a, q) { const im = art('camp-wattle'); if (!im) return HEAL_DRAW.wattlebush(x, y, a, q); const h = healEvAt(q.k, 'thicket2') ? 80 : 60, w = h * im.width / im.height; shadow(x, y, w * 0.28, 5); ctx.drawImage(im, x - w / 2, y - h * 0.94, w, h); },
   wattlebush(x, y, a, q) { const im = healPic('kit-wood-08'), h = healEvAt(q.k, 'hedge2') ? 62 : 42; if (!im) return; const w = h * im.width / im.height; shadow(x, y, w * 0.25, 4); ctx.drawImage(im, x - w / 2, y - h * 0.94, w, h); },
 };
 // the paintings (art day 15) that take over from HEAL_DRAW: [picture, height in world px, an extra piece drawn in front]
@@ -4374,7 +4425,7 @@ function healItems(items, now) {   // the pieces on every healing tile, depth-so
       if (q.perch) { x += 22; y -= 40; } if (q.onbox) y -= 69; if (q.off) { x += q.off[0]; y += q.off[1]; }
       ctx.save(); ctx.globalAlpha *= Math.min(1, q.a);
       if (q.draw) { if (!healPainted(x, y, q)) HEAL_DRAW[q.draw](x, y, q.a, q, now); }
-      else { const im = healPic(q.pic); if (im) { const w = im.width * q.h / im.height; if (!q.flat && !q.perch && !q.onbox) shadow(x, y, w * 0.32, w * 0.09); if (q.flat && /patch|marks/.test(q.pic)) ctx.globalAlpha *= 0.8;
+      else { const im = q.ring ? ringStone(q) : healPic(q.pic); if (im) { const w = im.width * q.h / im.height; if (!q.flat && !q.perch && !q.onbox) shadow(x, y, w * 0.32, w * 0.09); if (q.flat && /patch|marks/.test(q.pic)) ctx.globalAlpha *= 0.8;
         if (q.flip) { ctx.translate(x, 0); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, q.flat ? y - q.h / 2 : y - q.h * 0.92, w, q.h); } else ctx.drawImage(im, x - w / 2, q.flat ? y - q.h / 2 : y - q.h * 0.92, w, q.h); } }
       ctx.restore(); } });
   }
@@ -4399,7 +4450,7 @@ function shelfItem(items, now) {
     ctx.restore(); } });
 }
 // how each job moves the gnome about (default: from piece to piece of that job, working at each one)
-const HEAL_WORK = { 'garden:rubbish2': 'heapbarrow', 'garden:barrow': 'barrowmake', 'garden:rubbish': 'heap', 'garden:spoil': 'barrow', 'garden:reeds': 'pondrim', 'meadow:water': 'spring', 'creature:mulch': 'edge', 'nursery:gather': 'gather', 'nursery:plant1': 'shelf', 'nursery:plant2': 'shelf', 'creature:ferns': 'creek', 'nursery:mulch': 'edge' };
+const HEAL_WORK = { 'camp:ash': 'ring', 'camp:wattle': 'ring', 'garden:rubbish2': 'heapbarrow', 'garden:barrow': 'barrowmake', 'garden:rubbish': 'heap', 'garden:spoil': 'barrow', 'garden:reeds': 'pondrim', 'meadow:water': 'spring', 'creature:mulch': 'edge', 'nursery:gather': 'gather', 'nursery:plant1': 'shelf', 'nursery:plant2': 'shelf', 'creature:ferns': 'creek', 'nursery:mulch': 'edge' };
 const SEED_SPOTS = [[0.92, 0.50], [0.08, 0.30], [0.62, 0.92], [0.94, 0.80], [0.40, 0.08]];   // round the yard's edges for gumnuts, wattle pods and acorns
 function healWork(id, p, g) {
   const d = G.taskDef(id); if (!d) return null;
@@ -4407,6 +4458,8 @@ function healWork(id, p, g) {
   const at = i => { const q = ps[Math.max(0, Math.min(n - 1, i))]; return q ? q.G : glob(k, 0.5, 0.5); };
   const [i, sg] = segOf(p, Math.max(1, n)), near = ([x, y]) => [x + 0.05, y - 0.03];
   if (w === 'spring') return workLoop(g, id, c => [[SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 3, SPRING.at], [...near(at(i)), 'water', 'can', 5, at(i)]]);
+  if (w === 'ring') { const c0 = CAMP_RING.c, mid = glob(k, ...c0), pt = j => { const a = (j * 2.1 + (g && g.who === 'him' ? 3 : 0)) % 6.283; return glob(k, c0[0] + Math.cos(a) * 0.13, c0[1] + Math.sin(a) * 0.13); };   // v109: round and round inside the old fire ring
+    return workLoop(g, id, c => [[...pt(c * 2), act, false, 4, mid], [...pt(c * 2 + 1), act, false, 4, mid]]); }
   if (w === 'edge') { const e = glob(k, ...(healSwap(k) ? [0.95, 0.5] : [0.5, 0.95])); return workLoop(g, id, () => [[e[0], e[1], 'gather', false, 3, e], [...near(at(i)), 'pickup', true, 4, at(i)]]); }
   if (w === 'creek') { const e = G.s.tiles['0,-1'] ? glob('0,-1', 0.30, 0.62) : [SPRING.at[0], SPRING.at[1] + 0.06]; return workLoop(g, id, () => [[e[0], e[1], 'gather', false, 4, e], [...near(at(i)), 'pickup', false, 4, at(i)]]); }
   if (w === 'pondrim') {   // round thirteen note 20: reeds go in from the bank, all the way round, never standing in the water
@@ -6111,7 +6164,8 @@ const FIND_PLACES = {   // [tile, gx, gy] near the place, or null while it isn't
   oak: j => taskProg('sapling') >= 1 && ['0,0', 0.25 + j(0.04), 0.86 + j(0.03)],
   water: j => { const ks = Object.keys(G.s.tiles).filter(k => G.s.tiles[k].kind === 'creek' && healed(k)); if (ks.length && Math.random() < 0.6) { const k = ks[(Math.random() * ks.length) | 0]; return [k, ...healLocal(k, { c: [0.2 + Math.random() * 0.6, Math.random() < 0.5 ? -1.4 : 1.4] })]; }
     return taskProg('spring') >= 1 && ['0,0', SPRING.at[0] + 0.02 + j(0.05), SPRING.at[1] + 0.11 + j(0.02)]; },
-  track: j => { const ks = Object.keys(G.s.tiles).filter(k => G.s.tiles[k].kind === 'verge' && healed(k)); if (!ks.length) return null; const k = ks[(Math.random() * ks.length) | 0]; return [k, ...healLocal(k, { v: [Math.random() < 0.5 ? -1.5 : 1.5, 0.15 + Math.random() * 0.7] })]; },
+  track: j => { const ks = Object.keys(G.s.tiles).filter(k => /^(verge|camp)$/.test(G.s.tiles[k].kind) && healed(k)); if (!ks.length) return null; const k = ks[(Math.random() * ks.length) | 0];   // v109: round the loggers' old camp, or along an old garden's track
+    if (G.s.tiles[k].kind === 'camp') return [k, ...glob(k, 0.62 + Math.random() * 0.3, 0.58 + Math.random() * 0.36)]; return [k, ...healLocal(k, { v: [Math.random() < 0.5 ? -1.5 : 1.5, 0.15 + Math.random() * 0.7] })]; },
 };
 function findSpot(place) { const f = FIND_PLACES[place]; if (!f) return null; for (let n = 0; n < 8; n++) { const r = f(d => (Math.random() - 0.5) * 2 * d); if (!r) return null; if (!G.spotTaken(...r)) return r; } return null; }
 function onBed(tile, gx, gy) {   // inside the dug seed bed (or its fence ring)? Bryce: nothing should sit in the tilled oval

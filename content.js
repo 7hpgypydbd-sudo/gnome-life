@@ -292,18 +292,19 @@ window.CONTENT = {
     { id:'pebblepath', retired:true, make:'garden', stage:'wood', at:[0.64, 0.59], name:'A painted pebble path to the creature corner', short:'painting pebbles', who:'either', act:'craft', cost:{ stone:5, berry:4, feather:1 }, mins:15, green:0,
       blurb:'Every pebble painted with a different animal. One is a snail.' },
 
-    // --- the old track (tile 1,0): its own little makes as it greens (a track never grows to woodland, so two stages) (docs/DECORATIONS.md, v70). Mostly planks, which little else uses.
-    { id:'signpost', make:'track', stage:'green', at:[0.30, 0.30], name:'A signpost at the bend', short:'putting up the signpost', who:'either', act:'build', cost:{ plank:2, twig:2 }, mins:15, green:0,
-      blurb:'Two arms. One says Home. One says Everywhere Else.' },
-    { id:'milestone', make:'track', stage:'green', at:[0.72, 0.30], name:'A milestone', short:'setting the milestone', who:'either', act:'dig', cost:{ stone:3, berry:1 }, mins:12, green:0,
-      blurb:'"The Gnomestead, this way." Painted in berry ink, so it will need doing again.' },
-    { id:'trackbench', make:'track', stage:'meadow', at:[0.24, 0.62], name:'A bench at the bend', short:'building the bench', who:'either', act:'build', cost:{ plank:3, moss:2 }, mins:15, green:0,
-      blurb:'For a rest on the way up the hill. Nobody has to stop. Everybody does.' },
-    { id:'letterbox', make:'track', stage:'meadow', at:[0.70, 0.62], name:'A letterbox on a post', short:'putting up the letterbox', who:'either', act:'build', cost:{ plank:2, feather:2 }, mins:12, green:0,
+    // --- the loggers' old camp (tile 1,0; the old track until v109): its own little makes as it greens (two stages) (docs/DECORATIONS.md, v70). Mostly planks, which little else uses.
+    // v109: they stand round the travellers' camp, clear of the big fire ring (HEAL_LOOK.camp); the milestone is a welcome stone.
+    { id:'signpost', make:'track', stage:'green', at:[0.08, 0.80], name:'A signpost by the camp', short:'putting up the signpost', who:'either', act:'build', cost:{ plank:2, twig:2 }, mins:15, green:0,
+      blurb:'Two arms. One points up to the stump house and says Home. One says Everywhere Else.' },
+    { id:'milestone', make:'track', stage:'green', at:[0.93, 0.44], name:'A welcome stone', short:'setting the welcome stone', who:'either', act:'dig', cost:{ stone:3, berry:1 }, mins:12, green:0,
+      blurb:'"Welcome to the Gnomestead." Painted in berry ink, so it will need doing again.' },
+    { id:'trackbench', make:'track', stage:'meadow', at:[0.54, 0.76], name:'A bench by the old fire ring', short:'building the bench', who:'either', act:'build', cost:{ plank:3, moss:2 }, mins:15, green:0,
+      blurb:'For a rest after the long climb up the hill. Nobody has to stop. Everybody does.' },
+    { id:'letterbox', make:'track', stage:'meadow', at:[0.68, 0.92], name:'A letterbox on a post', short:'putting up the letterbox', who:'either', act:'build', cost:{ plank:2, feather:2 }, mins:12, green:0,
       blurb:'For notes between neighbours. Hazel checks it twice a day.' },
-    { id:'noticeboard', make:'track', stage:'meadow', at:[0.18, 0.44], name:'A village notice board', short:'putting up the notice board', who:'either', act:'build', cost:{ plank:3, feather:1, berry:1 }, mins:15, green:0,
+    { id:'noticeboard', make:'track', stage:'meadow', at:[0.30, 0.86], name:'A village notice board', short:'putting up the notice board', who:'either', act:'build', cost:{ plank:3, feather:1, berry:1 }, mins:15, green:0,
       blurb:'Lost: one pencil (Tobias). Found: one pencil (behind Tobias\'s ear).' },
-    { id:'trough', make:'track', stage:'meadow', at:[0.80, 0.80], name:'A drinking trough for travellers', short:'filling the trough', who:'either', act:'dig', cost:{ stone:4, water:4 }, mins:15, green:0,
+    { id:'trough', make:'track', stage:'meadow', at:[0.92, 0.84], name:'A drinking trough for travellers', short:'filling the trough', who:'either', act:'dig', cost:{ stone:4, water:4 }, mins:15, green:0,
       blurb:'For visitors with four legs, or six.' },
 
     // --- dressing the house for the season (v70): once the house is finished, one each season, every year. Hazel hangs a garland over the
@@ -552,6 +553,31 @@ window.CONTENT = {
             blurb:'Three little wattles in a loose line along one side of the lane. In spring they will be pure gold.',
             later:[ { after:1440, green:2, ev:'hedge2', note:'The wattle hedge by the old track has filled out.' } ] },
         ] },
+      // v109 (Bryce, thread "Rethink the old track tile": "the track is just a line, there is no reason to pave it"): the patch beside the
+      // house is the loggers' old camp instead. Their fire ring is people-sized, so to gnomes it fills most of the patch and every stone is a
+      // boulder. Travellers still pitch their tent beside it (the flat spot). The old track's other patches stay as they were: it leads up the hill to the camp.
+      // (Old gardens keep their 'verge' tiles as they were.)
+      camp: { name:'The loggers\' old camp', patch:'the loggers\' old camp', spell:null,
+        card:{ who:'him', text:'This is where the loggers camped. Look at the size of their fire ring! Every stone is bigger than me. Nothing has grown in that ash since.' },
+        steps:[
+          { id:'ash', name:'Rake the old ash into the ground', short:'raking in the ash', cost:{ twig:1 }, mins:40, act:'dig',
+            blurb:'Years of grey ash and charcoal. Raked into the earth, it stops being a scar and starts being good soil.' },
+          { id:'ground', name:'Break up the trampled ground', short:'breaking up the ground', cost:{ twig:1, stone:1 }, mins:40, act:'dig',
+            blurb:'The loggers\' boots packed the earth round the ring as hard as a floor. A fork and a lot of leaning, and it can breathe again.' },
+          { id:'wattle', name:'Sow wattle seed in the old fire ring', short:'sowing wattle seed', cost:{ seed:2, water:1 }, mins:30, act:'toss',
+            blurb:'Wattle seed loves ground that has had a fire through it. The old fire can do one last good thing.',
+            later:[ { after:120, green:1, ev:'sprout1', note:'Wattle seedlings have come up in the old fire ring.' }, { after:240, green:1, ev:'sprout2' }, { after:360, green:1, ev:'thicket1' },
+                    { after:480, green:1, ev:'thicket2', note:'The old fire ring is full of young wattle. In spring it will be pure gold.' } ] },
+          { id:'tussock', name:'Plant tussock grass round the ring', short:'planting tussocks', cost:{ seed:1, water:1 }, mins:30, act:'dig', green:2,
+            blurb:'Tufts of tussock grass in the broken-up ground, to hold it together when the rain comes.',
+            later:[ { after:240, green:2, ev:'tussock2', note:'Tussock grass all round the old fire ring now.' } ] },
+          { id:'sapling', name:'Plant a gum by the travellers\' camp', short:'planting a sapling', cost:{ acorn:1, water:1 }, mins:40, act:'dig', green:2, tree:'gum',
+            blurb:'A young gum where the travellers pitch their tents. One day it will give them shade.',
+            later:[ { after:720, green:2, ev:'knee', note:'The gum by the old camp is knee-high.' }, { after:2880, green:2, ev:'tall', note:'The gum by the old camp is taller than a gnome.' } ] },
+          { id:'scrub', name:'Scrub the soot off the ring stones', short:'scrubbing the stones', cost:{ water:2 }, mins:30, act:'build',
+            blurb:'Black with old soot, every one. Scrubbed clean, they warm up beautifully in the sun.',
+            later:[ { after:300, green:2, ev:'lizard', note:'A bluetongue lizard has taken the sunniest stone of the old fire ring.' } ] },
+        ] },
     },
     
     // the land card for a tile reaching a new stage ({patch} = that kind's patch name)
@@ -736,7 +762,7 @@ window.CONTENT = {
     waveGapDays: 1,           // after waving a traveller on, someone else comes after about this long
     favourEvery: 360,         // minutes between small favours (only one waiting at a time)
     questAfterDays: 1,        // a neighbour's story begins about a day after their trade building is finished
-    // where homes go, nearest first: plain tiles (not the stream row or the old track). A home needs its patch grown to young meadow.
+    // where homes go, nearest first: plain tiles (not the stream row or the column of the old track and the loggers' camp). A home needs its patch grown to young meadow.
     lots: ['-1,0', '-1,1', '2,0', '-2,0', '2,1', '-2,1', '0,2', '-1,2', '0,-2', '-1,-2', '2,-2', '-2,-2', '2,2', '-2,2'],
     order: ['mabel', 'tobias', 'fernsby', 'pebbleworth', 'clem', 'barnaby', 'nettle', 'juniper'],   // who comes next (waved-on travellers go to the back)
   },
@@ -1287,9 +1313,9 @@ window.CONTENT = {
       green:{ who:'her', t:`Now the yard's greening, I'd love some flower pots by the door. And a scarecrow, to keep the rabbit company.` },
       meadow:{ who:'him', t:`Grass round the house! A swing for the oak, a sundial, herbs by the wash tub. Oh, the things we could make now.` },
       wood:{ who:'her', t:`It's a proper wood now. A house in a wood should have a name, don't you think? And a hammock. Definitely a hammock.` } } },
-    track: { name:'The old track', tile:'1,0', lines:{
-      green:{ who:'her', t:`The old track's greening. A signpost, so the travellers know they've arrived. And a milestone, so they know how far.` },
-      meadow:{ who:'him', t:`Grass on the old track! A bench at the bend for anyone puffing up the hill, a letterbox and a notice board for the neighbours, and a trough for anyone thirsty.` } } },
+    track: { name:'The loggers\' old camp', tile:'1,0', lines:{   // v109: the old track patch is the loggers' old camp; its makes stay, round the travellers' camp
+      green:{ who:'her', t:`The old camp's greening. A signpost pointing up to our door, so travellers know where we are. And a welcome stone.` },
+      meadow:{ who:'him', t:`Grass round the old fire ring! A bench for tired travellers, a letterbox and a notice board for the neighbours, and a trough for anyone thirsty.` } } },
     garden: { name:'The garden', tile:'0,1', lines:{
       green:{ who:'him', t:`A garden of our own. Stepping stones first, so we don't tread on anything, then somewhere to sit and think.` },
       meadow:{ who:'her', t:`The garden's filling out. It wants flowers along the path, and an arch to walk under on the way in.` },
@@ -1505,7 +1531,7 @@ window.CONTENT = {
   // little finds: tiny painted secrets tucked into the healed land now and then (sprites/kit/secrets-*). Tap one to press it into the journal.
   // size = how wide it is drawn on the land (a gnome is about 120). Nothing here is part of the story.
   // place (round six, Bryce: where it makes sense): grass (any healed ground), line (under the washing line), door, fire, bed (by the seed bed),
-  // water (by the spring or a healed creek), track (along the healed old track), oak (under the little oak). One only turns up once its place exists.
+  // water (by the spring or a healed creek), track (round the healed loggers' camp, or an old garden's healed old track), oak (under the little oak). One only turns up once its place exists.
   secretEvery: [180, 360],   // minutes between new ones (random in this range); at most two are out at once
   secrets: [
     { id:'clover',   pic:'nature-01',    size:20, place:'grass', name:'a four-leaf clover', note:'Hazel says it\'s luck. Wendel says it\'s just a clover that tried harder. They pressed it anyway.' },
