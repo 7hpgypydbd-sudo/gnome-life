@@ -351,7 +351,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v109</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v110</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -372,7 +372,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 109;
+const BUILD = 110;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -380,11 +380,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=109"></script>
-<script src="playlog.js?v=109"></script>
-<script src="concerns.js?v=109"></script>
-<script src="game.js?v=109"></script>
-<script src="walk.js?v=109"></script>
+<script src="content.js?v=110"></script>
+<script src="playlog.js?v=110"></script>
+<script src="concerns.js?v=110"></script>
+<script src="game.js?v=110"></script>
+<script src="walk.js?v=110"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -722,9 +722,9 @@ Object.assign(ART_SLOTS, { 'pond': { w: 146 } });
 for (const k of ['yard-workcorner', 'heap-bare']) ART_SLOTS[k] = {};
 // v109 (art day 24): the loggers' old camp. Ash bed and raked bed share one outline (drawn 450 world px wide); ring stones drawn 80-104 px tall
 // (clean ones, sooted in code unless camp-stone-soot-N is painted); a wattle seedling clump and a gold wattle bush.
-for (const k of ['camp-ash', 'camp-raked', 'camp-stone-1', 'camp-stone-2', 'camp-stone-3', 'camp-sprouts', 'camp-wattle']) ART_SLOTS[k] = {};   // round eleven (art day 22): the finished little work corner; the rubbish heap's bare mound once the junk is off
+for (const k of ['camp-ash', 'camp-raked', 'camp-sprouts', 'camp-wattle', 'camp-wattle-young', ...[1, 2, 3, 4, 5, 6].flatMap(n => ['camp-stone-' + n, 'camp-stone-soot-' + n])]) ART_SLOTS[k] = {};   // v110: painted on art day 24   // round eleven (art day 22): the finished little work corner; the rubbish heap's bare mound once the junk is off
 for (const k of ['garden-heap', 'garden-heap-half', 'garden-hollow', 'garden-hollow-rain', 'garden-pond-large', 'garden-pond-new', 'seedbed-rect', 'wildflower-patch-1', 'wildflower-patch-2', 'wildflower-patch-3', 'yard-leanto', 'yard-leanto-frame', 'spring-paved', 'room-stump-hollowing']) ART_SLOTS[k] = {};   // art day 21 (v99)
-const ART_RAW = /^(garden-|heap-|seedbed-rect|wildflower-patch|yard-leanto|yard-workcorner|spring-paved)/;   // drawn at their own size and spot, never trimmed or settled
+const ART_RAW = /^(camp-ash|camp-raked|garden-|heap-|seedbed-rect|wildflower-patch|yard-leanto|yard-workcorner|spring-paved)/;   // drawn at their own size and spot, never trimmed or settled
 for (const k of ['spirit-float', 'spirit-point', 'spirit-settle', 'toad-legs', 'toad-house']) ART_SLOTS[k] = {};   // the Wood spirit's painted poses (art day 14)
 for (const p of C.story.pages) ART_SLOTS['page-' + p.id.replace('.', '-')] = {};
 // art day 16: the neighbours' wishes, painted sizes in world px (the stand-ins were drawn 1.3x)
@@ -4135,7 +4135,7 @@ HEAL_LOOK.camp = [
   { s:'ash', go:1, draw:'ashbed', at:CAMP_RING.c, flat:1 },
   { s:'ash', draw:'rakedbed', at:CAMP_RING.c, flat:1, fade:1 },
   ...Array.from({ length: 13 }, (_, i) => i / 13 * 6.283 + 0.3).map((t, i) => ({ t, i })).filter(({ t }) => Math.abs(t - 0.55) > 0.35).flatMap(({ t, i }) => {
-    const r = CAMP_RING.r + 0.02 * Math.sin(i * 2.3), at = [CAMP_RING.c[0] + Math.cos(t) * r, CAMP_RING.c[1] + Math.sin(t) * r], h = 80 + 12 * ((i * 7) % 3), flip = i % 2, n = 1 + (i % 3);   // Bryce: big enough for gnome scale
+    const r = CAMP_RING.r + 0.02 * Math.sin(i * 2.3), at = [CAMP_RING.c[0] + Math.cos(t) * r, CAMP_RING.c[1] + Math.sin(t) * r], h = 80 + 12 * ((i * 7) % 3), flip = i % 2, n = 1 + (i % 6);   // Bryce: big enough for gnome scale
     return [{ s:'scrub', go:1, pic:'kit-stumps-rocks-03', soot:1, ring:n, at, h, flip }, { s:'scrub', pic:'kit-stumps-rocks-03', ring:n, at, h, flip }]; }),
   ...[[0.66, 0.16], [0.70, 0.40], [0.56, 0.70], [0.24, 0.72], [0.08, 0.50], [0.10, 0.16]].map((at, i) => ({ s:'ground', pic:'kit-patch-07', at, h:64, flat:1, fade:1, flip: i % 2 })),
   ...[[0.30, 0.30], [0.44, 0.34], [0.34, 0.46], [0.24, 0.40], [0.42, 0.46], [0.36, 0.24]].map((at, i) => ({ s:'wattle', draw:'dots', at, flat:1, n:i, gone:'sprout1' })),
@@ -4343,7 +4343,7 @@ const HEAL_DRAW = {
     for (let i = 0; i < 70; i++) { const [px, py] = at(rnd(i + 800) * 6.283, Math.sqrt(rnd(i + 900)) * 0.21); ctx.fillStyle = i % 4 ? 'rgba(96,72,52,0.9)' : 'rgba(30,24,22,0.7)'; ctx.beginPath(); ctx.ellipse(px, py, 3 + rnd(i) * 4, 1.5 + rnd(i + 9) * 2, 0, 0, 7); ctx.fill(); }
     ctx.restore(); },
   campsprout(x, y, a, q) { const im = art('camp-sprouts'); if (!im) return HEAL_DRAW.sprout(x, y, a, q); const h = 30, w = h * im.width / im.height; ctx.drawImage(im, x - w / 2, y - h * 0.9, w, h); },
-  campbush(x, y, a, q) { const im = art('camp-wattle'); if (!im) return HEAL_DRAW.wattlebush(x, y, a, q); const h = healEvAt(q.k, 'thicket2') ? 80 : 60, w = h * im.width / im.height; shadow(x, y, w * 0.28, 5); ctx.drawImage(im, x - w / 2, y - h * 0.94, w, h); },
+  campbush(x, y, a, q) { const im = art('camp-wattle'); if (!im) return HEAL_DRAW.wattlebush(x, y, a, q); const full = healEvAt(q.k, 'thicket2'), pic = !full && art('camp-wattle-young') || im, h = full ? 80 : 60, w = h * pic.width / pic.height; shadow(x, y, w * 0.28, 5); ctx.drawImage(pic, x - w / 2, y - h * 0.94, w, h); },
   wattlebush(x, y, a, q) { const im = healPic('kit-wood-08'), h = healEvAt(q.k, 'hedge2') ? 62 : 42; if (!im) return; const w = h * im.width / im.height; shadow(x, y, w * 0.25, 4); ctx.drawImage(im, x - w / 2, y - h * 0.94, w, h); },
 };
 // the paintings (art day 15) that take over from HEAL_DRAW: [picture, height in world px, an extra piece drawn in front]
