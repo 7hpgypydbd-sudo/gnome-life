@@ -1,6 +1,6 @@
 # Gnome Life — plan
 
-A cosy storybook garden game, made for Bryce's iPhone first and played as a web page from a Safari Home Screen shortcut. It may be released to the public eventually (Bryce, 2026-11-16), but it stays never monetised. Charm and aliveness over complexity; it must run smoothly on a phone.
+A cosy storybook garden game, made for Bryce's iPhone first and played as a web page from a Safari Home Screen shortcut. It may be released to the public eventually (Bryce, 2026-11-16), and it may be sold (Bryce would probably ask for donations, but might sell it). Charm and aliveness over complexity; it must run smoothly on a phone.
 
 _Last updated: 2026-11-16 (v105 live, the round-thirteen build). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
 
@@ -78,7 +78,7 @@ Drawn in code on purpose: paper job flags, growing badge, glows, the Journal's c
 - Wendel (dreamer) and Hazel (practical, never sceptical or hen-pecking), newlyweds regrowing a logged Australian clearing into a cosy 5x5 village. The player is the heart of the wood, a bodiless forest spirit; the gnomes do every physical job. 2 to 5 minute visits; jobs take real time; no gnome work 22:30 to 06:00.
 - Art: "Secret World of the Gnomes" storybook paintings, never clay or toy. Parchment menus, nothing glows, contact shadows. Less text, more visual cues.
 - The land is the menu: paper flags where a job can start, tap for a job card; Jobs lists everything. Unopened land is pencil on paper. Only growing things bring green.
-- No fixed game length (Bryce, 2026-11-14). Pace is felt out through play, not planned to a number of days. Today's build happens to bring Mabel about day 15 and the festival about day 56; those are measurements, not targets. Never monetised.
+- No fixed game length (Bryce, 2026-11-14). Pace is felt out through play, not planned to a number of days. Today's build happens to bring Mabel about day 15 and the festival about day 56; those are measurements, not targets. Selling is allowed: donations likely, a sale possible (Bryce, 2026-11-16).
 
 ## 6. Where things live
 
