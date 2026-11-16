@@ -1,6 +1,6 @@
 # Gnome Life — plan
 
-A cosy storybook garden game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; it must run smoothly on a phone.
+A cosy storybook garden game, made for Bryce's iPhone first and played as a web page from a Safari Home Screen shortcut. It may be released to the public eventually (Bryce, 2026-11-16), but it stays never monetised. Charm and aliveness over complexity; it must run smoothly on a phone.
 
 _Last updated: 2026-11-16 (v105 live, the round-thirteen build). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
 
