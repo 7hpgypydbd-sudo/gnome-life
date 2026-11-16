@@ -373,7 +373,7 @@ window.CONTENT = {
           // up halfway ("far too much to carry by hand"); the fence comes out as a break; the wheelbarrow is made (its own flagged job,
           // no longer one of Hazel's little makes); then the two of them cart off the rest together with the barrow, and dig out the hollow.
           { id:'rubbish', name:'Start on the loggers\' rubbish', short:'carrying off rubbish', cost:{}, give:{ twig:1, stone:1 }, mins:10, act:'pickup',
-            blurb:'Rusty tins, an old crate, coils of wire, a cracked teacup. Whoever is free makes a start, carrying it off by the armful. Anything still good goes to Wendel\'s work corner for little makes.',
+            blurb:'Rusty tins, an old crate, coils of wire, a cracked teacup. Whoever is free makes a start, carrying it by the armful up to Wendel\'s work corner. He will make something of all of it, one day.',
             doneNote:'Half the junk is off the heap, and that was the easy half. "Far too much to carry by hand," said Hazel, rubbing her back. "We need a break. And a wheelbarrow."' },
           { id:'fence', name:'Pull out the old fence', short:'pulling out the fence', cost:{}, give:{ twig:2 }, mins:15, act:'gather',
             blurb:'A break from the heap. A fence round nothing, keeping nobody out. Post by post it comes up, and the good posts are stacked to fence a new bed one day.' },
@@ -381,10 +381,10 @@ window.CONTENT = {
             blurb:'Two handles, a box of split boards and one wobbly wheel. It squeaks, but it will carry more junk in one go than the two of them could in ten.',
             doneNote:'The wheelbarrow is made. One wheel squeaks; Wendel says it is singing. Now the rest of that heap can go.' },
           { id:'rubbish2', name:'Cart off the rest of the rubbish', short:'carting off rubbish', cost:{}, give:{ twig:1, stone:1 }, mins:15, act:'pickup', pair:true, barrow:true,
-            blurb:'With the barrow, and the two of them, the rest of the heap goes in loads. One fills, one wheels; the good bits still go to the work corner.',
+            blurb:'With the barrow, and the two of them, the rest of the heap goes in loads. One fills, one wheels it up to Wendel\'s work corner. Nothing is thrown away.',
             doneNote:'The loggers\' rubbish is all off the heap; only the bare mound is left. Hazel has her eye on the old crate for herbs.' },
           { id:'spoil', name:'Dig out the buried rubbish', short:'digging out the buried rubbish', cost:{}, mins:20, act:'dig', pair:true, barrow:true,
-            blurb:'That mound is not earth. The loggers buried half their rubbish under it, deep. Both of them dig, and the barrow takes it away load by load. The mound goes with it, leaving a hollow behind, and a hollow is a useful thing.',
+            blurb:'That mound is not earth. The loggers buried half their rubbish under it, deep. Both of them dig, and the barrow takes it up to the work corner load by load. The mound goes with it, leaving a hollow behind, and a hollow is a useful thing.',
             doneNote:'The buried rubbish is all dug out. Where the mound stood there is a deep, empty hollow now. Wendel and Hazel stood looking into it and scratched their heads.' },
           // v104 (round twelve notes 8, 15): no spell here any more. With the junk dug out, the ground breathes again by itself and the
           // grass creeps in slowly (auto: done the moment it is reached; kept in the chain so older gardens keep their places).

@@ -35,7 +35,7 @@ _Last updated: 2026-11-16 (v105, the round-thirteen build, waiting for Bryce's O
 ## 3. What's next (in order)
 
 0. **v105, the round-thirteen build (thread "Build the round thirteen notes"), waiting for Bryce's OK.** Previews in `/mnt/project-files/round-thirteen-v105/`. Holds round-thirteen notes 1 to 25 (tracker has each row). Bryce picked (2026-11-16):
-   - *Rubbish heap, new order (note 13):* one gnome starts by hand and gives up halfway ("far too much to carry by hand"), the fence is the break, then **Make a wheelbarrow** (a garden step with its own flag in the yard; the old yard make `barrow` is retired, `alsoDone` keeps one already made), then both cart off the rest with the barrow (`rubbish2`, pair), then dig out the buried rubbish. Pictures: heap, half (shown through the fence and barrow), bare mound, hollow. Gnomes on barrow work push the yard's own wheelbarrow (`carryWalk` `barrowE`/`barrowL`, code stand-in `drawBarrowStandIn` until art day 23's `barrowwalk` strips).
+   - *Rubbish heap, new order (note 13):* one gnome starts by hand and gives up halfway ("far too much to carry by hand"), the fence is the break, then **Make a wheelbarrow** (a garden step with its own flag in the yard; the old yard make `barrow` is retired, `alsoDone` keeps one already made), then both cart off the rest with the barrow (`rubbish2`, pair), then dig out the buried rubbish. Pictures: heap, half (shown through the fence and barrow), bare mound, hollow. Gnomes on barrow work push the yard's own wheelbarrow (`carryWalk` `barrowE`/`barrowL`; art day 23 strips `barrowwalk`, `barrowwalk-empty`; parked: `wheelbarrow-loaded`).
    - *Reeds and wildflowers (notes 15, 18, 19, 21):* Hazel's mother's seed tin is a whole collection (said on the seed bed card and page 1.5). Reed seed balls pressed in round the pond (`reeds`), then your Coax wakes them (`reedsup`, cast step; the pond's flags stand on the bank). Wildflowers go to three open spots away from the pond, seed from the tin (no cost).
    - *Magic page (notes 1, 5, 22): one jar of light.* No daily count; the wood tops the jar up each morning (`G.morningLight`, 2 + magic level, up to `C.lightJar` 10). Each spell shows its cost in drops and Ready or why not. Every spell shows on the land (`spellFx`: rain shower, wind gust, coax sparkles).
    - *Patch card (note 24):* two rows, Jobs (dots, "4 of 10" or "all done") and Green (the four leaves and the stage).
@@ -67,7 +67,7 @@ _Last updated: 2026-11-16 (v105, the round-thirteen build, waiting for Bryce's O
 
 ## 4. Stand-ins still in the game (2026-11-16, v105)
 
-Waiting on art day 23 (thread "Paint the wheelbarrow and new pond"): `him-barrowwalk`/`her-barrowwalk` (code stand-in: the yard's wheelbarrow drawn in front of a plain walk), `garden-pond-new` (code stand-in: `hollowFull()` draws water into the rain hollow picture). List in `docs/ART-DAY-23.md`.
+Art day 23 (2026-11-16) painted the barrow push strips and the brimming pond; wired in v105 (`docs/ART-DAY-23.md`).
 
 Month one: none known. `make-bed2` has no slot painting on purpose (the bed uses `seedbed-rect`; its fence rails and crop rows are drawn in code).
 Later: none (`make-mousedoor` is empty on purpose: that make is retired). Painted but not placed: frogmouth, owl on a stake, carrot with legs (the bucket is now the roof-leak bucket, `yard-bucket`).
