@@ -351,7 +351,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v107</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v108</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -372,7 +372,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 107;
+const BUILD = 108;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -380,11 +380,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=107"></script>
-<script src="playlog.js?v=107"></script>
-<script src="concerns.js?v=107"></script>
-<script src="game.js?v=107"></script>
-<script src="walk.js?v=107"></script>
+<script src="content.js?v=108"></script>
+<script src="playlog.js?v=108"></script>
+<script src="concerns.js?v=108"></script>
+<script src="game.js?v=108"></script>
+<script src="walk.js?v=108"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -423,7 +423,7 @@ if (NEWGROUND) for (const k of Object.keys(ASSETS)) if (k === 'plot' || k.starts
 const GSWATCH = ['dirt', 'drygrass', 'grass', 'meadow', 'moss', 'path', 'pebbles', 'water'];
 const kit = (sheet, ...ns) => ns.map(n => `${sheet}-${String(n).padStart(2, '0')}`);
 const GSTICK = { dry: kit('bare', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), grass: kit('grass', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),
-  meadow: [...kit('flowers', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), ...kit('grass', 1, 2, 3, 4)], moss: kit('woodland', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),
+  meadow: [...kit('flowers', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), ...kit('grass', 1, 2, 3, 4)], moss: kit('woodland', 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),
   bank: kit('water', 1, 2, 3, 5, 6, 7, 8, 9, 10, 12), inwater: kit('water', 4, 4, 11), path: kit('path', 7, 8, 9, 10, 11), steps: kit('path', 1, 2, 3, 4, 5, 6),
   spring: kit('seasons', 1, 2, 3), summer: kit('seasons', 4, 5, 6), autumn: kit('seasons', 7, 8, 9), winter: kit('seasons', 10, 11, 12), big: ['st-boulder', 'st-tuft-big'] };
 if (NEWGROUND) {
@@ -2690,7 +2690,7 @@ function footprints() {
     const barren = G.landStage().key === 'barren', lvl = { barren: 0, green: 1, meadow: 2, wood: 3 }[G.landStage().key] || 0;
     for (const [a, b, gx, gy, sc, job] of HOME_KIT) { const k = barren ? a : b, there = barren ? 1 - (job ? taskProg(job) : 0) : b ? 1 : 0; if (!k || there <= 0.05) continue;   // stumps and rocks that stay; the rubbish Hazel clears goes
       const im = IM['kit-' + k]; if (im && im.width) add(k, gx, gy, im.width * sc * kitK(k, im)); }
-    if (lvl >= 1) for (const [n, gx, gy, sc] of yardWood(lvl)) { if (n === 15) continue; const im = IM['kit-wood-' + pad2(n)]; if (im && im.width) add('wood ' + n, gx, gy, im.width * WOOD[n] * sc / im.height, n >= 11 ? 0.3 : 0.26); }
+    if (lvl >= 1) for (const [n, gx, gy, sc] of yardWood(lvl)) { if (n === 15) continue; const im = woodImg(n); if (im && im.width) add('wood ' + n, gx, gy, im.width * WOOD[n] * sc / im.height, LIVE_TREE[n] ? 0.15 : n >= 11 ? 0.3 : 0.26); }
     if (lvl >= 1 && (toadProg() <= 0 || toadProg() >= 1)) {   // the big toadstool (not while it is walking off on its root legs)
       const im = IM['kit-wood-15']; if (im && im.width) { const [tx, ty] = toadAt(); add(toadProg() >= 1 ? 'mouse house' : 'toadstool', tx, ty, im.width * WOOD[15] / im.height * (taskProg('mousering') > 0 ? 1.3 : 1), 0.3); } }
   }
@@ -3220,8 +3220,9 @@ function drawFootpaths() {
 }
 // A little wild corner round each neighbour's home, from the painted kit (mossy log, fern stump, sapling stump, mossy boulder),
 // so homes sit among things instead of alone on the grass. Bigger woodland pieces come with art day 8.
-const NOOK = [['stumps-rocks-12', 0.10, 0.12, 0.62], ['stumps-rocks-08', 0.64, 0.10, 0.6], ['stumps-rocks-09', 0.08, 0.52, 0.5], ['stumps-rocks-07', 0.70, 0.40, 0.55]];
+const NOOK = [[1, 0.10, 0.12, 0.9], [9, 0.64, 0.10, 0.9], [4, 0.08, 0.52, 0.9], ['bush', 0.70, 0.40, 0.9]];   // v108: living plants now, not a mossy log and old stumps
 function nookItems(items, tile, seed) {
+  if (NOOK[0]) return NOOK.forEach(([n, gx, gy, sc], i) => { if (rnd(seed * 7 + i) < 0.25) return; const [ux, uy] = glob(tile, gx + (rnd(seed + i * 3) - 0.5) * 0.06, gy + (rnd(seed + i * 5) - 0.5) * 0.06); woodPiece(items, n, ux, uy, { x0: -1e9, x1: 1e9, y0: -1e9, y1: 1e9 }, sc, rnd(seed + i) < 0.5); });
   NOOK.forEach(([k, gx, gy, sc], i) => { if (rnd(seed * 7 + i) < 0.25) return; const im = IM['kit-' + k]; if (!im || !im.width) return;
     const [ux, uy] = glob(tile, gx + (rnd(seed + i * 3) - 0.5) * 0.06, gy + (rnd(seed + i * 5) - 0.5) * 0.06);
     items.push({ d: depthOf(ux, uy), draw: () => { const q = sc * kitK(k, im), [x, y] = toWorld(ux, uy), w = im.width * q, h = im.height * q; shadow(x, y, w * 0.36, w * 0.1); ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); } }); });
@@ -3229,15 +3230,21 @@ function nookItems(items, tile, seed) {
 // The woodland (art day 8): giant ferns, foxgloves, trunks, logs and toadstools at gnome scale, so the land reads as a wood and not a lawn.
 // WOOD maps a piece number to its standing height in world px (a gnome is about 120 px tall).
 const WOOD = { 1: 190, 2: 120, 3: 230, 4: 140, 5: 175, 6: 90, 7: 160, 8: 175, 9: 135, 10: 75, 11: 270, 12: 250, 13: 95, 14: 110, 15: 135, 16: 100, 17: 165, 18: 85 };
-const WOOD_PLANTS = [1, 2, 4, 5, 6, 7, 8, 9, 10, 1, 5, 9], WOOD_LOW = [2, 4, 6, 10, 13, 14, 15, 16, 17];   // round eight note 11: the flat mossy rock (18) is left out of the scatter; Bryce could not tell what it was
+const WOOD_PLANTS = [1, 2, 4, 5, 6, 7, 8, 9, 10, 1, 5, 9], WOOD_LOW = [2, 4, 6, 10, 15];   // v108 (Bryce: "annoying dead pieces of wood"): the logs (13, 14), the bracket stump (16), the root tangle (17) and the big old trunks (11, 12) no longer appear when land greens
+// v108: young living trees (the painted gum and wattle from the healing jobs) stand where the old dead trunks used to, once land is woodland
+const LIVE_TREE = { gum: ['heal-gum-3', 210], wattle: ['heal-wattle-3', 180], bush: ['heal-wattle-2', 110] };
+for (const [n, [, h]] of Object.entries(LIVE_TREE)) WOOD[n] = h;
+function woodImg(n) { const t = LIVE_TREE[n]; return t ? art(t[0]) : IM['kit-wood-' + pad2(n)]; }
+// v108 (Bryce picked "each patch its own way"): each kind of patch grows its own plants as it greens
+const GREEN_POOL = { creek: [5, 2, 4, 5, 10, 1], meadow: [9, 4, 5, 6, 9, 4], nursery: [10, 2, 1, 'bush', 2, 10], creature: [7, 1, 6, 15, 2, 7], verge: [9, 4, 6, 10, 9, 6] };   // round eight note 11: the flat mossy rock (18) is left out of the scatter; Bryce could not tell what it was
 // the yard: [piece, gx, gy, land stage it appears with (1 green, 2 meadow, 3 wood)]; kept to the margins so the yard stays open.
 // Round six (Bryce): the first greening is small stuff (moss, fiddleheads, strawberries, a tuft of grass, bluebells); the big
 // stump, ferns and logs come with the meadow, the tall trunk, foxglove and wattle only with the wood. Round eight note 2 (Bryce: no big
 // old trunks while the land is young): the big old stump (12) waits for the wood too, and the flat mossy rock (18) is gone. Nothing stands on a make's
 // spot, the footpath or a creature's home (yardClear).
-const YARD_WOOD = [[13, 0.0, 0.86, 2], [4, 0.02, 0.97, 1], [15, 0.64, 0.99, 1], [5, 0.98, 0.45, 1], [2, 0.08, 0.06, 1], [6, 0.10, 0.99, 1], [10, 0.20, 0.02, 1], [10, 0.56, 1.0, 1],
-  [1, 0.0, 0.58, 2], [7, 0.30, 1.0, 2], [9, 0.95, 0.20, 2], [14, 0.60, 0.01, 2],
-  [12, 0.58, 0.0, 3], [11, 0.0, 0.02, 3], [3, 0.02, 0.76, 3], [8, 0.86, 0.02, 3], [17, 0.46, 0.0, 3]];
+const YARD_WOOD = [[7, 0.0, 0.86, 2], [4, 0.02, 0.97, 1], [15, 0.64, 0.99, 1], [5, 0.98, 0.45, 1], [2, 0.08, 0.06, 1], [6, 0.10, 0.99, 1], [10, 0.20, 0.02, 1], [10, 0.56, 1.0, 1],
+  [1, 0.0, 0.58, 2], [7, 0.30, 1.0, 2], [9, 0.95, 0.20, 2], [5, 0.60, 0.01, 2],
+  ['wattle', 0.58, 0.0, 3], ['gum', 0.0, 0.36, 3], [3, 0.02, 0.76, 3], [8, 0.86, 0.02, 3], [1, 0.46, 0.0, 3]];   // v108: a living wattle, a young gum and a fern where the old trunks, the hollow log and the root tangle were
 const plantSc = (n, since) => n <= 10 ? [0.65, 0.85, 1][Math.min(2, since)] : 1;   // plants come in small and grow with each greening; logs, stumps, rocks and the toadstool are what they are
 function yardClear(gx, gy, h = 100, path = true) {   // may a greening piece this tall stand here on the home tile? Not on a make's proper spot, the footpath, the dish or a nest,
   const reach = Math.min(0.2, 0.06 + h / 1200);   // and never in front of one, where it would hide it (Bryce: the windmill behind a trunk)
@@ -3425,10 +3432,10 @@ function openLesson(n, again) {
 }
 const TOAD = {};
 function woodPiece(items, n, ux, uy, vb, sc = 1, flip = false) {   // one depth-sorted piece, skipped when it is far off screen
-  const im = IM['kit-wood-' + pad2(n)]; if (!im || !im.width) return;
+  const im = woodImg(n); if (!im || !im.width) return; const tree = !!LIVE_TREE[n];
   items.push({ d: depthOf(ux, uy), draw: () => { const [x, y] = toWorld(ux, uy), h = WOOD[n] * sc, w = im.width * h / im.height;
     if (x < vb.x0 - w || x > vb.x1 + w || y < vb.y0 || y - h > vb.y1) return;
-    shadow(x, y, w * (n < 11 ? 0.3 : 0.4), w * (n < 11 ? 0.07 : 0.1));
+    if (tree) shadow(x, y, 10 + h * 0.1, 4 + h * 0.025); else shadow(x, y, w * (n < 11 ? 0.3 : 0.4), w * (n < 11 ? 0.07 : 0.1));
     if (flip) { ctx.save(); ctx.translate(x, 0); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, y - h * 0.94, w, h); ctx.restore(); } else ctx.drawImage(im, x - w / 2, y - h * 0.94, w, h); } });
 }
 const openGround = (ux, uy) => Math.abs(uy - streamV(ux)) * LEY > streamHW(ux) + 55 && Math.abs(ux - pathU(uy)) * LEX > 70;   // clear of the stream and the main path
@@ -3442,15 +3449,16 @@ function landItems(items, now) {
     const seed = tx * 31 + ty * 17 + 5;
     if (home) { for (const [n, gx, gy, sc] of yardWood(lvl)) { if (n === 15) { toadItem(items, now, vb); } else woodPiece(items, n, gx, gy, vb, sc); } }
     else {
-      if (k !== '0,1' && (!tl.kind || G.stageIndex(k) >= 3)) for (let c = 0; c < 2; c++) {   // two little woodland corners (not on the couple's garden tile) on the tile, away from the stream, the path and the homes
+      const pool0 = GREEN_POOL[tl.kind] || WOOD_PLANTS;
+      if (k !== '0,1' && (!tl.kind || G.stageIndex(k) >= 3)) for (let c = 0; c < 1; c++) {   // v108: one little corner, of the patch's own plants   // two little woodland corners (not on the couple's garden tile) on the tile, away from the stream, the path and the homes
         const [gx, gy] = [[0.14, 0.84], [0.84, 0.16], [0.52, 0.92], [0.9, 0.62], [0.2, 0.2], [0.08, 0.5]][Math.floor(rnd(seed + c * 9) * 6)], [ux, uy] = glob(k, gx, gy);
         if (!openGround(ux, uy) || inFarm(k, gx, gy) || (homes[k] && Math.hypot(gx - LOT.home[0], gy - LOT.home[1]) < 0.25) || (k === CAMP.tile && Math.hypot(gx - CAMP.gx, gy - CAMP.gy) < 0.3)) continue;
         const cnt = 3 + Math.floor(rnd(seed + c * 5 + 1) * 2);
-        for (let i = 0; i < cnt; i++) { const pool = i === 0 && rnd(seed + c + 2) < 0.35 ? [13, 15, 17, 14, 16] : WOOD_PLANTS;
+        for (let i = 0; i < cnt; i++) { const pool = pool0;   // v108: no more log, root tangle or old stump in the little corners
           woodPiece(items, pool[Math.floor(rnd(seed * 3 + c * 11 + i) * pool.length)], ux + (rnd(seed + c * 13 + i * 3) - 0.5) * 0.16, uy + (rnd(seed + c * 7 + i * 5) - 0.5) * 0.16, vb, 0.85 + 0.3 * rnd(seed + i * 19), rnd(seed + i * 23 + c) < 0.5); }
       }
       if (homes[k]) { const [hx, hy] = homes[k];   // round a home: a fern, a foxglove and a toadstool ring, tucked behind and beside
-        [[1, 0.1, -0.1], [3, 0.2, 0.0], [14, -0.12, -0.12], [15, 0.16, 0.12], [5, -0.2, 0.08], [10, 0.0, 0.2]].forEach(([n, du, dv], i) => { if (rnd(seed + i * 41) < 0.2) return; woodPiece(items, n, hx + du, hy + dv, vb, 0.9, rnd(seed + i) < 0.5); }); }
+        [[1, 0.1, -0.1], [3, 0.2, 0.0], [6, -0.12, -0.12], [15, 0.16, 0.12], [5, -0.2, 0.08], [10, 0.0, 0.2]].forEach(([n, du, dv], i) => { if (rnd(seed + i * 41) < 0.2) return; woodPiece(items, n, hx + du, hy + dv, vb, 0.9, rnd(seed + i) < 0.5); }); }
     }
     // the edge of the map: where nothing lies beyond, the wood closes in (tall trunks behind, low things in front)
     for (const [dx, dy, ga, gb, gc, back] of [[0, -1, 0, 1, 0.02, true], [-1, 0, 1, 0, 0.02, true], [0, 1, 0, 1, 0.97, false], [1, 0, 1, 0, 0.97, false]]) {
@@ -3461,9 +3469,9 @@ function landItems(items, now) {
         // the yard's: only small living plants at first green, a few at a time as its green grows, bigger plants at meadow, and old wood only once it is woodland
         const lv = home ? lvl : tl.kind ? G.stageIndex(k) : 3;
         if (!home && tl.kind && lv < 3) { const span = lv < 2 ? [4, 12] : [12, 26], shown = 1 + Math.floor(3.99 * Math.max(0, Math.min(1, (tl.green - span[0]) / (span[1] - span[0])))); if (lv < 2 && i >= shown) continue; }
-        if (lv < 3 || k === '0,1') { const pool = lv < 2 ? [10, 6, 2, 4, 6, 10] : home ? WOOD_LOW : [2, 4, 6, 10, 9, 1]; woodPiece(items, pool[Math.floor(rnd(seed + i * 5 + dx * 7 + dy * 11) * pool.length)], ux, uy, vb, (lv < 2 ? 0.55 : 0.7) + 0.2 * rnd(seed + i * 11), rnd(seed + i * 3) < 0.5); continue; }   // round six: the yard's wild edge starts low and small too
-        const n = back ? (i === 1 && rnd(seed + 3) < 0.45 ? (rnd(seed + i) < 0.5 ? 12 : 11) : i % 2 ? WOOD_LOW[Math.floor(rnd(seed + i * 5) * WOOD_LOW.length)] : WOOD_PLANTS[Math.floor(rnd(seed + i * 5) * WOOD_PLANTS.length)]) : WOOD_LOW[Math.floor(rnd(seed + i * 5) * WOOD_LOW.length)];   // a tall trunk only now and then: they stop at the top of the picture
-        if (n >= 11 && n <= 12 && (home || (tl.kind && G.stageIndex(k) < 3))) continue; woodPiece(items, n, ux, uy, vb, 0.8 + 0.4 * rnd(seed + i * 11), rnd(seed + i * 3) < 0.5); }   // round eight note 2: big old trunks only round woodland
+        if (lv < 3 || k === '0,1') { const pool = lv < 2 ? [10, 6, 2, 4, 6, 10] : home ? WOOD_LOW : GREEN_POOL[tl.kind] || [2, 4, 6, 10, 9, 1]; woodPiece(items, pool[Math.floor(rnd(seed + i * 5 + dx * 7 + dy * 11) * pool.length)], ux, uy, vb, (lv < 2 ? 0.55 : 0.7) + 0.2 * rnd(seed + i * 11), rnd(seed + i * 3) < 0.5); continue; }   // round six: the yard's wild edge starts low and small too
+        const low = GREEN_POOL[tl.kind] || WOOD_LOW, n = back ? (i === 1 && rnd(seed + 3) < 0.45 ? (rnd(seed + i) < 0.5 ? 'gum' : 'wattle') : i % 2 ? low[Math.floor(rnd(seed + i * 5) * low.length)] : WOOD_PLANTS[Math.floor(rnd(seed + i * 5) * WOOD_PLANTS.length)]) : low[Math.floor(rnd(seed + i * 5) * low.length)];   // v108: now and then a young living tree at the back, where the old dead trunks stood
+        if (LIVE_TREE[n] && home) continue; woodPiece(items, n, ux, uy, vb, LIVE_TREE[n] ? 0.85 + 0.3 * rnd(seed + i * 11) : 0.8 + 0.4 * rnd(seed + i * 11), rnd(seed + i * 3) < 0.5); }
     }
     // season touches (art day 8): frost, a spider's web, a bare bush and a snowy stone in winter; fallen leaves in autumn; petals and a dandelion clock in spring
     const touch = { winter: [1, 2, 3, 4], autumn: [5, 6, 5, 6], spring: [7, 8, 7], summer: [8] }[se] || [];
@@ -3477,7 +3485,8 @@ function landItems(items, now) {
 function springItems(items) {
   const tl = G.s.tiles['-2,-1']; if (!tl || tl.state !== 'green') return;
   const u = STREAM_U0, v = streamV(u);
-  for (const [k, du, dv, sc] of [['stumps-rocks-09', -0.13, -0.06, 0.75], ['stumps-rocks-08', -0.10, 0.12, 0.55], ['stumps-rocks-12', 0.05, -0.16, 0.5]]) {
+  for (const [n, du, dv] of [[1, -0.10, 0.12], [5, 0.05, -0.16]]) woodPiece(items, n, u + du, v + dv, { x0: -1e9, x1: 1e9, y0: -1e9, y1: 1e9 }, 0.8);   // v108: a fern and reeds, not an old stump and a log
+  for (const [k, du, dv, sc] of [['stumps-rocks-09', -0.13, -0.06, 0.75]]) {
     const im = IM['kit-' + k]; if (!im || !im.width) continue;
     items.push({ d: depthOf(u + du, v + dv), draw: () => { const q = sc * kitK(k, im), [x, y] = toWorld(u + du, v + dv), w = im.width * q, h = im.height * q; shadow(x, y, w * 0.36, w * 0.1); ctx.drawImage(im, x - w / 2, y - h * 0.88, w, h); } });
   }
