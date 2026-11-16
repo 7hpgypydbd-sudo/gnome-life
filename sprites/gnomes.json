@@ -121,6 +121,25 @@
      133,
      259
     ]
+   },
+   "barrowwalk": {
+    "n": 8,
+    "cell": [
+     211,
+     260
+    ],
+    "foot": 28,
+    "footY": 241
+   },
+   "barrowwalke": {
+    "n": 8,
+    "cell": [
+     211,
+     260
+    ],
+    "foot": 28,
+    "footY": 241,
+    "strip": "barrowwalk-empty"
    }
   }
  },
@@ -239,6 +258,25 @@
      110,
      242
     ]
+   },
+   "barrowwalk": {
+    "n": 8,
+    "cell": [
+     232,
+     260
+    ],
+    "foot": 39,
+    "footY": 241
+   },
+   "barrowwalke": {
+    "n": 8,
+    "cell": [
+     232,
+     260
+    ],
+    "foot": 39,
+    "footY": 241,
+    "strip": "barrowwalk-empty"
    }
   }
  }

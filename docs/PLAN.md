@@ -2,7 +2,7 @@
 
 A cosy storybook garden game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; it must run smoothly on a phone.
 
-_Last updated: 2026-11-15 (v104, the round-twelve build, waiting for Bryce's OK). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
+_Last updated: 2026-11-16 (v105, the round-thirteen build, waiting for Bryce's OK). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
 
 ## 1. Rules for every chat (read first)
 
@@ -28,13 +28,21 @@ _Last updated: 2026-11-15 (v104, the round-twelve build, waiting for Bryce's OK)
 
 ## 2. Where we are
 
-- **Live:** v103 (v104 waiting for Bryce's OK) at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). v99 (PR #132) is the round-ten build plus art day 21 and a reworked worn path.
+- **Live:** v104 (v105 waiting for Bryce's OK) at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). v99 (PR #132) is the round-ten build plus art day 21 and a reworked worn path.
 - **Bryce is playing** v99. Round-ten notes are all "built, waiting for Bryce"; round-eleven notes are collected in the thread "Collect play notes round eleven".
 - **Two gardens:** the real one at the plain address; the sandbox at `?sandbox` (own save; tap the title for the test panel). Pretend player: `node tools/progression_sim.js 2 90`.
 
 ## 3. What's next (in order)
 
-0. **v104, the round-twelve build (thread "Build the round twelve notes"), waiting for Bryce's OK.** Previews in `/mnt/project-files/round-twelve-v104/`. Holds round-twelve notes 2 to 12, 15 to 17 and the pop-up review (`/mnt/project-files/popup-review/popup-review-v101.md`):
+0. **v105, the round-thirteen build (thread "Build the round thirteen notes"), waiting for Bryce's OK.** Previews in `/mnt/project-files/round-thirteen-v105/`. Holds round-thirteen notes 1 to 25 (tracker has each row). Bryce picked (2026-11-16):
+   - *Rubbish heap, new order (note 13):* one gnome starts by hand and gives up halfway ("far too much to carry by hand"), the fence is the break, then **Make a wheelbarrow** (a garden step with its own flag in the yard; the old yard make `barrow` is retired, `alsoDone` keeps one already made), then both cart off the rest with the barrow (`rubbish2`, pair), then dig out the buried rubbish. Pictures: heap, half (shown through the fence and barrow), bare mound, hollow. Gnomes on barrow work push the yard's own wheelbarrow (`carryWalk` `barrowE`/`barrowL`; art day 23 strips `barrowwalk`, `barrowwalk-empty`; parked: `wheelbarrow-loaded`).
+   - *Reeds and wildflowers (notes 15, 18, 19, 21):* Hazel's mother's seed tin is a whole collection (said on the seed bed card and page 1.5). Reed seed balls pressed in round the pond (`reeds`), then your Coax wakes them (`reedsup`, cast step; the pond's flags stand on the bank). Wildflowers go to three open spots away from the pond, seed from the tin (no cost).
+   - *Magic page (notes 1, 5, 22): one jar of light.* No daily count; the wood tops the jar up each morning (`G.morningLight`, 2 + magic level, up to `C.lightJar` 10). Each spell shows its cost in drops and Ready or why not. Every spell shows on the land (`spellFx`: rain shower, wind gust, coax sparkles).
+   - *Patch card (note 24):* two rows, Jobs (dots, "4 of 10" or "all done") and Green (the four leaves and the stage).
+   - *End of the heap (note 25):* the last garden job brings the patch up to young meadow at once (`flags.gardenRush`), then a ring of green, the two of them at the pond's edge and a frog hopping onto a lily pad (`flags.gardenMoment`, `FROG_MOMENT`).
+   - Older gardens move onto the new garden chain by step id (`chainRemap105`); jobs done stay done.
+   - Also: taps that miss try a finger's width round about (note 16); a roof leak with a bucket before the moss job (note 9); gnomes walk round the pond (note 20); painted-land look as a sandbox-only trial (note 23, test panel).
+1. **v104, the round-twelve build, LIVE 2026-11-15.** Previews in `/mnt/project-files/round-twelve-v104/`. Holds round-twelve notes 2 to 12, 15 to 17 and the pop-up review (`/mnt/project-files/popup-review/popup-review-v101.md`):
    - *Pop-ups:* `TOAST_HUSH` in index.html drops every note the land or a gnome already shows (Set to work, Finished, Something new in Jobs, new wishes and favours, sow/water/pick chore lines, "brought in", patch "is waking", spell names); the play log still records them as `quiet:`. Notes carry a small portrait of who is talking (`toastFace`). One voice at a time: a gnome waits for a note to finish; tapping a busy gnome gives the job in their own bubble, no note. The idle Jobs reminder is a bob of the button, no words; the "lying in the ring" words come once only.
    - *Jobs match their words:* Water the seeds in waits for `flags.sowDone` (set when the sowing walk ends, or 90 s after sowing). Pebbles and the meadow strip wait for the fence, the scarecrow for the rabbit.
    - *Never idle:* little chores from the moment the spring is found; a free gnome always gets at least one chore; the work corner goes to whoever is free.
@@ -57,10 +65,12 @@ _Last updated: 2026-11-15 (v104, the round-twelve build, waiting for Bryce's OK)
 
 **Maybe pile:** automatic concern inbox; a spell for work past bedtime; birdsong returning as the land greens; phone sideways; more bug baths on patches (round 10 no. 27); a use for picked herbs (round 10 no. 35). Held back on purpose: pot seats before the bench (could strand a player).
 
-## 4. Stand-ins still in the game (2026-11-15, after v99)
+## 4. Stand-ins still in the game (2026-11-16, v105)
+
+Art day 23 (2026-11-16) painted the barrow push strips and the brimming pond; wired in v105 (`docs/ART-DAY-23.md`).
 
 Month one: none known. `make-bed2` has no slot painting on purpose (the bed uses `seedbed-rect`; its fence rails and crop rows are drawn in code).
-Later: none (`make-mousedoor` is empty on purpose: that make is retired). Painted but not placed: frogmouth, owl on a stake, bucket, carrot with legs.
+Later: none (`make-mousedoor` is empty on purpose: that make is retired). Painted but not placed: frogmouth, owl on a stake, carrot with legs (the bucket is now the roof-leak bucket, `yard-bucket`).
 Drawn in code on purpose: paper job flags, growing badge, glows, the Journal's cover, tabs and leaves (v102; the green sprig is gone).
 
 ## 5. The game in brief (Bryce's decisions)

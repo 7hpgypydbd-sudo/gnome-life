@@ -114,6 +114,7 @@ const G = {
     if (!this.s.plots.bed2) this.s.plots.bed2 = { crop: null, stage: null, readyAt: 0, grown: 0 };
     if (!this.s.flags.heal99) { this.s.flags.heal99 = true; this.healRemap99(); }
     delete this.s.tasks['chore:dew'];   // v104: the jug chore is gone (water from the spring is free)
+    if (!this.s.flags.chain105) { this.s.flags.chain105 = true; this.chainRemap105(); }   // round thirteen: the garden-to-be's chain changed shape
     if (!this.s.flags.magic104) { this.s.flags.magic104 = true; this.magicRemap104(); }   // v104: three spells   // bare tiles from before the healing chains get theirs; green ones stay as they were
     this.pantryTrim('her', true);   // older gardens with heaps of veg: the spare has quietly gone round the valley
     this.away = this.catchUp();
@@ -188,6 +189,7 @@ const G = {
     }
     this.pairTick(t);
     this.autoSteps(t);
+    this.morningLight(t);
     this.mealTick(t);
     this.dressTick(t);
     if (this.barrelFull()) this.drawBarrel();   // the rain barrel tops up the store by itself (nobody's hands)
@@ -553,7 +555,7 @@ const G = {
   // ---- little makes (CONTENT.makes; the makes are tasks with make: yard | garden) ----
   makeTile(d) { return C.makes[d.make].tile; },
   patchOpen(patch) {   // can this patch have little makes yet? the yard after the first harvest; the garden once open; the old track once out of the mist
-    if (patch === 'yard') return !!this.s.flags.firstpick;
+    if (patch === 'yard') return this.done('workcorner') || (!!this.s.flags.firstpick && !!this.s.flags.wishIntro);   // round thirteen note 4: the wish list starts when Wendel's work corner is finished (somewhere to make things); a garden that already had its list keeps it
     if (patch === 'garden') return this.gardenOpen();
     const k = C.makes[patch].tile; return !!this.s.tiles[k] && !Object.values(this.s.village.folk).some(f => f.tile === k);
   },
@@ -597,7 +599,7 @@ const G = {
   },
   tileWhere(k) { const [x, y] = k.split(',').map(Number); const ns = y < 0 ? 'behind the house' : y > 0 ? 'in front' : '', ew = x < 0 ? 'to the left' : x > 0 ? 'to the right' : '';
     return [ns, ew].filter(Boolean).join(' and ') + (Math.abs(x) + Math.abs(y) > 1 ? ', further out' : ''); },
-  healStepDone(k, i) { const st = this.healSteps(k)[i], tk = this.s.tasks[`heal:${k}:${i}`]; return !!(tk && tk.done) || (!!st.once && !tk && !!this.s.flags[st.once]); },
+  healStepDone(k, i) { const st = this.healSteps(k)[i], tk = this.s.tasks[`heal:${k}:${i}`], al = st.alsoDone && !tk && this.s.tasks[st.alsoDone]; return !!(tk && tk.done) || (!!st.once && !tk && !!this.s.flags[st.once]) || !!(al && al.done); },   // alsoDone: the same thing made another way already (the yard's wheelbarrow)
   healAt(k) { const n = this.healSteps(k).length; let i = 0; while (i < n && this.healStepDone(k, i)) i++; return i; },   // the first job not done yet (n: all done)
   healClaimed(k) {   // a neighbour's lot, the festival green or the couple's garden: the chain stops once that takes over (neighbours wait for young meadow, see freeLot)
     const s = this.s; if (k === '0,1') return s.tiles[k].kind !== 'garden';   // v99: the garden-to-be's own chain runs to its end (an older, unmigrated tile keeps the old rule)
@@ -625,6 +627,10 @@ const G = {
   patchName(k) { const fid = this.farmOn(k); if (fid) return C.farms.list[fid].patch; const tl = this.s.tiles[k]; return tl && tl.kind ? C.heal.kinds[tl.kind].patch : 'the patch next door'; },
   healDone(d) {
     if (d.once) this.s.flags[d.once] = true;
+    if (d.heal === 'garden' && d.step === this.healSteps(d.healTile).length - 1 && !this.s.flags.gardenRush) {   // round thirteen note 25 (Bryce chose the green rush and a moment): the last
+      // garden job done, the land answers at once: the patch rushes up to young meadow, and Wendel and Hazel get their moment at the pond's edge
+      const tl = this.s.tiles[d.healTile], need = (C.landStages.find(x => x.key === 'meadow') || { at: 12 }).at - (tl.green || 0) - (d.green || 0); this.s.flags.gardenRush = now(); if (need > 0) this.tileGreen(d.healTile, need); }
+    if (d.alsoDone && !this.s.tasks[d.alsoDone]) { const t = now(); this.s.tasks[d.alsoDone] = { startedAt: t, endsAt: t, done: true }; }   // round thirteen: the garden's wheelbarrow is the yard's wheelbarrow
     this.tileGreen(d.healTile, d.green);
   },
   healTick(t) {   // life coming back after a job: sprouts, creatures moving in, saplings growing (each fires once)
@@ -738,6 +744,22 @@ const G = {
     if (T.pond && !T.pond.done) delete T.pond;   // the old pond job, still being dug: the hollow and the rain take over
   },
 
+  // round thirteen: a garden from before v105 moves onto the new garden chain by step id. Jobs done stay done; a new step that sits
+  // before a step already done counts as done too (so a finished garden stays finished); the life that followed moves with its step.
+  chainRemap105() {
+    const OLD = { garden: ['rubbish', 'fence', 'spoil', 'worms', 'rain', 'reeds', 'flowers'] }, EVMOVE = { garden: { 'reeds.0': 'reedsup.0' } }, COPY = { garden: { rubbish2: 'rubbish' } }, T = this.s.tasks;   // COPY: the old rubbish job was the whole heap, so both halves are done
+    for (const [k, tl] of Object.entries(this.s.tiles)) { const old = OLD[tl.kind]; if (!old) continue;
+      const S = this.healSteps(k), ids = S.map(st => st.id); if (ids.join() === old.join()) continue;
+      const tk = old.map((_, i) => T[`heal:${k}:${i}`]), ev = tl.ev || {}, nev = {}; old.forEach((_, i) => delete T[`heal:${k}:${i}`]);
+      S.forEach((st, j) => { const i = old.indexOf(st.id); if (i >= 0) { if (tk[i]) T[`heal:${k}:${j}`] = tk[i]; return; }
+        const cp = (COPY[tl.kind] || {})[st.id], ci = cp ? old.indexOf(cp) : -1; if (ci >= 0 && tk[ci] && tk[ci].done) { T[`heal:${k}:${j}`] = Object.assign({}, tk[ci]); return; }
+        const later = S.slice(j + 1).map(x => old.indexOf(x.id)).find(x => x >= 0 && tk[x] && tk[x].done);   // a step after it is already done
+        if (later != null) T[`heal:${k}:${j}`] = { startedAt: tk[later].startedAt, endsAt: tk[later].startedAt, done: true }; });
+      for (const [key, at] of Object.entries(ev)) { const [i, n] = key.split('.'), mv = (EVMOVE[tl.kind] || {})[`${old[i]}.${n}`], [sid, sn] = mv ? mv.split('.') : [old[i], n], j = ids.indexOf(sid); if (j >= 0) nev[`${j}.${sn}`] = at; }
+      tl.ev = nev; if (window.PL) PL.add(`garden chain moved on (v105): ${k}`);
+    }
+  },
+
   bedAt(stage) { const sel = this.plot(); return sel.stage === stage ? sel : Object.values(this.s.plots).find(p => p.stage === stage) || null; },   // the bed a crop spell works on: the one being looked at, else whichever is at that stage
   // ---- magic ----
   // v104 (round twelve notes 8, 15, Bryce chose option C): three spells, Coax, Rain and Wind (and the toadstool's one-off legs).
@@ -755,11 +777,10 @@ const G = {
     if (!(sp.special ? this.gardenOpen() && (this.spellTaught(id) || !!this.s.flags.toadWalk) : this.magicInfo().spells.includes(id))) return { ok: false, why: 'not yet learned' };
     if (!this.can(sp.cost)) return { ok: false, why: `needs ${this.missing(sp.cost).join(', ')}` };
     if (id === 'legs') return this.s.flags.toadWalk ? { ok: false, why: 'it has already walked off' } : { ok: true };
-    if (sp.daily && this.usedToday(id) >= this.spellUses()) return { ok: false, why: `used ${this.spellUses() > 1 ? this.spellUses() + ' times ' : ''}today. It comes back each morning, and grows stronger as the yard greens` };
     const jobs = this.spellJobs(id).length > 0;
-    if (id === 'coax' && !this.bedAt('growing') && !this.seedlingsWaiting().length && !jobs) return { ok: false, why: this.plot().stage === 'planted' ? 'the bed needs its drink first: nothing grows until it has been watered' : this.plot().stage === 'ready' ? 'the bed is already ready to pick' : 'nothing is growing just now' };
+    if (id === 'coax' && !this.bedAt('growing') && !this.seedlingsWaiting().length && !this.castSpots('coax').length && !jobs) return { ok: false, why: this.plot().stage === 'planted' ? 'the bed needs watering first' : this.plot().stage === 'ready' ? 'the bed is already ready to pick' : 'nothing is growing just now' };
     if (id === 'rain' && !this.castSpots('rain').length && !this.bedAt('planted') && !jobs) return { ok: false, why: 'nothing is waiting for water' };
-    if (id === 'wind' && !jobs) return { ok: false, why: 'it carries seed: use it while wildflowers or seed balls are going in' };
+    if (id === 'wind' && !jobs) return { ok: false, why: 'nothing being sown just now' };
     return { ok: true };
   },
   cast(id, k) {
@@ -770,12 +791,23 @@ const G = {
       for (const p of Object.values(this.s.plots)) if (p.stage === 'planted') { p.stage = 'growing'; p.wateredAt = t; p.readyAt = t + this.dur(this.growMins(p)); }
       this.note('Soft rain fell into the hollow until it brimmed. The garden has a pond.'); }
     else if (id === 'rain') { for (const p of Object.values(this.s.plots)) if (p.stage === 'planted') { p.stage = 'growing'; p.wateredAt = t; p.readyAt = t + this.dur(this.growMins(p)); } this.note(jobs.length ? 'A small soft rain, just where it was wanted.' : 'Soft rain falls on the beds and beads on the stones.'); }
-    if (id === 'coax') { const p = this.bedAt('growing'); if (p) { p.readyAt = t; this.note(`A warm hush over the bed, and ${this.cropName(p.crop)} fill out all at once.`); }
+    const reedCast = id === 'coax' && this.castSpots('coax').length && (this.castSpots('coax').includes(k) || (!this.bedAt('growing') && !this.seedlingsWaiting().length));   // cast on the pond (or nothing else waits for it)
+    if (reedCast) { const at = this.castSpots('coax').includes(k) ? k : this.castSpots('coax')[0]; this.castStep(at, t); this.note('A warm hush over the pond, and the reeds came up all round its edge at once.'); }   // round thirteen note 18: the reed seed balls
+    if (id === 'coax' && !reedCast) { const p = this.bedAt('growing'); if (p) { p.readyAt = t; this.note(`A warm hush over the bed, and ${this.cropName(p.crop)} fill out all at once.`); }
       const w = this.seedlingsWaiting(); for (const q of w) this.s.tiles[q].woke = true; if (w.length && !p) this.note('The seedlings in their pots stretched, as if somebody had opened the curtains.'); }
     if (id === 'wind') this.note('The wind lifted the seed and carried it into the far corners.');
     if (id === 'legs') { this.s.flags.toadWalk = t; this.note('The big toadstool shivered, sprouted little root legs and walked off to the far corner of the garden.'); }
     if (sp.daily) this.useSpell(id);
     this.emit('spell', id); this.tick(); return true;
+  },
+  // round thirteen notes 1, 5, 22 (Bryce chose "one jar of light", 2026-11-16): no daily count on spells any more. Light is the only
+  // limit: the wood tops the jar up each morning (3 at bare ground, one more for each stage the yard greens), never past what the jar
+  // holds; good deeds and the night wisps add more on top.
+  lightMorning() { return 2 + this.magicLevel(); },
+  morningLight(t) {
+    const f = this.s.flags, dk = dayKey(t); if (f.lightDay === dk || this.asleepAt(t) || !this.magicInfo().spells.length) return;
+    f.lightDay = dk; const have = this.s.inv.light || 0, add = Math.max(0, Math.min(this.lightMorning(), C.lightJar - have));
+    if (add) { this.give({ light: add }); if (window.PL) PL.add(`morning light: +${add} (jar ${have + add}/${C.lightJar})`); }
   },
   autoSteps(t) {   // v104: a patch step marked auto (the old "Wake the worms") is done the moment it is reached; its slow green follows
     for (const k of this.healTiles()) { const i = this.healAt(k), st = this.healSteps(k)[i]; if (st && st.auto && this.healOpen(k)) this.castStep(k, t); }
@@ -804,6 +836,7 @@ const G = {
   },
   met(id) { const e = this.s.journal[id]; return !!(e && e.count); },   // noted in the journal (an entry can exist from feeding before you tap it)
   fedDays(id) { const e = this.s.journal[id]; return e && e.fed ? e.fed.length : 0; },
+  fedToday(id) { const e = this.s.journal[id]; return !!(e && e.fed && e.fed.includes(dayKey(now()))); },   // round thirteen note 10: everyone has eaten today, so no more prompts to feed
   isRegular(id) { return this.fedDays(id) >= C.feeding.regularAfter; },
   hasNest(id) {
     if (id === 'mouse') return !!this.s.flags.miceIn;   // the mice live in the walked toadstool, not a hole of their own
