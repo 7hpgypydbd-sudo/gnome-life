@@ -151,10 +151,10 @@ Now, at last, it went into real ground at the front corner of the yard. Hazel du
 
 **Button:** Grow tall
 
-### 2.5 Our first week
+### 2.5 What we have (was "Our first week" until v107: no day counts)
 *Opens the morning after 2.4 (v87: it no longer waits for seven days, since one page a morning already spreads the story; with a quick player it comes on about day eight; the first line is now 'Our first week, or near enough.' instead of 'Seven days.'). A page from Hazel's journal, with Wendel's notes squeezed into the margin. Any line about something not done yet is left out.*
 
-**Our first week, in Hazel's handwriting**
+**What we have, in Hazel's handwriting**
 
 Seven days. We have a roof (moss, no leaks). *(once the roof is on)* We have a fire every night (Wendel chopped the old stump into firewood, he is very proud of it). *(once the old stump is chopped for firewood)* We have a spring we found ourselves (Wendel found it, he would like that written down). *(once the spring is found)* We have a seed bed, and we have eaten from it. *(once the bed is dug)* We have a fence, and a rabbit who thinks the fence is a suggestion. *(once the fence is up)*
 

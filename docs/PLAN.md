@@ -69,7 +69,14 @@ _Last updated: 2026-11-16 (v106 live: the clear fixes from the full review). Kee
 
 ## 3a. From the full review (2026-11-16; detail in `docs/REVIEW-2026-11.md`)
 
-**Asked, waiting for Bryce (five taste calls, each with a recommendation of yes):** let the story catch up faster so jobs never wait a week behind it; make the home yard take longer to reach its last stages; take day counts out of the words; rewrite the neighbour stories that lean on stereotypes; add "save my garden to a file". Record his answers here.
+**The five taste calls: Bryce said "yes to all five" (2026-11-16). Built as v107 (waiting for his OK on the previews in `/mnt/project-files/review-v107/`):**
+1. *The story catches up.* With two or more pages whose moment has come, the next may open four hours after the last, the same day (`C.story.catchUpMins`, `G.pageCanOpen`). Otherwise still one page a morning. Measured: a keen player reads four pages a day and starts the house on day three or four (was day nine or ten).
+2. *The yard greens more slowly.* The home yard has its own marks for meadow and woodland (`homeAt` 40 and 140; other patches keep 12 and 26). A yard never goes back a stage (`flags.yardStage`). Measured: normal player meadow about day 6, woodland about day 15; keen player day 2 and day 5.
+3. *No day counts in the words.* "Our first week" is now "What we have"; "a week ago", "the first in weeks", "their first whole day" and "tomorrow's page" reworded.
+4. *Neighbour stories.* Mabel's is "The lost recipe" (Wendel plans the cake; he no longer forgets a date). Tobias's is "Something important" (a surprise Hazel has guessed; no silent supper). Both mind the twins; both cook for Juniper.
+5. *The garden's safe copy.* Bryce does not want to save a file by hand, so the game keeps a second copy by itself (`Backup` in game.js: IndexedDB, today's and an earlier day's) and puts it back at start-up if the main save is missing or unreadable. Garden tools also has "save my garden to a file" and "bring a garden back" for a new phone.
+
+**Next after v107 (Bryce asked 2026-11-16, agreed to do it second): back the garden up to his Google Drive by itself.** Needs a one-off registration on Google's side, done for him in a Mac chat with Chrome (he follows no steps), then a try on his real iPhone, because Google sign-in from a Home Screen game can be fiddly. For a public release Google also wants the app verified.
 
 **Later (the day it starts to matter is a measurement from the pretend player, never a target):**
 - Day 2 to 3, keen player: an empty week before the house, because every job waits for one story page a morning. (Question 1.)

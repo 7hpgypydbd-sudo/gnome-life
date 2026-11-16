@@ -351,7 +351,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v106</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v107</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -372,7 +372,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 106;
+const BUILD = 107;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -380,11 +380,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=106"></script>
-<script src="playlog.js?v=106"></script>
-<script src="concerns.js?v=106"></script>
-<script src="game.js?v=106"></script>
-<script src="walk.js?v=106"></script>
+<script src="content.js?v=107"></script>
+<script src="playlog.js?v=107"></script>
+<script src="concerns.js?v=107"></script>
+<script src="game.js?v=107"></script>
+<script src="walk.js?v=107"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -666,7 +666,7 @@ const WORKSPOT = { workcorner:[WORKCORNER[0] + 0.06, WORKCORNER[1] + 0.07], logs
 const IM = {};
 let loaded = 0; const total = Object.keys(ASSETS).length;
 for (const [k, src] of Object.entries(ASSETS)) {
-  const im = new Image(); im.onload = im.onerror = () => { if (++loaded === total) start(); }; im.src = src; IM[k] = im;
+  const im = new Image(); im.onload = im.onerror = () => { if (++loaded === total) (window.GardenBackup ? GardenBackup.rescue(start) : start()); }; im.src = src; IM[k] = im;
 }
 // ---------- art slots ----------
 // Painted pictures still to come (docs/ART-BATCH-3.md). Each one is optional: drop sprites/<name>.webp in and the game uses it
@@ -5397,6 +5397,8 @@ sheet.addEventListener('click', e => {
   if (a === 'tsecret') { closeSheet(); const o = G.spawnSecret(); if (o) { const [x, y] = toWorld(...glob(o.tile, o.gx, o.gy)); cam.x = x; cam.y = y; } else toast('Every little find has been found.'); return; }
   if (a === 'secret') return openSecret(id);
   if (a === 'ttrav') { G.callTraveller(); toast(G.s.village.traveller ? 'A traveller is camped by the path.' : 'No one left on the road.'); }
+  if (a === 'gardenout') return shareGarden();
+  if (a === 'gardenin') return bringGardenBack();
   if (a === 'reset') { if (confirm('Start the garden over? This wipes your save.')) G.reset(); return; }
   if (a === 'copylog') { e.preventDefault(); return copyPlayLog(b); }
   if (a === 'sharelog') { e.preventDefault(); return sharePlayLog(); }
@@ -5426,6 +5428,22 @@ function playLogText() { PL.add(G.snap()); PL.flush(); return `Gnome Life play l
 function copyPlayLog(b) {
   const t = playLogText(), ok = () => { b.textContent = 'copied ✓'; }, fall = () => { const ta = document.createElement('textarea'); ta.value = t; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0'; document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, t.length); let done = false; try { done = document.execCommand('copy'); } catch (e) {} ta.remove(); done ? ok() : sharePlayLog(); };
   if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, fall); else fall();
+}
+function shareGarden() {   // v107: the whole garden as one small file (for moving to a new phone)
+  G.save(); const t = JSON.stringify({ gnomelife: 1, build: BUILD, savedAt: Date.now(), garden: G.s }), name = `gnome-garden-${window.SANDBOX ? 'sandbox-' : ''}${new Date().toISOString().slice(0, 10)}.json`;
+  try { const file = new File([t], name, { type: 'application/json' }); if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file] }).catch(() => {}); } catch (e) {}
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([t], { type: 'application/json' })); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+}
+function gardenFromText(t) {   // returns the garden, or null if the file is not one
+  try { const o = JSON.parse(t), s = o && o.gnomelife ? o.garden : o; return s && s.tiles && s.inv && s.created && s.plots ? s : null; } catch (e) { return null; } }
+function bringGardenBack() {
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,application/json,text/plain'; inp.style.display = 'none'; document.body.appendChild(inp);
+  inp.onchange = () => { const f = inp.files && inp.files[0]; inp.remove(); if (!f) return; const rd = new FileReader();
+    rd.onload = () => { const s = gardenFromText(String(rd.result)); if (!s) return toast('That file is not a saved garden.');
+      if (!confirm(`Bring back the garden begun on ${new Date(s.created).toLocaleDateString()}? It replaces the garden that is here now.`)) return;
+      PL.add('=== a garden was brought back from a file ==='); G.s = s; G.save(); G.save = () => {}; location.reload(); };
+    rd.readAsText(f); };
+  inp.click();
 }
 function sharePlayLog() {
   const t = playLogText(), name = `gnome-play-log-${window.SANDBOX ? 'sandbox-' : ''}${new Date().toISOString().slice(0, 10)}.txt`;
@@ -5470,8 +5488,8 @@ function openSeedbed(id) {   // v99: the first bed, or the second one on the gar
   G.onBed(BEDSEL, () => openSheet('seedbed', `<h2>${BEDSEL === 'bed2' ? 'The new bed' : 'The seed bed'}<small>${G.plot().grown} grown so far</small></h2>${seedbedBody(false)}${BEDSEL === 'bed2' ? '<p>What grows in this bed greens the garden.</p>' : landNote()}`));
 }
 function landNote() {   // why growing things matters: every harvest (and most jobs) wakes the land a little, towards the next stage
-  const g = G.s.tiles['0,0'].green, st = G.landStage(), next = C.landStages.find(s => s.at > g);
-  return `<p>Everything that grows here wakes the land a little. The yard is <b>${st.name}</b>` + (next ? `; ${next.at - g} more and it will be <b>${next.name}</b> (${next.sub}).</p>` : `, as green as it gets.</p>`);
+  const g = G.s.tiles['0,0'].green, st = G.landStage(), next = C.landStages[C.landStages.indexOf(st) + 1];
+  return `<p>Everything that grows here wakes the land a little. The yard is <b>${st.name}</b>` + (next ? `; ${Math.max(1, G.stageAt(next) - g)} more and it will be <b>${next.name}</b> (${next.sub}).</p>` : `, as green as it gets.</p>`);
 }
 function cap(t) { return t[0].toUpperCase() + t.slice(1); }
 function hours(mins, grow) { const h = (grow ? mins : G.jobMins(mins)) / 60 * G.taskSpeed(); return h < 1 ? `${Math.round(h * 60)} minutes` : h < 1.75 ? '1 hour' : `${Math.round(h)} hours`; }
@@ -5577,7 +5595,7 @@ function openMagic() {   // round thirteen notes 1, 5, 22 (Bryce chose "one jar 
   }
   if (!shown) html += `<p class="meta">No spells yet. ${G.s.spirit && Object.keys(G.s.spirit.taught).length ? 'The Wood spirit will come back with the next one.' : 'The Wood spirit will come and teach you, one spell at a time.'}</p>`;
   html += `<p style="margin-top:14px"><button class="act quiet" data-a="howto">How to play</button></p>`;
-  html += `<details class="tools"><summary>Garden tools</summary><p style="font-size:12px">Save v${G.s.v} · begun ${new Date(G.s.created).toLocaleDateString()} · <a href="#" data-a="reset" style="color:var(--red)">start over</a></p>${LOG_LINKS}${CONCERNS.links()}</details>`;   // v87: out of sight unless opened
+  html += `<details class="tools"><summary>Garden tools</summary><p style="font-size:12px">Save v${G.s.v} · begun ${new Date(G.s.created).toLocaleDateString()} · <a href="#" data-a="reset" style="color:var(--red)">start over</a></p>${LOG_LINKS}<p style="margin-top:6px;font-size:12px">The game keeps a safe copy of your garden on this phone by itself. For a new phone: <a href="#" data-a="gardenout" style="color:var(--ink2)">save my garden to a file</a> · <a href="#" data-a="gardenin" style="color:var(--ink2)">bring a garden back</a></p>${CONCERNS.links()}</details>`;   // v87: out of sight unless opened
   openSheet('magic', html);
 }
 function portraitHtml(v, big) {   // the journal picture: painted portrait, else the garden painting, else the stand-in icon
@@ -5605,7 +5623,7 @@ const LAND_COL = ['#cdb48a', '#b9c486', '#8fae5c', '#5f8a45'];   // bare, first 
 // how far the next leaf has grown (0 to 1). Our land shows it as four leaves a row; landTotal() adds every patch up.
 function landLeaves(k) {
   const S = C.landStages, g = (G.s.tiles[k] || {}).green || 0, st = G.landStage(k), i = S.indexOf(st), next = S[i + 1];
-  return { n: i + 1, part: next ? Math.max(0, Math.min(1, (g - st.at) / (next.at - st.at))) : 0, st, next, g };
+  return { n: i + 1, part: next ? Math.max(0, Math.min(1, (g - G.stageAt(st, k)) / (G.stageAt(next, k) - G.stageAt(st, k)))) : 0, st, next, g };
 }
 function landTotal() { const ks = Object.keys(G.s.tiles); return { leaves: ks.reduce((t, k) => t + landLeaves(k).n, 0), of: ks.length * 4, patches: ks.length }; }
 function leafSvg(fill, c, id) {   // one leaf: fill 1 = out, 0 = still to come, in between = growing (filled from the stalk up)
@@ -6224,6 +6242,7 @@ function start() {
   G.spotTaken = (k, gx, gy) => onBed(k, gx, gy) || (k === '0,0' && !yardClear(gx, gy, 20, false));   // nothing tucked into the seed bed, or under a make
   G.findSpot = findSpot;
   G.boot();
+  if (window.GardenBackup && GardenBackup.restored) { G.note('The garden was put back from its safe copy.'); setTimeout(() => toast('Your garden was put back from its safe copy.'), 4000); }
   for (const o of [...G.s.offers, ...G.s.secrets.out]) for (let n = 0; n < 12 && onBed(o.tile, o.gx, o.gy); n++) { o.gx = 0.1 + Math.random() * 0.8; o.gy = 0.1 + Math.random() * 0.8; }   // anything already lying on the bed moves off it
   for (const p of PROPS) IM[p.name] = settle(IM[p.name], p.flat);
   for (const k of Object.keys(IM)) if (/^(kit-(stumps-rocks|leftovers|fence|gate|wood)-|woodpile-)/.test(k)) IM[k] = settle(IM[k]);   // painted kit pieces that stand on the ground sit in it too
