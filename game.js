@@ -17,9 +17,39 @@ const VISIT_GAP = FAST ? 10000 : 10 * 60000;      // away this long (real time) 
 const Store = {
   key: window.SANDBOX ? 'gnomelife.sandbox.save' : 'gnomelife.save',   // the sandbox keeps its own garden
   load() { try { const s = localStorage.getItem(this.key); return s ? JSON.parse(s) : null; } catch (e) { return null; } },
-  write(blob) { const j = JSON.stringify(blob); try { localStorage.setItem(this.key, j); } catch (e) { if (window.PL) { PL.drop(); try { localStorage.setItem(this.key, j); } catch (e2) {} } } },   // phone storage full: the play log makes room (the save always comes first)
+  write(blob) { const j = JSON.stringify(blob); Backup.keep(j); try { localStorage.setItem(this.key, j); } catch (e) { if (window.PL) { PL.drop(); try { localStorage.setItem(this.key, j); } catch (e2) {} } } },   // phone storage full: the play log makes room (the save always comes first)
   clear() { try { localStorage.removeItem(this.key); } catch (e) {} },
 };
+
+// ---------- the safe copy (v107, full review: the garden must never be lost) ----------
+// A second copy of the garden, kept by itself in the phone's sturdier store (IndexedDB), refreshed as you play (at most once a
+// minute), plus the last copy from an earlier day. If the main save is ever missing or unreadable when the game opens, the
+// safe copy is put back before anything else happens (Backup.rescue, called by index.html before G.boot). Nobody has to do
+// anything. It does not survive a lost phone or wiping all of the browser's data: both copies live on the phone.
+const Backup = {
+  name: 'gnomelife-safe', slot: window.SANDBOX ? 'sandbox' : 'real', db: null, last: null, lastDay: null, at: 0, timer: null, restored: false,
+  open(cb) { if (this.db) return cb(this.db); try { if (typeof indexedDB === 'undefined') return cb(null); const rq = indexedDB.open(this.name, 1);
+      rq.onupgradeneeded = () => { if (!rq.result.objectStoreNames.contains('copies')) rq.result.createObjectStore('copies'); };
+      rq.onsuccess = () => { this.db = rq.result; cb(this.db); }; rq.onerror = rq.onblocked = () => cb(null); } catch (e) { cb(null); } },
+  get(key, cb) { this.open(db => { if (!db) return cb(null); try { const rq = db.transaction('copies').objectStore('copies').get(`${this.slot}:${key}`); rq.onsuccess = () => cb(rq.result || null); rq.onerror = () => cb(null); } catch (e) { cb(null); } }); },
+  put(key, val) { this.open(db => { if (!db) return; try { db.transaction('copies', 'readwrite').objectStore('copies').put(val, `${this.slot}:${key}`); } catch (e) {} }); },
+  good(c) { try { const s = c && JSON.parse(c.j); return !!(s && s.tiles && s.inv && s.created) && s; } catch (e) { return false; } },
+  keep(j) {   // called on every save; writes at most once a minute, and straight away the first time
+    if (typeof indexedDB === 'undefined') return; this.pending = j; if (this.timer) return;
+    const go = () => { this.timer = null; const jj = this.pending, day = dayKey(Date.now()); if (!jj) return;
+      if (this.last && this.lastDay && this.lastDay !== day) this.put('prev', { j: this.last, at: this.at, day: this.lastDay });   // the day has turned: yesterday's last copy is kept beside today's
+      this.last = jj; this.lastDay = day; this.at = Date.now(); this.put('now', { j: jj, at: this.at, day }); };
+    this.timer = setTimeout(go, this.last ? 60000 : 1500); },
+  // before the game boots: if the main save is gone or unreadable, put the safe copy back. Always calls cb (within 3 seconds).
+  rescue(cb) { let done = false; const fin = () => { if (!done) { done = true; cb(); } }; setTimeout(fin, 3000);
+    this.get('now', now => { const main = Store.load();
+      if (main) { if (this.good(now)) { this.last = now.j; this.lastDay = now.day; this.at = now.at; } return fin(); }
+      const use = c => { try { localStorage.setItem(Store.key, c.j); this.restored = true; } catch (e) {} fin(); };
+      if (this.good(now)) return use(now);
+      this.get('prev', prev => this.good(prev) ? use(prev) : fin()); }); },
+  clear() { this.pending = null; this.last = null; this.put('now', null); this.put('prev', null); },
+};
+window.GardenBackup = Backup;
 
 // ---------- fresh save ----------
 function fresh() {
@@ -61,7 +91,7 @@ const G = {
   onChange(fn) { this.listeners.add(fn); },
   emit(kind, data) { if (kind !== 'inv' && window.PL) PL.add(`ev ${kind} ${PL.short(data)}`); for (const fn of this.listeners) fn(kind, data); this.dirty = true; },
   save() { if (!this.s) return; this.s.lastSeen = now(); Store.write(this.s); this.dirty = false; },
-  reset() { if (window.PL) { PL.add('=== the garden was started over ==='); if (PL.newGarden) PL.newGarden(); else PL.flush(); } Store.clear(); try { localStorage.removeItem(SKEW_KEY); } catch (e) {} this.s = fresh(); this.save(); location.hash = ''; location.reload(); },
+  reset() { if (window.PL) { PL.add('=== the garden was started over ==='); if (PL.newGarden) PL.newGarden(); else PL.flush(); } Store.clear(); Backup.clear(); try { localStorage.removeItem(SKEW_KEY); } catch (e) {} this.s = fresh(); this.save(); location.hash = ''; location.reload(); },
   dur(mins) { return mins * MIN * this.taskSpeed(); },
   trim(mins) { const T = C.trim; if (!T || mins <= T.keep) return mins; return Math.min(T.most, T.keep + (mins - T.keep) * T.rate); },   // v86: the long waits trimmed (content.js trim; one place to undo)
   jobMins(mins) { mins = this.trim(mins); return mins <= 180 ? mins : 180 + (mins - 180) / 2; },   // build 3 (night rest): a long job counts its first three hours in full and the rest at half, so the gnomes' night off doesn't hold evening players up (6h -> 4h30, 8h -> 5h30)
@@ -107,6 +137,7 @@ const G = {
     if (!this.s.flags.r6) { this.s.flags.r6 = true; if (tk.woodpile && !tk.stump) this.s.flags.oldWoodpile = true; }   // round six: firewood now comes from the old stump; a garden that already had its woodpile keeps it
     if (tk.daisypot) { tk.yardbath = tk.daisypot; delete tk.daisypot; }   // round six: the pot of daisies on the old stump became a little bird bath
     if (!this.s.flags.trim86) { this.s.flags.trim86 = true; this.trimRunning(); }   // v86: jobs and crops already under way when the waits were trimmed finish sooner too
+    if (!('yardStage' in this.s.flags)) { const g = this.s.tiles['0,0'].green; this.s.flags.yardStage = Math.max(0, C.landStages.filter(x => g >= x.at).length - 1); }   // v107: see landStage
     this.friendsCatchUp();
     if (this.s.plots.seedbed.grown) this.s.flags.firstpick = true;   // fenced before the rabbit's raid existed
     if (this.s.plots.seedbed.crop === 'sprout') this.s.plots.seedbed.crop = 'carrot';   // the old generic sprouts were always carrots at heart
@@ -467,12 +498,12 @@ const G = {
   needsWhy(d) { return (d.needs || []).filter(n => !this.needMet(n)).map(n => this.needHint(n)).filter(Boolean).join(', '); },
   pageHint(id) {   // when a page comes, in words
     const i = C.story.pages.findIndex(p => p.id === id), pg = C.story.pages[i]; if (!pg) return ''; const w = pg.when;
-    if (this.pageWaiting(id)) return `when tomorrow's page of the story opens`;   // v87: it has happened; it is told the next morning
-    if (pg.when !== 'welcome' && pg.when !== 'next' && this.storyDue(pg, now())) return `when the story gets there (a page each morning)`;   // its moment has come; the pages before it are told first
+    if (this.pageWaiting(id)) return `when the next page of the story opens`;   // v87: it has happened; it is told the next morning
+    if (pg.when !== 'welcome' && pg.when !== 'next' && this.storyDue(pg, now())) return `when the story gets there (the next page is on its way)`;   // its moment has come; the pages before it are told first
     if (w.startsWith('done:')) return `after ${this.taskDef(w.slice(5)).short}`;
     if (w === 'flag:firstpick') return 'after the first harvest';
     if (w === 'garden') return 'once the garden opens';
-    if (w === 'next' && i > 0) return this.pageHappened(C.story.pages[i - 1].id) ? `when tomorrow's page of the story opens` : this.pageHint(C.story.pages[i - 1].id);
+    if (w === 'next' && i > 0) return this.pageHappened(C.story.pages[i - 1].id) ? `when the next page of the story opens` : this.pageHint(C.story.pages[i - 1].id);
     return '';
   },
   offerTick(t) {   // the home jobs that aren't the story's own come a little at a time: at most two waiting, at most one new a visit
@@ -540,13 +571,19 @@ const G = {
 
   // ---- land ----
   tileName(k) { const [x, y] = k.split(',').map(Number); return x > 0 ? 'east' : x < 0 ? 'west' : y > 0 ? 'south' : 'north'; },
-  landStage(k = '0,0') { const g = this.s.tiles[k] ? this.s.tiles[k].green : 0; let st = C.landStages[0]; for (const s of C.landStages) if (g >= s.at) st = s; return st; },
+  // v107 (full review, Bryce said yes): the home yard has its own, longer road to meadow and woodland (homeAt), so the slow
+  // greening he loves is not over in two days for a keen player. A yard never goes back a stage: a garden begun before v107
+  // keeps the stage it had (flags.yardStage, set at boot from the old marks and raised whenever the yard grows).
+  stageAt(st, k = '0,0') { return k === '0,0' && st.homeAt != null ? st.homeAt : st.at; },
+  landStage(k = '0,0') { const g = this.s.tiles[k] ? this.s.tiles[k].green : 0; let st = C.landStages[0]; for (const s of C.landStages) if (g >= this.stageAt(s, k)) st = s;
+    if (k === '0,0') { const keep = C.landStages[this.s.flags.yardStage || 0]; if (keep && C.landStages.indexOf(keep) > C.landStages.indexOf(st)) st = keep; }
+    return st; },
   // Green the yard earns spreads into the couple's garden once it is open; what is grown in the garden stays in the garden.
   addGreen(n, where = 'yard') {
     if (!n) return;
     if (window.PL) PL.add(`green +${n} (${where})`);
     const bump = k => { const before = this.landStage(k).key; this.s.tiles[k].green += n; const after = this.landStage(k); return after.key !== before ? after : null; };
-    if (where !== 'garden') { const was = this.s.tiles['0,0'].green, st = bump('0,0'); this.emit('green', was);   // v87: the little oak shows a sprig of leaves
+    if (where !== 'garden') { const was = this.s.tiles['0,0'].green, st = bump('0,0'); this.s.flags.yardStage = Math.max(this.s.flags.yardStage || 0, this.stageIndex('0,0')); this.emit('green', was);   // v87: the little oak shows a sprig of leaves
       if (st) { this.note(`The home patch is now ${st.name}.`); this.s.pages.cards.push({ k: 'land', key: st.key }); this.emit('land', st); } }
     if (this.gardenOpen()) { const st = bump('0,1'); if (st) this.note(`The garden is now ${st.name}.`); }
   },
@@ -1145,7 +1182,13 @@ const G = {
   // fifteen days, however fast someone plays (and a long break gives one page, not a pile).
   pageHappened(id) { return id in this.s.pages.seen; },
   pageWaiting(id) { return this.s.pages.cards.some(c => c.k === 'page' && c.id === id); },
-  pageCanOpen(c, t = now()) { return c.k === 'page' && dayKey(c.at || 0) !== dayKey(t) && this.s.flags.pageDay !== dayKey(t); },   // queued on an earlier day, and no page read yet today
+  // v107 (full review, Bryce said yes): when the player has got ahead of the book (two or more pages whose moment has come),
+  // the story catches up: the waiting page may open a couple of hours after it was queued and after the last one was read,
+  // the same day. A keen player used to wait about a week of mornings for the house, with nothing new to do.
+  pagesBehind(t = now()) { return C.story.pages.filter(pg => !(pg.id in this.s.pages.seen) && pg.when !== 'welcome' && pg.when !== 'next' && this.storyDue(pg, t)).length; },
+  pageCanOpen(c, t = now()) { if (c.k !== 'page') return false; const F = this.s.flags;
+    if (dayKey(c.at || 0) !== dayKey(t) && F.pageDay !== dayKey(t)) return true;   // queued on an earlier day, and no page read yet today
+    const gap = (C.story.catchUpMins || 120) * MIN; return this.pagesBehind(t) >= 2 && t - (c.at || 0) >= gap && t - (F.pageAt || 0) >= gap; },
   pageAfter(pg) { const i = C.story.pages.indexOf(pg); return pg.after || (i > 0 ? [C.story.pages[i - 1].id] : []); },
   storyDue(pg, t) {
     const s = this.s, w = pg.when, h = new Date(t).getHours(), p = s.plots.seedbed;
@@ -1182,7 +1225,7 @@ const G = {
       P.makes[key] = t; if (C.tasks.some(d => d.make === patch && d.stage === st && !d.season)) { P.cards.push({ k: 'makes', patch, stage: st }); this.emit('card'); }
     }
   },
-  seePage(id) { this.s.pages.seen[id] = now(); this.s.flags.pageDay = dayKey(now()); this.s.pages.cards = this.s.pages.cards.filter(c => !(c.k === 'page' && c.id === id)); this.dirty = true; },
+  seePage(id) { this.s.pages.seen[id] = now(); this.s.flags.pageDay = dayKey(now()); this.s.flags.pageAt = now(); this.s.pages.cards = this.s.pages.cards.filter(c => !(c.k === 'page' && c.id === id)); this.dirty = true; },
   pageDef(id) { return C.story.pages.find(p => p.id === id); },
   pageText(pg) {   // the page's paragraphs as they read now (lines about things not done yet are left out)
     const ok = c => c.startsWith('flag:') ? !!this.s.flags[c.slice(5)] : c.startsWith('helped:') ? !!(this.s.journal[c.slice(7)] || {}).helped : c.startsWith('season:') ? c.slice(7).split('|').includes(this.season(now())) : this.done(c);

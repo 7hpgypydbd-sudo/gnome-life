@@ -570,9 +570,9 @@ window.CONTENT = {
     { at:4, key:'green',  name:'first green',  sub:'a haze of green over the bare earth',
       spirit:`"Look, old heart! The first green. The spring brought the water back, and everything the gnomes grow teaches the soil to grow again. Each time something grows here, the yard gets a little greener. Your Journal keeps count: look on its Our land page, where every patch has four leaves to fill."`,   // round nine note 16: said by the Wood spirit when the yard first greens
       explain:`You'd have to kneel down to see it: a haze of green over the bare brown earth, so faint that Hazel thought it was her eyes. It isn't. Every living thing the gnomes grow here teaches the soil to grow again. The spring brought the water back, and each crop leaves a little more life behind. Keep things growing, and the green will spread.` },
-    { at:12,key:'meadow', name:'young meadow', sub:'grass, clover and the first daisies',
+    { at:12, homeAt:40, key:'meadow', name:'young meadow', sub:'grass, clover and the first daisies',
       explain:`One morning there was grass round the house. Not a haze any more, but real grass, with clover in it, and the first daisies, and a magpie strutting about as if he had planted it all himself. The ground remembers now. Plant things that stay, like trees and bushes and flowers, and the woods will start to come home.` },
-    { at:26,key:'wood',   name:'young woodland', sub:'young trees coming up all round',
+    { at:26, homeAt:140, key:'wood',   name:'young woodland', sub:'young trees coming up all round',
       explain:`Young trees are coming up all round the yard now, some planted and some that came by themselves, and the little oak has a new crown of leaves. The creatures who left long ago are finding their way back, one by one, following the green. This isn't a clearing any more. It's the beginning of a wood.` },
   ],
 
@@ -756,11 +756,11 @@ window.CONTENT = {
                 { ask:'I\'m trying a seed loaf. Have you 2 seeds to spare?', cost:{ seed:2 }, thanks:'There. It will be lumpy and wonderful.' },
                 { ask:'A drop of honey would make this cake sing. Just 1?', cost:{ honey:1 }, thanks:'Oh, that\'s the stuff. Come by later.' },
                 { ask:'Carrot cake today, if your bed can spare 3 carrots. Crooked ones are fine. Crooked ones are better.', cost:{ carrot:3 }, thanks:'You\'ll get the first slice, dear. The crooked bit.' } ],
-      quest:{ name:'The forgotten day', steps:[
-        { say:'Mabel catches Wendel by the oven, flour to her elbows. "It is a month this week since you two came up that hill," she says. "Hazel mentioned it to me, very lightly. You have not mentioned it at all." Wendel opens his mouth, and shuts it again. He had forgotten. A cake would help, Mabel says. She needs 3 seeds and 2 berries.', give:{ seed:3, berry:2 } },
+      quest:{ name:'The lost recipe', steps:[
+        { say:'Mabel finds Wendel by her oven, turning his hat round and round in his hands. He wants to bake Hazel a cake, to mark the day they came up the hill, and he has never baked anything in his life. "Then we begin with the easy part," says Mabel, flour to her elbows. She needs 3 seeds and 2 berries.', give:{ seed:3, berry:2 } },
         { say:'"Now the hard part," says Mabel. "Hazel\'s mother wrote her a honey-seed cake recipe on the back of a letter, and it blew away on the road here. She has never said, but she misses it." Look for a scrap of paper caught somewhere on the land.', find:{ name:'a scrap of old letter', icon:'📜' } },
         { say:'The recipe! Wendel goes pink, then very determined. He and Mabel bake it together in secret, late, by the oven.', job:{ name:'Bake the secret cake with Mabel', short:'baking in secret', who:'him', act:'carry', mins:180, cost:{ water:1 } } } ],
-        story:{ title:'The forgotten day', text:'He had forgotten. He admitted it at once, standing in the doorway with the cake held out like a shield. Hazel looked at the cake, and at the familiar slanting handwriting propped beside it, and sat down rather suddenly. "That\'s Mum\'s," she said. They ate it on the step, all three of them, and Wendel was forgiven by the second slice.' },
+        story:{ title:'The lost recipe', text:'He carried it home with both hands, walking very carefully. Hazel looked at the cake, and at the familiar slanting handwriting propped beside it, and sat down rather suddenly. "That\'s Mum\'s," she said. "It sank a bit in the middle," said Wendel. "Hers always did," said Hazel. They ate it on the step, all three of them, and nobody left a crumb.' },
         reward:{ light:3, bread:2 } } },
 
     { id:'tobias', name:'Tobias Burl', short:'Tobias', trade:'the carpenter', base:'him', look:{ hat:205, coat:28, s:1.1 }, home:'log', door:'#5a7a3a', icon:'🪚',
@@ -773,11 +773,11 @@ window.CONTENT = {
       favours:[ { ask:'Lost my pencil again. Have you a feather? I\'ll whittle a new one.', cost:{ feather:1 }, thanks:'Champion. Now where did I put the wood.' },
                 { ask:'My saw wants grease. A bit of moss and water will do it: 2 moss, 1 water.', cost:{ moss:2, water:1 }, thanks:'Hear that? Not a squeak.' },
                 { ask:'Working late. A loaf wouldn\'t go amiss. Just 1.', cost:{ bread:1 }, thanks:'Mabel\'s, is it? That woman is a wonder.' } ],
-      quest:{ name:'Too long in the workshop', steps:[
-        { say:'Wendel has spent four days running in Tobias\'s workshop, making "something important". Hazel has done every job alone, and tonight she said nothing at all at supper, which is worse than saying something. Tobias scratches his beard. "My fault. Let\'s finish the thing quick." He needs 3 planks.', give:{ plank:3 } },
+      quest:{ name:'Something important', steps:[
+        { say:'Wendel keeps slipping off to Tobias\'s workshop to make "something important", and coming home with sawdust in his beard and nothing to say about it. Hazel has guessed it is a surprise, and is being very good about not looking. Tobias scratches his beard. "Let\'s finish the thing before she bursts." He needs 3 planks.', give:{ plank:3 } },
         { say:'The "something important" is a rocking chair, for Hazel\'s evenings. It just needs finishing.', job:{ name:'Finish the rocking chair', short:'finishing the chair', who:'him', act:'carry', mins:240, cost:{ moss:2 } } },
         { say:'Tobias says the chair should sit one night in the workshop "to settle". Really, he is giving Wendel time to work out what to say.', wait:480 } ],
-        story:{ title:'The rocking chair', text:'He carried it home in the morning and set it down by the fire. "I should have told you where I was," he said. "I should have helped." Hazel ran her hand along the arm, which was very smooth, and slightly crooked. "You made the left one longer," she said. "I know," said Wendel. She sat in it, and rocked, and after a while she reached out and held his hand.' },
+        story:{ title:'The rocking chair', text:'He carried it home in the morning and set it down by the fire. "It was meant to be a secret," he said. "I know," said Hazel. "You are dreadful at them." She ran her hand along the arm, which was very smooth, and slightly crooked. "You made the left one longer," she said. "I know," said Wendel. She sat in it, and rocked, and after a while she reached out and held his hand.' },
         reward:{ light:3, plank:2 } } },
 
     { id:'fernsby', name:'The Fernsbys', short:'the Fernsbys', trade:'a young family', base:'him', look:{ hat:120, coat:20, s:1.0 }, home:'root', door:'#c08a2a', icon:'👪',
@@ -793,7 +793,7 @@ window.CONTENT = {
                 { ask:'Rowan has worn through his socks again. A bit of yarn? Just 1.', cost:{ yarn:1 }, thanks:'Ivy says she\'ll darn them. Ivy says that every time.' },
                 { ask:'The twins will eat anything in a sandwich. 2 lettuces?', cost:{ lettuce:2 }, thanks:'They picked the lettuce out. They ate the bread. It\'s a start.' } ],
       quest:{ name:'Hide and seek', steps:[
-        { say:'Ivy and Rowan need an afternoon to dig, and Hazel offers to mind the twins. "How hard can it be?" says Wendel. The twins vanish almost at once. Look for Pip somewhere on the land.', find:{ name:'Pip, hiding', icon:'🧒' } },
+        { say:'Ivy and Rowan need an afternoon to dig, so Wendel and Hazel offer to mind the twins. "How hard can it be?" they tell each other. The twins vanish almost at once. Look for Pip somewhere on the land.', find:{ name:'Pip, hiding', icon:'🧒' } },
         { say:'One found. Posy is better at hiding. Look again; she likes high places.', find:{ name:'Posy, up a stump', icon:'👧' } },
         { say:'Both twins found, both muddy, both starving. A picnic on the grass will settle everyone: 2 bread and 2 berries.', give:{ bread:2, berry:2 } } ],
         story:{ title:'Someday', text:'The twins fell asleep in the grass with jam on their faces. Wendel lay back and looked at the clouds. "Exhausting," he said. "Completely exhausting." Hazel was quiet for a moment. "Someday?" she said. Wendel turned his head and looked at her for a long time. "Someday," he said, and he was smiling.' },
@@ -881,9 +881,9 @@ window.CONTENT = {
                 { ask:'Could you spare 2 water? The wisps like a damp jar.', cost:{ water:2 }, thanks:'Look how bright it is now!' },
                 { ask:'Can I have a loaf? I forgot to eat again. 1 bread.', cost:{ bread:1 }, thanks:'Thank you. Don\'t tell Hazel I forgot.' } ],
       quest:{ name:'The lamp in the window', steps:[
-        { say:'Juniper has been very quiet. Hazel thinks she is homesick. Wendel thinks she is lonely. They argue about which, which is the closest thing to a quarrel they have had in weeks. Either way, her favourite wisp has gone dim. Bring her 3 water to freshen its jar.', give:{ water:3 } },
+        { say:'Juniper has been very quiet. Hazel thinks she is homesick. Wendel thinks she is lonely. They cannot agree which. Either way, her favourite wisp has gone dim. Bring her 3 water to freshen its jar.', give:{ water:3 } },
         { say:'The wisp still will not shine. "It wants a friend," Juniper says. Look for a stray wisp out on the land after dark.', find:{ name:'a stray wisp', icon:'✨', hours:[19, 6] } },
-        { say:'Hazel and Wendel invite Juniper to supper, and Hazel cooks far too much.', job:{ name:'Cook a supper for Juniper', short:'cooking supper', who:'her', act:'carry', at:'home', mins:120, cost:{ berry:2, seed:1 } } } ],
+        { say:'Hazel and Wendel invite Juniper to supper, and between them they cook far too much.', job:{ name:'Cook a supper for Juniper', short:'cooking supper', who:'either', act:'carry', at:'home', mins:120, cost:{ berry:2, seed:1 } } } ],
         story:{ title:'The lamp in the window', text:'After supper, Juniper said, "Do you know why I stopped here? I came over the hill at night, and I saw your window. It was the only light for miles, and someone was laughing behind it." Hazel looked at Wendel. They had both been right, it turned out. She had been homesick and lonely, both. "Well," said Hazel, "now it\'s your window too."' },
         reward:{ light:4 } } },
   ],
@@ -1142,8 +1142,8 @@ window.CONTENT = {
         `Wendel looked at it all for a long while. "Well," he said gently. "It's got a lovely view."`,
         `"It's got us now, too," said Hazel. She set the little oak down by the biggest stump, and before dark the wagon was a little shelter under its roots. Not much of a house. But theirs.`,
         `This hill had a heart once, the old spirit of the wood. When the loggers came it went quiet, deep under the stumps. That evening, as two small gnomes made camp, it stirred, just enough to notice them. That heart is you.` ] },
-      { id:'1.3', ch:1, when:'done:stump', title:'Water, and a fire', button:'What a first day', text:[
-        `Their first whole day on the hill began with water, because nothing lives without it. Wendel walked the clearing with a forked twig held out in front of him, eyes half shut, the way his grandfather had taught him.`,
+      { id:'1.3', ch:1, when:'done:stump', title:'Water, and a fire', button:'What a start', text:[
+        `The work on the hill began with water, because nothing lives without it. Wendel walked the clearing with a forked twig held out in front of him, eyes half shut, the way his grandfather had taught him.`,
         `Between the roots of an old stump, the twig gave a twitch. "There," he whispered. The spring was choked with stones and dead leaves, and he pulled them out one by one until a thread of clear water came up, cold as a secret. Deep under the hill, something old turned over in its sleep. That was you.`,
         `By evening there was a woodpile too, the old stump chopped into rounds and stacked bark side up, the way his grandfather used to. Hazel quietly laid the fire, because she knew how much he had been looking forward to it. A beetle came out of the woodpile to see what the fuss was about. Wendel bowed to him and named him Gerald.`,
         `"I had a speech," said Wendel, patting his pockets. "I think it's with my pipe." Hazel took the pipe out of her apron, where it had been since the bottom of the hill. He looked at the fire, and the first stars, and at her. "We're here," he said. That was the whole speech, and Hazel said it was the best one she had ever heard.` ] },
@@ -1179,13 +1179,13 @@ window.CONTENT = {
         `"That's the idea," said Hazel. "One day some other gnome will sit under it and wonder who planted it."`,
         `"We could carve our names on it."`,
         `"Not on the tree, love," said Hazel. "It's got enough to do."`, { if:'bench', text:`But she let him carve a very small heart and W+H into the plank of the bench by the fire, and he has kept it ever since.`, else:`But she let him carve a very small heart and W+H onto a flat stone by the fire, and he has kept it ever since.` } ] },
-      { id:'2.5', ch:2, when:'next', title:'Our first week', sub:`in Hazel's handwriting`, button:'Turn the page', journal:true, text:[
-        [ `Our first week, or near enough.`, { if:'roof', text:`We have a roof (moss, no leaks).` }, { if:'stump', text:`We have a fire every night (Wendel chopped the old stump into firewood, he is very proud of it).` }, { if:'spring', text:`We have a spring we found ourselves (Wendel found it, he would like that written down).` }, { if:'bed', text:`We have a seed bed, and we have eaten from it.` }, { if:'fence', text:`We have a fence, and a rabbit who thinks the fence is a suggestion.` } ],
+      { id:'2.5', ch:2, when:'next', title:'What we have', sub:`in Hazel's handwriting`, button:'Turn the page', journal:true, text:[
+        [ `A little while on the hill now, and I am counting what we have.`, { if:'roof', text:`We have a roof (moss, no leaks).` }, { if:'stump', text:`We have a fire every night (Wendel chopped the old stump into firewood, he is very proud of it).` }, { if:'spring', text:`We have a spring we found ourselves (Wendel found it, he would like that written down).` }, { if:'bed', text:`We have a seed bed, and we have eaten from it.` }, { if:'fence', text:`We have a fence, and a rabbit who thinks the fence is a suggestion.` } ],
         `And the land is waking. There's a haze of green at the edges now. Wendel says he can smell it coming, like rain.`,
         `I think somebody is helping us. Things turn up just where we need them: twigs by the door, stones by the bed, dew in the morning. Wendel says it's the hill itself, waking up. I don't know who you are, or what you are. But thank you.`,
         { margin:true, text:`Best week of my life. Lost my pipe four times. Found it in her apron four times.` } ] },
       { id:'3.0', ch:3, when:'next', title:'A house for winter', button:`Let's build a house`, quest:true, text:[
-        { if:'season:spring|summer', text:`It was a grey morning, the first in weeks. Not cold, just damp enough that the canvas sagged and dripped. Wendel's cold toes found Hazel's under the blanket, and she let them stay.`,
+        { if:'season:spring|summer', text:`It was a grey morning, the first since they came. Not cold, just damp enough that the canvas sagged and dripped. Wendel's cold toes found Hazel's under the blanket, and she let them stay.`,
           else:`It was the first cold morning. Not very cold: just enough that Hazel's breath made a little cloud in the air. Wendel's cold toes found hers under the blanket, and she let them stay.` },
         `Hazel sat up and looked at the drooping canvas, and the moss roof, and the big old stump the shelter leaned against.`,
         `"Wendel," she said. "That stump is hollow."`,
@@ -1194,7 +1194,7 @@ window.CONTENT = {
           else:`"A stump that size could be a house. A real one, with a door and windows and a chimney. Before the winter comes."` },
         `Wendel sat up so fast he took the whole blanket with him. He had been waiting all his life for someone to say those words, and he already knew where the round windows would go.` ] },
       { id:'3.1', ch:3, when:'garden', title:'Next door', button:'Hello there', text:[
-        `Hazel stood at the edge of the yard with her hands on her hips, looking at the patch of land next door. A week ago it had been grey and bare. Now it was, very definitely, green.`,
+        `Hazel stood at the edge of the yard with her hands on her hips, looking at the patch of land next door. Not long ago it had been grey and bare. Now it was, very definitely, green.`,
         `"A garden," she said. "A real one. Flowers along the path. A corner for the creatures. Somewhere to sit that isn't next to your woodpile."`,
         `"What's wrong with my woodpile?"`,
         `"Gerald lives in it."`,
@@ -1266,6 +1266,7 @@ window.CONTENT = {
       { id:'burrow', job:'earthbank', garden:true, after:2880, note:'The rabbit has dug a burrow into the earth bank. Wherever someone makes a home, the land takes heart.' },
       { id:'owlbox', job:'owlbox', after:2880, note:'The owl has moved into the owl box. The land is the better for it.' },
     ],
+    catchUpMins: 240,   // v107: with two or more pages waiting, the next may open this long after the last (game.js pageCanOpen)
     moveInAfter: 720,   // minutes after the home is made before someone moves in (after: a move-in's own wait)
     // "All done for now": once a visit, when both gnomes are busy (or nothing more can be started) and nothing is left lying about.
     // {time} is when their next job finishes. They are talking to each other: they feel a kindly presence about (the heart of the wood), but never see you.
