@@ -2,7 +2,7 @@
 
 A cosy storybook garden game for Bryce's iPhone, played as a web page from a Safari Home Screen shortcut. Charm and aliveness over complexity; it must run smoothly on a phone.
 
-_Last updated: 2026-11-16 (v105, the round-thirteen build, waiting for Bryce's OK). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
+_Last updated: 2026-11-16 (v105 live, the round-thirteen build). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
 
 ## 1. Rules for every chat (read first)
 
@@ -28,13 +28,13 @@ _Last updated: 2026-11-16 (v105, the round-thirteen build, waiting for Bryce's O
 
 ## 2. Where we are
 
-- **Live:** v104 (v105 waiting for Bryce's OK) at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). v99 (PR #132) is the round-ten build plus art day 21 and a reworked worn path.
+- **Live:** v105 (2026-11-16, PR #139) at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). v99 (PR #132) is the round-ten build plus art day 21 and a reworked worn path.
 - **Bryce is playing** v99. Round-ten notes are all "built, waiting for Bryce"; round-eleven notes are collected in the thread "Collect play notes round eleven".
 - **Two gardens:** the real one at the plain address; the sandbox at `?sandbox` (own save; tap the title for the test panel). Pretend player: `node tools/progression_sim.js 2 90`.
 
 ## 3. What's next (in order)
 
-0. **v105, the round-thirteen build (thread "Build the round thirteen notes"), waiting for Bryce's OK.** Previews in `/mnt/project-files/round-thirteen-v105/`. Holds round-thirteen notes 1 to 25 (tracker has each row). Bryce picked (2026-11-16):
+0. **v105, the round-thirteen build (thread "Build the round thirteen notes"), LIVE 2026-11-16 (Bryce: "Yes, put it live"); its notes are "built, waiting for Bryce".** Previews in `/mnt/project-files/round-thirteen-v105/`. Holds round-thirteen notes 1 to 25 (tracker has each row). Bryce picked (2026-11-16):
    - *Rubbish heap, new order (note 13):* one gnome starts by hand and gives up halfway ("far too much to carry by hand"), the fence is the break, then **Make a wheelbarrow** (a garden step with its own flag in the yard; the old yard make `barrow` is retired, `alsoDone` keeps one already made), then both cart off the rest with the barrow (`rubbish2`, pair), then dig out the buried rubbish. Pictures: heap, half (shown through the fence and barrow), bare mound, hollow. Gnomes on barrow work push the yard's own wheelbarrow (`carryWalk` `barrowE`/`barrowL`; art day 23 strips `barrowwalk`, `barrowwalk-empty`; parked: `wheelbarrow-loaded`).
    - *Reeds and wildflowers (notes 15, 18, 19, 21):* Hazel's mother's seed tin is a whole collection (said on the seed bed card and page 1.5). Reed seed balls pressed in round the pond (`reeds`), then your Coax wakes them (`reedsup`, cast step; the pond's flags stand on the bank). Wildflowers go to three open spots away from the pond, seed from the tin (no cost).
    - *Magic page (notes 1, 5, 22): one jar of light.* No daily count; the wood tops the jar up each morning (`G.morningLight`, 2 + magic level, up to `C.lightJar` 10). Each spell shows its cost in drops and Ready or why not. Every spell shows on the land (`spellFx`: rain shower, wind gust, coax sparkles).
