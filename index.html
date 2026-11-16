@@ -5273,7 +5273,7 @@ setInterval(() => {
   const f = G.s.flags; if (!f.gardenRush || f.gardenMoment || roomOn || sheet.classList.contains('on') || document.hidden || sceneOn() || RABBIT.on || performance.now() < QUIET_UNTIL || G.asleepAt(G.now()) || !G.s.tiles['0,1']) return;
   f.gardenMoment = G.now(); G.dirty = true; const t = performance.now(), [x, y] = toWorld(GPOND[0], GPOND[1], '0,1');
   WAKE = [{ k: '0,1', t }]; liveUntil = Math.max(liveUntil, t + 20000); ALLDONE.ease = { t: 0, d: 1.2, z0: cam.z, x0: cam.x, y0: cam.y, z1: Math.max(cam.z, 0.9), x1: x, y1: y };
-  const edge = { him: [GPOND[0] - 0.07, GPOND[1] - 0.25], her: [GPOND[0] + 0.05, GPOND[1] - 0.26] };   // the near bank, looking out over the water
+  const edge = { him: [GPOND[0] - 0.17, GPOND[1] - 0.15], her: [GPOND[0] - 0.10, GPOND[1] - 0.22] };   // the near bank, looking out over the water
   for (const g of gnomes) if (!jobOf(g.who) && !g.inside && !g.chore) { const [gx, gy] = glob('0,1', ...edge[g.who]); g.job = null; g.plan = null; g.act = null; g.routine = null; g.lookUntil = t + 16000; g.goto(gx, gy); g.faceTo = glob('0,1', ...GPOND); }
   FROG_MOMENT = t + 3500; setTimeout(() => toast(C.gardenMoment, true), 4500); G.note(C.gardenMoment); PL.add('garden moment: the pond edge and the frog');
 }, 3000);
