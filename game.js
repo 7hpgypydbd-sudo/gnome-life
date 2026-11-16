@@ -163,6 +163,7 @@ const G = {
   tick() {
     const s = this.s, t = now(); if (!s) return;   // not loaded yet (the first frame can come before the save is read)
     this.markVisit(t);
+    { const dk = dayKey(t); if (dk !== this._dk) { this._dk = dk; if (!s.days.includes(dk)) s.days.push(dk); } }   // v106: a phone left open past midnight still counts the new day (it used to be counted only when the page was loaded afresh)
     // crop
     const p = s.plots.seedbed;
     if (s.flags.sown1 && !s.flags.sowDone && (p.stage !== 'planted' || t - (p.plantedAt || 0) > 90000)) s.flags.sowDone = t;   // v104 (round twelve note 3): the seeds are really in (the sowing walk finishes sooner and says so itself)
@@ -889,7 +890,7 @@ const G = {
       if (e.fed.length === C.feeding.regularAfter) { out = 'regular'; this.note(`The ${d.name.toLowerCase()} is a regular now. It will come by every day.`); }
       else if (d.nest && e.fed.length === C.feeding.nestAfter) { out = 'nest'; this.note(`The ${d.name.toLowerCase()} has made itself a home nearby.`); }
     }
-    if (out === true) this.note(`${who} ate the ${food === 'seed' ? 'seed' : 'berries'} in the dish.`);
+    if (out === true) this.note(`${who} ate the ${food === 'seed' ? 'seed' : food === 'carrot' ? 'carrot' : 'berries'} in the dish.`);
     this.emit('fed', { id, out }); return out;
   },
   awayEater(t) {   // while you were away: the animal the food was left for came and ate it

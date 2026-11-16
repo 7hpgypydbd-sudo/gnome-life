@@ -346,7 +346,7 @@ window.CONTENT = {
 
   // Regrowing a neighbouring tile: the old single job, kept only so a garden that was half-way through it can finish (see heal below).
   regrow: { name:'Coax the land next door', short:'coaxing the land', who:'her', cost:{ seed:3, moss:3, water:2 }, mins:360, magic:4, minLevel:2,
-            blurb:'Seeds, moss and dew, and a little of their magic, and the bare ground next door will green.' },
+            blurb:'Seeds, moss and water, and a little of their magic, and the bare ground next door will green.' },
 
   // Healing the bare tiles (docs/PLAN.md "Healing the bare tiles", Bryce 2026-10-27). Every bare tile beyond home has a kind
   // (game.js tileKind) and its own chain of jobs, one after another, like the home yard. Either gnome can do any of them.
@@ -771,7 +771,7 @@ window.CONTENT = {
       building:{ name:'Raise Tobias\'s workshop', short:'raising the workshop', who:'him', act:'carry', cost:{ twig:10, stone:4, moss:2 }, mins:360,
         blurb:'An open-sided workshop with a plank roof, a sawhorse and a wall of hanging tools. After this, there are planks.', gift:{ plank:1 }, giftText:'A smooth spare plank leaning by Tobias\'s door.' },
       favours:[ { ask:'Lost my pencil again. Have you a feather? I\'ll whittle a new one.', cost:{ feather:1 }, thanks:'Champion. Now where did I put the wood.' },
-                { ask:'My saw wants grease. A bit of moss and dew will do it: 2 moss, 1 dew.', cost:{ moss:2, water:1 }, thanks:'Hear that? Not a squeak.' },
+                { ask:'My saw wants grease. A bit of moss and water will do it: 2 moss, 1 water.', cost:{ moss:2, water:1 }, thanks:'Hear that? Not a squeak.' },
                 { ask:'Working late. A loaf wouldn\'t go amiss. Just 1.', cost:{ bread:1 }, thanks:'Mabel\'s, is it? That woman is a wonder.' } ],
       quest:{ name:'Too long in the workshop', steps:[
         { say:'Wendel has spent four days running in Tobias\'s workshop, making "something important". Hazel has done every job alone, and tonight she said nothing at all at supper, which is worse than saying something. Tobias scratches his beard. "My fault. Let\'s finish the thing quick." He needs 3 planks.', give:{ plank:3 } },
@@ -787,7 +787,7 @@ window.CONTENT = {
       movedIn:'The Fernsbys moved in under the roots, and that night the clearing was louder and happier than it had ever been. Hazel watched the twins chase fireflies and said nothing, and Wendel watched Hazel.',
       sayings:['Have you seen the twins? No? Good, that means they\'re hiding properly.', 'There\'s water under here. There\'s water under everywhere, if you\'re patient.', 'Pip! Put the frog down!', 'You two make it look easy. Being married, I mean.', 'Posy says your garden is the best garden. Posy has seen two gardens.'],
       building:{ name:'Dig the village well', short:'digging the well', who:'him', act:'dig', cost:{ stone:10, twig:4 }, mins:420,
-        blurb:'Rowan has found water. A ring of stones, a little roof and a bucket on a rope. After this, nobody carries dew in their hat.', gift:{ water:2, feather:1 }, giftText:'A bucket of well water by the roots, and a feather the twins found.', site:'well' },
+        blurb:'Rowan has found water. A ring of stones, a little roof and a bucket on a rope. After this, nobody carries water in their hat.', gift:{ water:2, feather:1 }, giftText:'A bucket of well water by the roots, and a feather the twins found.', site:'well' },
       favours:[ { ask:'The twins want a picnic. Could you spare 2 berries?', cost:{ berry:2 }, thanks:'They\'ve eaten them already. Thank you anyway!' },
                 { ask:'Posy has built a tiny house for a beetle. It needs 2 twigs for a roof.', cost:{ twig:2 }, thanks:'The beetle has moved in. Posy is unbearable about it.' },
                 { ask:'Rowan has worn through his socks again. A bit of yarn? Just 1.', cost:{ yarn:1 }, thanks:'Ivy says she\'ll darn them. Ivy says that every time.' },
@@ -808,7 +808,7 @@ window.CONTENT = {
       building:{ name:'Plant the Pebbleworths\' orchard', short:'planting the orchard', who:'her', act:'dig', cost:{ seed:3, water:4, moss:3 }, mins:360,
         blurb:'A little ring of young fruit trees from their cuttings, staked and mulched. After this, there is fruit.', gift:{ berry:2 }, giftText:'A basket of windfall fruit by the Pebbleworths\' door.' },
       favours:[ { ask:'Bert\'s knees are complaining. Could you spare 2 moss for a cushion?', cost:{ moss:2 }, thanks:'He says thank you. He says it from the cushion.' },
-                { ask:'The young trees are thirsty. 3 dew, dear?', cost:{ water:3 }, thanks:'Listen to them drink.' },
+                { ask:'The young trees are thirsty. 3 water, dear?', cost:{ water:3 }, thanks:'Listen to them drink.' },
                 { ask:'Mags wants a loaf, and Bert wants to be the one who brings it. Just 1?', cost:{ bread:1 }, thanks:'Bert is very pleased with himself.' },
                 { ask:'Bean soup for Bert\'s knees. Mags swears by it. 3 beans?', cost:{ bean:3 }, thanks:'Bert says his knees feel better already. He hasn\'t had the soup yet.' } ],
       quest:{ name:'A star for Hazel', steps:[
@@ -827,7 +827,7 @@ window.CONTENT = {
         blurb:'Three woven straw skeps on a low bench in the sun. After this, there is honey.', gift:{ honey:1 }, giftText:'A little pot of honey on Clem\'s step, with a bee still checking it.' },
       favours:[ { ask:'My bees want more flowers. Could you spare 3 seeds to sow?', cost:{ seed:3 }, thanks:'They\'ll thank you in honey. Eventually.' },
                 { ask:'A skep has a hole. 2 twigs and some moss will patch it: 2 twigs, 1 moss.', cost:{ twig:2, moss:1 }, thanks:'Snug again. Listen to them settle.' },
-                { ask:'A dish of dew for the bees on a hot day? 2 dew.', cost:{ water:2 }, thanks:'Look at them drinking. Tiny, tidy tongues.' } ],
+                { ask:'A dish of water for the bees on a hot day? 2 water.', cost:{ water:2 }, thanks:'Look at them drinking. Tiny, tidy tongues.' } ],
       quest:{ name:'The runaway swarm', steps:[
         { say:'Hazel was helping Clem with the hives when the newest swarm took off in a huff. Hazel was stung on the hand, and Wendel has been fussing over it ever since, which Hazel says is worse than the sting. First, find where the swarm has gone.', find:{ name:'the runaway swarm', icon:'🐝' } },
         { say:'The swarm is hanging in a lump on a branch, sulking. Clem needs a fresh skep to coax them into: 4 twigs and 3 moss.', give:{ twig:4, moss:3 } },
@@ -878,10 +878,10 @@ window.CONTENT = {
       building:{ name:'Hang glow jars along the path', short:'hanging the glow jars', who:'her', act:'carry', cost:{ twig:6, stone:4, light:4 }, mins:300,
         blurb:'Posts with jars of caught light all along the village path, so nobody walks home in the dark. After this, Juniper brings in wisps.', gift:{ light:1 }, giftText:'A wisp of light in a jar on Juniper\'s step.', site:'path' },
       favours:[ { ask:'A jar has cracked. 2 stones to make a new holder?', cost:{ stone:2 }, thanks:'There. All lit again.' },
-                { ask:'Could you spare 2 dew? The wisps like a damp jar.', cost:{ water:2 }, thanks:'Look how bright it is now!' },
+                { ask:'Could you spare 2 water? The wisps like a damp jar.', cost:{ water:2 }, thanks:'Look how bright it is now!' },
                 { ask:'Can I have a loaf? I forgot to eat again. 1 bread.', cost:{ bread:1 }, thanks:'Thank you. Don\'t tell Hazel I forgot.' } ],
       quest:{ name:'The lamp in the window', steps:[
-        { say:'Juniper has been very quiet. Hazel thinks she is homesick. Wendel thinks she is lonely. They argue about which, which is the closest thing to a quarrel they have had in weeks. Either way, her favourite wisp has gone dim. Bring her 3 dew to freshen its jar.', give:{ water:3 } },
+        { say:'Juniper has been very quiet. Hazel thinks she is homesick. Wendel thinks she is lonely. They argue about which, which is the closest thing to a quarrel they have had in weeks. Either way, her favourite wisp has gone dim. Bring her 3 water to freshen its jar.', give:{ water:3 } },
         { say:'The wisp still will not shine. "It wants a friend," Juniper says. Look for a stray wisp out on the land after dark.', find:{ name:'a stray wisp', icon:'✨', hours:[19, 6] } },
         { say:'Hazel and Wendel invite Juniper to supper, and Hazel cooks far too much.', job:{ name:'Cook a supper for Juniper', short:'cooking supper', who:'her', act:'carry', at:'home', mins:120, cost:{ berry:2, seed:1 } } } ],
         story:{ title:'The lamp in the window', text:'After supper, Juniper said, "Do you know why I stopped here? I came over the hill at night, and I saw your window. It was the only light for miles, and someone was laughing behind it." Hazel looked at Wendel. They had both been right, it turned out. She had been homesick and lonely, both. "Well," said Hazel, "now it\'s your window too."' },
@@ -1143,7 +1143,7 @@ window.CONTENT = {
         `"It's got us now, too," said Hazel. She set the little oak down by the biggest stump, and before dark the wagon was a little shelter under its roots. Not much of a house. But theirs.`,
         `This hill had a heart once, the old spirit of the wood. When the loggers came it went quiet, deep under the stumps. That evening, as two small gnomes made camp, it stirred, just enough to notice them. That heart is you.` ] },
       { id:'1.3', ch:1, when:'done:stump', title:'Water, and a fire', button:'What a first day', text:[
-        `Their first whole day on the hill began with water, because nothing lives without it. Wendel walked the clearing with a forked twig held out in front of him, eyes half shut, the way his grandfather had taught him, and Hazel walked softly behind, because dowsing wants quiet.`,
+        `Their first whole day on the hill began with water, because nothing lives without it. Wendel walked the clearing with a forked twig held out in front of him, eyes half shut, the way his grandfather had taught him.`,
         `Between the roots of an old stump, the twig gave a twitch. "There," he whispered. The spring was choked with stones and dead leaves, and he pulled them out one by one until a thread of clear water came up, cold as a secret. Deep under the hill, something old turned over in its sleep. That was you.`,
         `By evening there was a woodpile too, the old stump chopped into rounds and stacked bark side up, the way his grandfather used to. Hazel quietly laid the fire, because she knew how much he had been looking forward to it. A beetle came out of the woodpile to see what the fuss was about. Wendel bowed to him and named him Gerald.`,
         `"I had a speech," said Wendel, patting his pockets. "I think it's with my pipe." Hazel took the pipe out of her apron, where it had been since the bottom of the hill. He looked at the fire, and the first stars, and at her. "We're here," he said. That was the whole speech, and Hazel said it was the best one she had ever heard.` ] },
@@ -1172,13 +1172,13 @@ window.CONTENT = {
         `She sat on it. It wobbled. He wedged a flat stone under one leg. It stopped wobbling.`,
         `"Do you like it?" he asked, a little anxiously.`,
         `"No," said Hazel. That is what she says when she likes something so much she cannot talk about it, and Wendel knew it. He sat down beside her, and they stayed there until the fire was only embers and Gerald had gone to bed.` ] },
-      { id:'2.4', ch:2, when:'done:sapling', title:'The little oak', button:'Grow tall', text:[
+      { id:'2.4', ch:2, after:['2.2'], when:'done:sapling', title:'The little oak', button:'Grow tall', text:[
         `The little oak had come a long way in its pot. Hazel had picked up the acorn by the roadside on the morning they were married, carried it in her pocket all day, and planted it that night in a teacup.`,
         `Now, at last, it went into real ground at the front corner of the yard. Hazel dug the hole and set it in, Wendel brought spring water in the can, and then they knelt and patted the soil down round it, both together.`,
         `"It'll outlive us," said Wendel softly.`,
         `"That's the idea," said Hazel. "One day some other gnome will sit under it and wonder who planted it."`,
         `"We could carve our names on it."`,
-        `"Not on the tree, love," said Hazel. "It's got enough to do." But she let him carve a very small heart and W+H into the plank of the bench by the fire, and he has kept it ever since.` ] },
+        `"Not on the tree, love," said Hazel. "It's got enough to do."`, { if:'bench', text:`But she let him carve a very small heart and W+H into the plank of the bench by the fire, and he has kept it ever since.`, else:`But she let him carve a very small heart and W+H onto a flat stone by the fire, and he has kept it ever since.` } ] },
       { id:'2.5', ch:2, when:'next', title:'Our first week', sub:`in Hazel's handwriting`, button:'Turn the page', journal:true, text:[
         [ `Our first week, or near enough.`, { if:'roof', text:`We have a roof (moss, no leaks).` }, { if:'stump', text:`We have a fire every night (Wendel chopped the old stump into firewood, he is very proud of it).` }, { if:'spring', text:`We have a spring we found ourselves (Wendel found it, he would like that written down).` }, { if:'bed', text:`We have a seed bed, and we have eaten from it.` }, { if:'fence', text:`We have a fence, and a rabbit who thinks the fence is a suggestion.` } ],
         `And the land is waking. There's a haze of green at the edges now. Wendel says he can smell it coming, like rain.`,
@@ -1227,7 +1227,7 @@ window.CONTENT = {
         `"You never know," said Hazel.` ] },
       { id:'3.5', ch:3, when:'done:house3', title:'Over the threshold', button:'The end of chapter three', text:[
         `The last shingle went on at sunset. The chimney drew on the very first try. The round windows glowed gold.`,
-        `Wendel wanted to do it properly. He scooped Hazel up at the doorstep, took one grand step, caught his toe on the doorstep he had laid himself, and they both went through the door in a heap. They lay on the new floor and laughed until they cried.`,
+        `Wendel wanted to do it properly. He scooped Hazel up at the doorstep, took one grand step, caught his toe on the sill, and they both went through the door in a heap. They lay on the new floor and laughed until they cried.`,
         `"Welcome home, my love," said Wendel, from somewhere underneath her skirts.`,
         `"Welcome home, you great lump," said Hazel.`,
         `Neither of them had noticed the little board over the door yet. Hazel had painted it in her best lettering: THE GNOMESTEAD, with a tiny snail underneath, taking the last letter very slowly.`,
@@ -1311,15 +1311,15 @@ window.CONTENT = {
       { id:'clonks', name:'Offcut wind chimes', ask:'All my offcuts, on strings, by the door. Two planks\' worth and a bit of yarn.', cost:{ plank:2, yarn:1 }, at:[0.18, 0.40], look:'chime', wood:true, line:'Little ends of wood on strings. They clonk rather than chime. He likes clonk.' } ],
     fernsby: [
       { id:'twinswing', name:'A tree swing for the twins', ask:'The twins want a swing. Rowan says three lots of yarn for a rope and a plank for the seat.', cost:{ yarn:3, plank:1 }, at:[0.58, 0.40], look:'swing', line:'One swing, two twins. There is a rota. Nobody follows it.' },
-      { id:'puddle', name:'A paddling puddle for the toy boat', ask:'The toy boat has never been on water. A stone-lined puddle would do. Plenty of dew to fill it, mind.', cost:{ water:6, stone:3 }, at:[0.50, 0.54], look:'puddle', line:'A stone-lined puddle exactly one boat wide.' },
+      { id:'puddle', name:'A paddling puddle for the toy boat', ask:'The toy boat has never been on water. A stone-lined puddle would do. Plenty of water to fill it, mind.', cost:{ water:6, stone:3 }, at:[0.50, 0.54], look:'puddle', line:'A stone-lined puddle exactly one boat wide.' },
       { id:'heightchart', name:'A height chart on the door frame', ask:'We want to measure the twins every month. A plank for the chart and berries for ink?', cost:{ berry:2, plank:1 }, at:[0.24, 0.36], look:'chart', wood:true, line:'Two marks a month, in berry ink. The twins stand on tiptoe.' } ],
     pebbleworth: [
       { id:'birdtable', name:'A bird table by their chairs', ask:'Bert would love to watch the birds from his chair. A little table on a post, and some berries to start them off.', cost:{ plank:2, berry:3 }, at:[0.56, 0.40], look:'birdtable', line:'So they can watch the birds from their chairs, which is the point of chairs.' },
-      { id:'climbrose', name:'A climbing rose up the trunk', ask:'Mags has always wanted a rose round the door. Seeds, dew, and a bit of moss to keep it snug.', cost:{ seed:3, water:3, moss:1 }, at:[0.24, 0.32], look:'rose', line:'Mags planted it the day they moved in, in her head. Now it is real.' },
+      { id:'climbrose', name:'A climbing rose up the trunk', ask:'Mags has always wanted a rose round the door. Seeds, water, and a bit of moss to keep it snug.', cost:{ seed:3, water:3, moss:1 }, at:[0.24, 0.32], look:'rose', line:'Mags planted it the day they moved in, in her head. Now it is real.' },
       { id:'kneerug', name:'A knitted rug for Bert\'s knees', ask:'Mags wants to knit Bert a rug. Three yarns and a couple of feathers for stuffing the cushion bit.', cost:{ yarn:3, feather:2 }, at:[0.48, 0.36], look:'rug', wood:true, line:'Bert says he doesn\'t need it. Bert never takes it off.' } ],
     clem: [
       { id:'honeystall', name:'An honesty stall for honey', ask:'I\'d like a little stall by the path, for honey. Three planks, and two pots to stock it.', cost:{ plank:3, honey:2 }, at:[0.56, 0.44], look:'stall', line:'Take a pot, leave a button. The bees keep the accounts.' },
-      { id:'beebath', name:'A bee bath', ask:'My bees get thirsty. A saucer of pebbles with dew in it, so nobody drowns.', cost:{ stone:3, water:3 }, at:[0.50, 0.56], look:'beebath', line:'A saucer of pebbles and water, so no bee goes thirsty or gets its feet wet.' },
+      { id:'beebath', name:'A bee bath', ask:'My bees get thirsty. A saucer of pebbles with water in it, so nobody drowns.', cost:{ stone:3, water:3 }, at:[0.50, 0.56], look:'beebath', line:'A saucer of pebbles and water, so no bee goes thirsty or gets its feet wet.' },
       { id:'paintedbee', name:'A painted bee on her door', ask:'I want a bee on my door. Berries for paint, and a feather for a brush.', cost:{ berry:3, feather:1 }, at:[0.30, 0.38], look:'sign', wood:true, line:'Painted with a feather. It has five legs. Nobody has told her.' } ],
     barnaby: [
       { id:'sackbarrow', name:'A sack barrow', ask:'Mm. Sacks are heavy. Barrow. Three planks. Some twigs.', cost:{ plank:3, twig:3 }, at:[0.56, 0.42], look:'barrow', line:'"Mm. Useful."' },
@@ -1330,7 +1330,7 @@ window.CONTENT = {
       { id:'dyepot', name:'A dye pot on three stones', ask:'I need a dye pot. Three stones to stand it on and four berries. Not squashed ones.', cost:{ stone:3, berry:4 }, at:[0.50, 0.56], look:'dyepot', line:'Berries in, purple out. Mostly onto Nettle.' },
       { id:'ragrug', name:'A rag rug on the step', ask:'A rag rug for my step. Three yarn, and a crust for the mouse who helps me with the knots.', cost:{ yarn:3, bread:1 }, at:[0.34, 0.40], look:'mat', wood:true, line:'Woven from scraps. The bread is for the mouse who helped.' } ],
     juniper: [
-      { id:'moonflowers', name:'A moonflower patch', ask:'At home we had moonflowers, for the moths. Seeds and dew, and I\'ll plant them by the door.', cost:{ seed:3, water:3 }, at:[0.54, 0.40], look:'flowers', line:'Flowers that open at night, for the moths she misses from home.' },
+      { id:'moonflowers', name:'A moonflower patch', ask:'At home we had moonflowers, for the moths. Seeds and water, and I\'ll plant them by the door.', cost:{ seed:3, water:3 }, at:[0.54, 0.40], look:'flowers', line:'Flowers that open at night, for the moths she misses from home.' },
       { id:'starchart', name:'A star chart on her door', ask:'I want to paint the stars from home on my door. Berries for paint and a feather to paint with.', cost:{ berry:3, feather:1 }, at:[0.24, 0.40], look:'sign', line:'Painted so she can find home in the sky. It is to the left of the big one.' },
       { id:'mothpot', name:'A honey pot for the moths', ask:'A dish of honey water on a flat stone, for the night moths. Two pots of honey and two stones.', cost:{ honey:2, stone:2 }, at:[0.48, 0.54], look:'dish', wood:true, line:'A dish of honey water on a flat stone. The moths come every night.' } ],
   } },

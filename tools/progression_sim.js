@@ -23,7 +23,7 @@ const _gather = G.gather.bind(G); G.gather = id => { const o = G.s.offers.find(x
 const invLog = [];
 const t0 = clock; const log = [];
 const stamp = () => { const d = Math.floor((clock - t0) / 864e5) + 1, h = new RealDate(clock).getHours(), m = new RealDate(clock).getMinutes(); return `D${String(d).padStart(2)} ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; };
-const ev = (kind, txt) => log.push(`${stamp()}  ${kind.padEnd(8)} ${txt}`);
+const ev = (kind, txt) => { log.push(`${stamp()}  ${kind.padEnd(8)} ${txt}`); if (typeof newThing === 'function' && !/^(WISH|SPELL)$/.test(kind)) try { newThing(`${kind} ${txt}`); } catch (e) {} };
 // watch pages/cards
 const seenCards = new Set();
 function drainCards() {
@@ -49,6 +49,11 @@ function watch() {
   if (process.env.DONES) for (const [id, t] of Object.entries(G.s.tasks)) if (t.done && !doneSeen.has(id)) { doneSeen.add(id); ev('DONE', id); }
   const L = G.magicLevel(); if (L !== magicWas) { magicWas = L; ev('MAGIC', `level ${L}`); }
 }
+const SKIPJOBS = new Set((process.env.SKIPJOBS || '').split(',').filter(Boolean));   // SKIPJOBS=bench,doorstep: jobs this player never starts (does the story still move?)
+const AWAY = (process.env.AWAY || '').split(',').filter(Boolean).map(r => r.split('-').map(Number));   // AWAY=8-14: no visits on those days (a week off)
+const SNAP = (process.env.SNAP || '').split(',').filter(Boolean).map(Number);   // SNAP=1,3,7,14,30,60,100: a picture of the garden at the end of those days
+const NOCOAX = !!process.env.NOCOAX;   // NOCOAX=1: never hurries the crops with magic
+let lastNew = { day: 1, what: 'the start' }; const newThing = what => { lastNew = { day: Math.floor((clock - t0) / 864e5) + 1, what }; };
 const started = new Set();
 let maxList = 0, maxAt = "", listLog = [];
 function visit() {
@@ -64,7 +69,7 @@ function visit() {
     if (p.stage === 'ready') { G.harvest(); }
     if (!p.stage && (G.done('bed') || G.done('bedwater') || p.grown)) { const order = (!G.s.flags['sown:pumpkin'] && G.cropOpen('pumpkin')) ? ['pumpkin'] : [['carrot','lettuce','bean'][p.grown % 3], 'carrot', 'lettuce']; for (const id of order) if (G.cropOpen(id) && G.can(G.cropCost(id))) { G.plant(id); break; } }
     if (p.stage === 'planted') G.water();
-    if (MODE === 'eager' && p.stage === 'growing' && G.canCast('coax').ok && (G.s.inv.light||0) >= 4) G.cast('coax');
+    if (MODE === 'eager' && !NOCOAX && p.stage === 'growing' && G.canCast('coax').ok && (G.s.inv.light||0) >= 4) G.cast('coax');
     if (G.canCast('legs').ok && !process.env.NOLEGS) { G.cast('legs'); ev('SPELL', 'toadstool legs'); }
     for (const sp of ['rain', 'coax']) if (G.castSpots(sp).length && G.canCast(sp).ok) { const k = G.castSpots(sp)[0]; G.cast(sp, k); ev('SPELL', sp === 'rain' ? 'rain fills the hollow' : 'coax wakes the reeds'); }   // round thirteen: the reeds are coaxed up   // v99: a patch step that is the player's spell
     for (const sp of ['wind', 'cloud', 'seedwake', 'sing']) if (G.canCast(sp).ok && (G.s.inv.light||0) >= 3) { G.cast(sp); }
@@ -80,7 +85,7 @@ function visit() {
     const list = G.taskList();
     let pn = 0; let fn = 0; const vis = list.filter(v => v.state !== 'done' && !v.def.make && !(v.def.healTile && v.state !== 'running' && ++pn > 3) && !(v.def.farm && v.state !== 'running' && G.gameDay() > 30 && ++fn > 2));   // the Jobs tab as drawn (Hazel's list is its own tab; at most three waiting patch jobs and, from day 31, two farm jobs; the rest are on each patch's or farm's card)
     if (vis.length > maxList) { maxList = vis.length; maxAt = stamp() + ": " + vis.map(v => v.def.healTile ? "patch" : v.def.farm ? "farm" : v.def.folk ? "village" : v.def.festival ? "fest" : "home:" + v.def.id).join(", "); }
-    const ready = list.filter(v => v.state === 'ready' && v.can);
+    const ready = list.filter(v => v.state === 'ready' && v.can && !SKIPJOBS.has(v.def.id) && !(process.env.NOMAKES && v.def.make));
     const pri = v => v.def.chore ? 9 : v.def.home ? 0 : v.def.folk ? 1 : v.def.festival ? 1 : (!v.def.make && !v.def.healTile && !v.def.farm) ? 2 : v.def.healTile ? 3 : v.def.farm ? 4 : 5;
     ready.sort((a, b) => pri(a) - pri(b));
     for (const v of ready) { if (G.startTask(v.def.id)) { if (!started.has(v.def.id)) { started.add(v.def.id); if (!v.def.healTile && !v.def.farm) ev(v.def.make ? 'MAKE' : 'JOB', `${v.def.id} (${v.def.name}) by ${v.def.who}`); } } }
@@ -93,16 +98,29 @@ function snapshotList(label) {
   const mk = G.taskList().filter(v => v.def.make && v.state !== 'done').length, nx = G.nextUp();
   listLog.push(`${label}: Jobs tab: ready ${(by.ready||[]).length}, waiting (gnome busy etc.) ${(by.locked||[]).length}, running ${(by.running||[]).length}; Hazel's list ${mk}${nx ? `; Next: ${nx.name}, ${nx.why}` : ''}\n   ready: ${(by.ready||[]).join(' | ')}\n   waiting: ${(by.locked||[]).join(' | ')}`);
 }
+const snapLog = [];
+function snapshot(day) {   // the forecast review (2026-11-16): what the garden holds and what there is to do at the end of a given day
+  const T = G.s.tiles, st = k => G.landStage(k).name, list = G.taskList(), open = list.filter(v => v.state !== 'done');
+  const by = { story: 0, makes: 0, patch: 0, farm: 0, village: 0, chores: 0, other: 0 };
+  for (const v of open) by[v.def.chore ? 'chores' : v.def.make ? 'makes' : v.def.healTile ? 'patch' : v.def.farm ? 'farm' : v.def.folk || v.def.festival ? 'village' : v.def.spine ? 'story' : 'other']++;
+  const tiles = Object.keys(T), stages = {}; for (const k of tiles) stages[st(k)] = (stages[st(k)] || 0) + 1;
+  const chains = G.healTiles().map(k => `${k}:${G.healAt(k)}/${G.healSteps(k).length}`).join(' ');
+  const pages = Object.keys(G.s.pages.seen).length, mk = Object.keys(C.makes).map(k => k + ' ' + G.makesCount(k).done + '/' + G.makesCount(k).total).join(', ');
+  const full = Object.entries(G.s.inv).filter(([k, n]) => n >= G.shelf(k)).map(([k]) => k), none = ['twig', 'moss', 'stone', 'seed'].filter(k => !(G.s.inv[k] > 0));
+  return `--- END OF DAY ${day} ---\n  yard: ${st('0,0')} (green ${T['0,0'].green}), magic level ${G.magicLevel()}, light ${G.s.inv.light || 0}\n  land: ${tiles.length} of 25 patches showing; ${Object.entries(stages).map(([k, n]) => n + ' ' + k).join(', ')}\n  patch chains (done/steps): ${chains}\n  story pages read: ${pages} of ${C.story.pages.length}; neighbours ${G.settled().length}${G.s.village.traveller ? ' (+1 camping: ' + G.s.village.traveller.id + ')' : ''}; festival ${G.s.festival.stage}\n  to do now: story ${by.story}, other home jobs ${by.other}, wish-list makes ${by.makes}, patch jobs ${by.patch}, farm ${by.farm}, village ${by.village}, chores ${by.chores}\n  wish list made: ${mk}; little finds ${Object.keys(G.s.secrets.found).length}/${C.secrets.length}; creatures in journal ${C.visitors.filter(v => G.met(v.id)).length}/${C.visitors.length}\n  store: ${Object.entries(G.s.inv).filter(([k, n]) => n).map(([k, n]) => k + ' ' + n).join(', ')}\n  shelves full: ${full.join(', ') || 'none'}; run out: ${none.join(', ') || 'none'}\n  last new thing: day ${lastNew.day} (${lastNew.what}); jobs ever done ${Object.values(G.s.tasks).filter(t => t.done).length}; save size ${JSON.stringify(G.s).length} characters`;
+}
 const hours = process.env.HOURS && process.env.HOURS.startsWith('every:') ? (([m, a, b]) => { const r = []; for (let h = a; h < b; h += m / 60) r.push(h); return r; })(process.env.HOURS.slice(6).split(':').map(Number)) : process.env.HOURS ? process.env.HOURS.split(',').map(Number) : { 1: [8], 2: [8, 19], 3: [8, 13, 19], 4: [7, 11, 15, 20] }[VPD];   // HOURS=21 for an evening-only player; HOURS=every:5:10:22 = a visit every 5 minutes from 10:00 to 22:00 (first-hour checks); DONES=1 logs each job as it finishes
 snapshotList('Very first visit');
 for (let d = 0; d < DAYS; d++) {
+  if (AWAY.some(([a, b]) => d + 1 >= a && d + 1 <= (b || a))) continue;
   for (const h of hours) { const day = new RealDate(t0 + d * 864e5); day.setHours(Math.floor(h), Math.round(h % 1 * 60), 0, 0); clock = day.getTime(); visit(); }
+  if (SNAP.includes(d + 1)) snapLog.push(snapshot(d + 1));
   if (d === 0 || d === 1 || d === 2 || d === 6 || d === 13) snapshotList(`End of day ${d + 1}`);
   if ([0,2,6,13,20,29,44,59,74,89].includes(d)) invLog.push(`D${d+1} pack: ` + Object.entries(G.s.inv).filter(([k,n])=>n).map(([k,n])=>k+' '+n).join(', '));
 }
 console.log(log.join('\n'));
 console.log("\nMost rows in the Jobs tab (not done) at once:", maxList, "\n   at", maxAt);
-console.log(listLog.join('\n'));
+console.log(listLog.join('\n')); if (snapLog.length) console.log('\n' + snapLog.join('\n'));
 console.log('\nIncome:', JSON.stringify(income)); console.log('Spent:', JSON.stringify(spent)); console.log(invLog.join('\n'));
 console.log('Wishes made:', JSON.stringify(G.wishesCount()), ' little makes:', Object.keys(C.makes).map(k => k + ' ' + G.makesCount(k).done + '/' + G.makesCount(k).total).join(', '));
 if (process.env.SAVE) G.save(), fs.writeFileSync(process.env.SAVE, JSON.stringify(store));   // SAVE=file: the save at the end, to load in a browser

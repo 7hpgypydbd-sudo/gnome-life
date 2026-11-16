@@ -351,7 +351,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v105</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v106</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -372,7 +372,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 105;
+const BUILD = 106;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -380,11 +380,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=105"></script>
-<script src="playlog.js?v=105"></script>
-<script src="concerns.js?v=105"></script>
-<script src="game.js?v=105"></script>
-<script src="walk.js?v=105"></script>
+<script src="content.js?v=106"></script>
+<script src="playlog.js?v=106"></script>
+<script src="concerns.js?v=106"></script>
+<script src="game.js?v=106"></script>
+<script src="walk.js?v=106"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -1264,11 +1264,12 @@ function drawSeasonGround(now) {
     for (let i = LITTER.length - 1; i >= 0; i--) { const l = LITTER[i], age = (t - l.at) / 1000; if (age > 240) { LITTER.splice(i, 1); continue; } leafShape(l.x, l.y, l.r * 1.1, l.rot, l.col, 0.85 * Math.min(1, (240 - age) / 30)); }
   }
 }
+function fillView() { const v = viewBox(); ctx.fillRect(v.x0 - 20, v.y0 - 20, v.x1 - v.x0 + 40, v.y1 - v.y0 + 40); }   // v106: a wash covers whatever the camera can see, however far the land has spread (it used to stop at a fixed square, which showed as a box of darker paper once the valley was big and you pinched right out)
 function seasonGrade(ph) {
   const L = SEASON_LOOK[season()]; if (!L) return;
   ctx.save();
-  if (L.grey) { ctx.globalCompositeOperation = 'saturation'; ctx.globalAlpha = L.grey; ctx.fillStyle = '#808080'; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); }
-  ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha = L.amt * (0.5 + 0.5 * ph.light); ctx.fillStyle = `rgb(${L.tint.join(',')})`; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000);
+  if (L.grey) { ctx.globalCompositeOperation = 'saturation'; ctx.globalAlpha = L.grey; ctx.fillStyle = '#808080'; fillView(); }
+  ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha = L.amt * (0.5 + 0.5 * ph.light); ctx.fillStyle = `rgb(${L.tint.join(',')})`; fillView();
   ctx.restore();
 }
 // round thirteen notes 9, 22: things you can SEE happen. A soft shower over one spot (the roof leaking, the rain spell), a drip
@@ -4784,7 +4785,7 @@ function frame(now) {
     else {
       ctx.save(); ctx.globalCompositeOperation = 'multiply';
       ctx.fillStyle = `rgba(${Math.round(255 - 112*night)},${Math.round(255 - 92*night)},${Math.round(255 - 38*night)},1)`;   // a moonlit blue, never pitch dark
-      ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); ctx.restore();
+      fillView(); ctx.restore();
     }
     const fire = PROPS.find(p => p.name === 'campfire'); const [fx, fy] = toWorld(fire.gx, fire.gy);
     const flick = 0.75 + 0.25 * Math.sin(now / 90) * Math.sin(now / 230);
@@ -4801,7 +4802,7 @@ function frame(now) {
   }
   seasonGrade(ph);
   drawHelpRing(now);
-  if (ph.warm > 0) { ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = `rgba(255,170,90,${0.28 * ph.warm})`; ctx.fillRect(-2000, -2000, PLOT.w + 4000, PLOT.h + 4000); ctx.restore(); }
+  if (ph.warm > 0) { ctx.save(); ctx.globalCompositeOperation = 'overlay'; ctx.fillStyle = `rgba(255,170,90,${0.28 * ph.warm})`; fillView(); ctx.restore(); }
   ctx.restore();
 
   if (NEWGROUND) drawMorningMist(dt, now);
@@ -5900,6 +5901,7 @@ function allDoneCheck(now) {
 }
 function easeCam(dt) { const e = ALLDONE.ease; if (!e) return; e.t = Math.min(1, e.t + dt / (e.d || 2.5)); const k = e.t * e.t * (3 - 2 * e.t);
   cam.z = e.z0 + (e.z1 - e.z0) * k; cam.x = e.x0 + (e.x1 - e.x0) * k; cam.y = e.y0 + (e.y1 - e.y0) * k; clampCam(); if (e.t >= 1) ALLDONE.ease = null; }
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}   // v106: ask the phone to keep the garden's save even when it is short of room (it asks nobody anything; the phone just says yes or no)
 let BACK_AT = performance.now();   // round eleven notes 6, 14: when the player last came back to the app (nothing big starts in the first moments)
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { BACK_AT = performance.now(); if (typeof HELP !== 'undefined') HELP.lastInput = BACK_AT; } });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - (ALLDONE.hidAt || Date.now()) > 10 * 60000) { ALLDONE.done = false; bigDay = false; ALLDONE.at = performance.now(); } if (document.hidden) ALLDONE.hidAt = Date.now(); });   // a new visit

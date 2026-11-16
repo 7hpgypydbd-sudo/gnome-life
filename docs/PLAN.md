@@ -2,7 +2,7 @@
 
 A cosy storybook garden game, made for Bryce's iPhone first and played as a web page from a Safari Home Screen shortcut. It may be released to the public eventually (Bryce, 2026-11-16), and it may be sold (Bryce would probably ask for donations, but might sell it). Charm and aliveness over complexity; it must run smoothly on a phone.
 
-_Last updated: 2026-11-16 (v105 live, the round-thirteen build). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
+_Last updated: 2026-11-16 (v106 live: the clear fixes from the full review). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
 
 ## 1. Rules for every chat (read first)
 
@@ -20,6 +20,8 @@ _Last updated: 2026-11-16 (v105 live, the round-thirteen build). Keep this file 
 7. When a notes round ends (or a new one starts), offer a build for it straight away. Never let a collected round sit.
 8. Play observations Bryce posts in the project chat are notes: forward them to the notes thread.
 
+**Bryce's rules (check every change against them).** `docs/BRYCES-RULES.md` holds the patterns behind all of Bryce's notes, in his own words (full review, 2026-11-16). Before anything that can be seen or read in the game is shown to Bryce: (1) go down that list and fix whatever he would quote back; (2) fix the rule, not the single case (the notes that came back all came back because one case was patched); (3) run the pretend player as a keen player too (`HOURS=every:20:8:21`), because that is how Bryce plays; (4) say in the preview message which rules the change was checked against. A new note that fits no rule adds a rule, with his words, in the same chat.
+
 **Stand-in check.** Before every art day and every release, run `node tools/standin_check.js` (needs a local server, see the file) and look at the list in section 4. Nothing a month-one player meets may be a stand-in. When a painting lands, remove its code stand-in in the same change (a painting that fades in during a job must not have code drawn on top).
 
 **No assumed length.** Never plan to a fixed number of days or a target day for anything (Bryce, 2026-11-14). Pace comes from how it feels in play; the pretend player's day counts are measurements only.
@@ -28,7 +30,7 @@ _Last updated: 2026-11-16 (v105 live, the round-thirteen build). Keep this file 
 
 ## 2. Where we are
 
-- **Live:** v105 (2026-11-16, PR #139) at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). v99 (PR #132) is the round-ten build plus art day 21 and a reworked worn path.
+- **Live:** v106 (2026-11-16, the clear fixes from the full review; v105 was the round-thirteen build, PR #139) at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). v99 (PR #132) is the round-ten build plus art day 21 and a reworked worn path.
 - **Bryce is playing** v99. Round-ten notes are all "built, waiting for Bryce"; round-eleven notes are collected in the thread "Collect play notes round eleven".
 - **Two gardens:** the real one at the plain address; the sandbox at `?sandbox` (own save; tap the title for the test panel). Pretend player: `node tools/progression_sim.js 2 90`.
 
@@ -65,6 +67,22 @@ _Last updated: 2026-11-16 (v105 live, the round-thirteen build). Keep this file 
 
 **Maybe pile:** automatic concern inbox; a spell for work past bedtime; birdsong returning as the land greens; phone sideways; more bug baths on patches (round 10 no. 27); a use for picked herbs (round 10 no. 35). Held back on purpose: pot seats before the bench (could strand a player).
 
+## 3a. From the full review (2026-11-16; detail in `docs/REVIEW-2026-11.md`)
+
+**Asked, waiting for Bryce (five taste calls, each with a recommendation of yes):** let the story catch up faster so jobs never wait a week behind it; make the home yard take longer to reach its last stages; take day counts out of the words; rewrite the neighbour stories that lean on stereotypes; add "save my garden to a file". Record his answers here.
+
+**Later (the day it starts to matter is a measurement from the pretend player, never a target):**
+- Day 2 to 3, keen player: an empty week before the house, because every job waits for one story page a morning. (Question 1.)
+- Day 2 keen, day 5 to 7 normal: the home yard is already at its last stage. (Question 2.)
+- Day 14: the Jobs page is two screens long; "shelf full" tags cover item names; the name board is spoken of before it is made.
+- Day 20, once-a-day player: light piles up far past what the jar holds.
+- Day 30: 37 wish-list makes waiting at once; twigs run short until about day 45; many white flames with haloes on a big garden (check against "nothing glows").
+- Day 60: nearly every shelf at its limit of 40; counters that only go up start to look silly ("501 grown so far").
+- Day 77: nothing new at all. The held month-two builds are the answer.
+- Any time: the greening meter rethink (round seven note 14) is still open.
+
+**Before release (the stranger check; leave alone unless cheap):** watch one stranger play the first five minutes; test a real iPhone, an older iPhone and an Android phone; small-phone Journal page is cut off; menu text size as a setting and page zoom back on; a backup for the garden; works with no signal, with a proper Home Screen icon; pack the lettering inside the game instead of fetching it from Google; turn the play log and concern button off or explain them; a privacy note and credits; stop naming "The Secret World of the Gnomes" in art prompts and get a human view on how close the look is; decide how to say the paintings were made with an AI tool; a proper name and trademark check for "Gnome Life".
+
 ## 4. Stand-ins still in the game (2026-11-16, v105)
 
 Art day 23 (2026-11-16) painted the barrow push strips and the brimming pond; wired in v105 (`docs/ART-DAY-23.md`).
@@ -91,6 +109,8 @@ Drawn in code on purpose: paper job flags, growing badge, glows, the Journal's c
 
 | Doc | What's in it |
 | --- | --- |
+| `BRYCES-RULES.md` | The patterns behind Bryce's notes; check every change against it |
+| `REVIEW-2026-11.md` | The full review and forecast of 2026-11-16: findings, the day 1 to 100 forecast, the four piles |
 | `VISION.md` | The locked game vision |
 | `STORY.md` | The first month's story, chapters and pages |
 | `ANIMALS.md` | Animals and their side stories |
