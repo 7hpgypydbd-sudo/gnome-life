@@ -66,7 +66,7 @@ function visit() {
     if (p.stage === 'planted') G.water();
     if (MODE === 'eager' && p.stage === 'growing' && G.canCast('coax').ok && (G.s.inv.light||0) >= 4) G.cast('coax');
     if (G.canCast('legs').ok && !process.env.NOLEGS) { G.cast('legs'); ev('SPELL', 'toadstool legs'); }
-    for (const sp of ['rain']) if (G.castSpots(sp).length && G.canCast(sp).ok) { G.cast(sp); ev('SPELL', 'rain fills the hollow'); }   // v99: a patch step that is the player's spell
+    for (const sp of ['rain', 'coax']) if (G.castSpots(sp).length && G.canCast(sp).ok) { const k = G.castSpots(sp)[0]; G.cast(sp, k); ev('SPELL', sp === 'rain' ? 'rain fills the hollow' : 'coax wakes the reeds'); }   // round thirteen: the reeds are coaxed up   // v99: a patch step that is the player's spell
     for (const sp of ['wind', 'cloud', 'seedwake', 'sing']) if (G.canCast(sp).ok && (G.s.inv.light||0) >= 3) { G.cast(sp); }
     if (G.dishBuilt() && !G.s.feeder.food) { if ((G.s.inv.berry||0) > 1) G.putFood('berry'); else if ((G.s.inv.seed||0) > 4) G.putFood('seed'); }
     if (!G.s.flags.rabbit && G.s.feeder.food && p.stage === 'growing') { G.rabbitAte(); G.rabbitRaid(); }
@@ -107,3 +107,4 @@ console.log('\nIncome:', JSON.stringify(income)); console.log('Spent:', JSON.str
 console.log('Wishes made:', JSON.stringify(G.wishesCount()), ' little makes:', Object.keys(C.makes).map(k => k + ' ' + G.makesCount(k).done + '/' + G.makesCount(k).total).join(', '));
 if (process.env.SAVE) G.save(), fs.writeFileSync(process.env.SAVE, JSON.stringify(store));   // SAVE=file: the save at the end, to load in a browser
 console.log('\nFinal: green home', G.s.tiles['0,0'].green, 'tiles', Object.keys(G.s.tiles).length, 'neighbours', G.settled().length, 'festival', G.s.festival.stage);
+if (G.s.tiles['0,1'] && G.s.tiles['0,1'].kind === 'garden') console.log('Garden chain:', G.healSteps('0,1').map((st, i) => st.id + (G.healStepDone('0,1', i) ? ' done' : '')).join(', '));   // round thirteen: shows the garden-to-be got to its end
