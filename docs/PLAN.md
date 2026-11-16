@@ -2,7 +2,7 @@
 
 A cosy storybook garden game, made for Bryce's iPhone first and played as a web page from a Safari Home Screen shortcut. It may be released to the public eventually (Bryce, 2026-11-16), and it may be sold (Bryce would probably ask for donations, but might sell it). Charm and aliveness over complexity; it must run smoothly on a phone.
 
-_Last updated: 2026-11-16 (v106 live: the clear fixes from the full review). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
+_Last updated: 2026-11-16 (v107 live: the five review changes). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
 
 ## 1. Rules for every chat (read first)
 
@@ -30,7 +30,7 @@ _Last updated: 2026-11-16 (v106 live: the clear fixes from the full review). Kee
 
 ## 2. Where we are
 
-- **Live:** v106 (2026-11-16, the clear fixes from the full review; v105 was the round-thirteen build, PR #139) at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). v99 (PR #132) is the round-ten build plus art day 21 and a reworked worn path.
+- **Live:** v107 (2026-11-16, PR #142, the five review changes; v106 was the clear fixes from the full review, PR #141; v105 was the round-thirteen build, PR #139) at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). v99 (PR #132) is the round-ten build plus art day 21 and a reworked worn path.
 - **Bryce is playing** v99. Round-ten notes are all "built, waiting for Bryce"; round-eleven notes are collected in the thread "Collect play notes round eleven".
 - **Two gardens:** the real one at the plain address; the sandbox at `?sandbox` (own save; tap the title for the test panel). Pretend player: `node tools/progression_sim.js 2 90`.
 
@@ -69,7 +69,7 @@ _Last updated: 2026-11-16 (v106 live: the clear fixes from the full review). Kee
 
 ## 3a. From the full review (2026-11-16; detail in `docs/REVIEW-2026-11.md`)
 
-**The five taste calls: Bryce said "yes to all five" (2026-11-16). Built as v107 (waiting for his OK on the previews in `/mnt/project-files/review-v107/`):**
+**The five taste calls: Bryce said "yes to all five" (2026-11-16). Built as v107, LIVE 2026-11-16 (Bryce: "Yes, put it live"; previews in `/mnt/project-files/review-v107/`):**
 1. *The story catches up.* With two or more pages whose moment has come, the next may open four hours after the last, the same day (`C.story.catchUpMins`, `G.pageCanOpen`). Otherwise still one page a morning. Measured: a keen player reads four pages a day and starts the house on day three or four (was day nine or ten).
 2. *The yard greens more slowly.* The home yard has its own marks for meadow and woodland (`homeAt` 40 and 140; other patches keep 12 and 26). A yard never goes back a stage (`flags.yardStage`). Measured: normal player meadow about day 6, woodland about day 15; keen player day 2 and day 5.
 3. *No day counts in the words.* "Our first week" is now "What we have"; "a week ago", "the first in weeks", "their first whole day" and "tomorrow's page" reworded.
