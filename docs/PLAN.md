@@ -2,7 +2,7 @@
 
 A cosy storybook garden game, made for Bryce's iPhone first and played as a web page from a Safari Home Screen shortcut. It may be released to the public eventually (Bryce, 2026-11-16), and it may be sold (Bryce would probably ask for donations, but might sell it). Charm and aliveness over complexity; it must run smoothly on a phone.
 
-_Last updated: 2026-11-16 (v108 live: no dead wood when land greens). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
+_Last updated: 2026-11-16 (v109 live: the loggers' old camp replaces the old track's first patch). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
 
 ## 1. Rules for every chat (read first)
 
@@ -30,7 +30,8 @@ _Last updated: 2026-11-16 (v108 live: no dead wood when land greens). Keep this 
 
 ## 2. Where we are
 
-- **Live:** v108 (2026-11-16, PR #144: no more logs, roots or dead trunks appear as land greens; each kind of patch grows its own plants, Bryce picked "each patch its own way"; young gums and wattles at woodland; story wood untouched; pictures `/mnt/project-files/dead-wood-v108/`). v107 (PR #142, the five review changes; v106 was the clear fixes from the full review, PR #141; v105 was the round-thirteen build, PR #139) at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). v99 (PR #132) is the round-ten build plus art day 21 and a reworked worn path.
+- **Live:** v109 (2026-11-16, thread "Rethink the old track tile"; Bryce: "the track is just a line, there is no reason to pave it", picked the loggers' old camp): patch 1,0 is now the loggers' old camp, a people-sized fire ring filling the patch (boulder stones, ash bed). Jobs: rake in the ash, break up the trampled ground, sow wattle seed (wattle loves ground that has had a fire), tussocks, a gum by the travellers' tent, scrub the soot off the stones (a bluetongue moves in). All six track makes kept round the travellers' camp (milestone is now a welcome stone). The old track stays on the patches further down the hill, leading up to the camp; Bryce will decide about paths after his new game. Code stand-ins until art day 24 (slots camp-ash, camp-raked, camp-stone-1..3, camp-sprouts, camp-wattle, make-milestone). Mock-ups in `/mnt/project-files/old-track-rethink/`. Small leftover: the village footpath to the camp crosses the ring's left side.
+- **Before:** v108 (2026-11-16, PR #144: no more logs, roots or dead trunks appear as land greens; each kind of patch grows its own plants, Bryce picked "each patch its own way"; young gums and wattles at woodland; story wood untouched; pictures `/mnt/project-files/dead-wood-v108/`). v107 (PR #142, the five review changes; v106 was the clear fixes from the full review, PR #141; v105 was the round-thirteen build, PR #139) at https://7hpgypydbd-sudo.github.io/gnome-life/ (repo `7hpgypydbd-sudo/gnome-life`, GitHub Pages, every push to `main` deploys). v99 (PR #132) is the round-ten build plus art day 21 and a reworked worn path.
 - **Bryce is playing** v99. Round-ten notes are all "built, waiting for Bryce"; round-eleven notes are collected in the thread "Collect play notes round eleven".
 - **Two gardens:** the real one at the plain address; the sandbox at `?sandbox` (own save; tap the title for the test panel). Pretend player: `node tools/progression_sim.js 2 90`.
 
