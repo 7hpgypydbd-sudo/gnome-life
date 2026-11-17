@@ -2,7 +2,7 @@
 
 A cosy storybook garden game, made for Bryce's iPhone first and played as a web page from a Safari Home Screen shortcut. It may be released to the public eventually (Bryce, 2026-11-16), and it may be sold (Bryce would probably ask for donations, but might sell it). Charm and aliveness over complexity; it must run smoothly on a phone.
 
-_Last updated: 2026-11-17 (v110 live; the tile roadmap added, `docs/TILE-ROADMAP.md`). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
+_Last updated: 2026-11-17 (v111 live with the finish line; v112 layout tool waiting for Bryce's OK; `docs/TILE-ROADMAP.md`). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
 
 ## 1. Rules for every chat (read first)
 
@@ -38,7 +38,7 @@ _Last updated: 2026-11-17 (v110 live; the tile roadmap added, `docs/TILE-ROADMAP
 
 ## 3. What's next (in order)
 
-**THE TILE ROADMAP (developer coach, 2026-11-17, thread "Plan how every tile will look"; detail `docs/TILE-ROADMAP.md`, pictures https://claude.ai/artifact/Ckkh4tNL48zArLxFHppES7).** Bryce's playtests stall at unfinished bits. Found: home yard, garden and old camp are finished; the wall is page 3.5 (about day 10), when four patches of the old pre-rules design wake at once. Only five wild patch kinds are left to design (old track, cracked earth, bare plain, dry creek, rubbish-heap meadow; they cover all 22 wild tiles), plus Mabel, Tobias, the Fernsbys and the bridge for month one. Order: (1) a finish line in the real garden so playtests end at a finished place; (2) the drag-and-drop layout tool (a hidden layout mode in the sandbox on the Mac); (3) design the patches one at a time in meeting order, each with a patch sheet, cards, art day, build, line moves out; (4) the rest of month one, then the 30-day real-pace play. Bryce picked the finish line first: built as v111 (PR open, previews `/mnt/project-files/finish-line-v111/`), waiting for his OK.
+**THE TILE ROADMAP (developer coach, 2026-11-17, thread "Plan how every tile will look"; detail `docs/TILE-ROADMAP.md`, pictures https://claude.ai/artifact/Ckkh4tNL48zArLxFHppES7).** Bryce's playtests stall at unfinished bits. Found: home yard, garden and old camp are finished; the wall is page 3.5 (about day 10), when four patches of the old pre-rules design wake at once. Only five wild patch kinds are left to design (old track, cracked earth, bare plain, dry creek, rubbish-heap meadow; they cover all 22 wild tiles), plus Mabel, Tobias, the Fernsbys and the bridge for month one. Order: (1) a finish line in the real garden so playtests end at a finished place; (2) the drag-and-drop layout tool (a hidden layout mode in the sandbox on the Mac); (3) design the patches one at a time in meeting order, each with a patch sheet, cards, art day, build, line moves out; (4) the rest of month one, then the 30-day real-pace play. Finish line: v111, LIVE. Layout tool: v112 (`docs/LAYOUT-TOOL.md`, `?sandbox#layout` on the Mac), waiting for his OK. Next: the old track patch sheet.
 
 0. **v105, the round-thirteen build (thread "Build the round thirteen notes"), LIVE 2026-11-16 (Bryce: "Yes, put it live"); its notes are "built, waiting for Bryce".** Previews in `/mnt/project-files/round-thirteen-v105/`. Holds round-thirteen notes 1 to 25 (tracker has each row). Bryce picked (2026-11-16):
    - *Rubbish heap, new order (note 13):* one gnome starts by hand and gives up halfway ("far too much to carry by hand"), the fence is the break, then **Make a wheelbarrow** (a garden step with its own flag in the yard; the old yard make `barrow` is retired, `alsoDone` keeps one already made), then both cart off the rest with the barrow (`rubbish2`, pair), then dig out the buried rubbish. Pictures: heap, half (shown through the fence and barrow), bare mound, hollow. Gnomes on barrow work push the yard's own wheelbarrow (`carryWalk` `barrowE`/`barrowL`; art day 23 strips `barrowwalk`, `barrowwalk-empty`; parked: `wheelbarrow-loaded`).
@@ -127,6 +127,7 @@ Drawn in code on purpose: paper job flags, growing badge, glows, the Journal's c
 | `ANIMALS.md` | Animals and their side stories |
 | `DECORATIONS.md` | Makes, wishes and the item economy |
 | `GARDEN-LAYOUT.md` | The garden patch's planned final layout and the calm-ground art item |
+| `LAYOUT-TOOL.md` | The drag-and-drop layout tool: how Bryce uses it, how a chat puts his layout file into the game (v112) |
 | `TILE-ROADMAP.md` | Every patch of the valley, what's finished, and the order to finish them (2026-11-17) |
 | `MONTH-TWO.md` | Month two to the festival (held) |
 | `STYLE-GUIDE.md` | Art rules; read before any art |
