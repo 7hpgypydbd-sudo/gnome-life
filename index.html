@@ -351,7 +351,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v111</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v112</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -372,7 +372,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 111;
+const BUILD = 112;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -380,11 +380,12 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=111"></script>
-<script src="playlog.js?v=111"></script>
-<script src="concerns.js?v=111"></script>
-<script src="game.js?v=111"></script>
-<script src="walk.js?v=111"></script>
+<script src="content.js?v=112"></script>
+<script src="playlog.js?v=112"></script>
+<script src="concerns.js?v=112"></script>
+<script src="game.js?v=112"></script>
+<script src="walk.js?v=112"></script>
+<script src="layout.js?v=112"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -2021,6 +2022,7 @@ function paintedStump(img, x, y, w, h, now) {
   if (fill > 0) pic(4, 1);
 }
 function propAlpha(p) {   // how much of a prop shows: props with "until" appear as that job is done
+  if (p.hide) return window.LAYMODE ? 0.35 : 0;   // hidden in the layout tool
   if (p.gone) return 1 - taskProg(p.gone);   // things a job takes away fade as it runs
   if (!p.until) return 1;
   if (p.name === 'seedbed') { const pl = G.plot(); if (pl.stage || pl.grown) return 1; return taskProg('bed') >= 1 ? 1 : 0; }   // older gardens already had a bed
@@ -4000,16 +4002,16 @@ function herbItems(items) {
 }
 function makeItems(items, now) {
   const garden = G.gardenOpen();
-  for (const d of C.tasks) {
-    if (!d.make || d.season || d.retired || (d.make !== 'yard' && !G.patchOpen(d.make))) continue;
-    const a = taskProg(d.id); if (a <= 0 || d.id === 'barrow' || d.id === 'bed2') continue;   // the wheelbarrow is a prop already; the second bed draws itself (bed2Items)
-    const op = d.id === 'swing' && a >= 1 && oakPic(); if (op && !op[0].endsWith('-plain')) continue;   // the bigger oak paintings have the swing in them
+  const one = d => {   // (a function, so the layout tool can wrap what each make draws)
+    if (!d.make || d.season || d.retired || (d.make !== 'yard' && !G.patchOpen(d.make))) return;
+    const a = taskProg(d.id); if (a <= 0 || d.id === 'barrow' || d.id === 'bed2') return;   // the wheelbarrow is a prop already; the second bed draws itself (bed2Items)
+    const op = d.id === 'swing' && a >= 1 && oakPic(); if (op && !op[0].endsWith('-plain')) return;   // the bigger oak paintings have the swing in them
     const [hx, hy] = makeAt(d);
-    if (MAKE_PARTS[d.id] && !art('make-' + d.id)) { for (const [gx, gy, k, h] of MAKE_PARTS[d.id]()) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); ctx.save(); ctx.globalAlpha = a; shadow(x, y, h * 0.3, h * 0.08); kitPiece(k, x, y, h); ctx.restore(); } }); continue; }
-    if (d.id === 'pebbles' && art('make-pebbleline')) { pebbleLine(items, a); continue; }
-    if (d.id === 'pebbles' && art('make-pebbles')) { items.push({ d: depthOf(hx, hy) - 0.25, draw: () => pebbleEdge(a) }); continue; }
+    if (MAKE_PARTS[d.id] && !art('make-' + d.id)) { for (const [gx, gy, k, h] of MAKE_PARTS[d.id]()) items.push({ d: depthOf(gx, gy), draw: () => { const [x, y] = toWorld(gx, gy); ctx.save(); ctx.globalAlpha = a; shadow(x, y, h * 0.3, h * 0.08); kitPiece(k, x, y, h); ctx.restore(); } }); return; }
+    if (d.id === 'pebbles' && art('make-pebbleline')) { pebbleLine(items, a); return; }
+    if (d.id === 'pebbles' && art('make-pebbles')) { items.push({ d: depthOf(hx, hy) - 0.25, draw: () => pebbleEdge(a) }); return; }
     if (d.id === 'firering' && a < 1 && art('make-firering')) { items.push({ d: depthOf(hx, hy) + MAKE_DEPTH.firering, draw: () => { const [x0, y0] = toWorld(hx, hy), x = x0 + FIRERING_NUDGE[0], y = y0 + FIRERING_NUDGE[1], [w, h] = slotSize('make-firering', art('make-firering')), n = 12, k = Math.ceil(a * n) / n;   // round six (Bryce): the stones go in round the fire one at a time
-      ctx.save(); ctx.beginPath(); ctx.moveTo(x, y - h / 2); ctx.arc(x, y - h / 2, w, Math.PI * 0.5, Math.PI * 0.5 + k * Math.PI * 2); ctx.closePath(); ctx.clip(); drawSlot('make-firering', x, y, 1); ctx.restore(); } }); continue; }   // art review: the painted clump is laid round the bed, not dropped in the middle of it
+      ctx.save(); ctx.beginPath(); ctx.moveTo(x, y - h / 2); ctx.arc(x, y - h / 2, w, Math.PI * 0.5, Math.PI * 0.5 + k * Math.PI * 2); ctx.closePath(); ctx.clip(); drawSlot('make-firering', x, y, 1); ctx.restore(); } }); return; }   // art review: the painted clump is laid round the bed, not dropped in the middle of it
     const hd = HOUSE_DOOR[d.id], sh = hd && PROPS.find(q => q.name === 'shelter');
     items.push({ d: hd ? depthOf(sh.gx, sh.gy) + 0.01 : depthOf(hx, hy) + (MAKE_FLAT.has(d.id) ? -0.25 : MAKE_DEPTH[d.id] || 0), draw: () => { let [x, y] = toWorld(hx, hy); if (hd) { [x, y] = toWorld(sh.gx, sh.gy); x += hd[0] * sh.s; y += hd[1] * sh.s; }
       if (d.id === 'chime') chimePost(x, y, a);
@@ -4017,7 +4019,8 @@ function makeItems(items, now) {
       if (d.id === 'earthbank' && G.s.moved.burrow && art('burrow-mound')) { drawSlot('make-earthbank', x, y + 4, a); ctx.save(); ctx.globalAlpha = a; cropPic('burrow-mound', x - 6, y + 6, 70, true, 0.95); ctx.restore(); return; }   // the rabbit's round door in the painted bank
       if (drawSlot('make-' + d.id, x + (d.id === 'firering' ? FIRERING_NUDGE[0] : 0), y + (d.id === 'earthbank' ? 4 : d.id === 'firering' ? FIRERING_NUDGE[1] : 0), a)) return; ctx.save(); ctx.globalAlpha = a; MAKE_DRAW[d.id](x, y, a, now); ctx.restore(); } });
     if (MAKE_TWICE[d.id]) { const [tx, ty] = MAKE_TWICE[d.id]; items.push({ d: depthOf(tx, ty), draw: () => { const [x, y] = toWorld(tx, ty); if (drawSlot('make-' + d.id, x, y, a)) return; ctx.save(); ctx.globalAlpha = a; MAKE_DRAW[d.id](x, y, a, now); ctx.restore(); } }); }
-  }
+  };
+  for (const d of C.tasks) { const n0 = items.length; one(d); if (d.lsc || d.lf || d.hide) layWrapItems(items, n0, d); }
   const dz = C.tasks.find(d => d.season === G.season(G.now())), da = dz ? taskProg(dz.id) : 0, sh = PROPS.find(q => q.name === 'shelter');   // this season's dressing, over the door
   if (da > 0 && sh) items.push({ d: depthOf(sh.gx, sh.gy) + 0.005, draw: () => { const [x, y] = toWorld(sh.gx, sh.gy), k = 'make-' + dz.id, im = art(k); ctx.save(); ctx.globalAlpha = da;
     if (im) { const [lx, ly] = GARLAND_POSTS[0], [rx, ry] = GARLAND_POSTS[1], w = (rx - lx) * sh.s, h = 66 * sh.s * im.height / im.width;   // painted (art day 16): the swag hung post to post across the porch (Bryce), stretched to fit
@@ -4148,6 +4151,37 @@ HEAL_LOOK.camp = [
   { ev:'lizard', pic:'vis-bluetongue', at:[CAMP_RING.c[0] + Math.cos(1.25) * CAMP_RING.r, CAMP_RING.c[1] + Math.sin(1.25) * CAMP_RING.r], h:15, off:[0, -46], day:[9, 17] },
 ];
 // which job a piece belongs to, as a step index, and which "later" an ev name is (filled in once)
+// The layout (tile roadmap step 2): where Bryce has moved, resized, flipped or hidden things with the layout tool (layout-tool.js,
+// sandbox only, ?sandbox#layout), and the paintings he has added. The game's layout is layout.js; the sandbox keeps his newest one
+// in its own storage until a chat copies it into layout.js. Pieces are known by their place in HEAL_LOOK[kind] (w: what they draw, so
+// a piece that has moved in the list is left alone); makes and props by id and name. d: an offset on the tile grid; s: a size.
+const LAY = { data: {}, orig: { makes: {}, props: {} } };
+const LAY_PROPS = ['barrel', 'tub', 'wheelbarrow', 'firewood'];   // the yard's own things the tool may move (the rest are tied to walks, fences and jobs)
+function layoutData() { let L = window.LAYOUT || {}; if (window.SANDBOX) try { const t = localStorage.getItem('gnomelife.sandbox.layout'); if (t) L = JSON.parse(t); } catch (e) {} return L; }
+function layWhat(q) { return q.pic || q.draw || ''; }
+function applyLayout(L) {
+  LAY.data = L = L || {};
+  for (const [kind, list] of Object.entries(HEAL_LOOK)) {
+    for (let i = list.length - 1; i >= 0; i--) if (list[i].lay) list.splice(i, 1);   // added paintings from the last time
+    for (const q of list) { delete q.d; delete q.sc; delete q.lf; delete q.hide; }
+    for (const [n, o] of Object.entries((L.heal || {})[kind] || {})) { const q = list[+n]; if (!q || (o.w && o.w !== layWhat(q))) continue; if (o.d) q.d = o.d; if (o.s && o.s !== 1) q.sc = o.s; if (o.flip) q.lf = 1; if (o.hide) q.hide = 1; }
+    ((L.extra || {})[kind] || []).forEach((e, i) => list.push(Object.assign({ lay: 1, layI: i, pic: e.pic, at: e.at, h: e.h, lf: e.flip ? 1 : 0 }, e.flat ? { flat: 1 } : {}, e.from ? { s: e.from } : { always: 1 })));
+  }
+  for (const d of C.tasks) { if (!d.make || !d.at) continue; const O = LAY.orig.makes; if (!O[d.id]) O[d.id] = d.at.slice(); d.at = O[d.id].slice(); delete d.lsc; delete d.lf; delete d.hide;
+    const o = (L.makes || {})[d.id]; if (o) { if (o.at) d.at = o.at.slice(); if (o.s && o.s !== 1) d.lsc = o.s; if (o.flip) d.lf = 1; if (o.hide) d.hide = 1; } }
+  for (const p of PROPS) { if (!LAY_PROPS.includes(p.name)) continue; const O = LAY.orig.props; if (!O[p.name]) O[p.name] = { gx: p.gx, gy: p.gy, s: p.s }; Object.assign(p, O[p.name]); delete p.hide;
+    const o = (L.props || {})[p.name]; if (o) { if (o.at) { p.gx = o.at[0]; p.gy = o.at[1]; } if (o.s) p.s = O[p.name].s * o.s; if (o.hide) p.hide = 1; } }
+}
+function layWrapItems(items, n0, d) {   // a make Bryce has resized, flipped or hidden
+  if (d.hide && !window.LAYMODE) { items.length = n0; return; }
+  const [hx, hy] = makeAt(d);
+  for (let i = n0; i < items.length; i++) { const f = items[i].draw; items[i].draw = () => { const [x, y] = toWorld(hx, hy); ctx.save(); if (d.hide) ctx.globalAlpha *= 0.35; ctx.translate(x, y); ctx.scale((d.lf ? -1 : 1) * (d.lsc || 1), d.lsc || 1); ctx.translate(-x, -y); f(); ctx.restore(); }; }
+}
+function layExtraItems(items) {   // paintings Bryce has added to the home yard
+  ((LAY.data.extra || {}).yard || []).forEach(e => items.push({ d: depthOf(e.at[0], e.at[1]) + (e.flat ? -0.25 : 0), draw: () => { const im = healPic(e.pic); if (!im) return; const [x, y] = toWorld(e.at[0], e.at[1]), w = im.width * e.h / im.height;
+    ctx.save(); if (e.flip) { ctx.translate(x, 0); ctx.scale(-1, 1); ctx.translate(-x, 0); } if (!e.flat) shadow(x, y, w * 0.32, w * 0.09); ctx.drawImage(im, x - w / 2, e.flat ? y - e.h / 2 : y - e.h * 0.92, w, e.h); ctx.restore(); } }));
+}
+applyLayout(layoutData());
 const HEAL_IDX = {};
 for (const [kind, K] of Object.entries(C.heal.kinds)) { const st = {}, ev = {}; K.steps.forEach((s, i) => { st[s.id] = i; (s.later || []).forEach((l, j) => { ev[l.ev] = [i, j]; }); }); HEAL_IDX[kind] = { st, ev }; }
 const HP = {};   // extra painted pieces, loaded when first needed (never blocks the start)
@@ -4174,7 +4208,10 @@ function healProg(k, s) { const i = HEAL_IDX[G.s.tiles[k].kind].st[s]; if (i == 
   return taskProg(`heal:${k}:${i}`); }
 function healEvAt(k, name) { const e = HEAL_IDX[G.s.tiles[k].kind].ev[name]; return e ? G.healEv(k, e[0], e[1]) : 0; }
 function healSwap(k) { const kind = G.s.tiles[k].kind, [tx, ty] = k.split(',').map(Number); return (kind === 'meadow' || kind === 'creature' || kind === 'nursery') && ((tx + ty) & 1) !== 0; }
-function healLocal(k, q) {   // a piece's spot on its tile (tile grid)
+function healLocal(k, q) {   // a piece's spot on its tile (tile grid), plus any move made in the layout tool (q.d, in the unswapped frame)
+  const b = healLocal0(k, q); if (!q.d) return b; const d = healSwap(k) && !q.c && !q.v ? [q.d[1], q.d[0]] : q.d; return [b[0] + d[0], b[1] + d[1]];
+}
+function healLocal0(k, q) {
   const [tx, ty] = k.split(',').map(Number);
   if (q.c) { let gx = q.c[0]; if (k === '-2,-1') gx = 0.52 + gx * 0.44; const u = tx + gx, sd = q.c[1], v = streamV(u) + Math.sign(sd) * (Math.abs(sd) <= 1 ? Math.abs(sd) * (streamHW(u) + 16) : streamHW(u) + 16 + (Math.abs(sd) - 1) * 52) / LEY; return [gx, v - ty]; }
   if (q.v) { const v = ty + q.v[1], u = pathU(v) + q.v[0] * 46 / LEX; return [u - tx, q.v[1]]; }
@@ -4196,6 +4233,7 @@ function healPieces(k) {   // every piece of this tile with how much of it shows
     if (a > 0 && q.gone && healEvAt(k, q.gone)) a = 0;
     if (a > 0 && q.fade) a *= 1 - 0.85 * sstep(6, 16, green);
     if (a > 0 && q.day) { const h = dayPhase().h; if (h < q.day[0] || h >= q.day[1]) a = 0; }
+    if (a > 0 && q.hide) a = window.LAYMODE ? Math.min(a, 0.35) : 0;   // hidden in the layout tool
     if (claimed && !q.flat && !q.go) a = 0;   // a neighbour's lot or the garden: what the gnomes made gives way to the home that goes there
     const [gx, gy] = q.home ? q.at : healLocal(k, q), G2 = q.home ? [gx, gy] : glob(k, gx, gy);
     out.push(Object.assign({ a, G: G2, local: [gx, gy], k }, q));
@@ -4424,6 +4462,7 @@ function healItems(items, now) {   // the pieces on every healing tile, depth-so
       let x = x0, y = y0; if (q.crawl) x += Math.sin(now / 2400 + ux * 9) * 4; if (q.hop) y -= Math.max(0, Math.sin(now / 600 + ux * 7)) * 3;
       if (q.perch) { x += 22; y -= 40; } if (q.onbox) y -= 69; if (q.off) { x += q.off[0]; y += q.off[1]; }
       ctx.save(); ctx.globalAlpha *= Math.min(1, q.a);
+      if (q.sc || q.lf) { ctx.translate(x, y); ctx.scale((q.lf ? -1 : 1) * (q.sc || 1), q.sc || 1); ctx.translate(-x, -y); }   // resized or flipped in the layout tool
       if (q.draw) { if (!healPainted(x, y, q)) HEAL_DRAW[q.draw](x, y, q.a, q, now); }
       else { const im = q.ring ? ringStone(q) : healPic(q.pic); if (im) { const w = im.width * q.h / im.height; if (!q.flat && !q.perch && !q.onbox) shadow(x, y, w * 0.32, w * 0.09); if (q.flat && /patch|marks/.test(q.pic)) ctx.globalAlpha *= 0.8;
         if (q.flip) { ctx.translate(x, 0); ctx.scale(-1, 1); ctx.drawImage(im, -w / 2, q.flat ? y - q.h / 2 : y - q.h * 0.92, w, q.h); } else ctx.drawImage(im, x - w / 2, q.flat ? y - q.h / 2 : y - q.h * 0.92, w, q.h); } }
@@ -4835,8 +4874,10 @@ function frame(now) {
   compostItems(items); workCornerItems(items);   // v104 (round twelve note 11): the saved pile is never drawn (it looked like the rubbish that was just cleared)
   animalItems(items, now);
   festItems(items, now);
+  layExtraItems(items);
   items.sort((a, b) => a.d - b.d);
   for (const it of items) it.draw();
+  if (window.LAYMODE) LAYMODE.overlay();   // the layout tool's dots and the picked thing's frame
   for (const o of G.s.offers.slice().sort((a, b) => depthOf(a.gx, a.gy, a.tile) - depthOf(b.gx, b.gy, b.tile))) drawOffer(o, now);   // build 3 (notes 5, 13): pick-ups on top of everything, so scenery never hides them
   if (/feet/.test(hash)) drawFeet();   // test view: every footprint walkers go round
   drawParticles(ph);
@@ -4870,7 +4911,7 @@ function frame(now) {
   if (NEWGROUND) drawMorningMist(dt, now);
   // screen-space overlays: "busy" tags over working gnomes, and tap ripples
   drawNameTags();
-  drawStakes(now);   // v90: the land is the menu
+  if (!window.LAYMODE) drawStakes(now);   // v90: the land is the menu (no job flags in the layout tool)
   for (const g of gnomes) if ((g.job || g.chore) && g.screen && !g.inside) drawBusyTag(g, now);
   drawBedTag(now);
   drawShower(now);
@@ -4970,6 +5011,7 @@ function tap(cx, cy) {   // the play log notes where the finger went, and whethe
   if (PL.n === n0 + 1) PL.add('  (that tap did nothing)');
 }
 function tapAt(cx, cy, wx, wy) {
+  if (window.LAYMODE) return LAYMODE.tap(wx, wy);   // the layout tool: a tap picks a thing, never opens a job
   if (testPeek(cx, cy)) return;
   ripples.push({ x: cx, y: cy, t: 0 });
   // little finds and offerings first (small, on top)
@@ -5362,7 +5404,8 @@ setInterval(() => {   // round eight note 12 (Bryce: players need a daily nudge 
 const sheet = $('sheet'), shade = $('shade');
 let sheetKind = null, cardAt = 0;
 const plTitle = html => ((/<h2[^>]*>(.*?)<\/h2>/.exec(html) || /<b>(.*?)<\/b>/.exec(html) || [])[1] || '').replace(/<small/g, ' · <small').replace(/<[^>]+>/g, '').slice(0, 70);
-function openSheet(kind, html) { PL.add(`window open: ${kind} "${plTitle(html)}"`); sheetKind = kind; sheet.classList.toggle('book', kind === 'journal'); sheet.innerHTML = `<button class="close" data-a="close">×</button>` + html; sheet.classList.add('on'); shade.classList.add('on'); }
+function openSheet(kind, html) { if (window.LAYOUT_ON) return;   // no windows over the layout tool
+  PL.add(`window open: ${kind} "${plTitle(html)}"`); sheetKind = kind; sheet.classList.toggle('book', kind === 'journal'); sheet.innerHTML = `<button class="close" data-a="close">×</button>` + html; sheet.classList.add('on'); shade.classList.add('on'); }
 function closeSheet() { const was = sheetKind; if (was) PL.add(`window closed: ${was}`); sheetKind = null; sheet.classList.remove('on'); shade.classList.remove('on'); cardAt = performance.now() + 1500;
   if (was === 'welcome' && FIRST_WELCOME) { FIRST_WELCOME = false; const pg = G.pageDef('1.1'); openSheet('welcome1', pageHtml(pg) + `<p style="margin-top:12px;text-align:center"><button class="act" data-a="close">${pg.button}</button></p>`); }   // the welcome, then page one,
   else if (was === 'welcome1') { G.seePage('1.1'); G.s.flags.welcomed = true; tookWindow(); G.save(); openSpiritHello(); }   // then the Wood spirit floats up (Bryce: met on day 1). v87: only now is the welcome done, so a reload before this shows it again
@@ -5934,6 +5977,7 @@ function openRabbitCard() {
     <p style="text-align:center"><button class="act" data-a="jobs">See the jobs</button> <button class="act quiet" data-a="close">Back to the garden</button></p>`);
 }
 function cardCheck() {
+  if (window.LAYMODE || window.LAYOUT_ON) return;   // no story or cards while laying things out
   if (rabbitCardCheck()) return;
   const q = G.s.pages.cards; if (!q.length || sheetKind || roomOn || performance.now() < cardAt || guideOn() || guideStep() === 0 || LOOK.on || !G.s.flags.welcomed) return;
   let i = windowFree() ? q.findIndex(c => c.k === 'page' && G.pageCanOpen(c, G.now())) : -1;   // the morning's page first
@@ -6334,6 +6378,8 @@ function start() {
   if (!G.s.flags.welcomed) openWelcome(true);
   else if (guideStep() === 0) openSpiritHello(); else if (guideOn()) guideTo(guideStep());
 }
+// tile roadmap step 2: the layout tool, sandbox only. Run inside this closure (a direct eval) so it can reach the game's own drawing and state.
+if (window.SANDBOX && /layout/.test(hash)) { G.save = () => {}; window.LAYOUT_ON = true; fetch('layout-tool.js?v=' + BUILD).then(r => r.text()).then(src => { const go = () => (G.s && G.s.tiles && W ? eval(src) : setTimeout(go, 250)); go(); }).catch(e => toast('The layout tool could not start: ' + e.message)); }
 })();
 </script>
 </body>
