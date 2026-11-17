@@ -1,5 +1,5 @@
 // Headless "pretend player" for checking the order things unlock in (docs/PLAN.md "Progression review"). Runs the real content.js + game.js with a fake clock.
-// Usage: node tools/progression_sim.js [visitsPerDay 1-4] [days] [eager|relaxed]. NOLEGS=1 leaves the toadstool spell uncast (tools/make_showoff.js). Prints story pages, lessons, land stages, jobs, animals and village in the order they happen.
+// Usage: node tools/progression_sim.js [visitsPerDay 1-4] [days] [eager|relaxed]. LINE=1 keeps the finish line on. NOLEGS=1 leaves the toadstool spell uncast (tools/make_showoff.js). Prints story pages, lessons, land stages, jobs, animals and village in the order they happen.
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const REPO = path.join(__dirname, '..');
 const VPD = +(process.argv[2] || 3), DAYS = +(process.argv[3] || 60), MODE = process.argv[4] || 'eager';
@@ -9,6 +9,7 @@ class FakeDate extends RealDate { constructor(...a) { if (a.length) super(...a);
 const store = {};
 const ctx = { window: {}, localStorage: { getItem: k => store[k] ?? null, setItem: (k, v) => store[k] = String(v), removeItem: k => delete store[k] },
   location: { hash: '', reload() {} }, document: { addEventListener() {}, hidden: false }, setInterval() {}, console, Date: FakeDate, Math, JSON, Object, Array, Set, Number, String };
+if (!process.env.LINE) ctx.window.NO_FINISH_LINE = true;   // the finish line (content.js) holds the real garden at the finished patches; LINE=1 plays with it on
 ctx.window.addEventListener = () => {}; ctx.addEventListener = () => {};
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(REPO, 'content.js'), 'utf8').replace('window.CONTENT', 'var CONTENT = window.CONTENT'), ctx);

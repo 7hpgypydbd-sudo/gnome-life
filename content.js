@@ -752,6 +752,15 @@ window.CONTENT = {
   // One traveller at a time camps by the path. Build them a home and they stay; or wave them on and someone else comes.
   // Each neighbour has a trade building (a job that changes the picture, then a small daily gift at their door), a few
   // sayings, the odd small favour, and one short story quest that shows a moment in Wendel and Hazel's marriage.
+  // Tile roadmap step 1 (docs/TILE-ROADMAP.md, Bryce chose 2026-11-17): the finish line. While the valley is being finished patch by
+  // patch, the real garden only wakes the patches listed here, and no traveller comes, so a playtest ends at a finished place instead
+  // of a raw one. The story still reaches page 3.5 (moving in); then one "to be continued" card. Add each patch as it is finished;
+  // set on:false (or remove this) before release. The sandbox shows the whole valley unless its test panel turns the line on.
+  finishLine: { on: true, tiles: ['0,0', '0,1', '1,0'], folk: [],
+    title: 'To be continued',
+    text: [ 'That is as far as the story goes for now. The rest of the valley is still being painted, one patch at a time, and the lantern coming up the old track will arrive in a later version.',
+            'Until then, Wendel and Hazel have plenty to potter at: their wish list, the seed bed, the garden and the old camp. Each time a new patch is finished, more of the valley will wake.' ],
+    button: 'Back to the garden' },
   village: {
     firstAfter: 'page:3.5',   // the first traveller comes up the old track the night they move into the stump house (page 3.5)
     // each traveller names the patch they would like to live on (game.js wishLot); it comes out of the mist if it was still dark,

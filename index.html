@@ -351,7 +351,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v110</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v111</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -372,7 +372,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 110;
+const BUILD = 111;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -380,11 +380,11 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=110"></script>
-<script src="playlog.js?v=110"></script>
-<script src="concerns.js?v=110"></script>
-<script src="game.js?v=110"></script>
-<script src="walk.js?v=110"></script>
+<script src="content.js?v=111"></script>
+<script src="playlog.js?v=111"></script>
+<script src="concerns.js?v=111"></script>
+<script src="game.js?v=111"></script>
+<script src="walk.js?v=111"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -5451,6 +5451,7 @@ sheet.addEventListener('click', e => {
   if (a === 'tmins') return G.skipMins(+b.dataset.n);
   if (a === 'tmorning') { const d = new Date(G.now()); d.setDate(d.getDate() + 1); d.setHours(8, 0, 0, 0); return G.skipMins(Math.round((d - G.now()) / 60000)); }
   if (a === 'tshow') { if (!confirm('Swap this sandbox for the show-off garden? It wipes the sandbox garden.')) return; fetch('showoff.json?v=' + BUILD, { cache: 'no-store' }).then(r => r.json()).then(s => G.showOff(s)).catch(() => toast('Could not fetch the show-off garden. Try again in a moment.')); return; }
+  if (a === 'tline') { let on = false; try { on = localStorage.getItem('gnomelife.sandbox.line') === '1'; localStorage.setItem('gnomelife.sandbox.line', on ? '0' : '1'); } catch (e) {} toast(on ? 'Finish line off: the whole valley can wake.' : 'Finish line on, as in the real garden.'); return openTest(); }
   if (a === 'tpainted') { try { localStorage.setItem(PAINTED_KEY, PAINTED ? '0' : '1'); } catch (e) {} G.save(); location.reload(); return; }
   if (a === 'tfinish') { G.finishAll(); toast('Every job finished.'); }
   if (a === 'tpack') { G.fillPack(); toast("Store filled up."); }
@@ -5477,6 +5478,7 @@ function openTest() {
   <h3>Jump ahead in time</h3><p><button class="act" data-a="tmorning">Tomorrow, 8am (the next story page)</button> <button class="act" data-a="tmins" data-n="30">+30 minutes</button> <button class="act" data-a="tmins" data-n="180">+3 hours</button> <button class="act" data-a="tskip" data-n="1">+1 day</button> <button class="act" data-a="tskip" data-n="3">+3 days</button> <button class="act" data-a="tskip" data-n="7">+1 week</button></p>
   <h3>Try a look (round thirteen note 23)</h3><p><button class="act${PAINTED ? '' : ' quiet'}" data-a="tpainted">${PAINTED ? 'Back to pencil for unopened land' : 'Show all land painted, no pencil'}</button></p><p class="meta">A trial for this sandbox only: every patch not yet woken shows in its own bare painted look instead of pencil, so you can see how green land sits beside it. The real garden is not touched.</p>
   <h3>Speed things up</h3><p><button class="act" data-a="tfinish">Finish every job now</button></p><p><button class="act" data-a="tpack">Fill the store (20 of everything)</button></p>
+  <h3>Finish line</h3><p><button class="act${G.lineOn() ? '' : ' quiet'}" data-a="tline">${G.lineOn() ? 'Turn the finish line off here' : 'Turn the finish line on here'}</button></p><p class="meta">The real garden only wakes the finished patches (${C.finishLine.tiles.length} so far) and no traveller comes. This sandbox shows the whole valley unless you turn the line on.</p>
   <h3>Call someone</h3><p><button class="act" data-a="tvisit">Next animal moment</button> <button class="act" data-a="ttrav">A traveller arrives</button> <button class="act" data-a="tsecret">Hide a little find</button> <button class="act" data-a="tplaty">The platypus (dawn only, normally)</button></p>
   <h3>Seasons</h3><p>${['spring', 'summer', 'autumn', 'winter'].map(k => `<button class="act${season() === k ? '' : ' quiet'}" data-a="tseason" data-id="${k}">${C.seasons[k].name}</button>`).join(' ')} <button class="act quiet" data-a="tseason" data-id="">The phone's own</button></p>
   <h3>The animals' stories</h3><p><button class="act" data-a="tbeat">Skip to the next animal beat</button></p><p class="meta">${C.animals.beats.filter(b => G.beatDone(b.id)).length} of ${C.animals.beats.length} beats so far. It ignores the season and the hour, and makes the job or home it waits on finished.</p>
@@ -5936,10 +5938,16 @@ function cardCheck() {
   const q = G.s.pages.cards; if (!q.length || sheetKind || roomOn || performance.now() < cardAt || guideOn() || guideStep() === 0 || LOOK.on || !G.s.flags.welcomed) return;
   let i = windowFree() ? q.findIndex(c => c.k === 'page' && G.pageCanOpen(c, G.now())) : -1;   // the morning's page first
   if (i < 0 && windowFree()) i = q.findIndex(c => c.k === 'beat' && (c.v || 0) < G.s.visits.n);
+  if (i < 0 && windowFree()) i = q.findIndex(c => c.k === 'line');   // the finish line's "to be continued" card (after the moving-in page)
   if (i < 0) { const n = q.findIndex(c => QUIET[c.k]); if (n >= 0) { const c = q.splice(n, 1)[0]; G.dirty = true; cardAt = performance.now() + 3500; PL.add(`quiet card: ${PL.short(c)}`); quietCard(c); } return; }
   const c = q[i]; PL.add(`card from the queue: ${PL.short(c)} (${q.length - 1} more waiting)`); tookWindow();
   if (c.k === 'page') return openPage(c.id);
-  q.splice(i, 1); G.dirty = true; openBeat(c.id);
+  q.splice(i, 1); G.dirty = true; if (c.k === 'line') return openLineCard(); openBeat(c.id);
+}
+function openLineCard() {   // tile roadmap step 1: the edge of what is finished, said once, gently (CONTENT.finishLine)
+  const L = C.finishLine;
+  openSheet('line', `<div class="jpage page"><p class="chap">For now</p><h2>${L.title}</h2>${L.text.map(x => `<p class="tale">${x}</p>`).join('')}</div><p style="text-align:center"><button class="act" data-a="close">${L.button}</button></p>`);
+  sheet.scrollTop = 0;
 }
 function quietCard(c) {   // no window: the land shows it, a short note says it, Hazel's diary keeps the words
   if (c.k === 'spring') { toast('Water! Wendel has found a spring.'); const [x, y] = toWorld(SPRING.at[0], SPRING.at[1]); ALLDONE.ease = { t: 0, z0: cam.z, x0: cam.x, y0: cam.y, z1: clampZ(Math.max(cam.z, 1.3)), x1: x, y1: y }; sparkleAt(x, y); return diaryAdd(`Wendel found a spring between the roots of an old stump. Clear water, the first on this hill in years.`); }

@@ -611,6 +611,7 @@ const G = {
     const [x, y] = k.split(',').map(Number); let n = 0;
     for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
       const kk = `${x + dx},${y + dy}`; if (this.s.tiles[kk] || n >= max || Math.abs(x + dx) > 2 || Math.abs(y + dy) > 2) continue;
+      if (this.beyondLine(kk)) continue;   // the finish line: this patch is not finished yet, so it keeps dreaming
       if (y + dy < -1 && !this.done('bridge')) continue;   // the far side of the stream waits for the bridge
       this.s.tiles[kk] = { state: 'revealed', green: 0, kind: this.tileKind(kk) }; n++;
     }
@@ -622,6 +623,11 @@ const G = {
   // Each bare tile has a kind and a chain of jobs that unlock one after another. Jobs are 'heal:<tile>:<step>'. A tile keeps its
   // own green points (tiles[k].green) and moves through the same land stages as home; at first green it counts as healed
   // ('green': neighbours can settle, more bare land appears). Life gives the green, often a while after the job (step.later).
+  lineOn() {   // the finish line (CONTENT.finishLine): the real garden only, unless the sandbox test panel turns it on; the pretend player sets window.NO_FINISH_LINE
+    const L = C.finishLine; if (!L || !L.on || window.NO_FINISH_LINE) return false;
+    if (!window.SANDBOX) return true; try { return localStorage.getItem('gnomelife.sandbox.line') === '1'; } catch (e) { return false; }
+  },
+  beyondLine(k) { return this.lineOn() && !C.finishLine.tiles.includes(k); },
   tileKind(k) {   // fixed per tile: the stream row is the dry creek, the patch east of home the loggers' old camp and the column below it the old track up to it; the rest from the old bare-tile art
     const [x, y] = k.split(',').map(Number); if (k === '0,1') return 'garden';   // the couple's garden-to-be (v99: its own chain)
     if (y === -1) return 'creek'; if (k === '1,0') return 'camp'; if (x === 1) return 'verge';   // v109: the patch beside the house is the loggers' old camp, the old track leads up to it (old gardens keep their stored 'verge' on 1,0)
@@ -1004,7 +1010,8 @@ const G = {
   villageTick(t) {
     const s = this.s, v = s.village, V = C.village, dk = dayKey(t), h = new Date(t).getHours();
     // a traveller arrives once the house is finished, when it is time, and someone is still on the road
-    if (!v.traveller && v.queue.length && t >= v.nextAt && this.gameDay(t) >= (this.pace().arrive[Object.keys(v.folk).length] || 0) && (this.needMet(V.firstAfter) || /village|test/.test(location.hash))) {
+    const held = this.lineOn() && !C.finishLine.folk.includes(v.queue[0]);   // the finish line: nobody comes up the track until their patch is finished
+    if (!held && !v.traveller && v.queue.length && t >= v.nextAt && this.gameDay(t) >= (this.pace().arrive[Object.keys(v.folk).length] || 0) && (this.needMet(V.firstAfter) || /village|test/.test(location.hash))) {
       v.traveller = { id: v.queue.shift(), at: t }; v.traveller.want = this.wishLot();   // they name the patch they'd like to live on
       const f = this.folkDef(v.traveller.id); this.note(`A traveller has camped by the path: ${f.name}, ${f.trade}.`); if (v.traveller.want) this.note(this.wishText(f.id)); this.emit('traveller', v.traveller.id);
     }
@@ -1217,6 +1224,7 @@ const G = {
     if (!s.tiles['0,1'] && (this.stageIndex('0,0') >= 1 || this.done('bedwater'))) {   // v99 (notes 28, 49): once the first seeds are watered in, so day one has a patch to clear and a first spell
      s.tiles['0,1'] = { state: 'revealed', green: 0, kind: this.tileKind('0,1') }; this.note('The patch beside the yard has woken up. It is bare and full of the loggers\' junk, but it is ours to mend.'); this.emit('reveal', '0,1'); }
     if (!s.tiles['1,0'] && (this.stageIndex('0,0') >= 2 || this.pageHappened('3.5'))) { s.tiles['1,0'] = { state: 'revealed', green: 0, kind: this.tileKind('1,0') }; this.note(this.pageHappened('3.5') ? 'The loggers\' old camp has woken up. A lantern is bobbing up the old track towards it.' : 'The loggers\' old camp past the yard has woken up. Wendel says a fire ring means somebody once sat by it.'); this.emit('reveal', '1,0'); }
+    if (this.lineOn() && this.pageHappened('3.5') && !s.flags.lineCard) { s.flags.lineCard = t; P.cards.push({ k: 'line', at: t }); this.emit('card'); }   // the finish line: one "to be continued" card after moving in
     if (this.pageHappened('3.5') && !s.flags.revealSwept) { s.flags.revealSwept = true; for (const k of Object.keys(s.tiles)) if (k !== '0,0' && s.tiles[k].state === 'green') this.reveal(k); }   // patches mended before chapter three ended show their neighbours now
     for (const [patch, M] of Object.entries(C.makes)) {   // Hazel's list: a patch reached a new stage, so new little makes are ready
       if (!this.patchOpen(patch)) continue;
