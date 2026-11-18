@@ -589,6 +589,7 @@ const G = {
   },
   gardenOpen() { const t = this.s.tiles['0,1']; if (!t || t.state !== 'green' || Object.values(this.s.village.folk).some(f => f.tile === '0,1')) return false;
     return !!this.s.flags.garden || t.kind !== 'garden' || this.healAt('0,1') >= this.healSteps('0,1').length; },   // the couple's garden (tile 0,1; an older save may have a neighbour living there)
+  campWakes(t = now()) { const f = this.s.flags; return !!((f.gardenMoment && t - f.gardenMoment > 120000) || (f.gardenRush && t - f.gardenRush > 3600000)); },   // the frog moment, or an hour after the garden's last job if the moment never got its turn
   stageIndex(k) { return C.landStages.indexOf(this.landStage(k)); },
   // ---- little makes (CONTENT.makes; the makes are tasks with make: yard | garden) ----
   makeTile(d) { return C.makes[d.make].tile; },
@@ -1223,7 +1224,8 @@ const G = {
     // when the yard reaches meadow (about day 4 or 5), so the world is bigger than one yard long before the house is finished
     if (!s.tiles['0,1'] && (this.stageIndex('0,0') >= 1 || this.done('bedwater'))) {   // v99 (notes 28, 49): once the first seeds are watered in, so day one has a patch to clear and a first spell
      s.tiles['0,1'] = { state: 'revealed', green: 0, kind: this.tileKind('0,1') }; this.note('The patch beside the yard has woken up. It is bare and full of the loggers\' junk, but it is ours to mend.'); this.emit('reveal', '0,1'); }
-    if (!s.tiles['1,0'] && (this.stageIndex('0,0') >= 2 || this.pageHappened('3.5'))) { s.tiles['1,0'] = { state: 'revealed', green: 0, kind: this.tileKind('1,0') }; this.note(this.pageHappened('3.5') ? 'The loggers\' old camp has woken up. A lantern is bobbing up the old track towards it.' : 'The loggers\' old camp past the yard has woken up. Wendel says a fire ring means somebody once sat by it.'); this.emit('reveal', '1,0'); }
+    if (!s.tiles['1,0'] && (this.stageIndex('0,0') >= 2 || this.campWakes(t) || this.pageHappened('3.5'))) {   // round fourteen note 9b (Bryce picked 2026-11-18): the camp also wakes once the garden is finished, a couple of minutes after the frog-at-the-pond moment, whichever comes first
+      s.tiles['1,0'] = { state: 'revealed', green: 0, kind: this.tileKind('1,0') }; this.note(this.pageHappened('3.5') ? 'The loggers\' old camp has woken up. A lantern is bobbing up the old track towards it.' : 'The loggers\' old camp past the yard has woken up. Wendel says a fire ring means somebody once sat by it.'); this.emit('reveal', '1,0'); }
     if (this.lineOn() && this.pageHappened('3.5') && !s.flags.lineCard) { s.flags.lineCard = t; P.cards.push({ k: 'line', at: t }); this.emit('card'); }   // the finish line: one "to be continued" card after moving in
     if (this.pageHappened('3.5') && !s.flags.revealSwept) { s.flags.revealSwept = true; for (const k of Object.keys(s.tiles)) if (k !== '0,0' && s.tiles[k].state === 'green') this.reveal(k); }   // patches mended before chapter three ended show their neighbours now
     for (const [patch, M] of Object.entries(C.makes)) {   // Hazel's list: a patch reached a new stage, so new little makes are ready
