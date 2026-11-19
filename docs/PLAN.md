@@ -2,7 +2,7 @@
 
 A cosy storybook garden game, made for Bryce's iPhone first and played as a web page from a Safari Home Screen shortcut. It may be released to the public eventually (Bryce, 2026-11-16), and it may be sold (Bryce would probably ask for donations, but might sell it). Charm and aliveness over complexity; it must run smoothly on a phone.
 
-_Last updated: 2026-11-17 (v111 live with the finish line; v112 layout tool waiting for Bryce's OK; `docs/TILE-ROADMAP.md`). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
+_Last updated: 2026-11-19 (v114 round-fourteen build waiting for Bryce's OK). Before: 2026-11-17 (v111 live with the finish line; v112 layout tool waiting for Bryce's OK; `docs/TILE-ROADMAP.md`). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
 
 ## 1. Rules for every chat (read first)
 
@@ -37,6 +37,8 @@ _Last updated: 2026-11-17 (v111 live with the finish line; v112 layout tool wait
 - **Two gardens:** the real one at the plain address; the sandbox at `?sandbox` (own save; tap the title for the test panel). Pretend player: `node tools/progression_sim.js 2 90`.
 
 ## 3. What's next (in order)
+
+**v114 (2026-11-19, the round-fourteen build, thread "Build the round fourteen notes"; waiting for Bryce's OK).** Pace plan A, "the book keeps time" (Bryce picked it; pictures `/mnt/project-files/round-fourteen-pace/`): the garden chain comes in three parts (heal steps can now have `needs` and a `waitLine`; `rubbish2` needs page 2.1, `rain` needs page 2.2, `rubbish` needs the work corner); no patch is ever greener than home (`G.greenCap`/`capGreen`, extra green waits in `tile.held` and comes in via `heldTick`); home young meadow at 30 (was 40); the old camp wakes only once the garden is finished; the camp's wattle step waits 8 hours before the tussocks. Pages 3.1-3.3 (garden, toadstool, mice) sit in chapter two with `now:true` (open a minute after they happen) and `after` set so the book order still holds. Small notes: unbuilt things never answer a tap (note 1); coax after two harvests (2); work corner offered when the garden wakes, in Wendel's words (3); stick pile beside the woodpile, named when clearing ends, the gather-sticks job retired (4, 4b); the mouse a day or 4 hours after the rabbit (6); watering from the nearest water, the full pond included (`waterSrc`, 7); leaf-pile shelter needs `met:hedgehog` (8). Mabel (note 12) untouched: Bryce is planning her.
 
 **v113 (2026-11-18, round fourteen quick fix, Bryce picked on a card).** Note 9b: Bryce was grinding harvests for the old camp, which only woke when the home yard reached young meadow (40 green since v106). Now the camp also wakes two minutes after the garden's frog-at-the-pond moment (or an hour after the garden's last job), whichever comes first (`G.campWakes`, game.js). Note 5: the frog-moment timer no longer reads the garden before it has loaded (the red "Oops ... G.s.flags" line). Other round-fourteen notes wait in /mnt/project-files/play-notes-tracker.md.
 

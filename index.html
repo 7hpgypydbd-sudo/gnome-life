@@ -629,7 +629,7 @@ function bedPt(k) { const [x, y] = wetPatchXY(k), g = fromWorld(x, y), [i, j] = 
 function waterSrc(to) {   // where the can is filled for watering a bed: the nearest of the rain barrel, the spring and (round fourteen note 7) the garden pond once it is full, dipped from its bank, never walked into
   const d = p => Math.hypot(p[0] - to[0], p[1] - to[1]), out = [G.done('rainbarrel') ? [...SPOTS.barrel, 'pickup', false, 2, BARREL_AT()] : [SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 2.5, SPRING.at]];
   if (G.s.tiles['0,1'] && G.s.tiles['0,1'].kind === 'garden' && healProg('0,1', 'rain') >= 1) {
-    const c = glob('0,1', ...GPOND), a = Math.atan2((to[1] - c[1]) / 0.25, (to[0] - c[0]) / 0.29), b = glob('0,1', GPOND[0] + Math.cos(a) * 0.32, GPOND[1] + Math.sin(a) * 0.28);
+    const c = glob('0,1', ...GPOND), a = Math.atan2((to[1] - c[1]) / 0.25, (to[0] - c[0]) / 0.29), b = glob('0,1', GPOND[0] + Math.cos(a) * 0.25, GPOND[1] + Math.sin(a) * 0.21);
     out.push([b[0], b[1], 'pickup', false, 2.5, c]); }
   return out.sort((p, q) => d(p) - d(q))[0];
 }
