@@ -351,7 +351,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v114</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v115</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -372,7 +372,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 114;
+const BUILD = 115;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -380,12 +380,12 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=114"></script>
-<script src="playlog.js?v=114"></script>
-<script src="concerns.js?v=114"></script>
-<script src="game.js?v=114"></script>
-<script src="walk.js?v=114"></script>
-<script src="layout.js?v=114"></script>
+<script src="content.js?v=115"></script>
+<script src="playlog.js?v=115"></script>
+<script src="concerns.js?v=115"></script>
+<script src="game.js?v=115"></script>
+<script src="walk.js?v=115"></script>
+<script src="layout.js?v=115"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -731,6 +731,7 @@ for (const k of ['yard-workcorner', 'heap-bare']) ART_SLOTS[k] = {};
 // v109 (art day 24): the loggers' old camp. Ash bed and raked bed share one outline (drawn 450 world px wide); ring stones drawn 80-104 px tall
 // (clean ones, sooted in code unless camp-stone-soot-N is painted); a wattle seedling clump and a gold wattle bush.
 for (const k of ['camp-ash', 'camp-raked', 'camp-sprouts', 'camp-wattle', 'camp-wattle-young', ...[1, 2, 3, 4, 5, 6].flatMap(n => ['camp-stone-' + n, 'camp-stone-soot-' + n])]) ART_SLOTS[k] = {};   // v110: painted on art day 24   // round eleven (art day 22): the finished little work corner; the rubbish heap's bare mound once the junk is off
+for (const k of ['mabel-wagon', 'mabel-wagon-arrive', 'mabel-gold', 'carter-mice-1', 'carter-mice-2', 'carter-mice-3', 'carter-mice-4', 'mabel-oven-1', 'mabel-oven-2', 'mabel-oven-3', 'wheat-bed-1', 'wheat-bed-2', 'wheat-bed-3', 'wheat-bed-4', 'wheat-bed-5', 'baker-sack', 'baker-sacks', 'baker-loaves', 'baker-paddle', 'baker-buns', 'baker-trough', 'baker-sheaf', 'baker-pin-honey', 'baker-sign']) ART_SLOTS[k] = {};   // v115: art day 25 (Mabel's wheat-gold redesign), in the layout tool's tray only until Bryce places them
 for (const k of ['garden-heap', 'garden-heap-half', 'garden-hollow', 'garden-hollow-rain', 'garden-pond-large', 'garden-pond-new', 'seedbed-rect', 'wildflower-patch-1', 'wildflower-patch-2', 'wildflower-patch-3', 'yard-leanto', 'yard-leanto-frame', 'spring-paved', 'room-stump-hollowing']) ART_SLOTS[k] = {};   // art day 21 (v99)
 const ART_RAW = /^(camp-ash|camp-raked|garden-|heap-|seedbed-rect|wildflower-patch|yard-leanto|yard-workcorner|spring-paved)/;   // drawn at their own size and spot, never trimmed or settled
 for (const k of ['spirit-float', 'spirit-point', 'spirit-settle', 'toad-legs', 'toad-house']) ART_SLOTS[k] = {};   // the Wood spirit's painted poses (art day 14)

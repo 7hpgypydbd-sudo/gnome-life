@@ -96,10 +96,14 @@
     if (a === 'back') { if (h.type === 'heal') delete L.heal[h.kind][h.n]; else if (h.type === 'make') delete L.makes[h.id]; else if (h.type === 'prop') delete L.props[h.name]; else { (h.type === 'yard' ? L.extra.yard : L.extra[h.kind]).splice(h.i, 1); T.sel = null; } }
     changed();
   }
+  // v115: art day 25 pieces drop in at about their real size (a gnome stands 111 tall); Bigger and Smaller still change them
+  const DROP_H = { 'mabel-wagon': 230, 'mabel-wagon-arrive': 210, 'mabel-gold': 115, 'carter-mice-1': 70, 'carter-mice-2': 70, 'carter-mice-3': 70, 'carter-mice-4': 70,
+    'mabel-oven-1': 55, 'mabel-oven-2': 90, 'mabel-oven-3': 100, 'wheat-bed-1': 45, 'wheat-bed-2': 50, 'wheat-bed-3': 80, 'wheat-bed-4': 85, 'wheat-bed-5': 70,
+    'baker-sack': 38, 'baker-sacks': 40, 'baker-loaves': 26, 'baker-paddle': 55, 'baker-buns': 30, 'baker-trough': 26, 'baker-sheaf': 50, 'baker-pin-honey': 26, 'baker-sign': 50 };
   function addPainting(name) {
     const kind = kindOf(), k = tileOf(), f = fromWorld(cam.x, cam.y + 40), [tx, ty] = k.split(',').map(Number);
     let loc = [Number(f.tile.split(',')[0]) + f.gx - tx, Number(f.tile.split(',')[1]) + f.gy - ty]; if (loc.some(v => v < 0.05 || v > 0.95)) loc = [0.5, 0.5];
-    const flat = /patch|marks|ground|path/.test(name), item = { pic: name, h: flat ? 60 : 50 }; if (flat) item.flat = 1;
+    const flat = /patch|marks|ground|path/.test(name), item = { pic: name, h: DROP_H[name] || (flat ? 60 : 50) }; if (flat) item.flat = 1;
     if (!kind) { L.extra.yard = L.extra.yard || []; item.at = loc.map(r3); L.extra.yard.push(item); T.sel = { type: 'yard', i: L.extra.yard.length - 1 }; }
     else { const st = stageOf(kind); item.at = (healSwap(k) ? [loc[1], loc[0]] : loc).map(r3); if (st > 0) item.from = steps(kind)[st - 1].id; L.extra[kind] = L.extra[kind] || []; L.extra[kind].push(item); T.sel = { type: 'extra', kind, i: L.extra[kind].length - 1 }; }
     changed();
@@ -131,15 +135,16 @@
   const trayLabel = k => k.startsWith('kit-') && TRAY[k.slice(4)] ? TRAY[k.slice(4)] : nice(k);
   let trayList = null, trayFilter = '', clearAsk = false, savedNote = '';
   function trayNames() {
-    if (trayList) return trayList; const skip = /^(btn|face|page|story|portrait|room|card|plot|tile|icon-|folk-|him|her|walk|ui|frame|paper|ground|ribbon|g-|kit-edge|kit-ribbon)/;
+    const nArt = Object.keys(ART_SLOTS).filter(k => art(k)).length;   // v115: the painted slots load after the tool opens, so list again until they are all in
+    if (trayList && trayList.nArt === nArt) return trayList; const skip = /^(btn|face|page|story|portrait|room|card|plot|tile|icon-|folk-|him|her|walk|ui|frame|paper|ground|ribbon|g-|kit-edge|kit-ribbon)/;
     const all = new Map(); for (const [k, src] of Object.entries(ASSETS)) if (typeof src === 'string' && /\.webp$/.test(src) && !skip.test(k)) all.set(k, src);
     for (const k of Object.keys(ART_SLOTS)) if (art(k) && !skip.test(k) && !all.has(k)) all.set(k, `sprites/${k}.webp`);
-    return (trayList = [...all.entries()].sort((a, b) => a[0].localeCompare(b[0])));
+    trayList = [...all.entries()].sort((a, b) => a[0].localeCompare(b[0])); trayList.nArt = nArt; return trayList;
   }
   function render() {
     const kind = kindOf(), h = find(T.sel), e = h && entry(h), st = kind ? stageOf(kind) : 0, n = kind ? steps(kind).length : 0;
     const stLabel = !kind ? '' : st === 0 ? 'Bare, before any job' : st === n ? `All jobs done (last: ${steps(kind)[n - 1].name.toLowerCase()})` : `After: ${steps(kind)[st - 1].name.toLowerCase()}`;
-    const want = trayFilter.toLowerCase().trim().replace(/s$/, ''), list = trayNames().filter(([k]) => !want || trayLabel(k).includes(want) || k.includes(want)).slice(0, 160);
+    const want = trayFilter.toLowerCase().trim().replace(/s$/, ''), list = trayNames().filter(([k]) => !want || trayLabel(k).includes(want) || k.includes(want)).slice(0, 800);
     P.innerHTML = `<h2>Layout</h2>
       <select id="layPatch">${PATCHES.map((p, i) => `<option value="${i}"${i === T.patch ? ' selected' : ''}>${p[0]}</option>`).join('')}</select>
       ${kind ? `<div class="stage"><button data-l="prev"${st <= 0 ? ' disabled' : ''}>‹</button><span>${stLabel}</span><button data-l="next"${st >= n ? ' disabled' : ''}>›</button></div>` : `<p class="meta" style="margin:0">Every wish-list make is shown made, so everything can be placed. The rest of the yard is as your sandbox garden has it.</p>`}
