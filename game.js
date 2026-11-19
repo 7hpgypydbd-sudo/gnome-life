@@ -583,7 +583,7 @@ const G = {
   addGreen(n, where = 'yard') {
     if (!n) return;
     if (window.PL) PL.add(`green +${n} (${where})`);
-    const bump = k => { const before = this.landStage(k).key; this.s.tiles[k].green += n; const after = this.landStage(k); return after.key !== before ? after : null; };
+    const bump = k => { const before = this.landStage(k).key; this.s.tiles[k].green += this.capGreen(k, n); const after = this.landStage(k); return after.key !== before ? after : null; };
     if (where !== 'garden') { const was = this.s.tiles['0,0'].green, st = bump('0,0'); this.s.flags.yardStage = Math.max(this.s.flags.yardStage || 0, this.stageIndex('0,0')); this.emit('green', was);   // v87: the little oak shows a sprig of leaves
       if (st) { this.note(`The home patch is now ${st.name}.`); this.s.pages.cards.push({ k: 'land', key: st.key }); this.emit('land', st); } }
     if (this.gardenOpen()) { const st = bump('0,1'); if (st) this.note(`The garden is now ${st.name}.`); }
@@ -665,8 +665,13 @@ const G = {
   },
   flowing(k) { const tl = this.s.tiles[k]; if (!tl || tl.kind !== 'creek') return false; const i = this.healSteps(k).findIndex(st => st.id === 'stones'); return this.healStepDone(k, i); },
   canFlow(k) { const [x, y] = k.split(',').map(Number); return ['0,-1', '1,-1', '-2,-1'].includes(k) || this.flowing(`${x - 1},${y}`) || this.flowing(`${x + 1},${y}`); },   // fed by the spring at home, the old spring at the west end, or a flowing stretch next door
+  // round fourteen note 11 (pace plan A): no patch is ever greener than home. A patch may reach the home yard's stage but not the next
+  // one; the green it earns past that waits (tile.held) and comes in as soon as home catches up (heldTick), so nothing is lost.
+  greenCap(k) { if (k === '0,0') return Infinity; const nx = C.landStages[this.stageIndex('0,0') + 1]; return nx ? nx.at - 1 : Infinity; },
+  capGreen(k, n) { const tl = this.s.tiles[k]; if (!tl || n <= 0) return n; const room = Math.max(0, this.greenCap(k) - tl.green), ok = Math.min(n, room); if (n > ok) { tl.held = (tl.held || 0) + n - ok; if (window.PL) PL.add(`green +${n - ok} on ${k} waits for home to catch up`); } return ok; },
+  heldTick() { for (const k of Object.keys(this.s.tiles)) { const tl = this.s.tiles[k]; if (!tl.held) continue; const room = Math.max(0, this.greenCap(k) - tl.green), n = Math.min(tl.held, room); if (n > 0) { tl.held -= n; this.tileGreen(k, n); } } },
   tileGreen(k, n) {   // green points on one bare tile; a new stage gets its own land card
-    if (!n) return; const tl = this.s.tiles[k], before = this.landStage(k).key; tl.green += n; if (window.PL) PL.add(`green +${n} on ${k} (now ${tl.green})`); const st = this.landStage(k);
+    if (!n) return; const tl = this.s.tiles[k], before = this.landStage(k).key; n = this.capGreen(k, n); if (!n) return; tl.green += n; if (window.PL) PL.add(`green +${n} on ${k} (now ${tl.green})`); const st = this.landStage(k);
     if (st.key === before) return;
     if (tl.state !== 'green') { tl.state = 'green'; this.reveal(k); }
     this.note(`${cap(this.patchName(k))} is now ${st.name}.`); this.s.pages.cards.push({ k: 'tland', tile: k, key: st.key }); this.emit('land', st);
@@ -1219,6 +1224,7 @@ const G = {
   },
   storyTick(t) {
     const s = this.s, P = s.pages, queued = id => P.cards.some(c => c.k === 'page' && c.id === id);
+    this.heldTick();
     if (this.gardenOpen() && !s.flags.garden) s.flags.garden = true;   // garden jobs (the pond) wait for this
     for (const pg of C.story.pages) if (!(pg.id in P.seen) && !queued(pg.id) && this.pageAfter(pg).every(id => this.pageHappened(id)) && this.storyDue(pg, t)) { P.cards.push({ k: 'page', id: pg.id, at: t }); this.emit('card'); }
     // the land opens with the story: the garden patch beside the yard in chapter three (once the yard has greened), and the
@@ -1227,7 +1233,8 @@ const G = {
     // when the yard reaches meadow (about day 4 or 5), so the world is bigger than one yard long before the house is finished
     if (!s.tiles['0,1'] && (this.stageIndex('0,0') >= 1 || this.done('bedwater'))) {   // v99 (notes 28, 49): once the first seeds are watered in, so day one has a patch to clear and a first spell
      s.tiles['0,1'] = { state: 'revealed', green: 0, kind: this.tileKind('0,1') }; this.note('The patch beside the yard has woken up. It is bare and full of the loggers\' junk, but it is ours to mend.'); this.emit('reveal', '0,1'); }
-    if (!s.tiles['1,0'] && (this.stageIndex('0,0') >= 2 || this.campWakes(t) || this.pageHappened('3.5'))) {   // round fourteen note 9b (Bryce picked 2026-11-18): the camp also wakes once the garden is finished, a couple of minutes after the frog-at-the-pond moment, whichever comes first
+    if (!s.tiles['1,0'] && (this.campWakes(t) || (this.gardenOpen() && !s.flags.gardenRush) || this.pageHappened('3.5'))) {   // round fourteen pace plan A: only once the garden is finished (no longer when the yard reaches meadow), so the patches come one after another
+        // round fourteen note 9b (Bryce picked 2026-11-18): the camp also wakes once the garden is finished, a couple of minutes after the frog-at-the-pond moment, whichever comes first
       s.tiles['1,0'] = { state: 'revealed', green: 0, kind: this.tileKind('1,0') }; this.note(this.pageHappened('3.5') ? 'The loggers\' old camp has woken up. A lantern is bobbing up the old track towards it.' : 'The loggers\' old camp past the yard has woken up. Wendel says a fire ring means somebody once sat by it.'); this.emit('reveal', '1,0'); }
     if (this.lineOn() && this.pageHappened('3.5') && !s.flags.lineCard) { s.flags.lineCard = t; P.cards.push({ k: 'line', at: t }); this.emit('card'); }   // the finish line: one "to be continued" card after moving in
     if (this.pageHappened('3.5') && !s.flags.revealSwept) { s.flags.revealSwept = true; for (const k of Object.keys(s.tiles)) if (k !== '0,0' && s.tiles[k].state === 'green') this.reveal(k); }   // patches mended before chapter three ended show their neighbours now

@@ -351,7 +351,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v113</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v114</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -372,7 +372,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 113;
+const BUILD = 114;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -380,12 +380,12 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=113"></script>
-<script src="playlog.js?v=113"></script>
-<script src="concerns.js?v=113"></script>
-<script src="game.js?v=113"></script>
-<script src="walk.js?v=113"></script>
-<script src="layout.js?v=113"></script>
+<script src="content.js?v=114"></script>
+<script src="playlog.js?v=114"></script>
+<script src="concerns.js?v=114"></script>
+<script src="game.js?v=114"></script>
+<script src="walk.js?v=114"></script>
+<script src="layout.js?v=114"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -5067,7 +5067,7 @@ function tapAt(cx, cy, wx, wy) {
   if (f.tile === '0,0') {
     let best = null, bd = 1e9;
     const pad = 14 / cam.z;   // a generous margin around each prop
-    for (const p of PROPS) { if (p.gone && taskProg(p.gone) >= 1) continue; if (p.name !== 'seedbed' && propAlpha(p) <= 0 && !spotJobs(p.name).length) continue;   /* round fourteen note 1: a thing not built yet never answers a tap */ const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s * (p.hitW || 1), h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 3 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
+    for (const p of PROPS) { if (p.gone && taskProg(p.gone) >= 1) continue; if (p.name !== 'seedbed' && (p.name === 'fence' ? taskProg('fence') <= 0 : propAlpha(p) <= 0) && !spotJobs(p.name).length) continue;   /* round fourteen note 1: a thing not built yet never answers a tap */ const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s * (p.hitW || 1), h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 3 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
     if (best) { if (best.name === 'seedbed') { if (propAlpha(best) >= 1 && bedReady()) return openSeedbed(); if (openSpot('clearing')) return; return toast(bedReady() ? 'The seed bed. Hazel and Wendel are busy just now; it can wait.' : 'Rough ground, for now. One day the seed bed goes here.'); } if (best.name === 'shelter') { if (!wantsTap(best)) return openRoom(); if (openJobCard(spotJobs('shelter'))) { sheet.querySelector('.foot').insertAdjacentHTML('afterbegin', '<a href="#" data-a="room">look inside</a> · '); return; } } if (best.name === 'sapling') { if (taskProg('sapling') < 1 && G.taskView(G.taskDef('sapling')).show && !G.done('sapling')) return openPot(); if (taskProg('sapling') >= 1) return openJournal(1); return; }; if (best.name === 'barrel') { if (G.drawBarrel()) { const [bx, by] = toWorld(best.gx, best.gy); float(`+${C.barrel.give.water} ${C.resources.water.name}`, bx, by - 60); } return openBarrel(); } if (openSpot(best.name)) return; }
     if (stickPileShow() > 0) { const [px, py] = toWorld(STICK_PILE[0], STICK_PILE[1]); if (Math.hypot(wx - px, wy - py + 6) < Math.max(30, 38 / cam.z)) return toast(C.stickPile.replace('{n}', G.s.inv.twig || 0)); }   // round nine note 18: what the pile is, and why it never goes
     if (taskProg('workcorner') >= 1 || taskProg('leanto') >= 1) { const [hx, hy] = toWorld(...WORKCORNER); if (Math.abs(wx - hx) < 62 && wy > hy - 160 && wy < hy + 12) return toast(taskProg('leanto') >= 1 ? 'Wendel\'s workshop. A hook for every tool, and a little window for the stars.' : 'The work corner. Things for the home get made here, then carried to where they go.'); }
