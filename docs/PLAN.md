@@ -2,7 +2,7 @@
 
 A cosy storybook garden game, made for Bryce's iPhone first and played as a web page from a Safari Home Screen shortcut. It may be released to the public eventually (Bryce, 2026-11-16), and it may be sold (Bryce would probably ask for donations, but might sell it). Charm and aliveness over complexity; it must run smoothly on a phone.
 
-_Last updated: 2026-11-19 (v114 round-fourteen build waiting for Bryce's OK). Before: 2026-11-17 (v111 live with the finish line; v112 layout tool waiting for Bryce's OK; `docs/TILE-ROADMAP.md`). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
+_Last updated: 2026-11-19 (v115: the layout tool's tray now lists every painting, plus art day 25's Mabel redesign pieces under new names for Bryce's weekend stone-circle plan; `docs/ART-DAY-25.md`). Before: 2026-11-19 (v114 round-fourteen build). Before: 2026-11-17 (v111 live with the finish line; v112 layout tool waiting for Bryce's OK; `docs/TILE-ROADMAP.md`). Keep this file short: one page of where we are and what's next. Detail goes in the topic docs listed at the bottom; finished history goes in `docs/archive/`._
 
 ## 1. Rules for every chat (read first)
 
