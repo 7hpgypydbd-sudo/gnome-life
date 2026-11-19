@@ -480,6 +480,7 @@ const G = {
     if (n.startsWith('page:')) return this.pageHappened(n.slice(5));
     if (n.startsWith('stage:')) return this.stageIndex('0,0') >= C.landStages.findIndex(x => x.key === n.slice(6));
     if (n.startsWith('tile:')) return !!s.tiles[n.slice(5)];
+    if (n.startsWith('met:')) return this.met(n.slice(4));   // round fourteen note 8: an animal's home waits until you have met the animal
     return this.done(n);
   },
   lineOk(c) { if (!c) return true; if (c.includes('&')) return c.split('&').every(x => this.lineOk(x)); if (c[0] === '!') return !this.lineOk(c.slice(1)); if (c === 'grown') return !!(this.plot().grown || this.plot().stage === 'growing' || this.plot().stage === 'ready'); if (c.startsWith('met:')) return this.met(c.slice(4)); return this.needMet(c); },
@@ -492,7 +493,7 @@ const G = {
   needHint(n) {   // a need in words, for the one "Next:" line ('' = keep it a surprise)
     if (n.startsWith('page:')) return this.pageHint(n.slice(5));
     if (n.startsWith('stage:')) return `once the yard is ${C.landStages.find(x => x.key === n.slice(6)).name}`;
-    if (n.startsWith('flag:') || n.startsWith('tile:') || n.startsWith('trade:')) return '';
+    if (n.startsWith('flag:') || n.startsWith('tile:') || n.startsWith('trade:') || n.startsWith('met:')) return '';
     const d = this.taskDef(n); return d ? `after ${d.short}` : '';
   },
   needsWhy(d) { return (d.needs || []).filter(n => !this.needMet(n)).map(n => this.needHint(n)).filter(Boolean).join(', '); },
@@ -582,7 +583,7 @@ const G = {
   addGreen(n, where = 'yard') {
     if (!n) return;
     if (window.PL) PL.add(`green +${n} (${where})`);
-    const bump = k => { const before = this.landStage(k).key; this.s.tiles[k].green += n; const after = this.landStage(k); return after.key !== before ? after : null; };
+    const bump = k => { const before = this.landStage(k).key; this.s.tiles[k].green += this.capGreen(k, n); const after = this.landStage(k); return after.key !== before ? after : null; };
     if (where !== 'garden') { const was = this.s.tiles['0,0'].green, st = bump('0,0'); this.s.flags.yardStage = Math.max(this.s.flags.yardStage || 0, this.stageIndex('0,0')); this.emit('green', was);   // v87: the little oak shows a sprig of leaves
       if (st) { this.note(`The home patch is now ${st.name}.`); this.s.pages.cards.push({ k: 'land', key: st.key }); this.emit('land', st); } }
     if (this.gardenOpen()) { const st = bump('0,1'); if (st) this.note(`The garden is now ${st.name}.`); }
@@ -653,6 +654,7 @@ const G = {
   },
   healOpen(k) {   // is there a next job to offer on this patch?
     const i = this.healAt(k); if (i >= this.healSteps(k).length) return false;
+    const st = this.healSteps(k)[i]; if (st.needs && !this.s.tasks[`heal:${k}:${i}`] && !this.needsMet(st)) return false;   // round fourteen: a patch job can wait for something (a page of the story, the work corner)
     return !!this.s.tasks[`heal:${k}:${i}`] || !this.healClaimed(k) || this.landStage(k).key === 'barren';
   },
   healWait(k, i) {   // the time the job before this one asks it to wait until (seedlings growing in their pots), or 0
@@ -663,8 +665,13 @@ const G = {
   },
   flowing(k) { const tl = this.s.tiles[k]; if (!tl || tl.kind !== 'creek') return false; const i = this.healSteps(k).findIndex(st => st.id === 'stones'); return this.healStepDone(k, i); },
   canFlow(k) { const [x, y] = k.split(',').map(Number); return ['0,-1', '1,-1', '-2,-1'].includes(k) || this.flowing(`${x - 1},${y}`) || this.flowing(`${x + 1},${y}`); },   // fed by the spring at home, the old spring at the west end, or a flowing stretch next door
+  // round fourteen note 11 (pace plan A): no patch is ever greener than home. A patch may reach the home yard's stage but not the next
+  // one; the green it earns past that waits (tile.held) and comes in as soon as home catches up (heldTick), so nothing is lost.
+  greenCap(k) { if (k === '0,0') return Infinity; const nx = C.landStages[this.stageIndex('0,0') + 1]; return nx ? nx.at - 1 : Infinity; },
+  capGreen(k, n) { const tl = this.s.tiles[k]; if (!tl || n <= 0) return n; const room = Math.max(0, this.greenCap(k) - tl.green), ok = Math.min(n, room); if (n > ok) { tl.held = (tl.held || 0) + n - ok; if (window.PL) PL.add(`green +${n - ok} on ${k} waits for home to catch up`); } return ok; },
+  heldTick() { for (const k of Object.keys(this.s.tiles)) { const tl = this.s.tiles[k]; if (!tl.held) continue; const room = Math.max(0, this.greenCap(k) - tl.green), n = Math.min(tl.held, room); if (n > 0) { tl.held -= n; this.tileGreen(k, n); } } },
   tileGreen(k, n) {   // green points on one bare tile; a new stage gets its own land card
-    if (!n) return; const tl = this.s.tiles[k], before = this.landStage(k).key; tl.green += n; if (window.PL) PL.add(`green +${n} on ${k} (now ${tl.green})`); const st = this.landStage(k);
+    if (!n) return; const tl = this.s.tiles[k], before = this.landStage(k).key; n = this.capGreen(k, n); if (!n) return; tl.green += n; if (window.PL) PL.add(`green +${n} on ${k} (now ${tl.green})`); const st = this.landStage(k);
     if (st.key === before) return;
     if (tl.state !== 'green') { tl.state = 'green'; this.reveal(k); }
     this.note(`${cap(this.patchName(k))} is now ${st.name}.`); this.s.pages.cards.push({ k: 'tland', tile: k, key: st.key }); this.emit('land', st);
@@ -1195,6 +1202,7 @@ const G = {
   // the same day. A keen player used to wait about a week of mornings for the house, with nothing new to do.
   pagesBehind(t = now()) { return C.story.pages.filter(pg => !(pg.id in this.s.pages.seen) && pg.when !== 'welcome' && pg.when !== 'next' && this.storyDue(pg, t)).length; },
   pageCanOpen(c, t = now()) { if (c.k !== 'page') return false; const F = this.s.flags;
+    const pg = this.pageDef(c.id); if (pg && pg.now) return t - (c.at || 0) >= MIN && t - (F.pageAt || 0) >= 10 * MIN;   // round fourteen notes 10, 11: the garden's own pages (the toadstool, the mice) open the day they happen, not in a queue behind the yard's
     if (dayKey(c.at || 0) !== dayKey(t) && F.pageDay !== dayKey(t)) return true;   // queued on an earlier day, and no page read yet today
     const gap = (C.story.catchUpMins || 120) * MIN; return this.pagesBehind(t) >= 2 && t - (c.at || 0) >= gap && t - (F.pageAt || 0) >= gap; },
   pageAfter(pg) { const i = C.story.pages.indexOf(pg); return pg.after || (i > 0 ? [C.story.pages[i - 1].id] : []); },
@@ -1216,6 +1224,7 @@ const G = {
   },
   storyTick(t) {
     const s = this.s, P = s.pages, queued = id => P.cards.some(c => c.k === 'page' && c.id === id);
+    this.heldTick();
     if (this.gardenOpen() && !s.flags.garden) s.flags.garden = true;   // garden jobs (the pond) wait for this
     for (const pg of C.story.pages) if (!(pg.id in P.seen) && !queued(pg.id) && this.pageAfter(pg).every(id => this.pageHappened(id)) && this.storyDue(pg, t)) { P.cards.push({ k: 'page', id: pg.id, at: t }); this.emit('card'); }
     // the land opens with the story: the garden patch beside the yard in chapter three (once the yard has greened), and the
@@ -1224,7 +1233,8 @@ const G = {
     // when the yard reaches meadow (about day 4 or 5), so the world is bigger than one yard long before the house is finished
     if (!s.tiles['0,1'] && (this.stageIndex('0,0') >= 1 || this.done('bedwater'))) {   // v99 (notes 28, 49): once the first seeds are watered in, so day one has a patch to clear and a first spell
      s.tiles['0,1'] = { state: 'revealed', green: 0, kind: this.tileKind('0,1') }; this.note('The patch beside the yard has woken up. It is bare and full of the loggers\' junk, but it is ours to mend.'); this.emit('reveal', '0,1'); }
-    if (!s.tiles['1,0'] && (this.stageIndex('0,0') >= 2 || this.campWakes(t) || this.pageHappened('3.5'))) {   // round fourteen note 9b (Bryce picked 2026-11-18): the camp also wakes once the garden is finished, a couple of minutes after the frog-at-the-pond moment, whichever comes first
+    if (!s.tiles['1,0'] && (this.campWakes(t) || (this.gardenOpen() && !s.flags.gardenRush) || this.pageHappened('3.5'))) {   // round fourteen pace plan A: only once the garden is finished (no longer when the yard reaches meadow), so the patches come one after another
+        // round fourteen note 9b (Bryce picked 2026-11-18): the camp also wakes once the garden is finished, a couple of minutes after the frog-at-the-pond moment, whichever comes first
       s.tiles['1,0'] = { state: 'revealed', green: 0, kind: this.tileKind('1,0') }; this.note(this.pageHappened('3.5') ? 'The loggers\' old camp has woken up. A lantern is bobbing up the old track towards it.' : 'The loggers\' old camp past the yard has woken up. Wendel says a fire ring means somebody once sat by it.'); this.emit('reveal', '1,0'); }
     if (this.lineOn() && this.pageHappened('3.5') && !s.flags.lineCard) { s.flags.lineCard = t; P.cards.push({ k: 'line', at: t }); this.emit('card'); }   // the finish line: one "to be continued" card after moving in
     if (this.pageHappened('3.5') && !s.flags.revealSwept) { s.flags.revealSwept = true; for (const k of Object.keys(s.tiles)) if (k !== '0,0' && s.tiles[k].state === 'green') this.reveal(k); }   // patches mended before chapter three ended show their neighbours now
@@ -1257,7 +1267,7 @@ const G = {
   spiritLesson() {   // v104: the lesson it is waiting with now (its number), or 0. Coax always first (it is the first meeting); then each at its moment
     const s = this.s, sp = s.spirit.taught;
     const hollow = this.castSpots('rain').length > 0, windDue = this.healTiles().some(k => this.healSteps(k).slice(0, this.healAt(k) + 1).some(x => x.id === 'flowers' || x.id === 'toss'));
-    if (!(1 in sp)) return s.flags.sowDone ? 1 : 0;
+    if (!(1 in sp)) { const p = s.plots.seedbed; return (p.grown || 0) >= 2 && (p.stage === 'planted' || p.stage === 'growing') ? 1 : 0; }   // round fourteen note 2: coax comes once two crops have grown the slow way, as the next seeds go in
     for (const [n, ok] of [[2, hollow || (s.days.length >= 2 && this.done('spring'))], [7, windDue], [3, this.gardenOpen() && !s.flags.toadWalk]]) if (!(n in sp) && ok) return n;
     return 0;
   },
@@ -1353,7 +1363,7 @@ const G = {
     const s = this.s, h = new Date(t).getHours(); if (this.seen(id) || !this.friendAwake(id, h)) return false;
     if (id === 'rabbit') return !!s.flags.rabbit && this.dishBuilt();   // after its raid, it comes for a look at the new dish
     if (this.landStage().key === 'barren') return false;   // Bryce: no animals on bare earth
-    if (id === 'mouse') return true;   // the first to come back: the stuck rescue
+    if (id === 'mouse') { const r = s.friends.rabbit; return !!(r && r.seen) && (dayKey(r.seen) !== dayKey(t) || t - r.seen >= 4 * 60 * MIN); }   // the stuck rescue; round fourteen note 6: not straight after the rabbit's first visit (the next day, or a few hours on)
     if (id === 'robin') { const m = s.friends.mouse; return !!(m && m.seen && this.dishBuilt() && (dayKey(m.seen) !== dayKey(t) || t - m.seen >= 6 * 60 * MIN)); }   // a day or so after the mouse
     return false;
   },

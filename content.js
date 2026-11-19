@@ -110,9 +110,10 @@ window.CONTENT = {
       blurb:'Nothing can live here without water, and the creek is bone dry. Wendel walks the yard with his forked twig, listening for water under the ground. When he finds it, he will pull out the stones and dead leaves that choke it.',
       doneNote:'Wendel found a spring between the roots of the old stump at the back of the yard, choked with stones and dead leaves. He has pulled them out and stacked the stones round its edge, and clear water is trickling again, the first in this valley for a long time.' },
     { id:'clear',   name:'Clear the ground', short:'clearing the ground', spine:true, who:'her', act:'carry', spot:'clearing', cost:{}, give:{ twig:3, stone:3 }, mins:8, green:0, magic:1,
-      blurb:'Old tins, broken pots and loggers\' rubbish everywhere. {who} carries it all off, one piece at a time, and lays the good straight sticks on a stick pile by the house. Sticks make fences.' },
-    { id:'woodpile', name:'Gather sticks for the fence',    short:'gathering sticks', spine:true, who:'him', act:'gather', spot:'firewood', cost:{}, give:{ twig:2 }, mins:5, green:0, magic:1,
-      needs:['flag:rabbit'], blurb:'Fallen branches lie all about the yard. {who} gathers them up, odd sticks and all, and adds them to the stick pile by the house, for the fence.' },   // round-seven (note 11): sticks are gathered when the fence needs them
+      blurb:'Old tins, broken pots and loggers\' rubbish everywhere. {who} carries it all off, one piece at a time, and lays the good straight sticks on a stick pile by the woodpile. Sticks make fences.',
+      doneNote:'The ground is clear. Every good straight stick is on the stick pile beside the woodpile, ready for when a fence is wanted.' },   // round fourteen note 4: the stick pile is named the first time
+    { id:'woodpile', retired:true, name:'Gather sticks for the fence',    short:'gathering sticks', spine:true, who:'him', act:'gather', spot:'firewood', cost:{}, give:{ twig:2 }, mins:5, green:0, magic:1,
+      needs:['flag:rabbit'], blurb:'Fallen branches lie all about the yard. {who} gathers them up, odd sticks and all, and adds them to the stick pile by the house, for the fence.' },   // round-seven (note 11): sticks are gathered when the fence needs them. RETIRED round fourteen note 4b (Bryce): Hazel's clearing already made the stick pile, so the fence takes its sticks straight from it
     { id:'bed',     name:'Dig a seed bed', short:'digging the seed bed', spine:true, who:'him', act:'dig', spot:'clearing', cost:{ twig:2 },  mins:8, green:0, magic:1,
       needs:['clear'], blurb:'Now the ground is clear, the earth can be turned. {who} digs it over row by row, until there is a patch of soft dark soil for the vegetables. Hazel has her seed tin ready: a whole collection of different seeds, each kind in its own twist of paper.' },   // round thirteen notes 19, 19b: said early, so the reeds and wildflowers later have a source
     { id:'bedwater', name:'Water the seeds in', short:'fetching water', stages:[[0.12, 'watering the seeds in']], spine:true, who:'either', act:'water', spot:'spring', cost:{}, mins:3, green:0, magic:1,
@@ -121,7 +122,7 @@ window.CONTENT = {
       blurb:'A flat stone dish on a stump. Put out seed or berries and see who comes. Some will come back.' },
     // the rabbit always comes for the first sprouts (game.js rabbitDue); only then is the fence offered
     { id:'fence', act:'build',   name:'Fence the seed bed', short:'fencing the bed', spine:true, who:'him', spot:'fence',       cost:{ twig:4 },           mins:10, green:0, magic:1,
-      needs:['bed', 'woodpile'], blurb:'That rabbit helped itself to the sprouts. {who} fetches sticks from the stick pile and weaves a low fence all round the bed, a piece at a time, with a little gate, and something put out for it instead. It is only hungry.' },
+      needs:['bed', 'flag:rabbit'], blurb:'That rabbit helped itself to the sprouts. {who} fetches sticks from the stick pile and weaves a low fence all round the bed, a piece at a time, with a little gate, and something put out for it instead. It is only hungry.' },
 
     // --- chapter two: putting down roots (from page 2.1, the first harvest). The roof first, then the oak (round eleven note 13: the bench
     // is a home comfort now, not a step on the way, so it has no paper flag);
@@ -138,8 +139,8 @@ window.CONTENT = {
     { id:'sapling', name:'Plant the sapling out', short:'planting the sapling', spine:true, who:'her', act:'water', spot:'sapling',     cost:{ water:2, moss:2 },  mins:10, green:2, magic:3,
       needs:['clear', 'roof'], blurb:'The little oak they carried from their old home is ready for real ground. Trees bring life back faster than anything. It will outlive us all.' },
     // v99 (round ten note 18): Wendel's work corner comes early, beside the house: a frame of poles and bark where things get made before they are carried to their spot. The story's lean-to job (leanto) finishes it into his proper workshop.
-    { id:'workcorner', name:'Knock up a work corner', short:'building the work corner', who:'either', act:'build', spot:'workcorner', cost:{ twig:3 }, mins:10, green:0, needs:['bed'],
-      blurb:'Four poles and a few sheets of bark beside the house: somewhere to saw, whittle and hammer. Things for the home get made here, then carried to where they go.', doneNote:'Wendel\'s work corner. Things get made here, then carried to where they go.' },
+    { id:'workcorner', name:'Knock up a work corner', short:'building the work corner', who:'either', act:'build', spot:'workcorner', cost:{ twig:3 }, mins:10, green:0, needs:['tile:0,1'],   // round fourteen note 3: it comes for a reason, the junk next door (the garden's first job waits for it)
+      blurb:'"Look at all that junk next door," says Wendel. "Half of it is good! We need somewhere to sort it and make things from it." Four poles and a few sheets of bark beside the house: somewhere to saw, whittle and hammer.', doneNote:'Wendel\'s work corner. Things get made here, then carried to where they go.' },
     { id:'doorstep', name:'Lay a flat-stone doorstep', short:'laying the doorstep', who:'him', act:'dig', spot:'shelter',     cost:{ stone:3 },          needs:['flag:firstpick'], mins:8,  green:0,
       blurb:'So the mud stays outside. Mostly.' },
     { id:'beanpoles', name:'Raise the bean poles', short:'raising bean poles',     who:'him', act:'build', spot:'seedbed',     cost:{ twig:5 },           mins:10, green:0, needs:['bed', 'flag:firstpick'],
@@ -182,8 +183,8 @@ window.CONTENT = {
     // the creature corner: comes with the garden (flag:garden = the garden patch has opened)
     { id:'birdbath', retired:true, name:'Set a stone birdbath', short:'setting the birdbath',      who:'him', act:'water', spot:'stonebench',  cost:{ stone:4, water:2 }, mins:120, green:0, needs:['flag:garden'],
       blurb:'A hollow stone full of dew. Somebody small will want a wash.' },
-    { id:'hedgehoghouse', name:'Build a leaf-pile shelter', short:'piling the leaves', who:'her', spot:'fence',  cost:{ twig:3, moss:3 },   mins:180, green:0, needs:['flag:garden'],
-      blurb:'A heap of leaves and sticks in a quiet corner. Please do not tidy it.' },
+    { id:'hedgehoghouse', name:'Build a leaf-pile shelter', short:'piling the leaves', who:'her', spot:'fence',  cost:{ twig:3, moss:3 },   mins:180, green:0, needs:['flag:garden', 'met:hedgehog'],   // round fourteen note 8: only once the hedgehog has been seen
+      blurb:'"That hedgehog snuffling along the fence at dusk needs somewhere to sleep," says Hazel. A heap of leaves and sticks in a quiet corner, just for it. Please do not tidy it.' },
     { id:'nestbox', name:'Nail up a nest box', short:'nailing up the nest box',         who:'him', spot:'fence',       cost:{ twig:3, feather:1, acorn:1 }, mins:180, green:0, needs:['fence', 'flag:askRobin'],   // round six: Ruby the robin asks for it at the dish
       blurb:'The hole must be the right size. Too big and the wrong sort of bird moves in.' },
     { id:'pond', retired:true,   name:'Dig a little dew pond', short:'digging the pond',      who:'him', act:'dig', spot:'wheelbarrow', cost:{ stone:4, twig:2, water:3 }, mins:360, green:0, needs:['spring', 'flag:garden'],
@@ -373,7 +374,7 @@ window.CONTENT = {
           // round thirteen note 13 (Bryce chose the new order, 2026-11-16): whoever is free starts carrying the junk off by hand and gives
           // up halfway ("far too much to carry by hand"); the fence comes out as a break; the wheelbarrow is made (its own flagged job,
           // no longer one of Hazel's little makes); then the two of them cart off the rest together with the barrow, and dig out the hollow.
-          { id:'rubbish', name:'Start on the loggers\' rubbish', short:'carrying off rubbish', cost:{}, give:{ twig:1, stone:1 }, mins:10, act:'pickup',
+          { id:'rubbish', name:'Start on the loggers\' rubbish', short:'carrying off rubbish', cost:{}, give:{ twig:1, stone:1 }, mins:10, act:'pickup', needs:['workcorner'], waitLine:'Wendel wants his work corner up first, somewhere to put all the good bits.',
             blurb:'Rusty tins, an old crate, coils of wire, a cracked teacup. Whoever is free makes a start, carrying it by the armful up to Wendel\'s work corner. He will make something of all of it, one day.',
             doneNote:'Half the junk is off the heap, and that was the easy half. "Far too much to carry by hand," said Hazel, rubbing her back. "We need a break. And a wheelbarrow."' },
           { id:'fence', name:'Pull out the old fence', short:'pulling out the fence', cost:{}, give:{ twig:2 }, mins:15, act:'gather',
@@ -382,6 +383,7 @@ window.CONTENT = {
             blurb:'Two handles, a box of split boards and one wobbly wheel. It squeaks, but it will carry more junk in one go than the two of them could in ten.',
             doneNote:'The wheelbarrow is made. One wheel squeaks; Wendel says it is singing. Now the rest of that heap can go.' },
           { id:'rubbish2', name:'Cart off the rest of the rubbish', short:'carting off rubbish', cost:{}, give:{ twig:1, stone:1 }, mins:15, act:'pickup', pair:true, barrow:true,
+            needs:['page:2.1'], waitLine:'"The rest of that heap can wait a day," says Hazel. "The seed bed comes first."',   // round fourteen pace plan A: part two of the garden comes with page 2.1
             blurb:'With the barrow, and the two of them, the rest of the heap goes in loads. One fills, one wheels it up to Wendel\'s work corner. Nothing is thrown away.',
             doneNote:'The loggers\' rubbish is all off the heap; only the bare mound is left. Hazel has her eye on the old crate for herbs.' },
           { id:'spoil', name:'Dig out the buried rubbish', short:'digging out the buried rubbish', cost:{}, mins:20, act:'dig', pair:true, barrow:true,
@@ -394,6 +396,7 @@ window.CONTENT = {
             later:[ { after:4, green:1, ev:'w1', note:'With the junk gone, the first threads of green are showing on the garden patch.' }, { after:15, green:1, ev:'w2' }, { after:35, green:1, ev:'w3' },
                     { after:60, green:1, ev:'w4', note:'Grass is creeping across the garden patch, a little further every time you look.' } ] },
           { id:'rain', cast:'rain', name:'Fill the hollow with soft rain', short:'filling the hollow',
+            needs:['page:2.2'], waitLine:'The hollow is dug out. It wants a good rain, and the sky has none to give just yet.',   // round fourteen pace plan A: part three comes with page 2.2, the night it rained
             blurb:'The hollow where the heap stood would hold water, if any came. Call soft rain and it will fill: a pond, right in the middle of the garden.' },
           // round thirteen notes 15, 18, 19, 19b, 21 (Bryce: where do the reeds come from?): reed seed from Hazel's tin, rolled into seed
           // balls with pond mud and pressed in round the water's edge; then the player's Coax wakes them. Wildflowers go to open ground
@@ -564,7 +567,7 @@ window.CONTENT = {
             blurb:'Years of grey ash and charcoal. Raked into the earth, it stops being a scar and starts being good soil.' },
           { id:'ground', name:'Break up the trampled ground', short:'breaking up the ground', cost:{ twig:1, stone:1 }, mins:40, act:'dig',
             blurb:'The loggers\' boots packed the earth round the ring as hard as a floor. A fork and a lot of leaning, and it can breathe again.' },
-          { id:'wattle', name:'Sow wattle seed in the old fire ring', short:'sowing wattle seed', cost:{ seed:2, water:1 }, mins:30, act:'toss',
+          { id:'wattle', name:'Sow wattle seed in the old fire ring', short:'sowing wattle seed', cost:{ seed:2, water:1 }, mins:30, act:'toss', wait:480,   // round fourteen pace plan A: the tussocks wait until the wattle has come up (the camp no longer goes bare to meadow in a day)
             blurb:'Wattle seed loves ground that has had a fire through it. The old fire can do one last good thing.',
             later:[ { after:120, green:1, ev:'sprout1', note:'Wattle seedlings have come up in the old fire ring.' }, { after:240, green:1, ev:'sprout2' }, { after:360, green:1, ev:'thicket1' },
                     { after:480, green:1, ev:'thicket2', note:'The old fire ring is full of young wattle. In spring it will be pure gold.' } ] },
@@ -596,7 +599,7 @@ window.CONTENT = {
     { at:4, key:'green',  name:'first green',  sub:'a haze of green over the bare earth',
       spirit:`"Look, old heart! The first green. The spring brought the water back, and everything the gnomes grow teaches the soil to grow again. Each time something grows here, the yard gets a little greener. Your Journal keeps count: look on its Our land page, where every patch has four leaves to fill."`,   // round nine note 16: said by the Wood spirit when the yard first greens
       explain:`You'd have to kneel down to see it: a haze of green over the bare brown earth, so faint that Hazel thought it was her eyes. It isn't. Every living thing the gnomes grow here teaches the soil to grow again. The spring brought the water back, and each crop leaves a little more life behind. Keep things growing, and the green will spread.` },
-    { at:12, homeAt:40, key:'meadow', name:'young meadow', sub:'grass, clover and the first daisies',
+    { at:12, homeAt:30, key:'meadow', name:'young meadow', sub:'grass, clover and the first daisies',
       explain:`One morning there was grass round the house. Not a haze any more, but real grass, with clover in it, and the first daisies, and a magpie strutting about as if he had planted it all himself. The ground remembers now. Plant things that stay, like trees and bushes and flowers, and the woods will start to come home.` },
     { at:26, homeAt:140, key:'wood',   name:'young woodland', sub:'young trees coming up all round',
       explain:`Young trees are coming up all round the yard now, some planted and some that came by themselves, and the little oak has a new crown of leaves. The creatures who left long ago are finding their way back, one by one, following the green. This isn't a clearing any more. It's the beginning of a wood.` },
@@ -1207,6 +1210,31 @@ window.CONTENT = {
         `She sat on it. It wobbled. He wedged a flat stone under one leg. It stopped wobbling.`,
         `"Do you like it?" he asked, a little anxiously.`,
         `"No," said Hazel. That is what she says when she likes something so much she cannot talk about it, and Wendel knew it. He sat down beside her, and they stayed there until the fire was only embers and Gerald had gone to bed.` ] },
+      // round fourteen (pace plan A): the garden's own pages sit in chapter two beside the garden work and open the day they happen (now:true);
+      // their ids stay 3.x so older gardens keep what they have read
+      { id:'3.1', ch:2, now:true, after:[], when:'garden', title:'Next door', button:'Hello there', text:[
+        `Hazel stood at the edge of the yard with her hands on her hips, looking at the patch of land next door. Not long ago it had been grey and bare. Now it was, very definitely, green.`,
+        `"A garden," she said. "A real one. Flowers along the path. A corner for the creatures. Somewhere to sit that isn't next to your woodpile."`,
+        `"What's wrong with my woodpile?"`,
+        `"Gerald lives in it."`,
+        `There was just one problem. Overnight, hard up against the garden fence, right where Hazel wanted her rows, the biggest, reddest, most settled toadstool either of them had ever seen had come up. Hazel gave it a careful tug. Wendel gave it a polite push. It did not so much as wobble.`,
+        `"Sorry, old fellow," said Wendel, patting its cap. "We don't mean to be rude. It's only that you're right where the roses want to go. I wish we could move you somewhere quieter."`,
+        `"So do I," said Hazel. "But wishing never moved a toadstool."`,
+        `Neither of them saw what drifted out of the trees just then, soft and green as new leaves, and settled beside the toadstool as if it had been waiting for this very moment. But you did.` ] },
+      { id:'3.2', ch:2, now:true, after:['3.1'], when:'toadWalked', title:'The toadstool takes a walk', button:'Just a little magic', text:[
+        `It isn't every day you see a toadstool get up.`,
+        `First it shivered. Then four knobbly root legs wriggled out from under its cap, tested the ground one at a time, and stood it up with a creak. It looked about, the way you do when you have slept too long. Then off it went, wobble, wobble, wobble, to the far corner of the garden, where it sat down with a sigh of deep content.`,
+        `Wendel's pipe fell out of his mouth. Hazel picked it up and put it back without looking.`,
+        `"Did you do that?" Wendel whispered.`,
+        `"No," said Hazel. She looked round at the empty air, the way you look for someone who has just stepped out of the room, and she smiled. "There's something about this place," she said. "Something old and kind. I think the hill likes us."`,
+        `It was you, of course, answering their wish. But we won't tell them.` ] },
+      { id:'3.3', ch:2, now:true, after:['3.2'], when:'flag:miceIn', pic:'mouse', title:`Somebody's moved in`, button:'Welcome home, mice', text:[
+        `On the morning after the toadstool grew its little door, there was a tiny line of washing strung between its stalk and a blade of grass.`,
+        { if:'helped:mouse', text:`The field mouse they had once helped out of a bottle had moved in, and brought her family: one husband, very polite, and three small mice who had already found their way into the seed bed. Hazel let them off, the first time.`,
+          else:`A field mouse who had been watching from the long grass had moved in, and brought her family: one husband, very polite, and three small mice who had already found their way into the seed bed. Hazel let them off, the first time.` },
+        `"Our first neighbours!" said Wendel, delighted, and went straight off to find them a crumb of carrot.`,
+        `"Our first tenants," said Hazel. "They can pay their rent in being sweet." They are very good at it.`,
+        `And here is a thing worth knowing: wherever a creature makes its home, the land takes heart. By lunchtime the grass round the toadstool was greener than anywhere else in the garden.` ] },
       { id:'2.4', ch:2, after:['2.2'], when:'done:sapling', title:'The little oak', button:'Grow tall', text:[
         `The little oak had come a long way in its pot. Hazel had picked up the acorn by the roadside on the morning they were married, carried it in her pocket all day, and planted it that night in a teacup.`,
         `Now, at last, it went into real ground at the front corner of the yard. Hazel dug the hole and set it in, Wendel brought spring water in the can, and then they knelt and patted the soil down round it, both together.`,
@@ -1228,30 +1256,7 @@ window.CONTENT = {
         { if:'season:winter', text:`"A stump that size could be a house. A real one, with a door and windows and a chimney. Before this winter gets any colder."`,
           else:`"A stump that size could be a house. A real one, with a door and windows and a chimney. Before the winter comes."` },
         `Wendel sat up so fast he took the whole blanket with him. He had been waiting all his life for someone to say those words, and he already knew where the round windows would go.` ] },
-      { id:'3.1', ch:3, when:'garden', title:'Next door', button:'Hello there', text:[
-        `Hazel stood at the edge of the yard with her hands on her hips, looking at the patch of land next door. Not long ago it had been grey and bare. Now it was, very definitely, green.`,
-        `"A garden," she said. "A real one. Flowers along the path. A corner for the creatures. Somewhere to sit that isn't next to your woodpile."`,
-        `"What's wrong with my woodpile?"`,
-        `"Gerald lives in it."`,
-        `There was just one problem. Overnight, hard up against the garden fence, right where Hazel wanted her rows, the biggest, reddest, most settled toadstool either of them had ever seen had come up. Hazel gave it a careful tug. Wendel gave it a polite push. It did not so much as wobble.`,
-        `"Sorry, old fellow," said Wendel, patting its cap. "We don't mean to be rude. It's only that you're right where the roses want to go. I wish we could move you somewhere quieter."`,
-        `"So do I," said Hazel. "But wishing never moved a toadstool."`,
-        `Neither of them saw what drifted out of the trees just then, soft and green as new leaves, and settled beside the toadstool as if it had been waiting for this very moment. But you did.` ] },
-      { id:'3.2', ch:3, when:'toadWalked', title:'The toadstool takes a walk', button:'Just a little magic', text:[
-        `It isn't every day you see a toadstool get up.`,
-        `First it shivered. Then four knobbly root legs wriggled out from under its cap, tested the ground one at a time, and stood it up with a creak. It looked about, the way you do when you have slept too long. Then off it went, wobble, wobble, wobble, to the far corner of the garden, where it sat down with a sigh of deep content.`,
-        `Wendel's pipe fell out of his mouth. Hazel picked it up and put it back without looking.`,
-        `"Did you do that?" Wendel whispered.`,
-        `"No," said Hazel. She looked round at the empty air, the way you look for someone who has just stepped out of the room, and she smiled. "There's something about this place," she said. "Something old and kind. I think the hill likes us."`,
-        `It was you, of course, answering their wish. But we won't tell them.` ] },
-      { id:'3.3', ch:3, when:'flag:miceIn', pic:'mouse', title:`Somebody's moved in`, button:'Welcome home, mice', text:[
-        `On the morning after the toadstool grew its little door, there was a tiny line of washing strung between its stalk and a blade of grass.`,
-        { if:'helped:mouse', text:`The field mouse they had once helped out of a bottle had moved in, and brought her family: one husband, very polite, and three small mice who had already found their way into the seed bed. Hazel let them off, the first time.`,
-          else:`A field mouse who had been watching from the long grass had moved in, and brought her family: one husband, very polite, and three small mice who had already found their way into the seed bed. Hazel let them off, the first time.` },
-        `"Our first neighbours!" said Wendel, delighted, and went straight off to find them a crumb of carrot.`,
-        `"Our first tenants," said Hazel. "They can pay their rent in being sweet." They are very good at it.`,
-        `And here is a thing worth knowing: wherever a creature makes its home, the land takes heart. By lunchtime the grass round the toadstool was greener than anywhere else in the garden.` ] },
-      { id:'3.4', ch:3, when:'done:house1', title:'Big plans', button:'Back to work', text:[
+      { id:'3.4', ch:3, after:['3.0'], when:'done:house1', title:'Big plans', button:'Back to work', text:[
         `The old stump was hollow now, with room inside for a bed, a hearth and a table. Wendel had drawn up the plans. There were a great many of them.`,
         `There was a tower, for looking at the stars. A round room at the top with a telescope. A workbench in the kitchen, "so I can be near you, love", with all his bits and pieces on the shelf where the plates should go.`,
         `Hazel looked at the plans for a long time. Then she said, "No." It was not her happy no.`,
@@ -1281,8 +1286,8 @@ window.CONTENT = {
       // v104 (round twelve notes 8, 15, Bryce chose option C): four lessons in the whole game, each at its moment in the story, never
       // on a day count. n is only a name (game.js spiritLesson has the order). Coax is also the first meeting, so it is one card.
       { n:1, at:'seedbed', spell:'coax', title:'Coax a sprout',
-        text:`"Hello, old heart. See the seeds they've just put in? Light can't make anything grow. Nothing can. But it can whisper to a seed that is already trying, and tell it to hurry."`,
-        after:`"Here's a little of my light. Once the seeds have had their drink, touch the seed bed."` },
+        text:`"Hello, old heart. You've watched two crops come up the slow way now, haven't you? Light can't make anything grow. Nothing can. But it can whisper to a seed that is already trying, and tell it to hurry."`,   // round fourteen note 2: after two harvests
+        after:`"Here's a little of my light. Once the new seeds have had their drink, touch the seed bed."` },
       { n:2, at:'hollow', spell:'rain', title:'Call soft rain',
         text:`"A hollow, just the shape for a pond. The clouds pass over this hill without stopping; they think nothing lives here any more. Ask them nicely to look down, and they'll fill it. They'll water the seed beds too, whenever you ask. A drink, mind, never a storm."`,
         after:`"A little more of my light. Touch the hollow."` },

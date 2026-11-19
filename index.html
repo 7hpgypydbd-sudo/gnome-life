@@ -351,7 +351,7 @@ if (window.SANDBOX) {
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v113</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
+<div id="hud"><div class="tag"><h1><span id="gname">Gnome Life</span> <small id="ver" style="font-size:11px;font-weight:normal;opacity:.6">v114</small></h1><p id="sub"></p></div><p id="oops" style="display:none;color:#ffd0c0;font-size:12px"></p><p id="busy" class="busy"></p></div>
 <div id="bubble"></div>
 <div id="toast"></div>
 <div id="allDone"><b>All done for now</b><span></span></div>
@@ -372,7 +372,7 @@ if (window.SANDBOX) {
 <script>
 // Phones (above all a Home Screen shortcut) can keep an old copy of this page. Ask the server which build is live,
 // bypassing every cache, and if it is newer, load the page again under a new address so nothing old is reused.
-const BUILD = 113;
+const BUILD = 114;
 if (window.SANDBOX) document.getElementById('gname').textContent = 'Gnome Sandbox';
 fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(v => {
   v = parseInt(v, 10); if (v > BUILD && !location.search.includes('v=' + v)) location.replace(location.pathname + '?' + (window.SANDBOX ? 'sandbox&' : '') + 'v=' + v + location.hash);
@@ -380,12 +380,12 @@ fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.tex
 // show any error on screen in small print, so a screenshot tells us what went wrong
 window.addEventListener('error', e => { const o = document.getElementById('oops'); if (o) { o.style.display = ''; o.textContent = 'Oops: ' + (e.message || e) + ' (' + (e.lineno || '?') + ')'; } });
 </script>
-<script src="content.js?v=113"></script>
-<script src="playlog.js?v=113"></script>
-<script src="concerns.js?v=113"></script>
-<script src="game.js?v=113"></script>
-<script src="walk.js?v=113"></script>
-<script src="layout.js?v=113"></script>
+<script src="content.js?v=114"></script>
+<script src="playlog.js?v=114"></script>
+<script src="concerns.js?v=114"></script>
+<script src="game.js?v=114"></script>
+<script src="walk.js?v=114"></script>
+<script src="layout.js?v=114"></script>
 <script>
 (() => {
 const C = window.CONTENT, G = window.GL;
@@ -498,7 +498,7 @@ function routineFor(h) {   // what the couple do at this hour when no job needs 
 // Hazel goes from one bit of rubbish to the next, then digs the seed bed row by row; Wendel fetches each lot of fallen wood
 // to the woodpile, then carries water up from the old creek bed (behind the bench, off the back edge) to the new bed.
 const CLEAR_ITEMS = [];   // filled in below from HOME_KIT: the pieces Hazel clears, in the order she takes them
-const WOOD_ITEMS = [[0.90, 0.44], [0.86, 0.66], [0.34, 0.90]], STICK_PILE = [0.52, 0.30];   // three fallen branches Wendel gathers onto the stick pile; Hazel's good sticks from clearing go there too (round six: sticks are for fences, firewood comes from the old stump)
+const WOOD_ITEMS = [[0.90, 0.44], [0.86, 0.66], [0.34, 0.90]], STICK_PILE = [0.42, 0.06];   // three fallen branches Wendel gathers onto the stick pile; Hazel's good sticks from clearing go there too (round six: sticks are for fences, firewood comes from the old stump)
 const STUMP_AT = [0.75, 0.50], STUMP_ST = { rock: 0.3, chop: 0.45, carry: 0.68, fill: 0.88 }, STUMP_PILE = [0.76, 0.54];   // the old stump in the yard, and how far through "Dig out the old stump" each stage starts (content.js stages)
 const WOOD_DROP = [0.39, 0.06], WATER_TRIPS = 3;   // right in front of the woodpile (firewood prop, by the house's right roots), so the wood he sets down lands on it
 // "Look for water": the spring is between the roots of the big old stump at the back of the yard, choked with stones and dead leaves.
@@ -607,7 +607,7 @@ function cornerWork(id) { const d = id && G.taskDef(id); if (!d || !d.make || d.
   const sp = makeWork(d), face = makeAt(d), at = WORKSPOT.workcorner;
   return Object.assign((p, g) => !g ? sp : p < 0.55 ? [at[0], at[1], 'build', false, 0, WORKCORNER] : [sp[0], sp[1], d.act, p < 0.7, 0, face], { fetch: true }); }
 function workFn(id) { if (id && id.startsWith('chore:')) return (p, g) => choreWork(id, p, g); return WORKPATH[id] || cornerWork(id) || (id && id.startsWith('heal:') ? (p, g) => healWork(id, p, g) : id && id.startsWith('farm:') ? (p, g) => farmWork(id, p, g) : stickFetch(id)); }   // jobs that move the gnome about as they go (the healing jobs: healWork)
-function woodTaken(i) { const [k, t] = segOf(taskProg('woodpile'), WOOD_ITEMS.length); return taskProg('woodpile') >= 1 || k > i ? 1 : k < i ? 0 : sstep(0.25, 0.6, t); }   // 0..1: how much of that lot Wendel has picked up
+function woodTaken(i) { if (taskProg('clear') >= 1) return 1;   /* round fourteen note 4b: the gather-sticks job is retired, so Hazel's clearing takes the fallen branches too */ const [k, t] = segOf(taskProg('woodpile'), WOOD_ITEMS.length); return taskProg('woodpile') >= 1 || k > i ? 1 : k < i ? 0 : sstep(0.25, 0.6, t); }   // 0..1: how much of that lot Wendel has picked up
 function woodStage() {   // the firewood pile grows in 3 steps as the old stump is chopped and carried over (round six; a garden from before keeps its pile)
   if (G.s.flags.oldWoodpile) return 3; const p = taskProg('stump'); if (p >= 1) return 3; if (p < STUMP_ST.carry) return 0;
   return Math.min(3, Math.floor((p - STUMP_ST.carry) / (STUMP_ST.fill - STUMP_ST.carry) * 3 + 0.8));
@@ -626,9 +626,16 @@ function bedReady() { const pl = G.plot(); return taskProg('bed') >= 1 || G.done
 let PICKING = null;   // what is being picked, while it is picked: { crop, nib }
 function bedChore(kind) { return gnomes.find(g => g.chore && (kind ? g.chore.kind === kind : /^(sow|water|pick)$/.test(g.chore.kind))) || null; }
 function bedPt(k) { const [x, y] = wetPatchXY(k), g = fromWorld(x, y), [i, j] = g.tile.split(',').map(Number); return [g.gx + i, g.gy + j]; }   // patch k itself (to face)
+function waterSrc(to) {   // where the can is filled for watering a bed: the nearest of the rain barrel, the spring and (round fourteen note 7) the garden pond once it is full, dipped from its bank, never walked into
+  const d = p => Math.hypot(p[0] - to[0], p[1] - to[1]), out = [G.done('rainbarrel') ? [...SPOTS.barrel, 'pickup', false, 2, BARREL_AT()] : [SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 2.5, SPRING.at]];
+  if (G.s.tiles['0,1'] && G.s.tiles['0,1'].kind === 'garden' && healProg('0,1', 'rain') >= 1) {
+    const c = glob('0,1', ...GPOND), a = Math.atan2((to[1] - c[1]) / 0.25, (to[0] - c[0]) / 0.29), b = glob('0,1', GPOND[0] + Math.cos(a) * 0.25, GPOND[1] + Math.sin(a) * 0.21);
+    out.push([b[0], b[1], 'pickup', false, 2.5, c]); }
+  return out.sort((p, q) => d(p) - d(q))[0];
+}
 function startBedChore(g, kind, onDone) {
   const at = k => [...wetPatchAt(k), null, false, 0, bedPt(k)], step = (k, act, carry, secs) => { const s = at(k); s[2] = act; s[3] = carry; s[4] = secs; return s; };
-  const src = G.done('rainbarrel') ? [...SPOTS.barrel, 'pickup', false, 2, BARREL_AT()] : [SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 2.5, SPRING.at];
+  const src = waterSrc(wetPatchAt(1));
   const can = g.who === 'him' ? 'can' : false, basket = g.who === 'her';
   const steps = kind === 'sow' ? (G.plot().crop === 'pumpkin' ? [step(3, 'dig', false, 4), step(3, 'putdown', false, 2.5)] : [0, 3, 6, 9].map(k => step(k, 'putdown', false, 2.5)))   // bending to each row, dropping the seed in
     : kind === 'water' ? [src, step(1, 'water', can, 3.5), step(7, 'water', false, 3.5)]   // fill the can at the barrel (or the spring), then water along the bed
@@ -4408,7 +4415,7 @@ function bed2Shown() { return gardenOpen() ? taskProg('bed2') : 0; }
 function bed2Chore() { return gnomes.find(g => g.chore && /^(sow2|wat2|pick2)$/.test(g.chore.kind)) || null; }
 function startBed2Chore(g, kind, onDone) {
   const at = (u, act, carry, secs) => { const [x, y] = bed2Pt(u, 1.3); return [x, y, act, carry, secs, bed2Pt(u, 0.5)]; };
-  const src = G.done('rainbarrel') ? [...SPOTS.barrel, 'pickup', false, 2, BARREL_AT()] : [SPRING.at[0] + 0.03, SPRING.at[1] + 0.07, 'pickup', false, 2.5, SPRING.at];
+  const src = waterSrc(bed2Pt(0.25, 1.3));
   const can = g.who === 'him' ? 'can' : false, basket = g.who === 'her';
   const steps = kind === 'sow2' ? [0.12, 0.38, 0.62, 0.88].map(u => at(u, 'putdown', false, 2.5)) : kind === 'wat2' ? [src, at(0.25, 'water', can, 3.5), at(0.75, 'water', false, 3.5)]
     : [at(0.15, 'gather', false, 2.5), at(0.5, 'gather', false, 2.5), at(0.85, 'gather', false, 2.5), [SPOTS.door[0] + 0.03, SPOTS.door[1] + 0.04, 'putdown', basket, 2, [0.30, 0.28]]];
@@ -4550,7 +4557,7 @@ function openPatch(k) {   // tap a healing tile (v90: a small card): what this p
     if (taught) html += `<p class="go">${spellBtn(d.cast)}</p>`;
   }
   else if (v && v.show && G.healOpen(k)) html += jobCardRow(v);
-  else html += `<p class="meta">${all ? (tl.kind === 'garden' ? 'The jobs are done and the garden is open. The land keeps greening by itself, a little more each day. Its wishes are on the wish list.' : 'Everything the gnomes can do here is done. The land keeps greening by itself.') : !G.healOpen(k) ? 'This patch has a home on it now. The folk who live here look after it.' : 'Nothing to do here just now. The land is working on it.'}</p>`;
+  else html += `<p class="meta">${all ? (tl.kind === 'garden' ? 'The jobs are done and the garden is open. The land keeps greening by itself, a little more each day. Its wishes are on the wish list.' : 'Everything the gnomes can do here is done. The land keeps greening by itself.') : d && d.needs && !G.s.tasks[d.id] && !G.needsMet(d) ? (d.waitLine || 'Not just yet. The story will say when.') : !G.healOpen(k) ? 'This patch has a home on it now. The folk who live here look after it.' : 'Nothing to do here just now. The land is working on it.'}</p>`;
   // round thirteen note 11: the list never goes past a spell step (what your magic brings, the pond, is a surprise to them)
   if (!all && tl.kind === 'garden') { const left = steps.slice(at + (run || (d && d.cast) || (v && v.show) ? 1 : 0)).filter((x, i, a) => !x.auto && !x.cast && !a.slice(0, i).some(y => y.cast === 'rain')).map(x => x.name.toLowerCase()); if (left.length) html += `<p class="meta">🔒 Still to come here: ${left.join(', ')}.${G.gardenOpen() ? '' : ' Then the garden opens.'}</p>`; }
   if (names.length) html += `<p class="meta">Wendel has named the trees here: ${names.join(', ')}.</p>`;
@@ -5060,7 +5067,7 @@ function tapAt(cx, cy, wx, wy) {
   if (f.tile === '0,0') {
     let best = null, bd = 1e9;
     const pad = 14 / cam.z;   // a generous margin around each prop
-    for (const p of PROPS) { if (p.gone && taskProg(p.gone) >= 1) continue; const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s * (p.hitW || 1), h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 3 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
+    for (const p of PROPS) { if (p.gone && taskProg(p.gone) >= 1) continue; if (p.name !== 'seedbed' && (p.name === 'fence' ? taskProg('fence') <= 0 : propAlpha(p) <= 0) && !spotJobs(p.name).length) continue;   /* round fourteen note 1: a thing not built yet never answers a tap */ const img = IM[p.name], s = SPR * p.s, [x, y] = toWorld(p.gx, p.gy); const w = img.width * s * (p.hitW || 1), h = img.height * s; const inside = p.flat ? Math.hypot((wx - x) / (w / 2 + pad), (wy - y) / (h / 3 + pad)) < 1 : (wx > x - w / 2 - pad && wx < x + w / 2 + pad && wy > y - h - pad && wy < y + 6 + pad); if (inside) { const d = Math.hypot(wx - x, wy - y); if (d < bd) { bd = d; best = p; } } }
     if (best) { if (best.name === 'seedbed') { if (propAlpha(best) >= 1 && bedReady()) return openSeedbed(); if (openSpot('clearing')) return; return toast(bedReady() ? 'The seed bed. Hazel and Wendel are busy just now; it can wait.' : 'Rough ground, for now. One day the seed bed goes here.'); } if (best.name === 'shelter') { if (!wantsTap(best)) return openRoom(); if (openJobCard(spotJobs('shelter'))) { sheet.querySelector('.foot').insertAdjacentHTML('afterbegin', '<a href="#" data-a="room">look inside</a> · '); return; } } if (best.name === 'sapling') { if (taskProg('sapling') < 1 && G.taskView(G.taskDef('sapling')).show && !G.done('sapling')) return openPot(); if (taskProg('sapling') >= 1) return openJournal(1); return; }; if (best.name === 'barrel') { if (G.drawBarrel()) { const [bx, by] = toWorld(best.gx, best.gy); float(`+${C.barrel.give.water} ${C.resources.water.name}`, bx, by - 60); } return openBarrel(); } if (openSpot(best.name)) return; }
     if (stickPileShow() > 0) { const [px, py] = toWorld(STICK_PILE[0], STICK_PILE[1]); if (Math.hypot(wx - px, wy - py + 6) < Math.max(30, 38 / cam.z)) return toast(C.stickPile.replace('{n}', G.s.inv.twig || 0)); }   // round nine note 18: what the pile is, and why it never goes
     if (taskProg('workcorner') >= 1 || taskProg('leanto') >= 1) { const [hx, hy] = toWorld(...WORKCORNER); if (Math.abs(wx - hx) < 62 && wy > hy - 160 && wy < hy + 12) return toast(taskProg('leanto') >= 1 ? 'Wendel\'s workshop. A hook for every tool, and a little window for the stars.' : 'The work corner. Things for the home get made here, then carried to where they go.'); }
