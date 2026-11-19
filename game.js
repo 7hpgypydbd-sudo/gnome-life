@@ -480,6 +480,7 @@ const G = {
     if (n.startsWith('page:')) return this.pageHappened(n.slice(5));
     if (n.startsWith('stage:')) return this.stageIndex('0,0') >= C.landStages.findIndex(x => x.key === n.slice(6));
     if (n.startsWith('tile:')) return !!s.tiles[n.slice(5)];
+    if (n.startsWith('met:')) return this.met(n.slice(4));   // round fourteen note 8: an animal's home waits until you have met the animal
     return this.done(n);
   },
   lineOk(c) { if (!c) return true; if (c.includes('&')) return c.split('&').every(x => this.lineOk(x)); if (c[0] === '!') return !this.lineOk(c.slice(1)); if (c === 'grown') return !!(this.plot().grown || this.plot().stage === 'growing' || this.plot().stage === 'ready'); if (c.startsWith('met:')) return this.met(c.slice(4)); return this.needMet(c); },
@@ -492,7 +493,7 @@ const G = {
   needHint(n) {   // a need in words, for the one "Next:" line ('' = keep it a surprise)
     if (n.startsWith('page:')) return this.pageHint(n.slice(5));
     if (n.startsWith('stage:')) return `once the yard is ${C.landStages.find(x => x.key === n.slice(6)).name}`;
-    if (n.startsWith('flag:') || n.startsWith('tile:') || n.startsWith('trade:')) return '';
+    if (n.startsWith('flag:') || n.startsWith('tile:') || n.startsWith('trade:') || n.startsWith('met:')) return '';
     const d = this.taskDef(n); return d ? `after ${d.short}` : '';
   },
   needsWhy(d) { return (d.needs || []).filter(n => !this.needMet(n)).map(n => this.needHint(n)).filter(Boolean).join(', '); },
@@ -653,6 +654,7 @@ const G = {
   },
   healOpen(k) {   // is there a next job to offer on this patch?
     const i = this.healAt(k); if (i >= this.healSteps(k).length) return false;
+    const st = this.healSteps(k)[i]; if (st.needs && !this.s.tasks[`heal:${k}:${i}`] && !this.needsMet(st)) return false;   // round fourteen: a patch job can wait for something (a page of the story, the work corner)
     return !!this.s.tasks[`heal:${k}:${i}`] || !this.healClaimed(k) || this.landStage(k).key === 'barren';
   },
   healWait(k, i) {   // the time the job before this one asks it to wait until (seedlings growing in their pots), or 0
@@ -1195,6 +1197,7 @@ const G = {
   // the same day. A keen player used to wait about a week of mornings for the house, with nothing new to do.
   pagesBehind(t = now()) { return C.story.pages.filter(pg => !(pg.id in this.s.pages.seen) && pg.when !== 'welcome' && pg.when !== 'next' && this.storyDue(pg, t)).length; },
   pageCanOpen(c, t = now()) { if (c.k !== 'page') return false; const F = this.s.flags;
+    const pg = this.pageDef(c.id); if (pg && pg.now) return t - (c.at || 0) >= MIN && t - (F.pageAt || 0) >= 10 * MIN;   // round fourteen notes 10, 11: the garden's own pages (the toadstool, the mice) open the day they happen, not in a queue behind the yard's
     if (dayKey(c.at || 0) !== dayKey(t) && F.pageDay !== dayKey(t)) return true;   // queued on an earlier day, and no page read yet today
     const gap = (C.story.catchUpMins || 120) * MIN; return this.pagesBehind(t) >= 2 && t - (c.at || 0) >= gap && t - (F.pageAt || 0) >= gap; },
   pageAfter(pg) { const i = C.story.pages.indexOf(pg); return pg.after || (i > 0 ? [C.story.pages[i - 1].id] : []); },
@@ -1257,7 +1260,7 @@ const G = {
   spiritLesson() {   // v104: the lesson it is waiting with now (its number), or 0. Coax always first (it is the first meeting); then each at its moment
     const s = this.s, sp = s.spirit.taught;
     const hollow = this.castSpots('rain').length > 0, windDue = this.healTiles().some(k => this.healSteps(k).slice(0, this.healAt(k) + 1).some(x => x.id === 'flowers' || x.id === 'toss'));
-    if (!(1 in sp)) return s.flags.sowDone ? 1 : 0;
+    if (!(1 in sp)) { const p = s.plots.seedbed; return (p.grown || 0) >= 2 && (p.stage === 'planted' || p.stage === 'growing') ? 1 : 0; }   // round fourteen note 2: coax comes once two crops have grown the slow way, as the next seeds go in
     for (const [n, ok] of [[2, hollow || (s.days.length >= 2 && this.done('spring'))], [7, windDue], [3, this.gardenOpen() && !s.flags.toadWalk]]) if (!(n in sp) && ok) return n;
     return 0;
   },
@@ -1353,7 +1356,7 @@ const G = {
     const s = this.s, h = new Date(t).getHours(); if (this.seen(id) || !this.friendAwake(id, h)) return false;
     if (id === 'rabbit') return !!s.flags.rabbit && this.dishBuilt();   // after its raid, it comes for a look at the new dish
     if (this.landStage().key === 'barren') return false;   // Bryce: no animals on bare earth
-    if (id === 'mouse') return true;   // the first to come back: the stuck rescue
+    if (id === 'mouse') { const r = s.friends.rabbit; return !!(r && r.seen) && (dayKey(r.seen) !== dayKey(t) || t - r.seen >= 4 * 60 * MIN); }   // the stuck rescue; round fourteen note 6: not straight after the rabbit's first visit (the next day, or a few hours on)
     if (id === 'robin') { const m = s.friends.mouse; return !!(m && m.seen && this.dishBuilt() && (dayKey(m.seen) !== dayKey(t) || t - m.seen >= 6 * 60 * MIN)); }   // a day or so after the mouse
     return false;
   },
